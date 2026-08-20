@@ -23,12 +23,12 @@ pre-rework baseline.
 The pre-rework envelope held 59 accepted rows, 539 rounds, 11.95% judge
 acceptance, 48 accepted features, and a 4,318-test latest run. The finished
 envelope held the same 59 accepted rows and 48 accepted features; the live loop
-added exactly one round and a newer 4,321-test run while this pass ran. All 539
+added exactly two rounds and a newer 4,324-test run while this pass ran. All 539
 common round records have identical token, exact-dollar, unpriced, verdict, and
 acceptance fields. No closed pre-existing history file changed bytes.
 
-The canonical store currently represents 9,768 deduplicated sessions and more
-than 780,000 unique usage observations across both providers and both host
+The canonical store currently represents 9,773 deduplicated sessions and more
+than 805,000 unique usage observations across both providers and both host
 environments. The real rebuild reparsed 6,221 WSL Claude files, 2,342 WSL Codex
 files, 1,105 Windows Claude files, and 651 Windows Codex files. It completed in
 4m40s at reduced CPU and idle I/O priority; the next incremental run completed
