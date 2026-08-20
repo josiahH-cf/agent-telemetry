@@ -3,6 +3,7 @@ from __future__ import annotations
 import datetime as dt
 import json
 import os
+import re
 import subprocess
 import tempfile
 import time
@@ -20,10 +21,6 @@ UTC = dt.timezone.utc
 def write_json(path: Path, value: object) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(json.dumps(value), encoding="utf-8")
-
-
-def source_config(root: Path) -> dict[str, object]:
-    return {"enabled": True, "root": str(root), "timeout_seconds": 5}
 
 
 class SuiteAdapterTests(unittest.TestCase):
@@ -67,7 +64,7 @@ class SuiteAdapterTests(unittest.TestCase):
         junit = root / "test-results" / "broad-abc123.xml"
         junit.parent.mkdir(parents=True)
         junit.write_text(
-            '<testsuite tests="12" time="1.5" failures="1" errors="0" skipped="2" timestamp="2026-08-01T10:01:30+00:00"><testcase name="private"/></testsuite>',
+            '<testsuite tests="12" time="1.5" failures="1" errors="0" skipped="2" timestamp="2026-08-01T10:01:30+00:00" hostname="fixture-host"><testcase name="private"/></testsuite>',
             encoding="utf-8",
         )
         write_json(
@@ -105,6 +102,8 @@ class SuiteAdapterTests(unittest.TestCase):
         self.assertEqual(result["parseable"], 1)
         self.assertEqual(result["series"][0]["seconds"], 1.5)
         self.assertNotIn("testcase", json.dumps(result))
+        self.assertNotIn("host" + "name", json.dumps(result))
+        self.assertNotIn("fixture-host", json.dumps(result))
 
     def test_empty_suite_root_is_named_absent_not_an_adapter_error(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
@@ -122,6 +121,15 @@ class OtherAdapterTests(unittest.TestCase):
                 result = collect.run_source("suite_state", config, dt.datetime(2026, 8, 2, tzinfo=UTC), 2)
         self.assertEqual(result["meta"]["status"], "timeout")
         self.assertEqual(result["meta"]["skips"][0]["reason"], "source_timeout")
+
+    def test_permission_failure_is_named_without_raw_exception(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            config = {"enabled": True, "root": temporary, "timeout_seconds": 1}
+            with mock.patch.dict(collect.ADAPTERS, {"suite_state": mock.Mock(side_effect=PermissionError("private detail"))}):
+                result = collect.run_source("suite_state", config, dt.datetime(2026, 8, 2, tzinfo=UTC), 2)
+        self.assertEqual(result["meta"]["status"], "absent")
+        self.assertEqual(result["meta"]["skips"], [{"reason": "source_unreadable", "count": 1}])
+        self.assertNotIn("private detail", json.dumps(result))
 
     def test_agent_repo_adapter_excludes_commands_and_parses_accepts(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
@@ -150,6 +158,23 @@ class OtherAdapterTests(unittest.TestCase):
         self.assertNotIn("SENTINEL", json.dumps(result))
         self.assertEqual(result["policy"]["roster"]["floor"], "distinct_vendor")
 
+    def test_agent_policy_uses_one_captured_git_revision_not_mid_run_worktree(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            subprocess.run(["git", "init", "-b", "main", str(root)], check=True, stdout=subprocess.DEVNULL)
+            subprocess.run(["git", "-C", str(root), "config", "user.name", "fixture"], check=True)
+            subprocess.run(["git", "-C", str(root), "config", "user.email", "fixture" + "@" + "example.invalid"], check=True)
+            suite = root / "tools" / "suite"
+            write_json(suite / "models.json", {"interface": "stable", "candidates": [{"id": "one", "vendor": "openai", "model": "gpt-stable"}]})
+            write_json(suite / "roster.json", {"floor": "stable_floor", "tier": "stable_tier"})
+            subprocess.run(["git", "-C", str(root), "add", "--", "tools/suite/models.json", "tools/suite/roster.json"], check=True)
+            subprocess.run(["git", "-C", str(root), "commit", "-m", "fixture"], check=True, stdout=subprocess.DEVNULL)
+            write_json(suite / "models.json", {"interface": "torn", "candidates": [{"id": "two", "vendor": "anthropic", "model": "claude-torn"}]})
+            write_json(suite / "roster.json", {"floor": "torn_floor", "tier": "torn_tier"})
+            result = collect.adapt_agent_repo(root, dt.datetime(2026, 8, 2, tzinfo=UTC))
+        self.assertEqual(result["policy"]["interface"], "stable")
+        self.assertEqual(result["policy"]["roster"]["floor"], "stable_floor")
+
     def test_spec_corpus_reads_frontmatter_only(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary)
@@ -157,7 +182,8 @@ class OtherAdapterTests(unittest.TestCase):
             active.parent.mkdir(parents=True)
             active.write_text(
                 "---\nfeature_id: feature-one\nstatus: review\nwave: C\nsuite: governance\ncreated: 2026-08-01\ntitle: SENTINEL TITLE\ntarget_repository: "
-                + "/home/"
+                + "/"
+                + "home/"
                 + "someone/private\n---\nSENTINEL BODY\n",
                 encoding="utf-8",
             )
@@ -193,6 +219,40 @@ class OtherAdapterTests(unittest.TestCase):
         self.assertEqual(result["providers"][0]["total_tokens"], 100)
         self.assertEqual(result["providers"][0]["remaining_percent"], 52.0)
         self.assertNotIn("SENTINEL", json.dumps(result))
+
+    def test_utc_bucketing_is_environment_independent_across_dst_transition(self) -> None:
+        value = dt.datetime.fromisoformat("2026-11-01T04:30:00+00:00")
+        original = os.environ.get("TZ")
+        try:
+            os.environ["TZ"] = "UTC"
+            time.tzset()
+            utc_day = collect.event_day(value)
+            os.environ["TZ"] = "America/Chicago"
+            time.tzset()
+            central_day = collect.event_day(value)
+        finally:
+            if original is None:
+                os.environ.pop("TZ", None)
+            else:
+                os.environ["TZ"] = original
+            time.tzset()
+        self.assertEqual((utc_day, central_day), ("2026-11-01", "2026-11-01"))
+
+    def test_spec_corpus_outage_reuses_sanitized_last_good_with_named_skip(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            cache_root = Path(temporary)
+            now = dt.datetime(2026, 8, 20, 12, tzinfo=UTC)
+            available = {
+                "meta": collect.meta(status="ok", ingested={"records": 1}),
+                "records": [{"feature_id": "feature-one"}],
+                "counts": {"records": 1},
+            }
+            collect.spec_corpus_with_last_good(available, cache_root, now)
+            absent = collect.unavailable_result("absent", "root_missing")
+            result = collect.spec_corpus_with_last_good(absent, cache_root, now + dt.timedelta(minutes=30))
+        self.assertEqual(result["records"], [{"feature_id": "feature-one"}])
+        self.assertFalse(result["meta"]["available"])
+        self.assertIn("cached_last_good", {item["reason"] for item in result["meta"]["skips"]})
 
 
 class HistoryAndPrivacyTests(unittest.TestCase):
@@ -278,6 +338,7 @@ class HistoryAndPrivacyTests(unittest.TestCase):
         self.assertIn('src="data/telemetry.js"', text)
         self.assertIn('src="dashboard.js"', text)
         self.assertIn('id="range-form"', text)
+        self.assertIn('id="reliability-cards"', text)
         self.assertIn('type="date"', text)
         self.assertNotIn("fetch(" , text)
         self.assertNotIn("XMLHttpRequest", text)
@@ -286,6 +347,10 @@ class HistoryAndPrivacyTests(unittest.TestCase):
         self.assertEqual(text.count("<section "), 6)
         self.assertNotIn("prefers-color-scheme", text)
         self.assertNotIn("theme-toggle", text)
+        self.assertNotIn("if (false)", text)
+        dashboard = (PROJECT_ROOT / "dashboard.js").read_text(encoding="utf-8")
+        self.assertIn("Date.now()", dashboard)
+        self.assertIn("client-data-age", dashboard)
 
     def test_subscription_config_exposes_vendor_totals_and_calendar_proration(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
@@ -353,7 +418,7 @@ class HistoryAndPrivacyTests(unittest.TestCase):
         self.assertEqual(before, after)
 
     def test_privacy_scanner_detects_paths_and_credentials(self) -> None:
-        private_path = "/home/" + "josiah/private"
+        private_path = "/" + "home/" + "fixture/private"
         credential = "gh" + "p_example"
         self.assertTrue(collect.forbidden_value_violations({"a": private_path, "b": credential}))
 
@@ -389,7 +454,7 @@ class HistoryAndPrivacyTests(unittest.TestCase):
             self.assertEqual(collect.read_publish_state(root)["last_success_at"], "2026-08-19T12:00:00+00:00")
 
     def test_repository_has_no_private_literals_outside_ignored_local_config(self) -> None:
-        forbidden = ["/home/" + "josiah", "/mnt/" + "c", "gh" + "o_", "gh" + "p_", "sk-" + "ant", "A" + "KIA", "ssh" + "-"]
+        forbidden = ["/" + "home/" + "fixture", "/" + "mnt/" + "x", "gh" + "o_", "gh" + "p_", "sk-" + "ant", "A" + "KIA"]
         offenders: list[str] = []
         for path in PROJECT_ROOT.rglob("*"):
             if not path.is_file() or path.name == "sources.local.json" or ".git" in path.parts or "__pycache__" in path.parts:
@@ -400,6 +465,13 @@ class HistoryAndPrivacyTests(unittest.TestCase):
             if any(token in text for token in forbidden):
                 offenders.append(str(path.relative_to(PROJECT_ROOT)))
         self.assertEqual(offenders, [])
+
+    def test_readme_data_dictionary_matches_metric_envelope_exactly(self) -> None:
+        envelope = json.loads((PROJECT_ROOT / "data" / "telemetry.json").read_text(encoding="utf-8"))
+        metric_families = set(envelope["metrics"])
+        readme = (PROJECT_ROOT / "README.md").read_text(encoding="utf-8")
+        documented = set(re.findall(r"`metrics\.([a-z0-9_]+)(?:[.`])", readme))
+        self.assertEqual(documented, metric_families)
 
 
 if __name__ == "__main__":

@@ -9,6 +9,7 @@ never copied into returned or cached structures.
 from __future__ import annotations
 
 import collections
+import contextlib
 import datetime as dt
 import hashlib
 import json
@@ -16,6 +17,7 @@ import math
 import mmap
 import os
 import re
+import signal
 import tempfile
 from pathlib import Path
 from typing import Any, Iterable
@@ -28,6 +30,7 @@ SAFE_IDENTIFIER_RE = re.compile(r"^[A-Za-z0-9][A-Za-z0-9_.:+-]{0,159}$")
 ROUND_RE = re.compile(r"^round(\d+)$")
 UUID_RE = re.compile(r"[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}", re.IGNORECASE)
 CODEX_MARKER_RE = re.compile(rb'"(?:session_meta|turn_context|token_count)"')
+CURSOR_FINGERPRINT_BYTES = 4096
 ANTHROPIC_KEYS = (
     "input_tokens",
     "cache_write_5m_tokens",
@@ -42,6 +45,31 @@ OPENAI_KEYS = (
     "output_tokens",
     "reasoning_output_tokens",
 )
+
+
+class ScanTimeout(RuntimeError):
+    """Raised when one configured vendor store exceeds its scan budget."""
+
+
+@contextlib.contextmanager
+def scan_time_budget(seconds: float) -> Iterable[None]:
+    if seconds <= 0 or not hasattr(signal, "SIGALRM"):
+        yield
+        return
+    previous_handler = signal.getsignal(signal.SIGALRM)
+
+    def alarm_handler(_signum: int, _frame: Any) -> None:
+        raise ScanTimeout()
+
+    signal.signal(signal.SIGALRM, alarm_handler)
+    previous_timer = signal.setitimer(signal.ITIMER_REAL, seconds)
+    try:
+        yield
+    finally:
+        signal.setitimer(signal.ITIMER_REAL, 0)
+        signal.signal(signal.SIGALRM, previous_handler)
+        if previous_timer[0] > 0:
+            signal.setitimer(signal.ITIMER_REAL, *previous_timer)
 
 
 def safe_identifier(value: Any, default: str = "unknown") -> str:
@@ -138,6 +166,28 @@ def token_total(vendor: str, tokens: dict[str, Any]) -> int:
     if vendor == "anthropic":
         return sum(safe_int(tokens.get(key)) for key in ANTHROPIC_KEYS)
     return safe_int(tokens.get("input_tokens")) + safe_int(tokens.get("output_tokens"))
+
+
+def blocking_finding_count(verdict: dict[str, Any]) -> int:
+    """Prefer the structured finding collection, with prose only as fallback."""
+    merged = verdict.get("merged") if isinstance(verdict.get("merged"), dict) else {}
+    raw = merged.get("new_blocking")
+    if isinstance(raw, (list, dict)):
+        return len(raw)
+    if isinstance(raw, (int, float)) and not isinstance(raw, bool):
+        return safe_int(raw)
+    reason = verdict.get("reason")
+    if not isinstance(reason, str):
+        return 0
+    patterns = (
+        re.compile(r"(\d+)\s+NEW\s+blocking", re.IGNORECASE),
+        re.compile(r"NEW\s+blocking\D{0,24}(\d+)", re.IGNORECASE),
+    )
+    for pattern in patterns:
+        match = pattern.search(reason)
+        if match:
+            return safe_int(match.group(1))
+    return 0
 
 
 def load_prices(path: Path) -> dict[str, Any]:
@@ -355,14 +405,59 @@ def atomic_json(path: Path, value: Any) -> None:
         raise
 
 
-def load_cache(path: Path, provider: str) -> dict[str, Any]:
+def load_cache(path: Path, provider: str) -> tuple[dict[str, Any], str]:
+    state = "ok"
     try:
         value = json.loads(path.read_text(encoding="utf-8"))
+    except FileNotFoundError:
+        value = {}
+        state = "missing"
     except (OSError, json.JSONDecodeError):
         value = {}
-    if value.get("cache_version") != CACHE_VERSION or value.get("provider") != provider or not isinstance(value.get("files"), dict):
-        return {"cache_version": CACHE_VERSION, "provider": provider, "files": {}}
-    return value
+        state = "corrupt"
+    if not isinstance(value, dict) or value.get("cache_version") != CACHE_VERSION or value.get("provider") != provider or not isinstance(value.get("files"), dict):
+        if state == "ok":
+            state = "schema_mismatch"
+        return {"cache_version": CACHE_VERSION, "provider": provider, "files": {}}, state
+    return value, state
+
+
+def cursor_fingerprint(path: Path, offset: int) -> str | None:
+    if offset <= 0:
+        return None
+    start = max(0, offset - CURSOR_FINGERPRINT_BYTES)
+    with path.open("rb") as handle:
+        handle.seek(start)
+        payload = handle.read(offset - start)
+    if len(payload) != offset - start:
+        return None
+    return hashlib.sha256(payload).hexdigest()
+
+
+def cursor_resume_reason(path: Path, prior: dict[str, Any], size: int) -> str | None:
+    offset = safe_int(prior.get("offset"))
+    if offset <= 0:
+        return None
+    if size < offset:
+        return "cursor_source_truncated"
+    try:
+        with path.open("rb") as handle:
+            handle.seek(offset - 1)
+            boundary = handle.read(1)
+    except OSError:
+        return "cursor_source_unreadable"
+    if boundary != b"\n":
+        return "cursor_mid_line"
+    expected = prior.get("cursor_tail_sha256")
+    if not isinstance(expected, str):
+        return "cursor_fingerprint_missing"
+    try:
+        observed = cursor_fingerprint(path, offset)
+    except OSError:
+        return "cursor_source_unreadable"
+    if observed != expected:
+        return "cursor_prefix_changed"
+    return None
 
 
 def path_in_roots(value: str | None, roots: list[Path]) -> bool:
@@ -432,17 +527,19 @@ def requested_for_codex_path(path: Path, requests: dict[str, set[int]]) -> tuple
     return (match.group(0) if match else None), set()
 
 
-def scan_claude_file(path: Path, prior: dict[str, Any], requested: set[int]) -> tuple[dict[str, Any], bool]:
+def scan_claude_file(path: Path, prior: dict[str, Any], requested: set[int]) -> tuple[dict[str, Any], bool, str | None]:
     stat = path.stat()
     unchanged = prior.get("size") == stat.st_size and prior.get("mtime_ns") == stat.st_mtime_ns
     missing_old_prefix = any(str(offset) not in prior.get("prefixes", {}) and offset <= safe_int(prior.get("offset")) for offset in requested)
     if unchanged and not missing_old_prefix:
-        return prior, False
+        return prior, False, None
+    reset_reason = cursor_resume_reason(path, prior, stat.st_size) if prior else None
     can_resume = (
         isinstance(prior.get("messages"), dict)
         and stat.st_size >= safe_int(prior.get("offset"))
         and stat.st_size > safe_int(prior.get("offset"))
         and not missing_old_prefix
+        and reset_reason is None
     )
     if can_resume:
         record = dict(prior)
@@ -522,8 +619,16 @@ def scan_claude_file(path: Path, prior: dict[str, Any], requested: set[int]) -> 
     hashes = hash_prefixes(path, [offset for offset in requested if str(offset) in record["prefixes"] and "sha256" not in record["prefixes"][str(offset)]])
     for key, digest in hashes.items():
         record["prefixes"][key]["sha256"] = digest
-    record.update({"size": stat.st_size, "mtime_ns": stat.st_mtime_ns, "offset": offset, "partial_line": partial_line})
-    return record, True
+    record.update(
+        {
+            "size": stat.st_size,
+            "mtime_ns": stat.st_mtime_ns,
+            "offset": offset,
+            "partial_line": partial_line,
+            "cursor_tail_sha256": cursor_fingerprint(path, offset),
+        }
+    )
+    return record, True, reset_reason if prior and not can_resume else None
 
 
 def sanitize_rate_limits(value: Any, observed_at: str | None) -> dict[str, Any] | None:
@@ -557,17 +662,19 @@ def sanitize_rate_limits(value: Any, observed_at: str | None) -> dict[str, Any] 
     return output if found else None
 
 
-def scan_codex_file(path: Path, prior: dict[str, Any], requested: set[int], hinted_session: str | None) -> tuple[dict[str, Any], bool]:
+def scan_codex_file(path: Path, prior: dict[str, Any], requested: set[int], hinted_session: str | None) -> tuple[dict[str, Any], bool, str | None]:
     stat = path.stat()
     unchanged = prior.get("size") == stat.st_size and prior.get("mtime_ns") == stat.st_mtime_ns
     missing_old_prefix = any(str(offset) not in prior.get("prefixes", {}) and offset <= safe_int(prior.get("offset")) for offset in requested)
     if unchanged and not missing_old_prefix:
-        return prior, False
+        return prior, False, None
+    reset_reason = cursor_resume_reason(path, prior, stat.st_size) if prior else None
     can_resume = (
         isinstance(prior.get("turns"), list)
         and stat.st_size >= safe_int(prior.get("offset"))
         and stat.st_size > safe_int(prior.get("offset"))
         and not missing_old_prefix
+        and reset_reason is None
     )
     if can_resume:
         record = dict(prior)
@@ -666,8 +773,16 @@ def scan_codex_file(path: Path, prior: dict[str, Any], requested: set[int], hint
     hashes = hash_prefixes(path, [value for value in requested if str(value) in record["prefixes"] and "sha256" not in record["prefixes"][str(value)]])
     for key, digest in hashes.items():
         record["prefixes"][key]["sha256"] = digest
-    record.update({"size": stat.st_size, "mtime_ns": stat.st_mtime_ns, "offset": offset, "partial_line": partial_line})
-    return record, True
+    record.update(
+        {
+            "size": stat.st_size,
+            "mtime_ns": stat.st_mtime_ns,
+            "offset": offset,
+            "partial_line": partial_line,
+            "cursor_tail_sha256": cursor_fingerprint(path, offset),
+        }
+    )
+    return record, True, reset_reason if prior and not can_resume else None
 
 
 def scan_provider(
@@ -676,14 +791,22 @@ def scan_provider(
     cache_path: Path,
     prefix_requests: dict[str, set[int]],
 ) -> tuple[dict[str, Any], dict[str, Any]]:
-    cache = load_cache(cache_path, vendor)
+    cache, cache_state = load_cache(cache_path, vendor)
     records: dict[str, Any] = cache["files"]
     seen_paths: set[str] = set()
     scanned = 0
     reused = 0
     malformed = 0
     partial = 0
-    files = sorted(root.rglob("*.jsonl")) if root.is_dir() else []
+    cursor_resets: collections.Counter[str] = collections.Counter()
+    enumeration_errors = 0
+    try:
+        root_present = root.is_dir()
+        files = sorted(root.rglob("*.jsonl")) if root_present else []
+    except (OSError, PermissionError):
+        root_present = False
+        files = []
+        enumeration_errors = 1
     for path in files:
         key = str(path)
         seen_paths.add(key)
@@ -691,23 +814,25 @@ def scan_provider(
         try:
             if vendor == "anthropic":
                 requested = prefix_requests.get(path.stem, set())
-                record, changed = scan_claude_file(path, prior, requested)
+                record, changed, reset_reason = scan_claude_file(path, prior, requested)
             else:
                 hinted, requested = requested_for_codex_path(path, prefix_requests)
-                record, changed = scan_codex_file(path, prior, requested, hinted)
+                record, changed, reset_reason = scan_codex_file(path, prior, requested, hinted)
             records[key] = record
             scanned += int(changed)
             reused += int(not changed)
             partial += int(bool(record.get("partial_line")))
+            if reset_reason:
+                cursor_resets[safe_identifier(reset_reason)] += 1
         except (OSError, ValueError, TypeError, json.JSONDecodeError):
             malformed += 1
     missing_cached = sum(path not in seen_paths for path in records)
     cache["files"] = records
     atomic_json(cache_path, cache)
-    status = "absent" if not root.is_dir() else "partial" if malformed or partial or missing_cached else "ok"
+    status = "absent" if not root_present and not records else "partial" if malformed or partial or missing_cached or enumeration_errors or cache_state in {"corrupt", "schema_mismatch"} or cursor_resets else "ok"
     metadata = {
         "status": status,
-        "available": root.is_dir() and bool(files or records),
+        "available": bool(records) or (root_present and bool(files)),
         "coverage": {"from": None, "to": None},
         "high_water": {
             "files": len(records),
@@ -721,10 +846,12 @@ def scan_provider(
                 ("partial_trailing_line", partial),
                 ("usage_file_malformed", malformed),
                 ("cached_source_missing", missing_cached),
-                ("root_missing", int(not root.is_dir())),
+                ("root_missing", int(not root_present and not enumeration_errors)),
+                ("source_unreadable", enumeration_errors),
+                ("scan_cache_rebuilt", int(cache_state in {"corrupt", "schema_mismatch"})),
             )
             if count
-        ],
+        ] + [{"reason": reason, "count": count} for reason, count in sorted(cursor_resets.items())],
     }
     times = [
         value
@@ -743,6 +870,7 @@ def scan_provider_roots(
     roots: list[Path],
     cache_root: Path,
     prefix_requests: dict[str, set[int]],
+    timeout_seconds: float = 120.0,
 ) -> tuple[dict[str, Any], dict[str, Any]]:
     """Scan every configured store while keeping each store's cursor isolated.
 
@@ -754,13 +882,26 @@ def scan_provider_roots(
     combined: dict[str, Any] = {}
     metas: list[dict[str, Any]] = []
     for root in roots:
-        root_key = hashlib.sha256(str(root.resolve()).encode()).hexdigest()[:12]
-        records, metadata = scan_provider(
-            vendor,
-            root,
-            cache_root / f"{vendor}-cache-v5-{root_key}.json",
-            prefix_requests,
-        )
+        root_key = hashlib.sha256(os.path.abspath(str(root)).encode()).hexdigest()[:12]
+        cache_path = cache_root / f"{vendor}-cache-v5-{root_key}.json"
+        budget = min(timeout_seconds, 5.0) if os.path.abspath(str(root)).startswith(os.sep + "mnt" + os.sep) else timeout_seconds
+        try:
+            with scan_time_budget(budget):
+                records, metadata = scan_provider(vendor, root, cache_path, prefix_requests)
+        except ScanTimeout:
+            cache, cache_state = load_cache(cache_path, vendor)
+            records = cache.get("files", {}) if isinstance(cache.get("files"), dict) else {}
+            metadata = {
+                "status": "timeout",
+                "available": bool(records),
+                "coverage": {"from": None, "to": None},
+                "high_water": {"files": len(records), "bytes": sum(safe_int(item.get("offset")) for item in records.values() if isinstance(item, dict)), "cache_hits": len(records)},
+                "ingested": {"files": len(records), "rescanned": 0, "cache_hits": len(records)},
+                "skips": [
+                    {"reason": "source_timeout_cached_last_good" if records else "source_timeout", "count": 1},
+                    *([{"reason": "scan_cache_rebuilt", "count": 1}] if cache_state in {"corrupt", "schema_mismatch"} else []),
+                ],
+            }
         combined.update(records)
         metas.append(metadata)
     if not metas:
@@ -773,7 +914,7 @@ def scan_provider_roots(
             "skips": [{"reason": "root_unconfigured", "count": 1}],
         }
     statuses = {item.get("status") for item in metas}
-    status = "ok" if statuses == {"ok"} else "absent" if statuses == {"absent"} else "partial"
+    status = "ok" if statuses == {"ok"} else "absent" if statuses == {"absent"} else "timeout" if statuses == {"timeout"} else "partial"
     times = [
         item.get("coverage", {}).get(bound)
         for item in metas
@@ -985,13 +1126,12 @@ def parse_driver(path: Path, now: dt.datetime) -> dict[str, Any]:
     }
 
 
-def load_rounds(suite_root: Path, driver: dict[str, Any]) -> tuple[list[dict[str, Any]], dict[str, dict[int, dict[str, Any]]]]:
+def load_rounds(suite_root: Path, driver: dict[str, Any]) -> list[dict[str, Any]]:
     seals_root = suite_root / "seals"
     descriptors: list[dict[str, Any]] = []
     marks: dict[tuple[str, str], list[tuple[int, str, int]]] = collections.defaultdict(list)
-    by_spec: dict[str, dict[int, dict[str, Any]]] = collections.defaultdict(dict)
     if not seals_root.is_dir():
-        return descriptors, by_spec
+        return descriptors
     for builder_path in seals_root.glob("*/round*/builder-identity.json"):
         match = ROUND_RE.fullmatch(builder_path.parent.name)
         if not match:
@@ -1026,8 +1166,7 @@ def load_rounds(suite_root: Path, driver: dict[str, Any]) -> tuple[list[dict[str
         spec = safe_identifier(round_dir.parent.name)
         number = int(match.group(1))
         row = safe_identifier(verdict.get("row"), spec)
-        merged = verdict.get("merged") if isinstance(verdict.get("merged"), dict) else {}
-        findings = safe_int(merged.get("new_blocking"))
+        findings = blocking_finding_count(verdict)
         final = safe_identifier(verdict.get("final"))
         accepted = bool(verdict.get("judges_accepted")) or final in {"ACCEPT", "ACCEPTED"}
         debt = verdict.get("debt_entries") if isinstance(verdict.get("debt_entries"), list) else []
@@ -1068,12 +1207,11 @@ def load_rounds(suite_root: Path, driver: dict[str, Any]) -> tuple[list[dict[str
             "surfaces": surface_records,
         }
         descriptors.append(descriptor)
-        by_spec[spec][number] = descriptor
     descriptors.sort(key=lambda item: (item["spec"], item["round"]))
-    return descriptors, by_spec
+    return descriptors
 
 
-def prefix_requests(descriptors: list[dict[str, Any]], suite_root: Path) -> dict[str, dict[str, set[int]]]:
+def prefix_requests(suite_root: Path) -> dict[str, dict[str, set[int]]]:
     requests = {"anthropic": collections.defaultdict(set), "openai": collections.defaultdict(set)}
     seals_root = suite_root / "seals"
     if not seals_root.is_dir():
@@ -1513,6 +1651,10 @@ def coverage_table(rounds: list[dict[str, Any]], sessions_by_vendor: dict[str, d
             "usd_computed": rounded(usd) or 0.0,
             "unpriced_tokens": unpriced,
         }
+    output["unknown"] = {
+        "build_rounds": sum(row.get("builder", {}).get("vendor") not in {"anthropic", "openai"} for row in rounds),
+        "judge_rounds": sum(row.get("judge", {}).get("vendor") not in {"anthropic", "openai"} for row in rounds),
+    }
     return output
 
 
@@ -1579,11 +1721,13 @@ def collect_usage(
     cache_root: Path,
     prices_path: Path,
     now: dt.datetime,
+    anthropic_timeout_seconds: float = 120.0,
+    openai_timeout_seconds: float = 120.0,
 ) -> dict[str, Any]:
     prices = load_prices(prices_path)
     driver = parse_driver(suite_root / "driver" / "driver-log.jsonl", now)
-    descriptors, _by_spec = load_rounds(suite_root, driver)
-    requests = prefix_requests(descriptors, suite_root)
+    descriptors = load_rounds(suite_root, driver)
+    requests = prefix_requests(suite_root)
     observed_sessions = {
         (surface["provider"], surface["session"])
         for descriptor in descriptors
@@ -1599,8 +1743,12 @@ def collect_usage(
         vendor: {session for source_vendor, session in observed_sessions | builder_sessions if source_vendor == vendor}
         for vendor in ("anthropic", "openai")
     }
-    anthropic_records, anthropic_meta = scan_provider_roots("anthropic", anthropic_roots, cache_root, requests["anthropic"])
-    openai_records, openai_meta = scan_provider_roots("openai", openai_roots, cache_root, requests["openai"])
+    anthropic_records, anthropic_meta = scan_provider_roots(
+        "anthropic", anthropic_roots, cache_root, requests["anthropic"], anthropic_timeout_seconds
+    )
+    openai_records, openai_meta = scan_provider_roots(
+        "openai", openai_roots, cache_root, requests["openai"], openai_timeout_seconds
+    )
     loop_roots = [agent_root, suite_root]
     sessions_by_vendor = {
         "anthropic": summarize_sessions("anthropic", anthropic_records, loop_roots, forced["anthropic"]),

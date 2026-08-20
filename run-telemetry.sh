@@ -6,18 +6,17 @@ STATE_ROOT=${AGENT_TELEMETRY_STATE_DIR:-${XDG_STATE_HOME:-${HOME:?}/.local/state
 LOG_PATH=$STATE_ROOT/collect.log
 LOCK_PATH=$STATE_ROOT/collect.lock
 MODE=${1:-refresh}
+TRIGGER=${2:-manual}
 
 mkdir -p "$STATE_ROOT"
-if [ -f "$LOG_PATH" ] && [ "$(wc -c < "$LOG_PATH")" -ge 1048576 ]; then
-    mv -f "$LOG_PATH" "$LOG_PATH.1"
-fi
-exec >>"$LOG_PATH" 2>&1
-printf '%s mode=%s start\n' "$(date -u +%Y-%m-%dT%H:%M:%SZ)" "$MODE"
 
-exec 9>"$LOCK_PATH"
-if ! flock -n 9; then
-    printf '%s lock=busy\n' "$(date -u +%Y-%m-%dT%H:%M:%SZ)"
-    exit 75
+if [ "${AGENT_TELEMETRY_LOCKED:-0}" != "1" ]; then
+    if [ -f "$LOG_PATH" ] && [ "$(wc -c < "$LOG_PATH")" -ge 1048576 ]; then
+        mv -f "$LOG_PATH" "$LOG_PATH.1"
+    fi
+    exec >>"$LOG_PATH" 2>&1
+    printf '%s mode=%s trigger=%s start\n' "$(date -u +%Y-%m-%dT%H:%M:%SZ)" "$MODE" "$TRIGGER"
+    exec python3 "$PROJECT_ROOT/stability.py" --lock-run "$LOCK_PATH" -- "$0" "$MODE" "$TRIGGER"
 fi
 
 case "$MODE" in
@@ -28,12 +27,14 @@ case "$MODE" in
             PUBLISH=0
         fi
         ;;
-    publish)
+    publish|catchup)
         PUBLISH=1
         ;;
     lock-probe)
         python3 "$PROJECT_ROOT/collect.py" --check
-        exit $?
+        RESULT=$?
+        printf '%s mode=%s trigger=%s finish exit=%s\n' "$(date -u +%Y-%m-%dT%H:%M:%SZ)" "$MODE" "$TRIGGER" "$RESULT"
+        exit "$RESULT"
         ;;
     *)
         printf '%s invalid_mode=%s\n' "$(date -u +%Y-%m-%dT%H:%M:%SZ)" "$MODE"
@@ -41,38 +42,31 @@ case "$MODE" in
         ;;
 esac
 
+RESULT=0
 if [ "$PUBLISH" -eq 1 ]; then
     if ! python3 "$PROJECT_ROOT/collect.py"; then
         python3 "$PROJECT_ROOT/collect.py" --record-publish failure --publish-reason collect_failed
-        exit 0
-    fi
-    if ! python3 "$PROJECT_ROOT/collect.py" --scrub; then
+        RESULT=2
+    elif ! python3 "$PROJECT_ROOT/collect.py" --scrub; then
         python3 "$PROJECT_ROOT/collect.py" --record-publish blocked --publish-reason scrub_gate
-        python3 "$PROJECT_ROOT/collect.py" --commit || true
-        exit 0
-    fi
-    if ! git -C "$PROJECT_ROOT" push --dry-run origin main; then
-        python3 "$PROJECT_ROOT/collect.py" --record-publish failure --publish-reason git_push_dry_run_failed
-        python3 "$PROJECT_ROOT/collect.py" --commit || true
-        exit 0
-    fi
-    python3 "$PROJECT_ROOT/collect.py" --record-publish success --publish-reason scheduled_push
-    if ! python3 "$PROJECT_ROOT/collect.py" --commit; then
+        RESULT=3
+    elif ! python3 "$PROJECT_ROOT/collect.py" --commit-existing; then
         python3 "$PROJECT_ROOT/collect.py" --record-publish failure --publish-reason collect_commit_failed
-        exit 0
-    fi
-    if ! python3 "$PROJECT_ROOT/collect.py" --scrub; then
-        python3 "$PROJECT_ROOT/collect.py" --record-publish blocked --publish-reason scrub_gate
-        python3 "$PROJECT_ROOT/collect.py" --commit || true
-        exit 0
-    fi
-    if git -C "$PROJECT_ROOT" push origin main; then
-        python3 "$PROJECT_ROOT/collect.py" --record-publish success --publish-reason pushed
-    else
-        python3 "$PROJECT_ROOT/collect.py" --record-publish failure --publish-reason git_push_failed
-        python3 "$PROJECT_ROOT/collect.py" --commit || true
+        RESULT=4
+    elif ! python3 "$PROJECT_ROOT/publish.py" --repo "$PROJECT_ROOT" --state-root "$STATE_ROOT"; then
+        RESULT=5
     fi
 else
-    python3 "$PROJECT_ROOT/collect.py"
+    if ! python3 "$PROJECT_ROOT/collect.py"; then
+        RESULT=2
+    fi
 fi
-printf '%s mode=%s finish\n' "$(date -u +%Y-%m-%dT%H:%M:%SZ)" "$MODE"
+
+if [ -f "$STATE_ROOT/pages-check-request.json" ]; then
+    (
+        python3 "$PROJECT_ROOT/collect.py" --check-pages
+    ) </dev/null >>"$LOG_PATH" 2>&1 &
+fi
+
+printf '%s mode=%s trigger=%s finish exit=%s\n' "$(date -u +%Y-%m-%dT%H:%M:%SZ)" "$MODE" "$TRIGGER" "$RESULT"
+exit "$RESULT"

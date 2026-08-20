@@ -11,23 +11,29 @@ import argparse
 import collections
 import contextlib
 import datetime as dt
+import getpass
 import hashlib
 import json
 import math
 import os
 import re
 import signal
+import socket
 import statistics
 import subprocess
 import sys
 import tempfile
 import time
 import traceback
+import urllib.error
+import urllib.parse
+import urllib.request
 import xml.etree.ElementTree as ET
 from pathlib import Path
 from typing import Any, Callable, Iterable
 
 import usage as vendor_usage
+import stability as telemetry_stability
 
 
 SCHEMA_VERSION = 2
@@ -62,6 +68,7 @@ DATE_RE = re.compile(r"^\d{4}-\d{2}-\d{2}$")
 MODEL_VALUE_KEYS = {"model", "model_id", "assistant_model"}
 MAX_ROUND_SECONDS = 48 * 60 * 60
 MAX_ROW_SECONDS = 30 * 24 * 60 * 60
+PAGES_URL = "https://josiahh-cf.github.io/agent-telemetry/"
 
 
 class SourceTimeout(RuntimeError):
@@ -96,13 +103,13 @@ def parse_timestamp(value: Any) -> dt.datetime | None:
 
 
 def event_day(value: dt.datetime | None) -> str | None:
-    return value.astimezone().date().isoformat() if value else None
+    return value.astimezone(dt.timezone.utc).date().isoformat() if value else None
 
 
 def week_key(value: dt.datetime | None) -> str | None:
     if value is None:
         return None
-    year, week, _ = value.astimezone().isocalendar()
+    year, week, _ = value.astimezone(dt.timezone.utc).isocalendar()
     return f"{year}-W{week:02d}"
 
 
@@ -608,12 +615,7 @@ def parse_seals(root: Path, round_days: dict[tuple[str, int], str], skips: colle
             accepted = bool(verdict.get("judges_accepted")) or final in {"ACCEPT", "ACCEPTED"}
             if accepted:
                 accepted_by_spec[spec] = min(number, accepted_by_spec.get(spec, number))
-            reason = verdict.get("reason")
-            match = re.search(r"(\d+)\s+NEW\s+blocking", reason, re.IGNORECASE) if isinstance(reason, str) else None
-            if match:
-                blocking_counts[match.group(1)] += 1
-            else:
-                blocking_counts["unavailable"] += 1
+            blocking_counts[str(vendor_usage.blocking_finding_count(verdict))] += 1
 
             row = safe_identifier(verdict.get("row"), default="")
             day = round_days.get((row, number))
@@ -982,6 +984,19 @@ def sanitize_model_policy(models: dict[str, Any], roster: dict[str, Any]) -> dic
     }
 
 
+def read_git_json_object(root: Path, revision: str, relative: str) -> dict[str, Any]:
+    """Read one JSON object from the already-captured immutable Git revision."""
+    payload = subprocess.check_output(
+        ["git", "-C", str(root), "show", f"{revision}:{relative}"],
+        stderr=subprocess.DEVNULL,
+        timeout=10,
+    )
+    value = json.loads(payload)
+    if not isinstance(value, dict):
+        raise ValueError("expected object")
+    return value
+
+
 def adapt_agent_repo(root: Path, now: dt.datetime) -> dict[str, Any]:
     del now
     skips: collections.Counter[str] = collections.Counter()
@@ -1005,16 +1020,14 @@ def adapt_agent_repo(root: Path, now: dt.datetime) -> dict[str, Any]:
     if rejected:
         add_skip(skips, "accept_subject_unparsed", rejected)
 
-    models_path = root / "tools" / "suite" / "models.json"
-    roster_path = root / "tools" / "suite" / "roster.json"
     try:
-        models = read_json_object(models_path)
-    except (OSError, json.JSONDecodeError, ValueError):
+        models = read_git_json_object(root, head, "tools/suite/models.json")
+    except (OSError, subprocess.CalledProcessError, subprocess.TimeoutExpired, json.JSONDecodeError, ValueError):
         models = {}
         add_skip(skips, "models_policy_absent")
     try:
-        roster = read_json_object(roster_path)
-    except (OSError, json.JSONDecodeError, ValueError):
+        roster = read_git_json_object(root, head, "tools/suite/roster.json")
+    except (OSError, subprocess.CalledProcessError, subprocess.TimeoutExpired, json.JSONDecodeError, ValueError):
         roster = {}
         add_skip(skips, "roster_policy_absent")
     policy = sanitize_model_policy(models, roster)
@@ -1248,6 +1261,48 @@ def run_source(name: str, config: dict[str, Any], now: dt.datetime, default_time
         if os.environ.get("AGENT_TELEMETRY_DEBUG"):
             traceback.print_exc()
         return unavailable_result("error", "adapter_error")
+
+
+def source_timeout_seconds(name: str, config: dict[str, Any], default_timeout: float) -> float:
+    configured = safe_float(config.get("timeout_seconds")) or default_timeout
+    root = os.path.abspath(os.path.expanduser(str(config.get("root") or "")))
+    if name == "spec_corpus" and root.startswith(os.sep + "mnt" + os.sep):
+        return min(configured, 5.0)
+    return configured
+
+
+def spec_corpus_with_last_good(result: dict[str, Any], cache_root: Path, now: dt.datetime) -> dict[str, Any]:
+    """Cache only sanitized corpus derivations and reuse them under a named outage."""
+    path = cache_root / "spec-corpus-last-good.json"
+    details = result.get("meta") if isinstance(result.get("meta"), dict) else {}
+    if details.get("available"):
+        value = {
+            "schema_version": SCHEMA_VERSION,
+            "recorded_at": iso(now),
+            "records": result.get("records", []),
+            "counts": result.get("counts", {}),
+        }
+        atomic_write(path, json_text(value))
+        return result
+    try:
+        cached = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        return result
+    if not isinstance(cached, dict) or cached.get("schema_version") != SCHEMA_VERSION:
+        return result
+    recorded = parse_timestamp(cached.get("recorded_at"))
+    age_hours = max(0.0, (now - recorded).total_seconds() / 3600) if recorded else None
+    merged = dict(result)
+    merged["records"] = cached.get("records") if isinstance(cached.get("records"), list) else []
+    merged["counts"] = cached.get("counts") if isinstance(cached.get("counts"), dict) else {}
+    source_meta = dict(details)
+    high_water = dict(source_meta.get("high_water") or {})
+    high_water.update({"cached_last_good_at": iso(recorded), "cached_last_good_age_hours": rounded(age_hours, 1)})
+    skips = list(source_meta.get("skips") or [])
+    skips.append({"reason": "cached_last_good", "count": 1})
+    source_meta.update({"high_water": high_water, "skips": sorted(skips, key=lambda item: item.get("reason", ""))})
+    merged["meta"] = source_meta
+    return merged
 
 
 def default_daily(date: str, collected_at: str) -> dict[str, Any]:
@@ -1718,7 +1773,7 @@ def combine_results(
     models["adherence"] = adherence
     models["policy"] = policy
     generated_at = iso(now)
-    collection_date = now.astimezone().date().isoformat()
+    collection_date = now.astimezone(dt.timezone.utc).date().isoformat()
     ledger, worth = build_spec_ledger(
         usage_result.get("rounds", []),
         usage_result.get("row_time", {}),
@@ -1799,20 +1854,17 @@ def combine_results(
 
 def forbidden_value_violations(value: Any) -> list[str]:
     violations: list[str] = []
-    tokens = [
-        "/home/" + "josiah",
-        "/mnt/" + "c",
-        "gh" + "o_",
-        "gh" + "p_",
-        "sk-" + "ant",
-        "sk-" + "proj",
-        "A" + "KIA",
-        "ssh" + "-",
-    ]
+    tokens = ["gh" + "o_", "gh" + "p_", "sk-" + "ant", "sk-" + "proj", "A" + "KIA"]
+    machine_user = getpass.getuser()
 
     def walk(node: Any) -> None:
         if isinstance(node, dict):
-            for item in node.values():
+            for key, item in node.items():
+                normalized = str(key).lower().replace("_", "")
+                if normalized == "host" + "name":
+                    violations.append("machine_metadata_key")
+                if normalized in {"username", "user"} and str(item) == machine_user:
+                    violations.append("machine_metadata_value")
                 walk(item)
         elif isinstance(node, list):
             for item in node:
@@ -1836,6 +1888,46 @@ def load_sensitive_terms(path: Path) -> list[str]:
     return [line.strip() for line in lines if line.strip() and not line.lstrip().startswith("#")]
 
 
+def sensitive_content_reasons(content: bytes, denylist: list[str] | None = None) -> list[str]:
+    """Classify sensitive bytes without returning or logging the matched value."""
+    reasons: set[str] = set()
+    credential_markers = [
+        b"gh" + b"o_",
+        b"gh" + b"p_",
+        b"sk-" + b"ant",
+        b"sk-" + b"proj",
+        b"A" + b"KIA",
+        b"-----BEGIN " + b"OPENSSH PRIVATE KEY-----",
+        b"-----BEGIN " + b"PRIVATE KEY-----",
+    ]
+    if any(marker in content for marker in credential_markers):
+        reasons.add("credential_pattern")
+    absolute_path_re = (
+        rb"(?:/" + b"home" + rb"/[A-Za-z0-9._-]+/|/" + b"mnt" + rb"/[A-Za-z]/[^\s\"']+|(?<![A-Za-z0-9])[A-Za-z]:[\\/][^\s\"']+)"
+    )
+    if re.search(absolute_path_re, content):
+        reasons.add("absolute_path")
+    if re.search(rb"(?<![A-Za-z0-9._%+-])[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}(?![A-Za-z0-9.-])", content):
+        reasons.add("email_pattern")
+    if re.search(rb"(?<!\d)(?:\+?1[ .-])?(?:\(\d{3}\)|\d{3})[ .-]\d{3}[ .-]\d{4}(?!\d)", content):
+        reasons.add("phone_pattern")
+    hostname_key = b'"' + b"host" + b"name" + b'"'
+    if re.search(re.escape(hostname_key) + rb"\s*:", content, re.IGNORECASE):
+        reasons.add("machine_metadata_key")
+    host = socket.gethostname().encode("utf-8", errors="ignore")
+    if host and (b'"' + host + b'"') in content:
+        reasons.add("machine_metadata_value")
+    user = getpass.getuser().encode("utf-8", errors="ignore")
+    if user and (b"/home/" + user + b"/") in content:
+        reasons.add("username_path")
+    if user and (b"\\Users\\" + user + b"\\").lower() in content.lower():
+        reasons.add("username_path")
+    for term in denylist or []:
+        if term.encode("utf-8") in content:
+            reasons.add("local_denylist")
+    return sorted(reasons)
+
+
 def repository_scrub_violations(project_root: Path, denylist_path: Path | None = None) -> list[dict[str, str]]:
     """Inspect publishable files without echoing any matched sensitive value."""
     command = ["git", "-C", str(project_root), "ls-files", "-z", "--cached", "--others", "--exclude-standard"]
@@ -1843,16 +1935,10 @@ def repository_scrub_violations(project_root: Path, denylist_path: Path | None =
         listed = subprocess.run(command, check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE).stdout
     except (OSError, subprocess.CalledProcessError) as exc:
         raise RuntimeError("scrub_git_inventory_failed") from exc
-    literal_patterns = {
-        "private_path": ["/home/" + "josiah", "/mnt/" + "c"],
-        "credential_pattern": [
-            "gh" + "o_", "gh" + "p_", "sk-" + "ant", "sk-" + "proj", "A" + "KIA", "ssh" + "-",
-        ],
-        "local_denylist": load_sensitive_terms(denylist_path or project_root / "sensitive-terms.local.txt"),
-    }
-    email_re = re.compile(rb"(?<![A-Za-z0-9._%+-])[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}(?![A-Za-z0-9.-])")
-    phone_re = re.compile(rb"(?<!\d)(?:\+?1[ .-])?(?:\(\d{3}\)|\d{3})[ .-]\d{3}[ .-]\d{4}(?!\d)")
     violations: list[dict[str, str]] = []
+    for relative in telemetry_stability.tracked_manifest_violations(project_root):
+        violations.append({"path": relative, "reason": "tracked_path_not_allowlisted"})
+    denylist = load_sensitive_terms(denylist_path or project_root / "sensitive-terms.local.txt")
     for raw_name in listed.split(b"\0"):
         if not raw_name:
             continue
@@ -1863,14 +1949,88 @@ def repository_scrub_violations(project_root: Path, denylist_path: Path | None =
         except OSError:
             violations.append({"path": relative, "reason": "unreadable_file"})
             continue
-        for reason, values in literal_patterns.items():
-            if any(value.encode("utf-8") in content for value in values):
-                violations.append({"path": relative, "reason": reason})
-        if email_re.search(content):
-            violations.append({"path": relative, "reason": "email_pattern"})
-        if phone_re.search(content):
-            violations.append({"path": relative, "reason": "phone_pattern"})
+        for reason in sensitive_content_reasons(content, denylist):
+            violations.append({"path": relative, "reason": reason})
     return sorted(violations, key=lambda item: (item["path"], item["reason"]))
+
+
+def repository_history_audit(project_root: Path, denylist_path: Path | None = None) -> dict[str, Any]:
+    """Scan every reachable blob and identity tuple without echoing matched values."""
+    try:
+        objects = subprocess.run(
+            ["git", "-C", str(project_root), "rev-list", "--objects", "--all"],
+            check=True,
+            text=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            timeout=30,
+        ).stdout.splitlines()
+    except (OSError, subprocess.CalledProcessError, subprocess.TimeoutExpired) as exc:
+        raise RuntimeError("history_inventory_failed") from exc
+    denylist = load_sensitive_terms(denylist_path or project_root / "sensitive-terms.local.txt")
+    findings: list[dict[str, str]] = []
+    seen: set[str] = set()
+    blobs = 0
+    for line in objects:
+        object_id, _, relative = line.partition(" ")
+        if object_id in seen:
+            continue
+        seen.add(object_id)
+        try:
+            kind = subprocess.run(
+                ["git", "-C", str(project_root), "cat-file", "-t", object_id],
+                check=True,
+                text=True,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.DEVNULL,
+                timeout=5,
+            ).stdout.strip()
+            if kind != "blob":
+                continue
+            content = subprocess.run(
+                ["git", "-C", str(project_root), "cat-file", "blob", object_id],
+                check=True,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.DEVNULL,
+                timeout=10,
+            ).stdout
+        except (OSError, subprocess.CalledProcessError, subprocess.TimeoutExpired):
+            findings.append({"object": object_id[:12], "path": relative or "unknown", "reason": "blob_unreadable"})
+            continue
+        blobs += 1
+        for reason in sensitive_content_reasons(content, denylist):
+            findings.append({"object": object_id[:12], "path": relative or "unknown", "reason": reason})
+    identities = subprocess.run(
+        ["git", "-C", str(project_root), "log", "--all", "--format=%ae%x00%ce"],
+        check=True,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        timeout=10,
+    ).stdout.splitlines()
+    personal_identity_commits = 0
+    for line in identities:
+        values = [item.decode("utf-8", errors="replace") for item in line.split(b"\0")]
+        if any(value and not value.endswith("@users.noreply.github.com") for value in values):
+            personal_identity_commits += 1
+    local_names = ("sources.local.json", "sensitive-terms.local.txt", "subscriptions.local.json")
+    local_file_commits = {}
+    for name in local_names:
+        output = subprocess.run(
+            ["git", "-C", str(project_root), "log", "--all", "--format=%H", "--", name],
+            check=True,
+            text=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            timeout=10,
+        ).stdout.splitlines()
+        local_file_commits[name] = len(output)
+    return {
+        "schema_version": SCHEMA_VERSION,
+        "blobs_scanned": blobs,
+        "findings": sorted(findings, key=lambda item: (item["reason"], item["path"], item["object"])),
+        "personal_identity_commits": personal_identity_commits,
+        "local_file_commits": local_file_commits,
+    }
 
 
 def atomic_write(path: Path, text: str) -> None:
@@ -2201,6 +2361,10 @@ def measurement_observation(snapshot: dict[str, Any]) -> dict[str, Any]:
         }
     worth = metrics.get("worth", {}) if isinstance(metrics.get("worth"), dict) else {}
     now = metrics.get("now", {}) if isinstance(metrics.get("now"), dict) else {}
+    reliability = metrics.get("reliability", {}) if isinstance(metrics.get("reliability"), dict) else {}
+    cadence = reliability.get("cadence", {}) if isinstance(reliability.get("cadence"), dict) else {}
+    clock = reliability.get("clock", {}) if isinstance(reliability.get("clock"), dict) else {}
+    disk = reliability.get("disk", {}) if isinstance(reliability.get("disk"), dict) else {}
     return {
         "schema_version": SCHEMA_VERSION,
         "date": snapshot.get("collection", {}).get("date"),
@@ -2213,6 +2377,14 @@ def measurement_observation(snapshot: dict[str, Any]) -> dict[str, Any]:
             "status": safe_identifier(now.get("publish_status"), "never"),
             "reason": safe_identifier(now.get("publish_reason"), "no_publish_record"),
             "last_success_at": iso(parse_timestamp(now.get("last_publish_at"))),
+        },
+        "reliability": {
+            "doctor_status": safe_identifier(reliability.get("status"), "unknown"),
+            "cadence_status": safe_identifier(cadence.get("status"), "unknown"),
+            "missed_intervals": safe_int(cadence.get("missed_intervals")),
+            "last_start_at": iso(parse_timestamp(cadence.get("last_start_at"))),
+            "clock_status": safe_identifier(clock.get("status"), "unknown"),
+            "disk_headline": safe_identifier(disk.get("headline"), "measurement_pending"),
         },
     }
 
@@ -2233,6 +2405,7 @@ def merge_measurement_day(existing: dict[str, Any] | None, observation: dict[str
             "sources": {},
             "vendors": {},
             "publish_status_counts": {},
+            "reliability_status_counts": {},
             "latest": {},
             "latest_gaps": [],
         }
@@ -2268,11 +2441,22 @@ def merge_measurement_day(existing: dict[str, Any] | None, observation: dict[str
             gaps.append(f"quota_{vendor}_{quota_status}")
     publish_status = safe_identifier(observation.get("publish", {}).get("status"), "never")
     value["publish_status_counts"][publish_status] = safe_int(value["publish_status_counts"].get(publish_status)) + 1
+    reliability = observation.get("reliability") if isinstance(observation.get("reliability"), dict) else {}
+    reliability_status = safe_identifier(reliability.get("doctor_status"), "unknown")
+    value.setdefault("reliability_status_counts", {})
+    value["reliability_status_counts"][reliability_status] = safe_int(value["reliability_status_counts"].get(reliability_status)) + 1
+    if reliability.get("cadence_status") == "gap" or safe_int(reliability.get("missed_intervals")):
+        gaps.append("collection_cadence_gap")
+    if reliability.get("clock_status") == "clock_skew":
+        gaps.append("clock_skew")
+    if reliability_status == "fail":
+        gaps.append("doctor_failure")
     value["latest"] = {
         "observed_at": observed_at,
         "accepted_features": observation.get("accepted_features"),
         "rounds": observation.get("rounds"),
         "publish": observation.get("publish", {}),
+        "reliability": reliability,
     }
     value["latest_gaps"] = sorted(set(safe_identifier(item) for item in gaps))
     return value
@@ -2291,7 +2475,7 @@ def record_publish_state(cache_root: Path, status: str, reason: str, now: dt.dat
     if status == "success":
         last_success = iso(now)
     elif raw_previous.get("reason") == "scheduled_push":
-        last_success = iso(parse_timestamp(raw_previous.get("previous_success_at")))
+        last_success = iso(parse_timestamp(raw_previous.get("previous_success_at"))) or previous.get("last_success_at")
     value = {
         "schema_version": SCHEMA_VERSION,
         "status": safe_identifier(status),
@@ -2299,7 +2483,7 @@ def record_publish_state(cache_root: Path, status: str, reason: str, now: dt.dat
         "last_attempt_at": iso(now),
         "last_success_at": last_success,
     }
-    if status == "success" and reason == "scheduled_push":
+    if status in {"pending", "success"} and reason == "scheduled_push":
         value["previous_success_at"] = previous.get("last_success_at")
     atomic_write(cache_root / "publish-status.json", json_text(value))
     return value
@@ -2314,6 +2498,67 @@ def publish_due(cache_root: Path, now: dt.datetime | None = None, guard_hours: f
     return last is None or (now - last).total_seconds() >= guard_hours * 3600
 
 
+def request_pages_check(cache_root: Path, commit: str, now: dt.datetime | None = None) -> dict[str, Any]:
+    now = now or utc_now()
+    value = {
+        "schema_version": SCHEMA_VERSION,
+        "requested_at": iso(now),
+        "expected_commit": safe_identifier(commit),
+    }
+    atomic_write(cache_root / "pages-check-request.json", json_text(value))
+    return value
+
+
+def check_pages_outcome(
+    cache_root: Path,
+    now: dt.datetime | None = None,
+    delays: tuple[float, ...] = (0.0, 3.0, 10.0),
+) -> dict[str, Any]:
+    """Check Pages outside the collector lock and retain only sanitized outcome state."""
+    now = now or utc_now()
+    request_path = cache_root / "pages-check-request.json"
+    try:
+        request_value = json.loads(request_path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        return {"schema_version": SCHEMA_VERSION, "status": "not_requested", "reason": "no_pending_check"}
+    expected = safe_identifier(request_value.get("expected_commit"), "unknown") if isinstance(request_value, dict) else "unknown"
+    result: dict[str, Any] = {
+        "schema_version": SCHEMA_VERSION,
+        "status": "degraded",
+        "reason": "pages_unreachable",
+        "checked_at": iso(now),
+        "expected_commit": expected,
+        "attempts": 0,
+        "http_status": None,
+        "title_match": False,
+    }
+    for delay in delays or (0.0,):
+        if delay > 0:
+            time.sleep(min(delay, 30.0))
+        result["attempts"] += 1
+        query = urllib.parse.urlencode({"telemetry_check": expected[:12], "attempt": result["attempts"]})
+        request = urllib.request.Request(f"{PAGES_URL}?{query}", headers={"User-Agent": "agent-telemetry-pages-check"})
+        try:
+            with urllib.request.urlopen(request, timeout=12) as response:
+                status = safe_int(getattr(response, "status", 0))
+                payload = response.read(262_144)
+            title_match = b"<title>Agent telemetry" in payload
+            result.update({"http_status": status, "title_match": title_match})
+            if status == 200 and title_match:
+                result.update({"status": "success", "reason": "http_200_title_match"})
+                break
+            result["reason"] = "title_mismatch" if status == 200 else "http_status_unexpected"
+        except urllib.error.HTTPError as exc:
+            result.update({"http_status": safe_int(exc.code), "reason": "http_error"})
+        except (urllib.error.URLError, TimeoutError, OSError):
+            result["reason"] = "pages_unreachable"
+    atomic_write(cache_root / telemetry_stability.PAGES_FILE, json_text(result))
+    if result["status"] == "success":
+        with contextlib.suppress(OSError):
+            request_path.unlink()
+    return result
+
+
 def collect_snapshot(
     config: dict[str, Any],
     now: dt.datetime | None = None,
@@ -2323,12 +2568,16 @@ def collect_snapshot(
     project_root = (project_root or Path(__file__).resolve().parent).resolve()
     default_timeout = safe_float(config.get("default_timeout_seconds")) or 120.0
     source_configs = config.get("sources", {})
+    cache_text = str(config.get("cache_root") or "").strip()
+    cache_root = Path(cache_text).expanduser() if cache_text else Path.home() / ".local" / "state" / "agent-telemetry"
     results: dict[str, dict[str, Any]] = {}
     for name in BASE_SOURCE_NAMES:
         value = source_configs.get(name) if isinstance(source_configs.get(name), dict) else {}
-        results[name] = run_source(name, value, now, default_timeout)
-    cache_text = str(config.get("cache_root") or "").strip()
-    cache_root = Path(cache_text).expanduser() if cache_text else Path.home() / ".local" / "state" / "agent-telemetry"
+        effective = dict(value)
+        effective["timeout_seconds"] = source_timeout_seconds(name, value, default_timeout)
+        results[name] = run_source(name, effective, now, default_timeout)
+        if name == "spec_corpus":
+            results[name] = spec_corpus_with_last_good(results[name], cache_root, now)
     local_claude_usage = read_local_claude_usage(cache_root, now)
     usage_result: dict[str, Any] = {}
     usage_enabled = {
@@ -2342,6 +2591,8 @@ def collect_snapshot(
     agent_root = configured_root(source_configs, "agent_repo")
     anthropic_roots = configured_roots(source_configs, "anthropic_usage")
     openai_roots = configured_roots(source_configs, "openai_usage")
+    anthropic_config = source_configs.get("anthropic_usage") if isinstance(source_configs.get("anthropic_usage"), dict) else {}
+    openai_config = source_configs.get("openai_usage") if isinstance(source_configs.get("openai_usage"), dict) else {}
     if any(usage_enabled.values()) and suite_root and agent_root:
         try:
             usage_result = vendor_usage.collect_usage(
@@ -2352,6 +2603,8 @@ def collect_snapshot(
                 cache_root=cache_root,
                 prices_path=project_root / "prices.json",
                 now=now,
+                anthropic_timeout_seconds=source_timeout_seconds("anthropic_usage", anthropic_config, default_timeout),
+                openai_timeout_seconds=source_timeout_seconds("openai_usage", openai_config, default_timeout),
             )
             for name in USAGE_SOURCE_NAMES:
                 if usage_enabled[name]:
@@ -2370,6 +2623,13 @@ def collect_snapshot(
     if local_claude_usage:
         usage_result["claude_usage_snapshot"] = local_claude_usage
     snapshot = combine_results(results, now, usage_result, read_publish_state(cache_root))
+    snapshot.setdefault("metrics", {})["reliability"] = telemetry_stability.run_doctor(
+        config,
+        project_root,
+        cache_root,
+        now,
+        snapshot.get("sources", {}),
+    )
     accepted_features = safe_int(snapshot.get("metrics", {}).get("worth", {}).get("accepted_features"))
     snapshot.setdefault("metrics", {}).setdefault("worth", {})["subscription_amortization"] = read_subscription_amortization(
         project_root / "subscriptions.local.json", accepted_features
@@ -2444,6 +2704,15 @@ def commit_generated(project_root: Path, snapshot: dict[str, Any], written: list
     relative = sorted({str(path.relative_to(project_root)) for path in written})
     if relative:
         subprocess.run(["git", "-C", str(project_root), "add", "--", *relative], check=True)
+    staged_raw = subprocess.run(
+        ["git", "-C", str(project_root), "diff", "--cached", "--name-only", "-z"],
+        check=True,
+        stdout=subprocess.PIPE,
+    ).stdout
+    staged = [os.fsdecode(item) for item in staged_raw.split(b"\0") if item]
+    unexpected = [path for path in staged if not telemetry_stability.GENERATED_TRACKED_RE.fullmatch(path)]
+    if unexpected:
+        raise RuntimeError("staged_non_generated_content")
     changed = subprocess.run(["git", "-C", str(project_root), "diff", "--cached", "--quiet"], check=False).returncode != 0
     if not changed:
         print("[git] no generated changes to commit")
@@ -2455,21 +2724,43 @@ def commit_generated(project_root: Path, snapshot: dict[str, Any], written: list
     print(f"[git] committed: {message}")
 
 
+def commit_existing_generated(project_root: Path) -> None:
+    try:
+        snapshot = json.loads((project_root / "data" / "telemetry.json").read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError) as exc:
+        raise RuntimeError("generated_snapshot_unreadable") from exc
+    if not isinstance(snapshot, dict):
+        raise RuntimeError("generated_snapshot_invalid")
+    paths = [
+        project_root / "data" / "telemetry.json",
+        project_root / "data" / "telemetry.js",
+        project_root / "data" / "rounds.json",
+        *sorted((project_root / "data" / "history").glob("*.json")),
+    ]
+    commit_generated(project_root, snapshot, [path for path in paths if path.is_file()])
+
+
 def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Collect metrics-only agent build telemetry")
     parser.add_argument("--check", action="store_true", help="probe configured sources without writing data")
+    parser.add_argument("--doctor", action="store_true", help="run the text reliability self-check without collecting")
     parser.add_argument("--commit", action="store_true", help="commit only generated data after collection")
+    parser.add_argument("--commit-existing", action="store_true", help="commit the already-generated data without rescanning sources")
     parser.add_argument("--config", type=Path, help="configuration file (default: sources.local.json, then example)")
     parser.add_argument("--project-root", type=Path, help="output project root (primarily for fixture verification)")
     parser.add_argument("--scrub", action="store_true", help="scan the publishable repository tree and exit")
+    parser.add_argument("--audit-history", action="store_true", help="scan every reachable Git blob and commit identity")
     parser.add_argument("--publish-due", action="store_true", help="exit 0 when the 20-hour publish guard is due")
-    parser.add_argument("--record-publish", choices=("success", "failure", "blocked"), help="record machine-local publish state and exit")
+    parser.add_argument("--record-publish", choices=("pending", "success", "failure", "blocked"), help="record machine-local publish state and exit")
     parser.add_argument("--publish-reason", default="scheduled", help="allowlisted reason used with --record-publish")
     parser.add_argument("--record-claude-usage", action="store_true", help="record percentage-only values transcribed from Claude /usage")
     parser.add_argument("--claude-five-hour-used", type=float, help="Claude five-hour window used percentage")
     parser.add_argument("--claude-five-hour-resets-at", help="optional ISO timestamp for the five-hour reset")
     parser.add_argument("--claude-seven-day-used", type=float, help="Claude seven-day window used percentage")
     parser.add_argument("--claude-seven-day-resets-at", help="optional ISO timestamp for the seven-day reset")
+    parser.add_argument("--request-pages-check", action="store_true", help="queue a post-push Pages outcome check")
+    parser.add_argument("--pages-commit", help="allowlisted commit id used with --request-pages-check")
+    parser.add_argument("--check-pages", action="store_true", help="run a queued Pages outcome check")
     return parser.parse_args(argv)
 
 
@@ -2501,6 +2792,28 @@ def main(argv: list[str] | None = None) -> int:
                 return 3
             print("[scrub] ok: publishable tree contains no blocked patterns")
             return 0
+        if args.audit_history:
+            audit = repository_history_audit(project_root)
+            print(
+                f"[history] blobs={audit['blobs_scanned']} findings={len(audit['findings'])} "
+                f"personal_identity_commits={audit['personal_identity_commits']}"
+            )
+            for item in audit["findings"]:
+                print(f"[history] finding: {item['path']} ({item['reason']}, object {item['object']})")
+            for name, count in sorted(audit["local_file_commits"].items()):
+                print(f"[history] local_file={name} commits={count}")
+            return 3 if audit["findings"] else 0
+        if args.doctor:
+            current = read_json_object(project_root / "data" / "telemetry.json") if (project_root / "data" / "telemetry.json").is_file() else {}
+            doctor = telemetry_stability.run_doctor(
+                config,
+                project_root,
+                cache_root,
+                utc_now(),
+                current.get("sources") if isinstance(current.get("sources"), dict) else {},
+            )
+            print(telemetry_stability.doctor_text(doctor))
+            return 2 if doctor.get("status") == "fail" else 0
         if args.publish_due:
             due = publish_due(cache_root)
             print(f"[publish] {'due' if due else 'not_due'}")
@@ -2509,14 +2822,33 @@ def main(argv: list[str] | None = None) -> int:
             value = record_publish_state(cache_root, args.record_publish, args.publish_reason)
             print(f"[publish] recorded {value['status']} ({value['reason']})")
             return 0
+        if args.request_pages_check:
+            if not args.pages_commit:
+                raise ValueError("pages_commit_required")
+            value = request_pages_check(cache_root, args.pages_commit)
+            print(f"[pages] queued check for {value['expected_commit'][:12]}")
+            return 0
+        if args.check_pages:
+            value = check_pages_outcome(cache_root)
+            print(f"[pages] {value['status']}: {value['reason']}")
+            return 0 if value["status"] in {"success", "not_requested"} else 1
+        if args.commit_existing:
+            commit_existing_generated(project_root)
+            return 0
         if args.check:
             return check_sources(config)
-        snapshot, results = collect_snapshot(config, project_root=project_root)
+        now = utc_now()
+        clock = telemetry_stability.check_clock(cache_root, now)
+        if not clock.get("allowed"):
+            print(f"[clock] skipped: clock_skew seconds={clock.get('skew_seconds')}")
+            return 0
+        snapshot, results = collect_snapshot(config, now=now, project_root=project_root)
         for name in SOURCE_NAMES:
             print(source_summary(name, results[name]))
         if snapshot["collection"]["sources_enabled"] == 0:
             print("no sources enabled; existing history will be preserved")
         written = write_outputs(snapshot, project_root)
+        telemetry_stability.record_clock_success(cache_root, now)
         print(f"wrote data/telemetry.json and {len(snapshot['history'])} daily history files")
         if args.commit:
             commit_generated(project_root, snapshot, written)

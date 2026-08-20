@@ -11,6 +11,7 @@
   const dailyCost = cost.daily || [];
   const dailyQuality = data.history || [];
   const measurement = metrics.measurement || {};
+  const reliability = metrics.reliability || {};
   const vendorNames = {anthropic: "Anthropic / Claude", openai: "OpenAI / GPT"};
   const bySpec = Object.fromEntries(rawLedger.map(item => [item.spec, item]));
   const $ = id => document.getElementById(id);
@@ -20,6 +21,18 @@
   const full = new Intl.NumberFormat("en-US", {maximumFractionDigits: 2});
   const money = new Intl.NumberFormat("en-US", {style: "currency", currency: "USD", maximumFractionDigits: 2});
   const esc = value => String(value ?? "").replace(/[&<>'"]/g, char => ({"&": "&amp;", "<": "&lt;", ">": "&gt;", "'": "&#39;", '"': "&quot;"})[char]);
+
+  function fmtBytes(value) {
+    if (!finite(value)) return "n/a";
+    const units = ["B", "KiB", "MiB", "GiB", "TiB"];
+    let amount = value;
+    let index = 0;
+    while (amount >= 1024 && index < units.length - 1) {
+      amount /= 1024;
+      index += 1;
+    }
+    return `${full.format(amount)} ${units[index]}`;
+  }
 
   function fmt(value, kind = "number", reason = "source did not provide this value") {
     if (!finite(value)) return `<span class="empty">n/a · ${esc(reason)}</span>`;
@@ -278,6 +291,37 @@
     ].join("");
   }
 
+  function dataAgeMinutes() {
+    const generated = Date.parse(data.generated_at);
+    return Number.isFinite(generated) ? Math.max(0, (Date.now() - generated) / 60000) : null;
+  }
+
+  function updateClientDataAge() {
+    const target = $("client-data-age");
+    if (!target) return;
+    const age = dataAgeMinutes();
+    target.textContent = finite(age) ? `${full.format(age)}m` : "n/a";
+    target.className = finite(age) && age > 45 ? "warn" : "";
+    target.title = "Computed in this browser from generated_at; no server clock required.";
+  }
+
+  function renderReliability() {
+    const cadence = reliability.cadence || {};
+    const disk = reliability.disk || {};
+    const checks = reliability.checks || [];
+    const warnings = checks.filter(item => item.status === "warn").length;
+    const failures = checks.filter(item => item.status === "fail").length;
+    const runway = finite(disk.runway_years) ? `${full.format(disk.runway_years)} years` : "pending";
+    const diskMethod = String(disk.headline || "measurement pending").replaceAll("_", " ");
+    $("reliability-cards").innerHTML = [
+      card("Data age · live browser clock", `<span id="client-data-age">calculating…</span>`, "Updates each minute and works from file://"),
+      card("Collection gaps", fmt(cadence.missed_intervals), `${fmt(cadence.observed_starts)} observed starts · longest ${fmt(cadence.longest_gap_minutes, "minutes")}`),
+      card("Doctor", esc(reliability.status || "unknown"), `${failures} failed · ${warnings} warnings · ${checks.length} checks`),
+      card("Disk runway", esc(runway), `${fmtBytes(disk.free_bytes)} free · ${esc(diskMethod)}`),
+    ].join("");
+    updateClientDataAge();
+  }
+
   function renderWorth(filteredLedger, previousLedger) {
     const stats = worthStats(filteredLedger);
     const prior = worthStats(previousLedger);
@@ -452,11 +496,16 @@
       return `<div class="card"><span class="label">${vendorNames[vendor]} · selected range</span><span class="value">${fmt(parts.length)} surfaces</span><div class="table-wrap" style="margin-top:10px"><table style="min-width:480px"><thead><tr><th>Surface</th><th class="num">Exact</th><th class="num">Correlated</th><th class="num">Unattributed</th></tr></thead><tbody><tr><td>Build rounds</td><td class="num">${fmt(build.exact)}</td><td class="num">${fmt(build.correlated)}</td><td class="num">${fmt(build.unattributed)}</td></tr><tr><td>Judge rounds</td><td class="num">${fmt(judge.exact)}</td><td class="num">${fmt(judge.correlated)}</td><td class="num">${fmt(judge.unattributed)}</td></tr></tbody></table></div><span class="detail">Selected captured ${fmt(sum(parts.map(part => part.tokens)), "tokens")} · exact ${fmt(sum(parts.map(part => part.usd)), "money")} · unpriced ${fmt(sum(parts.map(part => part.unpriced_tokens)), "tokens")}</span><span class="detail">Lifetime sessions ${fmt(lifetimeParity[vendor] && lifetimeParity[vendor].sessions_found)} · current usage-left ${finite(quota.remaining_percent) ? `${full.format(quota.remaining_percent)}% · ${esc(quota.source)}` : `n/a · ${esc(quota.remaining_status || "no quota snapshot")}`}</span></div>`;
     }).join("");
 
-    $("source-list").innerHTML = Object.entries(data.sources || {}).map(([name, item]) => {
+    const sourceRows = Object.entries(data.sources || {}).map(([name, item]) => {
       const coverage = item.coverage || {};
       const skips = (item.skips || []).map(skip => `${skip.reason}:${skip.count}`).join(", ") || "none";
       return `<div class="source"><strong>${esc(name)} · ${esc(item.status || "unknown")}</strong><span>${esc(coverage.from || "start n/a")} → ${esc(coverage.to || "end n/a")}</span><br><span>Current skips: ${esc(skips)}</span></div>`;
-    }).join("") || `<span class="empty">n/a · source metadata unavailable</span>`;
+    });
+    const unknown = lifetimeParity.unknown || {};
+    if ((unknown.build_rounds || 0) + (unknown.judge_rounds || 0)) {
+      sourceRows.push(`<div class="source"><strong class="warn">Unknown vendor evidence</strong><span>${fmt(unknown.build_rounds)} build · ${fmt(unknown.judge_rounds)} judge rounds counted, never priced</span></div>`);
+    }
+    $("source-list").innerHTML = sourceRows.join("") || `<span class="empty">n/a · source metadata unavailable</span>`;
   }
 
   function renderMeasurement() {
@@ -512,6 +561,7 @@
     });
 
     renderNow();
+    renderReliability();
     renderWorth(filteredLedger, previousLedger);
     renderCost(filteredCostDays, filteredRounds);
     renderTime(filteredRounds, filteredLedger);
@@ -519,7 +569,7 @@
     renderLedger();
     renderCoverage(filteredRounds);
     renderMeasurement();
-    $("generated-foot").textContent = `Generated ${when(data.generated_at)} · last publish ${when(now.last_publish_at)} · measurement started ${when(measurement.started_at)}`;
+    $("generated-foot").textContent = `Generated ${when(data.generated_at)} · doctor ${reliability.status || "unknown"} · last publish ${when(now.last_publish_at)} · measurement started ${when(measurement.started_at)}`;
   }
 
   function setRange(next) {
@@ -558,4 +608,5 @@
   }));
 
   render();
+  window.setInterval(updateClientDataAge, 60000);
 })();
