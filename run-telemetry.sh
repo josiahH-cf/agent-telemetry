@@ -16,8 +16,24 @@ if [ "${AGENT_TELEMETRY_LOCKED:-0}" != "1" ]; then
     fi
     exec >>"$LOG_PATH" 2>&1
     printf '%s mode=%s trigger=%s start\n' "$(date -u +%Y-%m-%dT%H:%M:%SZ)" "$MODE" "$TRIGGER"
-    python3 "$PROJECT_ROOT/stability.py" --lock-run "$LOCK_PATH" -- "$0" "$MODE" "$TRIGGER"
+    case "$TRIGGER" in
+        windows-task-*)
+            /usr/bin/nice -n 10 /usr/bin/ionice -c 3 python3 "$PROJECT_ROOT/stability.py" --lock-run "$LOCK_PATH" -- "$0" "$MODE" "$TRIGGER"
+            ;;
+        *)
+            python3 "$PROJECT_ROOT/stability.py" --lock-run "$LOCK_PATH" -- "$0" "$MODE" "$TRIGGER"
+            ;;
+    esac
     RESULT=$?
+    if [ "$RESULT" -eq 75 ]; then
+        case "$TRIGGER" in
+            windows-task-*)
+                printf '%s mode=%s trigger=%s finish exit=0\n' "$(date -u +%Y-%m-%dT%H:%M:%SZ)" "$MODE" "$TRIGGER"
+                printf '%s trigger=%s state=lock_busy_noop\n' "$(date -u +%Y-%m-%dT%H:%M:%SZ)" "$TRIGGER"
+                RESULT=0
+                ;;
+        esac
+    fi
     # The lock supervisor has returned, so this bounded network outcome check
     # cannot hold the collection lock or be killed as an orphaned subprocess.
     if [ -f "$STATE_ROOT/pages-check-request.json" ]; then
@@ -27,6 +43,16 @@ if [ "${AGENT_TELEMETRY_LOCKED:-0}" != "1" ]; then
     fi
     exit "$RESULT"
 fi
+
+case "$TRIGGER" in
+    windows-task-*)
+        if python3 "$PROJECT_ROOT/stability.py" --state-root "$STATE_ROOT" --fresh-within-minutes 20; then
+            printf '%s trigger=%s state=fresh_noop\n' "$(date -u +%Y-%m-%dT%H:%M:%SZ)" "$TRIGGER"
+            printf '%s mode=%s trigger=%s finish exit=0\n' "$(date -u +%Y-%m-%dT%H:%M:%SZ)" "$MODE" "$TRIGGER"
+            exit 0
+        fi
+        ;;
+esac
 
 case "$MODE" in
     refresh)

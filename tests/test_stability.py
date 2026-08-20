@@ -67,6 +67,29 @@ class StabilityTests(unittest.TestCase):
         self.assertEqual(result["status"], "clock_skew")
         self.assertEqual(stored["last_success_at"], "2026-08-20T12:00:00+00:00")
 
+    def test_windows_freshness_gate_is_a_fast_noop_only_after_completed_collection(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            now = dt.datetime(2026, 8, 20, 12, tzinfo=UTC)
+            never = stability.collection_freshness(root, now, 20)
+            stability.record_clock_success(root, now - dt.timedelta(minutes=10))
+            fresh = stability.collection_freshness(root, now, 20)
+            stale = stability.collection_freshness(root, now + dt.timedelta(minutes=11), 20)
+        self.assertEqual(never["status"], "never_completed")
+        self.assertTrue(fresh["fresh"])
+        self.assertFalse(stale["fresh"])
+
+    def test_windows_task_check_requires_both_exact_names(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            executable = Path(temporary) / "schtasks.exe"
+            executable.write_bytes(b"fixture")
+            complete = mock.Mock(return_value=subprocess.CompletedProcess([], 0))
+            with mock.patch.object(stability, "WINDOWS_SCHTASKS", executable), mock.patch("stability.subprocess.run", complete):
+                status, detail = stability._windows_task_status()
+        self.assertEqual((status, detail), ("ok", "two_agent_telemetry_tasks_present"))
+        queried = [call.args[0][3] for call in complete.call_args_list]
+        self.assertEqual(tuple(queried), stability.WINDOWS_TASK_NAMES)
+
     def test_doctor_emits_text_and_required_check_names(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary) / "repo"
@@ -88,7 +111,7 @@ class StabilityTests(unittest.TestCase):
                 {"suite_state": {"status": "ok", "available": True}},
             )
         names = {item["name"] for item in result["checks"]}
-        self.assertTrue({"sources", "scan_caches", "collection_cadence", "publish", "pages", "scheduler", "lock", "prices", "schemas", "tracked_manifest", "clock", "disk"} <= names)
+        self.assertTrue({"sources", "scan_caches", "collection_cadence", "publish", "pages", "scheduler", "windows_tasks", "lock", "prices", "schemas", "observatory_store", "provider_roots", "machine_manifest", "reconciliation", "tracked_manifest", "clock", "collection_age", "disk"} <= names)
         self.assertIn("[doctor] status=", stability.doctor_text(result))
 
     def test_history_audit_reports_machine_metadata_without_echoing_value(self) -> None:
@@ -138,6 +161,8 @@ class StabilityTests(unittest.TestCase):
         self.assertLess(supervisor, pages)
         self.assertNotIn('exec python3 "$PROJECT_ROOT/stability.py"', script)
         self.assertNotIn('--check-pages\n    )', script)
+        self.assertIn('--fresh-within-minutes 20', script)
+        self.assertIn('windows-task-*', script)
 
     def test_lock_supervisor_releases_lock_when_hard_killed_while_child_lives(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:

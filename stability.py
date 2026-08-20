@@ -10,11 +10,13 @@ from __future__ import annotations
 import argparse
 import datetime as dt
 import fcntl
+import hashlib
 import json
 import math
 import os
 import re
 import shutil
+import sqlite3
 import subprocess
 import tempfile
 from pathlib import Path
@@ -28,6 +30,10 @@ PRICE_WARNING_DAYS = 90
 CLOCK_FILE = "clock-watermark.json"
 DISK_FILE = "disk-snapshot.json"
 PAGES_FILE = "pages-status.json"
+OBSERVATORY_STORE = "observatory.sqlite3"
+OBSERVATORY_STORE_SCHEMA_VERSION = 1
+WINDOWS_TASK_NAMES = ("agent-telemetry-logon", "agent-telemetry-continuity")
+WINDOWS_SCHTASKS = Path("/") / "mnt" / "c" / "Windows" / "System32" / "schtasks.exe"
 
 STATIC_TRACKED_PATHS = {
     "AGENTS.md",
@@ -198,6 +204,24 @@ def record_clock_success(state_root: Path, now: dt.datetime) -> dict[str, Any]:
     return value
 
 
+def collection_freshness(
+    state_root: Path,
+    now: dt.datetime,
+    max_age_minutes: float,
+) -> dict[str, Any]:
+    """Return a sanitized freshness decision from the last completed collection."""
+    value = _read_json_object(state_root / CLOCK_FILE)
+    completed = parse_timestamp(value.get("last_success_at"))
+    if completed is None:
+        return {"fresh": False, "status": "never_completed", "age_minutes": None}
+    age = max(0.0, (now.astimezone(dt.timezone.utc) - completed).total_seconds() / 60)
+    return {
+        "fresh": age < max(0.0, max_age_minutes),
+        "status": "fresh" if age < max(0.0, max_age_minutes) else "stale",
+        "age_minutes": rounded(age, 1),
+    }
+
+
 def parse_collection_log(state_root: Path, now: dt.datetime) -> dict[str, Any]:
     events: list[dict[str, Any]] = []
     malformed = 0
@@ -303,6 +327,27 @@ def _cron_status() -> tuple[str, str]:
     return "warn", f"entries_{present}_of_{len(tags)}_priority_{'ok' if prioritized else 'missing'}"
 
 
+def _windows_task_status() -> tuple[str, str]:
+    if not WINDOWS_SCHTASKS.is_file():
+        return "warn", "task_scheduler_unavailable"
+    present = 0
+    for name in WINDOWS_TASK_NAMES:
+        try:
+            result = subprocess.run(
+                [str(WINDOWS_SCHTASKS), "/Query", "/TN", name, "/FO", "LIST"],
+                check=False,
+                stdout=subprocess.DEVNULL,
+                stderr=subprocess.DEVNULL,
+                timeout=10,
+            )
+        except (OSError, subprocess.TimeoutExpired):
+            return "warn", "task_query_failed"
+        present += int(result.returncode == 0)
+    if present == len(WINDOWS_TASK_NAMES):
+        return "ok", "two_agent_telemetry_tasks_present"
+    return "warn", f"tasks_{present}_of_{len(WINDOWS_TASK_NAMES)}"
+
+
 def _lock_status(state_root: Path) -> tuple[str, str]:
     if os.environ.get("AGENT_TELEMETRY_LOCK_HELD") == "1":
         return "ok", "held_by_current_collection"
@@ -376,6 +421,78 @@ def _disk_status(project_root: Path, state_root: Path) -> tuple[str, str, dict[s
     return status, detail, public
 
 
+def _observatory_status(config: dict[str, Any], state_root: Path) -> tuple[tuple[str, str], tuple[str, str]]:
+    observatory_config = config.get("observatory") if isinstance(config.get("observatory"), dict) else {}
+    configured = observatory_config.get("roots") if isinstance(observatory_config.get("roots"), list) else []
+    expected_ids = {str(item.get("root_id")) for item in configured if isinstance(item, dict) and item.get("root_id")}
+    reachable = sum(Path(str(item.get("path"))).expanduser().is_dir() for item in configured if isinstance(item, dict) and item.get("path"))
+    store = state_root / OBSERVATORY_STORE
+    if not store.is_file():
+        return ("fail", "store_absent"), ("warn", f"reachable_{reachable}_of_{len(expected_ids)}_store_absent")
+    try:
+        connection = sqlite3.connect(f"file:{store}?mode=ro", uri=True, timeout=3)
+        try:
+            integrity = str(connection.execute("PRAGMA quick_check").fetchone()[0])
+            version = safe_int(connection.execute("PRAGMA user_version").fetchone()[0], -1)
+            rows = connection.execute("SELECT root_id,status,error_files FROM source_roots").fetchall()
+            parser_rows = connection.execute("SELECT parser_state_json FROM source_files").fetchall()
+        finally:
+            connection.close()
+    except (OSError, sqlite3.Error):
+        return ("fail", "store_unreadable"), ("warn", f"reachable_{reachable}_of_{len(expected_ids)}_store_unreadable")
+    parser_invalid = 0
+    for row in parser_rows:
+        try:
+            parser_invalid += int(not isinstance(json.loads(row[0]), dict))
+        except (TypeError, json.JSONDecodeError):
+            parser_invalid += 1
+    stored = {str(row[0]): (str(row[1]), safe_int(row[2])) for row in rows}
+    healthy = sum(root_id in stored and stored[root_id][0] in {"ok", "partial"} for root_id in expected_ids)
+    root_errors = sum(stored[root_id][1] for root_id in expected_ids if root_id in stored)
+    store_ok = integrity == "ok" and version == OBSERVATORY_STORE_SCHEMA_VERSION and parser_invalid == 0
+    store_detail = f"integrity_{integrity}_schema_{version}_invalid_cursors_{parser_invalid}"
+    roots_ok = bool(expected_ids) and reachable == len(expected_ids) and healthy == len(expected_ids) and root_errors == 0
+    roots_detail = f"reachable_{reachable}_healthy_{healthy}_expected_{len(expected_ids)}_file_errors_{root_errors}"
+    return ("ok" if store_ok else "fail", store_detail), ("ok" if roots_ok else "warn", roots_detail)
+
+
+def _machine_manifest_status(project_root: Path) -> tuple[str, str]:
+    manifest = _read_json_object(project_root / "data" / "machine" / "MANIFEST.json")
+    datasets = manifest.get("datasets") if isinstance(manifest.get("datasets"), list) else []
+    invalid = 0
+    for entry in datasets:
+        if not isinstance(entry, dict):
+            invalid += 1
+            continue
+        relative = str(entry.get("path") or "")
+        schema_relative = str(entry.get("schema") or "")
+        path = project_root / relative
+        schema = project_root / schema_relative
+        if not relative.startswith("data/machine/") or not schema_relative.startswith("data/schema/") or not path.is_file() or not schema.is_file():
+            invalid += 1
+            continue
+        try:
+            digest = hashlib.sha256(path.read_bytes()).hexdigest()
+            with path.open(encoding="utf-8") as handle:
+                rows = sum(1 for _line in handle)
+        except OSError:
+            invalid += 1
+            continue
+        invalid += int(digest != entry.get("sha256") or rows != safe_int(entry.get("rows"), -1))
+    status = "ok" if len(datasets) == 8 and invalid == 0 else "fail"
+    return status, f"datasets_{len(datasets)}_invalid_{invalid}"
+
+
+def _reconciliation_status(project_root: Path) -> tuple[str, str]:
+    envelope = _read_json_object(project_root / "data" / "telemetry.json")
+    metrics = envelope.get("metrics") if isinstance(envelope.get("metrics"), dict) else {}
+    observatory = metrics.get("observatory") if isinstance(metrics.get("observatory"), dict) else {}
+    reconciliation = observatory.get("reconciliation") if isinstance(observatory.get("reconciliation"), dict) else {}
+    comparisons = reconciliation.get("store_envelope_machine") if isinstance(reconciliation.get("store_envelope_machine"), dict) else {}
+    ok = reconciliation.get("status") == "ok" and bool(comparisons) and all(value is True for value in comparisons.values())
+    return ("ok", f"fields_{len(comparisons)}_match") if ok else ("fail", "store_envelope_machine_mismatch")
+
+
 def run_doctor(
     config: dict[str, Any],
     project_root: Path,
@@ -407,12 +524,21 @@ def run_doctor(
     add("pages", pages_status, pages_detail)
     cron_status, cron_detail = _cron_status()
     add("scheduler", cron_status, cron_detail)
+    task_status, task_detail = _windows_task_status()
+    add("windows_tasks", task_status, task_detail)
     lock_status, lock_detail = _lock_status(state_root)
     add("lock", lock_status, lock_detail)
     price_status, price_detail, price_age = _price_status(project_root, now)
     add("prices", price_status, price_detail)
     schema_status, schema_detail = _schema_status(config, project_root)
     add("schemas", schema_status, schema_detail)
+    store_check, roots_check = _observatory_status(config, state_root)
+    add("observatory_store", *store_check)
+    add("provider_roots", *roots_check)
+    machine_status, machine_detail = _machine_manifest_status(project_root)
+    add("machine_manifest", machine_status, machine_detail)
+    reconcile_status, reconcile_detail = _reconciliation_status(project_root)
+    add("reconciliation", reconcile_status, reconcile_detail)
 
     try:
         manifest = tracked_manifest_violations(project_root)
@@ -423,6 +549,8 @@ def run_doctor(
 
     clock = read_clock_status(state_root, now)
     add("clock", "fail" if not clock["allowed"] else "ok", str(clock.get("status") or "unknown"))
+    freshness = collection_freshness(state_root, now, GAP_THRESHOLD_MINUTES)
+    add("collection_age", "ok" if freshness["fresh"] else "warn", f"status_{freshness['status']}_minutes_{freshness['age_minutes']}")
     disk_status, disk_detail, disk = _disk_status(project_root, state_root)
     add("disk", disk_status, disk_detail)
 
@@ -475,12 +603,19 @@ def run_with_lock(lock_path: Path, command: list[str]) -> int:
 def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Agent telemetry reliability helpers")
     parser.add_argument("--lock-run", type=Path, help="hold a non-inheritable lock while running the command")
+    parser.add_argument("--state-root", type=Path, help="machine-local state directory")
+    parser.add_argument("--fresh-within-minutes", type=float, help="exit zero when the last completed collection is newer than this age")
     parser.add_argument("command", nargs=argparse.REMAINDER)
     return parser.parse_args(argv)
 
 
 def main(argv: list[str] | None = None) -> int:
     args = parse_args(argv)
+    if args.fresh_within_minutes is not None:
+        state_root = args.state_root or Path.home() / ".local" / "state" / "agent-telemetry"
+        value = collection_freshness(state_root, dt.datetime.now(dt.timezone.utc), args.fresh_within_minutes)
+        print(f"[freshness] status={value['status']} age_minutes={value['age_minutes']}")
+        return 0 if value["fresh"] else 1
     if args.lock_run:
         command = list(args.command)
         if command and command[0] == "--":

@@ -221,6 +221,40 @@ class StoreTests(unittest.TestCase):
         self.assertEqual(summary["by_vendor"]["anthropic"]["cost_usd"], 0.0)
         self.assertEqual(summary["by_vendor"]["anthropic"]["unpriced_tokens"], 25)
 
+    def test_absent_windows_mount_degrades_named_without_losing_wsl_collection(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            config = fixture_config(root)
+            roots = {row["root_id"]: Path(str(row["path"])) for row in config["observatory"]["roots"]}  # type: ignore[index]
+            cwd = "/" + "/".join(("home", "account", "project"))
+            write_lines(roots["wsl_claude"] / "one" / "one.jsonl", claude_rows("wsl-a", "message-a", cwd))
+            write_lines(roots["wsl_codex"] / "2026" / "08" / "20" / "one.jsonl", codex_rows("wsl-o", cwd))
+            roots["windows_claude"].rmdir()
+            roots["windows_codex"].rmdir()
+            summary, results = observatory.collect_observatory(config, PROJECT_ROOT, loop_snapshot(), dt.datetime(2026, 8, 20, 3, tzinfo=UTC))
+        statuses = {row["root_id"]: row["status"] for row in results}
+        self.assertEqual(statuses["windows_claude"], "absent")
+        self.assertEqual(statuses["windows_codex"], "absent")
+        self.assertEqual(summary["by_host_os"]["wsl"]["sessions"], 2)
+        self.assertEqual(summary["by_host_os"]["windows"]["sessions"], 0)
+
+    def test_corrupted_store_cursor_state_resets_without_double_counting(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            config = fixture_config(root)
+            self.populate(root, config)
+            now = dt.datetime(2026, 8, 20, 3, tzinfo=UTC)
+            before, _ = observatory.collect_observatory(config, PROJECT_ROOT, loop_snapshot(), now)
+            store_path = Path(str(config["cache_root"])) / observatory.STORE_NAME
+            connection = observatory.connect_store(store_path)
+            with connection:
+                connection.execute("UPDATE source_files SET parser_state_json='{' WHERE root_id='wsl_claude'")
+            connection.close()
+            after, roots = observatory.collect_observatory(config, PROJECT_ROOT, loop_snapshot(), now + dt.timedelta(minutes=1))
+        result = next(row for row in roots if row["root_id"] == "wsl_claude")
+        self.assertGreaterEqual(result["cursor_resets"], 1)
+        self.assertEqual(after["totals"], before["totals"])
+
     def test_schema_migrates_from_empty_as_found_layout(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
             path = Path(temporary) / "store.sqlite3"

@@ -50,11 +50,12 @@ Applying a range writes `?from=YYYY-MM-DD&to=YYYY-MM-DD` to the URL.
 
 Current driver state, current provider quota, current source probes, lifetime session counts, and source totals that are not day-attributed stay explicitly labeled as point-in-time or all-time. They are never presented as if the range recomputed them. Subscription cost is prorated by inclusive calendar days in the selected range.
 
-`--doctor` checks source reachability, scan-cache headers, collection cadence,
-last publish and Pages outcome, the installed scheduler, lock state, price age,
-schema versions, the tracked-file manifest, clock watermark, disk free space,
-and the latest runway snapshot. Its sanitized result also lands in
-`metrics.reliability`.
+`--doctor` checks all four provider roots and their cursor state, the canonical
+store integrity/version, collection age and cadence, last publish and Pages
+outcome, the three WSL jobs and two Windows tasks, lock state, price age, public
+schemas and machine manifest, three-way reconciliation, the tracked-file
+manifest, clock watermark, disk free space, and the latest runway snapshot. Its
+sanitized result also lands in `metrics.reliability`.
 
 ### Continuous schedule and recovery
 
@@ -81,34 +82,34 @@ crontab -l | sed '/# agent-telemetry-/d' | crontab -
 ```
 
 The `@reboot` job runs when this Linux environment starts; it cannot start WSL
-while Windows or the WSL VM is stopped. Current uptime and cadence evidence did
-not show a VM-stop gap, so the evidence-gated Windows backstop was documented
-but not installed. If later `metrics.reliability.cadence.gaps` demonstrates that
-need, run the following in Windows PowerShell. It creates one limited, current-
-user task that invokes only the collector catch-up at logon:
+while the VM is stopped. Two limited, current-user Windows tasks complete the
+dual-environment design: one catch-up at logon and one continuity check at 07
+and 37 minutes past each hour. Both invoke only this wrapper through the named
+Ubuntu distribution. Once the wrapper has the shared lock, a collection newer
+than 20 minutes exits zero as `fresh_noop`; a simultaneous Windows/cron call
+exits zero as `lock_busy_noop`. Collection children launched from a Windows task
+run at nice level 10 with idle I/O priority.
+
+Create exactly the two tasks from Windows PowerShell:
 
 ```powershell
-$TaskName = 'Agent Telemetry WSL Catch-up'
-$Distro = (wsl.exe -l -q | Where-Object { $_.Trim() } | Select-Object -First 1).Trim()
-$LinuxUser = (wsl.exe -d $Distro --exec /usr/bin/id -un).Trim()
-$Arguments = '-d "{0}" -u "{1}" --exec /bin/sh -lc "/usr/bin/nice -n 10 /usr/bin/ionice -c 3 $HOME/agent-telemetry/run-telemetry.sh catchup windows-task"' -f $Distro, $LinuxUser
-$Action = New-ScheduledTaskAction -Execute "$env:WINDIR\System32\wsl.exe" -Argument $Arguments
-$Trigger = New-ScheduledTaskTrigger -AtLogOn -User "$env:USERDOMAIN\$env:USERNAME"
-$Principal = New-ScheduledTaskPrincipal -UserId "$env:USERDOMAIN\$env:USERNAME" -LogonType Interactive -RunLevel Limited
-$Settings = New-ScheduledTaskSettingsSet -StartWhenAvailable
-Register-ScheduledTask -TaskName $TaskName -Action $Action -Trigger $Trigger -Principal $Principal -Settings $Settings -Description 'Start agent-telemetry catch-up when WSL is available.' -Force
+$LinuxHome = (wsl.exe -d Ubuntu -- /bin/sh -c 'printf %s "$HOME"').Trim()
+$LogonAction = "wsl.exe -d Ubuntu -- $LinuxHome/agent-telemetry/run-telemetry.sh catchup windows-task-logon"
+$ContinuityAction = "wsl.exe -d Ubuntu -- $LinuxHome/agent-telemetry/run-telemetry.sh refresh windows-task-continuity"
+schtasks.exe /Create /TN 'agent-telemetry-logon' /SC ONLOGON /IT /RL LIMITED /TR $LogonAction /F
+schtasks.exe /Create /TN 'agent-telemetry-continuity' /SC MINUTE /MO 30 /ST 00:07 /IT /RL LIMITED /TR $ContinuityAction /F
 ```
 
-Remove it, if installed, with:
+Remove exactly these tasks with:
 
 ```powershell
-Unregister-ScheduledTask -TaskName 'Agent Telemetry WSL Catch-up' -Confirm:$false
+schtasks.exe /Delete /TN 'agent-telemetry-logon' /F
+schtasks.exe /Delete /TN 'agent-telemetry-continuity' /F
 ```
 
-Microsoft documents that WSL boot commands run when the WSL instance starts,
-while `AtLogOn` is a Windows Task Scheduler trigger:
+Microsoft documents the Windows Task Scheduler triggers and WSL launch model:
 [WSL advanced settings](https://learn.microsoft.com/windows/wsl/wsl-config) and
-[`New-ScheduledTaskTrigger`](https://learn.microsoft.com/powershell/module/scheduledtasks/new-scheduledtasktrigger).
+[`schtasks /create`](https://learn.microsoft.com/windows-server/administration/windows-commands/schtasks-create).
 
 The dashboard's Now strip computes age from `Date.now()` every minute, including
 under `file://`, and shows observed 30-minute cadence gaps rather than implying
