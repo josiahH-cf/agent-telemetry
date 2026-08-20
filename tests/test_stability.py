@@ -204,6 +204,13 @@ class StabilityTests(unittest.TestCase):
         self.assertIn('--fresh-within-minutes 20', script)
         self.assertIn('windows-task-*', script)
 
+    def test_machine_contract_uses_available_read_only_sql_interface(self) -> None:
+        contract = (PROJECT_ROOT / "AGENTS.md").read_text(encoding="utf-8")
+        self.assertIn("python3 - <<'PY'", contract)
+        self.assertIn("?mode=ro", contract)
+        self.assertIn("uri=True", contract)
+        self.assertNotIn("sqlite3 -readonly", contract)
+
     def test_lock_supervisor_releases_lock_when_hard_killed_while_child_lives(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary)

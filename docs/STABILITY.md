@@ -16,6 +16,7 @@ pre-rework baseline.
 | ST-35 | Dual-drive growth and retention consequences were not measured together. | medium | **hardened / Tier B proposals only** — both drives and every named store are inventoried; real plans remain dry-run. | Selected-candidate metadata is unchanged; destructive behavior passes only against a marked fixture. |
 | ST-36 | Repeated cumulative token snapshots inside one rollout collided during a real full rebuild. | high | **fixed** — same-file event insertion is idempotent, preserving one stable cumulative observation. | The first temporary rebuild failed before replacement; a regression fixture and the second 4m40s real rebuild pass. |
 | ST-37 | The periodic Windows task inherited the default stop/do-not-start-on-battery policy. | high | **fixed** — both task definitions now opt out of battery suppression, and doctor validates actions, triggers, repetition, instance policy, and power policy from task XML. | The adversarial query exposed the mismatch; the replacement task, targeted rejection fixture, real XML query, and doctor all pass. |
+| ST-38 | The local SQL runbook assumed the optional SQLite shell was installed. | medium | **fixed** — the machine contract now uses Python's installed standard-library driver and opens the store explicitly read-only. | The documented command executes on this host; a contract fixture pins `mode=ro` and rejects the absent shell dependency. |
 
 ### V4 completion evidence
 

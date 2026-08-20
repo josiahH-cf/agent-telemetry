@@ -68,10 +68,22 @@ assert len(sessions) == sum(project["sessions"] for project in projects.values()
 Open the canonical store read-only and select only the columns needed:
 
 ```bash
-sqlite3 -readonly "$XDG_STATE_HOME/agent-telemetry/observatory.sqlite3" \
-  'select vendor, host_os, count(*) from sessions group by vendor, host_os;'
+python3 - <<'PY'
+import os
+import sqlite3
+from pathlib import Path
+
+base = Path(os.environ.get("XDG_STATE_HOME", Path.home() / ".local" / "state"))
+uri = f"file:{base / 'agent-telemetry' / 'observatory.sqlite3'}?mode=ro"
+with sqlite3.connect(uri, uri=True) as connection:
+    for row in connection.execute(
+        "select vendor, host_os, count(*) from sessions group by vendor, host_os"
+    ):
+        print(*row)
+PY
 ```
 
-If `XDG_STATE_HOME` is unset, use the standard per-user local-state base. Do not
-infer prompts, message topics, code quality, developer productivity, or causal
-model superiority from usage volume alone.
+The query uses only Python's standard library, opens SQLite with `mode=ro`, and
+falls back to the standard per-user local-state base when `XDG_STATE_HOME` is
+unset. Do not infer prompts, message topics, code quality, developer
+productivity, or causal model superiority from usage volume alone.
