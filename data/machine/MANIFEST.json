@@ -3,26 +3,26 @@
     {
       "coverage": {
         "from": "2026-02-28T12:19:02+00:00",
-        "to": "2026-08-20T13:30:17+00:00"
+        "to": "2026-08-20T14:38:06+00:00"
       },
       "dataset": "projects",
       "path": "data/machine/projects.jsonl",
       "rows": 12,
       "schema": "data/schema/projects.schema.json",
       "semantics": "One public project identity or bulk bucket with lifetime totals and per-OS coverage.",
-      "sha256": "d07151058911f3e07017e26b2c650d1d8059385f4f70b8a28c16dc17d92bdb94"
+      "sha256": "b96a4c490762823768611c1d16525dd70cc65161e939e022f3710d7784339adf"
     },
     {
       "coverage": {
         "from": "2026-02-28T12:19:02+00:00",
-        "to": "2026-08-20T13:30:17+00:00"
+        "to": "2026-08-20T14:38:06+00:00"
       },
       "dataset": "sessions",
       "path": "data/machine/sessions.jsonl",
-      "rows": 9773,
+      "rows": 9780,
       "schema": "data/schema/sessions.schema.json",
       "semantics": "One provider session after cross-source event deduplication; working directories are excluded.",
-      "sha256": "9a97efb97950cf59d54358452081ce82e1d511ea7b3239f85316563f223ddbaa"
+      "sha256": "0aba5a9b14a5dac56791c4c5db905cf1f5b455c56e1c2d124225df13a602cfac"
     },
     {
       "coverage": {
@@ -31,22 +31,22 @@
       },
       "dataset": "days",
       "path": "data/machine/days.jsonl",
-      "rows": 203,
+      "rows": 204,
       "schema": "data/schema/days.schema.json",
       "semantics": "UTC daily usage by public project identity, vendor, and host operating system.",
-      "sha256": "ebab67fc94e6fa653841202d0f1f2783906ffc2f76b49ac711d2fbe179bd033e"
+      "sha256": "33d48201c2df3735c010e338214224500dc51d6e8ba99f0b48da7b79270a090f"
     },
     {
       "coverage": {
         "from": "2026-08-02T14:37:54+00:00",
-        "to": "2026-08-20T13:16:04+00:00"
+        "to": "2026-08-20T14:00:31+00:00"
       },
       "dataset": "rounds",
       "path": "data/machine/rounds.jsonl",
-      "rows": 541,
+      "rows": 542,
       "schema": "data/schema/rounds.schema.json",
       "semantics": "Outcome-rich governed-loop round facts with usage attribution.",
-      "sha256": "47f17027f2d19100ad7cbdafb505cc3a9c021a905262d73fd9920e4c97b88401"
+      "sha256": "3a255877bb6cfefe522a1a6d5ef522bf364852cfa86bb5625ce912183d3b33fb"
     },
     {
       "coverage": {
@@ -58,19 +58,19 @@
       "rows": 61,
       "schema": "data/schema/specs.schema.json",
       "semantics": "Outcome-rich governed-loop feature-cycle facts.",
-      "sha256": "cfe9b4a40ac0046657b32c63d39a998d3456b6638c3e8d889f397498e404b4f7"
+      "sha256": "6b75c967edfac98e390b4a521d44a572b673532bf3eb86a535e04ae9edeee0ed"
     },
     {
       "coverage": {
-        "from": "2026-08-20T08:05:03.899086-05:00",
-        "to": "2026-08-20T08:05:03.899086-05:00"
+        "from": "2026-08-20T08:42:22.989624-05:00",
+        "to": "2026-08-20T08:42:22.989624-05:00"
       },
       "dataset": "tests",
       "path": "data/machine/tests.jsonl",
       "rows": 1,
       "schema": "data/schema/tests.schema.json",
       "semantics": "Sanitized governed-loop test-run facts.",
-      "sha256": "4cc5cb91e0e5994f90b43f81bf5c0f10ea417f3fc8c040bde38d003579ba8c05"
+      "sha256": "f815aeb0412cef34cf5f87a3c2069646581d8fcec2d66325c983bc4064bee6d8"
     },
     {
       "coverage": {
@@ -95,8 +95,20 @@
       "schema": "data/schema/incidents.schema.json",
       "semantics": "Sanitized quality/incident aggregate observations.",
       "sha256": "5d3ff04aa3046b103f0fc73e827adaeab97c21b497f0d0c6f178b8bba2a4d388"
+    },
+    {
+      "coverage": {
+        "from": null,
+        "to": null
+      },
+      "dataset": "metrics",
+      "path": "data/machine/metrics.jsonl",
+      "rows": 44,
+      "schema": "data/schema/metrics.schema.json",
+      "semantics": "Definitions, exact derivations, sources, caveats, units, and page-versus-machine surface decisions.",
+      "sha256": "e80ec1e23d9b1697cb5ad3eefb820ef1b9ef5ae04b54e55bb3176a5b9584a27b"
     }
   ],
-  "generated_at": "2026-08-20T13:30:02+00:00",
+  "generated_at": "2026-08-20T16:26:30+00:00",
   "schema_version": 1
 }
