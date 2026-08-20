@@ -134,6 +134,29 @@ class OpenAIUsageTests(unittest.TestCase):
         result = usage.price_tokens("openai", "gpt-5.6-sol", tokens, prices)
         self.assertEqual(result, {"usd": 0.0, "priced_tokens": 0, "unpriced_tokens": 120})
 
+    def test_verified_mini_rate_prices_exact_model(self) -> None:
+        prices = {"models": {"gpt-5.4-mini": {"vendor": "openai", "input": 0.75, "cache_read": 0.075, "cache_write": None, "output": 4.5}}}
+        tokens = {"input_tokens": 1_000_000, "cached_input_tokens": 500_000, "cache_write_tokens": 0, "output_tokens": 100_000, "reasoning_output_tokens": 50_000}
+        result = usage.price_tokens("openai", "gpt-5.4-mini", tokens, prices)
+        self.assertEqual(result["usd"], 0.8625)
+        self.assertEqual(result["unpriced_tokens"], 0)
+
+    def test_unknown_model_estimate_is_bounded_and_never_added_to_exact_cost(self) -> None:
+        prices = {
+            "models": {
+                "low": {"vendor": "openai", "input": 1, "cache_read": 0.1, "cache_write": 1.25, "output": 2},
+                "high": {"vendor": "openai", "input": 5, "cache_read": 0.5, "cache_write": 6.25, "output": 30, "long_context_threshold": 10, "long_context_input_multiplier": 2, "long_context_output_multiplier": 1.5},
+            }
+        }
+        tokens = {"input_tokens": 1_000_000, "cached_input_tokens": 500_000, "cache_write_tokens": 0, "output_tokens": 100_000, "reasoning_output_tokens": 50_000}
+        combined = usage.combine_model_usage("openai", {"unknown": tokens}, prices)
+        estimate = combined["best_effort_estimate"]
+        self.assertEqual(combined["usd"], 0.0)
+        self.assertEqual(combined["unpriced_tokens"], 1_100_000)
+        self.assertEqual((estimate["low_usd"], estimate["high_usd"]), (0.75, 5.75))
+        self.assertEqual(estimate["midpoint_usd"], 3.25)
+        self.assertEqual(estimate["status"], "available")
+
     def test_machine_output_never_exposes_non_loop_cwd_or_project_slug(self) -> None:
         session = {
             "models": {"gpt-5.6-sol": {"input_tokens": 10, "cached_input_tokens": 5, "cache_write_tokens": 0, "output_tokens": 2, "reasoning_output_tokens": 1}},

@@ -276,6 +276,9 @@ class HistoryAndPrivacyTests(unittest.TestCase):
     def test_dashboard_uses_local_script_without_network_data_loading(self) -> None:
         text = (PROJECT_ROOT / "index.html").read_text(encoding="utf-8")
         self.assertIn('src="data/telemetry.js"', text)
+        self.assertIn('src="dashboard.js"', text)
+        self.assertIn('id="range-form"', text)
+        self.assertIn('type="date"', text)
         self.assertNotIn("fetch(" , text)
         self.assertNotIn("XMLHttpRequest", text)
         for section in ("now", "worth", "cost", "time", "quality", "ledger", "coverage"):
@@ -283,6 +286,71 @@ class HistoryAndPrivacyTests(unittest.TestCase):
         self.assertEqual(text.count("<section "), 6)
         self.assertNotIn("prefers-color-scheme", text)
         self.assertNotIn("theme-toggle", text)
+
+    def test_subscription_config_exposes_vendor_totals_and_calendar_proration(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            path = Path(temporary) / "subscriptions.local.json"
+            write_json(path, {"monthly_usd": {"anthropic": 200, "openai": 200}})
+            result = collect.read_subscription_amortization(path, 10)
+        self.assertEqual(result["monthly_by_vendor"], {"anthropic": 200.0, "openai": 200.0})
+        self.assertEqual(result["monthly_total_usd"], 400.0)
+        self.assertEqual(result["usd_per_accepted"], 40.0)
+        self.assertEqual(result["allocation_basis"], "calendar_day_proration")
+        self.assertAlmostEqual(result["daily_total_usd"], 13.142, places=3)
+
+    def test_claude_slash_usage_snapshot_is_local_normalized_and_stale_aware(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            observed = dt.datetime(2026, 8, 20, 12, tzinfo=UTC)
+            collect.record_local_claude_usage(
+                root,
+                five_hour_used=37,
+                five_hour_resets_at="2026-08-20T16:00:00+00:00",
+                seven_day_used=61,
+                seven_day_resets_at="2026-08-24T00:00:00+00:00",
+                now=observed,
+            )
+            fresh = collect.read_local_claude_usage(root, observed + dt.timedelta(hours=1))
+            stale = collect.read_local_claude_usage(root, observed + dt.timedelta(days=8))
+        self.assertEqual(fresh["source"], "claude_slash_usage_local_snapshot")
+        self.assertEqual(fresh["remaining_percent"], 39.0)
+        self.assertEqual(fresh["quota_status"], "available")
+        self.assertEqual(stale["quota_status"], "stale")
+
+    def test_measurement_history_accumulates_today_and_never_rewrites_closed_day(self) -> None:
+        def observation(day: str, observed_at: str, quota: str) -> dict[str, object]:
+            return {
+                "schema_version": 2,
+                "date": day,
+                "observed_at": observed_at,
+                "sources": {"suite_state": {"status": "ok", "available": True, "coverage": {}, "skips": {}}},
+                "vendors": {
+                    "anthropic": {"quota_status": quota, "remaining_status": quota},
+                    "openai": {"quota_status": "available", "remaining_status": "available"},
+                },
+                "accepted_features": 1,
+                "rounds": 2,
+                "publish": {"status": "success", "reason": "fixture", "last_success_at": observed_at},
+            }
+
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            first = self.minimal_snapshot("2026-08-20", {})
+            first["_measurement_observation"] = observation("2026-08-20", "2026-08-20T12:00:00+00:00", "unavailable")
+            collect.write_outputs(first, root)
+            second = self.minimal_snapshot("2026-08-20", {})
+            second["_measurement_observation"] = observation("2026-08-20", "2026-08-20T12:30:00+00:00", "available")
+            collect.write_outputs(second, root)
+            closed = root / "data" / "history" / "measurement-2026-08-20.json"
+            payload = json.loads(closed.read_text(encoding="utf-8"))
+            before = closed.read_bytes()
+            future = self.minimal_snapshot("2026-08-21", {})
+            future["_measurement_observation"] = observation("2026-08-21", "2026-08-21T12:00:00+00:00", "available")
+            collect.write_outputs(future, root)
+            after = closed.read_bytes()
+        self.assertEqual(payload["observations"], 2)
+        self.assertEqual(payload["vendors"]["anthropic"]["quota_status_counts"], {"available": 1, "unavailable": 1})
+        self.assertEqual(before, after)
 
     def test_privacy_scanner_detects_paths_and_credentials(self) -> None:
         private_path = "/home/" + "josiah/private"

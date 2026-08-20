@@ -208,6 +208,135 @@ def price_tokens(
     return {"usd": rounded(dollars) or 0.0, "priced_tokens": max(0, total - unpriced), "unpriced_tokens": unpriced}
 
 
+def estimate_unpriced_model_cost(
+    vendor: str,
+    tokens: dict[str, Any],
+    priced: dict[str, Any],
+    prices: dict[str, Any],
+) -> dict[str, Any] | None:
+    """Bound unpriced usage with the verified same-vendor rate envelope.
+
+    This deliberately remains separate from exact API-equivalent cost. Unknown
+    OpenAI models are priced against each complete current rate card without a
+    long-context multiplier because aggregate history cannot reconstruct which
+    individual turns crossed a context threshold. If an exact model is only
+    missing a cache-write price, only those cache-write tokens are estimated.
+    """
+    missing = safe_int(priced.get("unpriced_tokens"))
+    if not missing:
+        return None
+    total = token_total(vendor, tokens)
+    values: list[float] = []
+    candidate_models: list[str] = []
+    for candidate_model, raw_price in sorted(prices.get("models", {}).items()):
+        if not isinstance(raw_price, dict) or raw_price.get("vendor") != vendor:
+            continue
+        if missing < total and vendor == "openai":
+            rate = raw_price.get("cache_write")
+            if isinstance(rate, (int, float)):
+                values.append(missing * float(rate) / 1_000_000)
+                candidate_models.append(safe_identifier(candidate_model))
+            continue
+        candidate = dict(raw_price)
+        candidate.pop("long_context_threshold", None)
+        candidate.pop("long_context_input_multiplier", None)
+        candidate.pop("long_context_output_multiplier", None)
+        if vendor == "anthropic":
+            clean = clean_tokens(vendor, tokens)
+            value = (
+                clean["input_tokens"] * float(candidate.get("input") or 0)
+                + clean["cache_write_5m_tokens"] * float(candidate.get("cache_write") or 0)
+                + clean["cache_write_1h_tokens"] * float(candidate.get("cache_write_1h") or candidate.get("cache_write") or 0)
+                + clean["cache_read_tokens"] * float(candidate.get("cache_read") or 0)
+                + clean["output_tokens"] * float(candidate.get("output") or 0)
+            ) / 1_000_000
+            values.append(value)
+            candidate_models.append(safe_identifier(candidate_model))
+        else:
+            value, still_missing = _price_openai_single(tokens, candidate)
+            if not still_missing:
+                values.append(value)
+                candidate_models.append(safe_identifier(candidate_model))
+    if not values:
+        return {
+            "status": "unavailable",
+            "unpriced_tokens": missing,
+            "estimated_tokens": 0,
+            "low_usd": None,
+            "midpoint_usd": None,
+            "high_usd": None,
+            "candidate_models": [],
+            "basis": "current_verified_rate_envelope",
+            "caveat": "no_complete_same_vendor_rate_card",
+        }
+    low = min(values)
+    high = max(values)
+    return {
+        "status": "available",
+        "unpriced_tokens": missing,
+        "estimated_tokens": missing,
+        "low_usd": rounded(low) or 0.0,
+        "midpoint_usd": rounded((low + high) / 2) or 0.0,
+        "high_usd": rounded(high) or 0.0,
+        "candidate_models": candidate_models,
+        "basis": "current_verified_rate_envelope",
+        "caveat": "unknown_model_and_no_turn_level_long_context" if missing == total else "missing_exact_cache_write_rate",
+    }
+
+
+def combine_cost_estimates(estimates: list[dict[str, Any]], unpriced_tokens: int) -> dict[str, Any]:
+    available = [item for item in estimates if item.get("status") == "available"]
+    estimated_tokens = sum(safe_int(item.get("estimated_tokens")) for item in available)
+    if not unpriced_tokens:
+        status = "not_needed"
+    elif estimated_tokens == unpriced_tokens:
+        status = "available"
+    elif estimated_tokens:
+        status = "partial"
+    else:
+        status = "unavailable"
+    return {
+        "status": status,
+        "unpriced_tokens": unpriced_tokens,
+        "estimated_tokens": estimated_tokens,
+        "unestimated_tokens": max(0, unpriced_tokens - estimated_tokens),
+        "low_usd": rounded(sum(float(item.get("low_usd") or 0) for item in available)) if available else None,
+        "midpoint_usd": rounded(sum(float(item.get("midpoint_usd") or 0) for item in available)) if available else None,
+        "high_usd": rounded(sum(float(item.get("high_usd") or 0) for item in available)) if available else None,
+        "basis": "current_verified_rate_envelope",
+        "caveat": "estimates_are_separate_from_exact_cost_and_omit_unknown_turn_level_long_context",
+    }
+
+
+def enrich_cost_history_estimates(day: dict[str, Any], prices: dict[str, Any]) -> dict[str, Any]:
+    """Add current best-effort bounds in-memory without rewriting closed history."""
+    value = json.loads(json.dumps(day))
+    for vendor in ("anthropic", "openai"):
+        vendor_row = value.get("vendors", {}).get(vendor)
+        if not isinstance(vendor_row, dict):
+            continue
+        estimates: list[dict[str, Any]] = []
+        for _model, model_row in vendor_row.get("by_model", {}).items():
+            if not isinstance(model_row, dict):
+                continue
+            missing = safe_int(model_row.get("unpriced_tokens"))
+            tokens = clean_tokens(vendor, model_row.get("classes") if isinstance(model_row.get("classes"), dict) else {})
+            estimate = estimate_unpriced_model_cost(
+                vendor,
+                tokens,
+                {"unpriced_tokens": missing},
+                prices,
+            ) if missing else None
+            model_row["best_effort_estimate"] = estimate
+            if estimate:
+                estimates.append(estimate)
+        vendor_row["best_effort_estimate"] = combine_cost_estimates(
+            estimates,
+            safe_int(vendor_row.get("unpriced_tokens")),
+        )
+    return value
+
+
 def atomic_json(path: Path, value: Any) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     descriptor, temporary = tempfile.mkstemp(prefix=f".{path.name}.", dir=path.parent)
@@ -723,10 +852,13 @@ def parse_driver(path: Path, now: dt.datetime) -> dict[str, Any]:
     pending: dict[tuple[str, int], collections.deque[dt.datetime]] = collections.defaultdict(collections.deque)
     windows: dict[tuple[str, int], dict[str, Any]] = {}
     heatmap: collections.Counter[tuple[int, int]] = collections.Counter()
+    activity_by_day: dict[str, collections.Counter[int]] = collections.defaultdict(collections.Counter)
     today = now.date().isoformat()
     today_counts: collections.Counter[str] = collections.Counter()
     for event in events:
         heatmap[(event["timestamp"].weekday(), event["timestamp"].hour)] += 1
+        event_date = event["timestamp"].date().isoformat()
+        activity_by_day[event_date][event["timestamp"].hour] += 1
         if event["timestamp"].date().isoformat() == today:
             today_counts["events"] += 1
             if event["kind"] == "verdict":
@@ -835,6 +967,15 @@ def parse_driver(path: Path, now: dt.datetime) -> dict[str, Any]:
                 for weekday in range(7)
                 for hour in range(24)
             ],
+            "activity_by_day": [
+                {
+                    "date": day,
+                    "events": sum(hours.values()),
+                    "hours": [hours.get(hour, 0) for hour in range(24)],
+                }
+                for day, hours in sorted(activity_by_day.items())
+            ],
+            "rows": [{"row": row, **timing} for row, timing in sorted(row_time.items())],
             "today": {"events": today_counts["events"], "rounds": today_counts["rounds"], "merges": today_counts["merges"]},
             "anomalies": anomalies,
             "last_event_at": iso(events[-1]["timestamp"]) if events else None,
@@ -1013,11 +1154,15 @@ def combine_model_usage(vendor: str, models: dict[str, dict[str, Any]], prices: 
     total_tokens = 0
     total_usd = 0.0
     unpriced = 0
+    estimates: list[dict[str, Any]] = []
     aggregate = zero_tokens(vendor)
     for model, raw_tokens in sorted(models.items()):
         tokens = clean_tokens(vendor, raw_tokens)
         model_turns = [turn for turn in (turns or []) if turn.get("model") == model] if vendor == "openai" else None
         priced = price_tokens(vendor, model, tokens, prices, model_turns)
+        estimate = estimate_unpriced_model_cost(vendor, tokens, priced, prices)
+        if estimate:
+            estimates.append(estimate)
         count = token_total(vendor, tokens)
         total_tokens += count
         total_usd += float(priced["usd"])
@@ -1028,12 +1173,14 @@ def combine_model_usage(vendor: str, models: dict[str, dict[str, Any]], prices: 
             "classes": tokens,
             "usd": priced["usd"],
             "unpriced_tokens": priced["unpriced_tokens"],
+            "best_effort_estimate": estimate,
         }
     return {
         "tokens": total_tokens,
         "classes": aggregate,
         "usd": rounded(total_usd) or 0.0,
         "unpriced_tokens": unpriced,
+        "best_effort_estimate": combine_cost_estimates(estimates, unpriced),
         "by_model": by_model,
     }
 
@@ -1290,6 +1437,7 @@ def aggregate_machine_usage(
             "tokens": total_tokens,
             "usd": total["usd"],
             "unpriced_tokens": total["unpriced_tokens"],
+            "best_effort_estimate": total["best_effort_estimate"],
             "loop_share": rounded(scope_public["loop"]["tokens"] / total_tokens, 4) if total_tokens else None,
             "by_scope": scope_public,
             "by_model": total["by_model"],
@@ -1319,6 +1467,7 @@ def aggregate_machine_usage(
                 "tokens": total["tokens"],
                 "usd": total["usd"],
                 "unpriced_tokens": total["unpriced_tokens"],
+                "best_effort_estimate": total["best_effort_estimate"],
                 "by_model": total["by_model"],
                 "by_scope": scopes,
             }

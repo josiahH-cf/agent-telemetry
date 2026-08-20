@@ -1365,12 +1365,111 @@ def provider_snapshot_for(provider: dict[str, Any], names: set[str]) -> dict[str
     return None
 
 
+def read_local_claude_usage(cache_root: Path, now: dt.datetime | None = None) -> dict[str, Any] | None:
+    """Read a normalized, machine-local snapshot transcribed from Claude `/usage`."""
+    now = now or utc_now()
+    path = cache_root / "claude-usage.json"
+    try:
+        value = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        return None
+    if not isinstance(value, dict):
+        return None
+    observed = parse_timestamp(value.get("observed_at"))
+    raw_windows = value.get("quota_windows") if isinstance(value.get("quota_windows"), list) else []
+    windows: list[dict[str, Any]] = []
+    for raw in raw_windows:
+        if not isinstance(raw, dict):
+            continue
+        used = safe_float(raw.get("used_percent"))
+        name = safe_identifier(raw.get("window"), "")
+        if not name or used is None or not 0 <= used <= 100:
+            continue
+        reset = parse_timestamp(raw.get("resets_at"))
+        windows.append(
+            {
+                "window": name,
+                "used_percent": rounded(used, 2),
+                "remaining_percent": rounded(100 - used, 2),
+                "resets_at": iso(reset),
+            }
+        )
+    if not observed or not windows:
+        return None
+    age_hours = max(0.0, (now - observed).total_seconds() / 3600)
+    resets = [parse_timestamp(item.get("resets_at")) for item in windows if item.get("resets_at")]
+    stale = bool(resets and all(item and item <= now for item in resets)) or age_hours > 168
+    remaining = min(float(item["remaining_percent"]) for item in windows)
+    return {
+        "source": "claude_slash_usage_local_snapshot",
+        "provider": "anthropic",
+        "remaining_status": "stale" if stale else "available",
+        "remaining_percent": rounded(remaining, 2),
+        "quota_status": "stale" if stale else "available",
+        "quota_windows": windows,
+        "observed_at": iso(observed),
+        "age_hours": rounded(age_hours, 1),
+        "capture_status": "recorded",
+    }
+
+
+def record_local_claude_usage(
+    cache_root: Path,
+    *,
+    five_hour_used: float | None,
+    five_hour_resets_at: str | None,
+    seven_day_used: float | None,
+    seven_day_resets_at: str | None,
+    now: dt.datetime | None = None,
+) -> dict[str, Any]:
+    """Persist percentage-only `/usage` values without retaining terminal text."""
+    now = now or utc_now()
+    requested = (
+        ("five_hour", five_hour_used, five_hour_resets_at),
+        ("seven_day", seven_day_used, seven_day_resets_at),
+    )
+    windows: list[dict[str, Any]] = []
+    for name, used, reset_text in requested:
+        if used is None:
+            continue
+        if not math.isfinite(used) or not 0 <= used <= 100:
+            raise ValueError(f"{name}_used_percent_must_be_between_0_and_100")
+        reset = parse_timestamp(reset_text) if reset_text else None
+        if reset_text and not reset:
+            raise ValueError(f"{name}_reset_timestamp_invalid")
+        windows.append(
+            {
+                "window": name,
+                "used_percent": rounded(used, 2),
+                "remaining_percent": rounded(100 - used, 2),
+                "resets_at": iso(reset),
+            }
+        )
+    if not windows:
+        raise ValueError("at_least_one_claude_usage_window_is_required")
+    value = {
+        "schema_version": 1,
+        "source": "claude_slash_usage_manual_capture",
+        "observed_at": iso(now),
+        "quota_windows": windows,
+    }
+    atomic_write(cache_root / "claude-usage.json", json_text(value))
+    return value
+
+
 def build_usage_left(provider: dict[str, Any], usage_result: dict[str, Any]) -> dict[str, Any]:
     snapshot = provider.get("snapshot") if isinstance(provider.get("snapshot"), dict) else {}
     age_hours = snapshot.get("age_hours")
-    anthropic = provider_snapshot_for(provider, {"anthropic", "claude"})
+    local_claude = usage_result.get("claude_usage_snapshot") if isinstance(usage_result.get("claude_usage_snapshot"), dict) else None
+    anthropic = local_claude or provider_snapshot_for(provider, {"anthropic", "claude"})
     if anthropic:
-        anthropic.update({"observed_at": snapshot.get("generated_at"), "age_hours": age_hours})
+        anthropic = dict(anthropic)
+        if not local_claude:
+            anthropic.update({
+                "observed_at": snapshot.get("generated_at"),
+                "age_hours": age_hours,
+                "capture_status": "ready_awaiting_slash_usage_snapshot",
+            })
     else:
         anthropic = {
             "source": "provider_usage_snapshot",
@@ -1381,6 +1480,7 @@ def build_usage_left(provider: dict[str, Any], usage_result: dict[str, Any]) -> 
             "quota_windows": [],
             "observed_at": snapshot.get("generated_at"),
             "age_hours": age_hours,
+            "capture_status": "ready_awaiting_slash_usage_snapshot",
         }
     limits = usage_result.get("rate_limits") if isinstance(usage_result.get("rate_limits"), dict) else None
     if limits:
@@ -1860,6 +1960,7 @@ def write_outputs(snapshot: dict[str, Any], project_root: Path) -> list[Path]:
     rollups = snapshot.pop("_daily_rollups", {})
     cost_rollups = snapshot.pop("_cost_rollups", {})
     round_records = snapshot.pop("_round_records", [])
+    observation = snapshot.pop("_measurement_observation", None)
     today = snapshot["collection"]["date"]
     corrections: list[dict[str, str]] = []
     written: list[Path] = []
@@ -1891,6 +1992,19 @@ def write_outputs(snapshot: dict[str, Any], project_root: Path) -> list[Path]:
         atomic_write(path, json_text(candidate))
         written.append(path)
 
+    if isinstance(observation, dict):
+        measurement_path = history_root / f"measurement-{today}.json"
+        existing_measurement: dict[str, Any] | None = None
+        if measurement_path.is_file():
+            try:
+                candidate = json.loads(measurement_path.read_text(encoding="utf-8"))
+                existing_measurement = candidate if isinstance(candidate, dict) else None
+            except (OSError, json.JSONDecodeError) as exc:
+                raise RuntimeError("measurement_history_read_error") from exc
+        merged_measurement = merge_measurement_day(existing_measurement, observation)
+        atomic_write(measurement_path, json_text(merged_measurement))
+        written.append(measurement_path)
+
     if corrections:
         current = rollups.get(today, default_daily(today, snapshot["generated_at"]))
         current["coverage_corrections"] = corrections
@@ -1919,7 +2033,26 @@ def write_outputs(snapshot: dict[str, Any], project_root: Path) -> list[Path]:
         if isinstance(item, dict):
             cost_history.append(item)
     cost_history.sort(key=lambda item: item.get("date", ""))
+    prices_path = project_root / "prices.json"
+    if prices_path.is_file():
+        prices = vendor_usage.load_prices(prices_path)
+        cost_history = [vendor_usage.enrich_cost_history_estimates(item, prices) for item in cost_history]
     snapshot.setdefault("metrics", {}).setdefault("cost", {})["daily"] = cost_history
+    measurement_history = []
+    for path in sorted(history_root.glob("measurement-*.json")):
+        try:
+            item = json.loads(path.read_text(encoding="utf-8"))
+        except (OSError, json.JSONDecodeError) as exc:
+            raise RuntimeError("measurement_history_read_error") from exc
+        if isinstance(item, dict):
+            measurement_history.append(item)
+    measurement_history.sort(key=lambda item: item.get("date", ""))
+    snapshot.setdefault("metrics", {})["measurement"] = {
+        "semantics": "collection_observations_not_reconstructed_history",
+        "started_at": measurement_history[0].get("first_observed_at") if measurement_history else None,
+        "current": measurement_history[-1] if measurement_history else None,
+        "daily": measurement_history,
+    }
     rounds_path = data_root / "rounds.json"
     rounds_payload = merge_round_records(rounds_path, round_records, snapshot["generated_at"])
     atomic_write(rounds_path, json_text(rounds_payload))
@@ -1983,21 +2116,166 @@ def read_publish_state(cache_root: Path) -> dict[str, Any]:
 
 def read_subscription_amortization(path: Path, accepted_features: int) -> dict[str, Any]:
     if not path.is_file():
-        return {"status": "unavailable", "usd_per_accepted": None, "reason": "subscriptions_local_absent"}
+        return {
+            "status": "unavailable",
+            "monthly_total_usd": None,
+            "monthly_by_vendor": {},
+            "daily_total_usd": None,
+            "usd_per_accepted": None,
+            "reason": "subscriptions_local_absent",
+        }
     try:
         value = json.loads(path.read_text(encoding="utf-8"))
         monthly = value.get("monthly_usd") if isinstance(value, dict) else None
-        amounts = monthly.values() if isinstance(monthly, dict) else []
-        total = sum(float(item) for item in amounts if isinstance(item, (int, float)) and float(item) >= 0)
+        if not isinstance(monthly, dict):
+            raise ValueError("monthly_usd_missing")
+        by_vendor = {
+            vendor: float(monthly[vendor])
+            for vendor in ("anthropic", "openai")
+            if isinstance(monthly.get(vendor), (int, float)) and not isinstance(monthly.get(vendor), bool) and float(monthly[vendor]) >= 0
+        }
+        if not by_vendor:
+            raise ValueError("monthly_usd_empty")
+        total = sum(by_vendor.values())
     except (OSError, ValueError, TypeError, json.JSONDecodeError):
-        return {"status": "unavailable", "usd_per_accepted": None, "reason": "subscriptions_local_invalid"}
-    if not accepted_features:
-        return {"status": "unavailable", "usd_per_accepted": None, "reason": "no_accepted_features"}
+        return {
+            "status": "unavailable",
+            "monthly_total_usd": None,
+            "monthly_by_vendor": {},
+            "daily_total_usd": None,
+            "usd_per_accepted": None,
+            "reason": "subscriptions_local_invalid",
+        }
+    days_per_month = 365.2425 / 12
     return {
         "status": "available",
-        "usd_per_accepted": rounded(total / accepted_features),
-        "reason": "monthly_subscription_total_divided_by_observed_accepted_features",
+        "currency": "USD",
+        "monthly_total_usd": rounded(total, 2),
+        "monthly_by_vendor": {vendor: rounded(amount, 2) for vendor, amount in sorted(by_vendor.items())},
+        "daily_total_usd": rounded(total / days_per_month),
+        "usd_per_accepted": rounded(total / accepted_features) if accepted_features else None,
+        "allocation_basis": "calendar_day_proration",
+        "days_per_month": rounded(days_per_month, 6),
+        "reason": "calendar_day_proration_and_observed_accepts" if accepted_features else "no_accepted_features",
     }
+
+
+def measurement_observation(snapshot: dict[str, Any]) -> dict[str, Any]:
+    metrics = snapshot.get("metrics", {})
+    cost = metrics.get("cost", {}) if isinstance(metrics.get("cost"), dict) else {}
+    usage_left = cost.get("usage_left", {}) if isinstance(cost.get("usage_left"), dict) else {}
+    vendors = cost.get("vendors", {}) if isinstance(cost.get("vendors"), dict) else {}
+    source_rows: dict[str, Any] = {}
+    for name, raw in sorted(snapshot.get("sources", {}).items()):
+        item = raw if isinstance(raw, dict) else {}
+        skips: dict[str, int] = {}
+        for skip in item.get("skips", []):
+            if isinstance(skip, dict):
+                reason = safe_identifier(skip.get("reason"))
+                skips[reason] = skips.get(reason, 0) + safe_int(skip.get("count"))
+        coverage = item.get("coverage") if isinstance(item.get("coverage"), dict) else {}
+        source_rows[safe_identifier(name)] = {
+            "status": safe_identifier(item.get("status")),
+            "available": bool(item.get("available")),
+            "coverage": {"from": iso(parse_timestamp(coverage.get("from"))), "to": iso(parse_timestamp(coverage.get("to")))},
+            "skips": skips,
+        }
+    vendor_rows: dict[str, Any] = {}
+    for vendor in ("anthropic", "openai"):
+        machine = vendors.get(vendor) if isinstance(vendors.get(vendor), dict) else {}
+        quota = usage_left.get(vendor) if isinstance(usage_left.get(vendor), dict) else {}
+        estimate = machine.get("best_effort_estimate") if isinstance(machine.get("best_effort_estimate"), dict) else {}
+        vendor_rows[vendor] = {
+            "sessions": safe_int(machine.get("sessions")),
+            "tokens": safe_int(machine.get("tokens")),
+            "usd": rounded(safe_float(machine.get("usd"))) or 0.0,
+            "unpriced_tokens": safe_int(machine.get("unpriced_tokens")),
+            "estimate_status": safe_identifier(estimate.get("status")),
+            "quota_status": safe_identifier(quota.get("quota_status"), "unavailable"),
+            "remaining_status": safe_identifier(quota.get("remaining_status"), "unavailable"),
+            "remaining_percent": rounded(safe_float(quota.get("remaining_percent")), 2),
+            "quota_source": safe_identifier(quota.get("source"), "unavailable"),
+            "capture_status": safe_identifier(quota.get("capture_status"), "not_applicable"),
+            "quota_observed_at": iso(parse_timestamp(quota.get("observed_at"))),
+            "quota_age_hours": rounded(safe_float(quota.get("age_hours")), 1),
+        }
+    worth = metrics.get("worth", {}) if isinstance(metrics.get("worth"), dict) else {}
+    now = metrics.get("now", {}) if isinstance(metrics.get("now"), dict) else {}
+    return {
+        "schema_version": SCHEMA_VERSION,
+        "date": snapshot.get("collection", {}).get("date"),
+        "observed_at": snapshot.get("generated_at"),
+        "sources": source_rows,
+        "vendors": vendor_rows,
+        "accepted_features": safe_int(worth.get("accepted_features")),
+        "rounds": safe_int(metrics.get("overview", {}).get("judge_rounds")),
+        "publish": {
+            "status": safe_identifier(now.get("publish_status"), "never"),
+            "reason": safe_identifier(now.get("publish_reason"), "no_publish_record"),
+            "last_success_at": iso(parse_timestamp(now.get("last_publish_at"))),
+        },
+    }
+
+
+def merge_measurement_day(existing: dict[str, Any] | None, observation: dict[str, Any]) -> dict[str, Any]:
+    day = str(observation.get("date") or "")
+    observed_at = observation.get("observed_at")
+    value = existing if isinstance(existing, dict) and existing.get("date") == day else None
+    if value:
+        value = json.loads(json.dumps(value))
+    else:
+        value = {
+            "schema_version": SCHEMA_VERSION,
+            "date": day,
+            "first_observed_at": observed_at,
+            "last_observed_at": observed_at,
+            "observations": 0,
+            "sources": {},
+            "vendors": {},
+            "publish_status_counts": {},
+            "latest": {},
+            "latest_gaps": [],
+        }
+    value["observations"] = safe_int(value.get("observations")) + 1
+    value["first_observed_at"] = min(filter(None, [value.get("first_observed_at"), observed_at]), default=None)
+    value["last_observed_at"] = max(filter(None, [value.get("last_observed_at"), observed_at]), default=None)
+    gaps: list[str] = []
+    for name, item in observation.get("sources", {}).items():
+        target = value["sources"].setdefault(name, {"status_counts": {}, "skip_counts": {}})
+        status = safe_identifier(item.get("status"))
+        target["status_counts"][status] = safe_int(target["status_counts"].get(status)) + 1
+        for reason, count in item.get("skips", {}).items():
+            safe_reason = safe_identifier(reason)
+            target["skip_counts"][safe_reason] = safe_int(target["skip_counts"].get(safe_reason)) + safe_int(count)
+        target["latest_status"] = status
+        target["latest_available"] = bool(item.get("available"))
+        target["latest_coverage"] = item.get("coverage", {})
+        if status not in {"ok", "disabled"}:
+            gaps.append(f"source_{name}_{status}")
+    for vendor, item in observation.get("vendors", {}).items():
+        target = value["vendors"].setdefault(vendor, {"quota_status_counts": {}, "remaining_status_counts": {}, "capture_status_counts": {}})
+        target.setdefault("quota_status_counts", {})
+        target.setdefault("remaining_status_counts", {})
+        target.setdefault("capture_status_counts", {})
+        quota_status = safe_identifier(item.get("quota_status"), "unavailable")
+        remaining_status = safe_identifier(item.get("remaining_status"), "unavailable")
+        capture_status = safe_identifier(item.get("capture_status"), "not_applicable")
+        target["quota_status_counts"][quota_status] = safe_int(target["quota_status_counts"].get(quota_status)) + 1
+        target["remaining_status_counts"][remaining_status] = safe_int(target["remaining_status_counts"].get(remaining_status)) + 1
+        target["capture_status_counts"][capture_status] = safe_int(target["capture_status_counts"].get(capture_status)) + 1
+        target["latest"] = item
+        if quota_status != "available":
+            gaps.append(f"quota_{vendor}_{quota_status}")
+    publish_status = safe_identifier(observation.get("publish", {}).get("status"), "never")
+    value["publish_status_counts"][publish_status] = safe_int(value["publish_status_counts"].get(publish_status)) + 1
+    value["latest"] = {
+        "observed_at": observed_at,
+        "accepted_features": observation.get("accepted_features"),
+        "rounds": observation.get("rounds"),
+        "publish": observation.get("publish", {}),
+    }
+    value["latest_gaps"] = sorted(set(safe_identifier(item) for item in gaps))
+    return value
 
 
 def record_publish_state(cache_root: Path, status: str, reason: str, now: dt.datetime | None = None) -> dict[str, Any]:
@@ -2051,6 +2329,7 @@ def collect_snapshot(
         results[name] = run_source(name, value, now, default_timeout)
     cache_text = str(config.get("cache_root") or "").strip()
     cache_root = Path(cache_text).expanduser() if cache_text else Path.home() / ".local" / "state" / "agent-telemetry"
+    local_claude_usage = read_local_claude_usage(cache_root, now)
     usage_result: dict[str, Any] = {}
     usage_enabled = {
         name: bool(isinstance(source_configs.get(name), dict) and source_configs[name].get("enabled"))
@@ -2088,11 +2367,14 @@ def collect_snapshot(
         for name in USAGE_SOURCE_NAMES:
             if usage_enabled[name]:
                 results[name] = unavailable_result("absent", "scope_root_unconfigured")
+    if local_claude_usage:
+        usage_result["claude_usage_snapshot"] = local_claude_usage
     snapshot = combine_results(results, now, usage_result, read_publish_state(cache_root))
     accepted_features = safe_int(snapshot.get("metrics", {}).get("worth", {}).get("accepted_features"))
     snapshot.setdefault("metrics", {}).setdefault("worth", {})["subscription_amortization"] = read_subscription_amortization(
         project_root / "subscriptions.local.json", accepted_features
     )
+    snapshot["_measurement_observation"] = measurement_observation(snapshot)
     return snapshot, results
 
 
@@ -2183,6 +2465,11 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--publish-due", action="store_true", help="exit 0 when the 20-hour publish guard is due")
     parser.add_argument("--record-publish", choices=("success", "failure", "blocked"), help="record machine-local publish state and exit")
     parser.add_argument("--publish-reason", default="scheduled", help="allowlisted reason used with --record-publish")
+    parser.add_argument("--record-claude-usage", action="store_true", help="record percentage-only values transcribed from Claude /usage")
+    parser.add_argument("--claude-five-hour-used", type=float, help="Claude five-hour window used percentage")
+    parser.add_argument("--claude-five-hour-resets-at", help="optional ISO timestamp for the five-hour reset")
+    parser.add_argument("--claude-seven-day-used", type=float, help="Claude seven-day window used percentage")
+    parser.add_argument("--claude-seven-day-resets-at", help="optional ISO timestamp for the seven-day reset")
     return parser.parse_args(argv)
 
 
@@ -2195,6 +2482,17 @@ def main(argv: list[str] | None = None) -> int:
         config = load_config(config_path)
         cache_text = str(config.get("cache_root") or "").strip()
         cache_root = Path(cache_text).expanduser() if cache_text else Path.home() / ".local" / "state" / "agent-telemetry"
+        if args.record_claude_usage:
+            value = record_local_claude_usage(
+                cache_root,
+                five_hour_used=args.claude_five_hour_used,
+                five_hour_resets_at=args.claude_five_hour_resets_at,
+                seven_day_used=args.claude_seven_day_used,
+                seven_day_resets_at=args.claude_seven_day_resets_at,
+            )
+            windows = ", ".join(item["window"] for item in value["quota_windows"])
+            print(f"[claude-usage] recorded local snapshot for {windows}")
+            return 0
         if args.scrub:
             violations = repository_scrub_violations(project_root)
             if violations:
