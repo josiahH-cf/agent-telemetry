@@ -86,6 +86,7 @@ class StabilityTests(unittest.TestCase):
             xml = """<?xml version="1.0"?>
 <Task xmlns="http://schemas.microsoft.com/windows/2004/02/mit/task">
   <Triggers>{trigger}</Triggers>
+  <Principals><Principal><LogonType>InteractiveToken</LogonType><RunLevel>LeastPrivilege</RunLevel></Principal></Principals>
   <Settings><DisallowStartIfOnBatteries>{battery}</DisallowStartIfOnBatteries><StopIfGoingOnBatteries>false</StopIfGoingOnBatteries><MultipleInstancesPolicy>IgnoreNew</MultipleInstancesPolicy></Settings>
   <Actions><Exec><Command>wsl.exe</Command><Arguments>-d Ubuntu -- /local/agent-telemetry/run-telemetry.sh {action}</Arguments></Exec></Actions>
 </Task>"""
@@ -114,7 +115,7 @@ class StabilityTests(unittest.TestCase):
             executable = Path(temporary) / "schtasks.exe"
             executable.write_bytes(b"fixture")
             xml = """<Task xmlns="http://schemas.microsoft.com/windows/2004/02/mit/task">
-<Triggers>{trigger}</Triggers><Settings><DisallowStartIfOnBatteries>{battery}</DisallowStartIfOnBatteries><StopIfGoingOnBatteries>false</StopIfGoingOnBatteries><MultipleInstancesPolicy>IgnoreNew</MultipleInstancesPolicy></Settings>
+<Triggers>{trigger}</Triggers><Principals><Principal><LogonType>InteractiveToken</LogonType><RunLevel>LeastPrivilege</RunLevel></Principal></Principals><Settings><DisallowStartIfOnBatteries>{battery}</DisallowStartIfOnBatteries><StopIfGoingOnBatteries>false</StopIfGoingOnBatteries><MultipleInstancesPolicy>IgnoreNew</MultipleInstancesPolicy></Settings>
 <Actions><Exec><Command>wsl.exe</Command><Arguments>-d Ubuntu -- /local/agent-telemetry/run-telemetry.sh {action}</Arguments></Exec></Actions></Task>"""
 
             def query(args: list[str], **_kwargs: object) -> subprocess.CompletedProcess[str]:

@@ -96,8 +96,12 @@ Create exactly the two tasks from Windows PowerShell:
 $LinuxHome = (wsl.exe -d Ubuntu -- /bin/sh -c 'printf %s "$HOME"').Trim()
 $Sid = [Security.Principal.WindowsIdentity]::GetCurrent().User.Value
 $StartBoundary = (Get-Date).Date.AddMinutes(7).ToString('s')
-$LogonXmlPath = Join-Path $env:TEMP 'agent-telemetry-logon.xml'
-$ContinuityXmlPath = Join-Path $env:TEMP 'agent-telemetry-continuity.xml'
+$StateDirLinux = (wsl.exe -d Ubuntu -- /bin/sh -c 'printf %s "${XDG_STATE_HOME:-$HOME/.local/state}/agent-telemetry"').Trim()
+wsl.exe -d Ubuntu -- /bin/mkdir -p -- $StateDirLinux
+wsl.exe -d Ubuntu -- /bin/chmod 700 -- $StateDirLinux
+$StateDirWindows = (wsl.exe -d Ubuntu -- /usr/bin/wslpath -w -- $StateDirLinux).Trim()
+$LogonXmlPath = Join-Path $StateDirWindows 'agent-telemetry-logon.xml'
+$ContinuityXmlPath = Join-Path $StateDirWindows 'agent-telemetry-continuity.xml'
 $LogonXml = @"
 <?xml version="1.0" encoding="UTF-16"?>
 <Task version="1.4" xmlns="http://schemas.microsoft.com/windows/2004/02/mit/task">

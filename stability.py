@@ -363,8 +363,11 @@ def _windows_task_status() -> tuple[str, str]:
     }
     for name, suffix in expected.items():
         root = task_xml[name]
+        actions = root.findall(".//t:Actions/*", namespace)
         command = text_at(root, ".//t:Actions/t:Exec/t:Command").replace("\\", "/").lower()
         arguments = text_at(root, ".//t:Actions/t:Exec/t:Arguments")
+        if len(actions) != 1 or not actions[0].tag.endswith("}Exec"):
+            return "warn", "task_contract_mismatch"
         if command.rsplit("/", 1)[-1] != "wsl.exe":
             return "warn", "task_contract_mismatch"
         if not re.fullmatch(
@@ -374,6 +377,10 @@ def _windows_task_status() -> tuple[str, str]:
             return "warn", "task_contract_mismatch"
         if text_at(root, ".//t:Settings/t:MultipleInstancesPolicy") != "IgnoreNew":
             return "warn", "task_contract_mismatch"
+        if text_at(root, ".//t:Principals/t:Principal/t:LogonType") != "InteractiveToken":
+            return "warn", "task_principal_mismatch"
+        if text_at(root, ".//t:Principals/t:Principal/t:RunLevel") == "HighestAvailable":
+            return "warn", "task_principal_mismatch"
         if text_at(root, ".//t:Settings/t:DisallowStartIfOnBatteries").lower() != "false":
             return "warn", "task_power_policy_mismatch"
         if text_at(root, ".//t:Settings/t:StopIfGoingOnBatteries").lower() != "false":
