@@ -353,15 +353,41 @@ class HistoryAndPrivacyTests(unittest.TestCase):
         self.assertIn('type="date"', text)
         self.assertNotIn("fetch(" , text)
         self.assertNotIn("XMLHttpRequest", text)
-        for section in ("now", "worth", "cost", "time", "quality", "ledger", "coverage"):
+        for section in ("now", "projects", "cost", "time", "quality", "ledger", "coverage"):
             self.assertIn(f'id="{section}"', text)
         self.assertEqual(text.count("<section "), 6)
+        for check in ("now", "projects", "cost", "time", "quality", "ledger"):
+            self.assertIn(f'id="{check}-check"', text)
+        self.assertIn('id="project-table"', text)
+        self.assertIn('id="root-health"', text)
+        self.assertIn('id="candidate-list"', text)
+        self.assertIn('@media (max-width:560px)', text)
         self.assertNotIn("prefers-color-scheme", text)
         self.assertNotIn("theme-toggle", text)
         self.assertNotIn("if (false)", text)
         dashboard = (PROJECT_ROOT / "dashboard.js").read_text(encoding="utf-8")
         self.assertIn("Date.now()", dashboard)
         self.assertIn("client-data-age", dashboard)
+
+    def test_dashboard_core_dark_palette_meets_wcag_aa_text_contrast(self) -> None:
+        text = (PROJECT_ROOT / "index.html").read_text(encoding="utf-8")
+
+        def rgb(value: str) -> tuple[float, float, float]:
+            return tuple(int(value[index : index + 2], 16) / 255 for index in (1, 3, 5))  # type: ignore[return-value]
+
+        def luminance(value: str) -> float:
+            channels = [component / 12.92 if component <= 0.04045 else ((component + 0.055) / 1.055) ** 2.4 for component in rgb(value)]
+            return 0.2126 * channels[0] + 0.7152 * channels[1] + 0.0722 * channels[2]
+
+        def contrast(foreground: str, background: str) -> float:
+            bright, dark = sorted((luminance(foreground), luminance(background)), reverse=True)
+            return (bright + 0.05) / (dark + 0.05)
+
+        palette = dict(re.findall(r"--([a-z0-9]+):(#[0-9a-fA-F]{6})", text))
+        self.assertGreaterEqual(contrast(palette["text"], palette["bg"]), 4.5)
+        self.assertGreaterEqual(contrast(palette["muted"], palette["bg"]), 4.5)
+        self.assertGreaterEqual(contrast(palette["text"], palette["panel"]), 4.5)
+        self.assertGreaterEqual(contrast(palette["muted"], palette["panel"]), 4.5)
 
     def test_subscription_config_exposes_vendor_totals_and_calendar_proration(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:

@@ -1,0 +1,27 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "agent-telemetry/days-record-v1",
+  "title": "UTC daily usage record",
+  "description": "One UTC day, public project, vendor, and host-OS rollup from deduplicated session events.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["date", "project_id", "vendor", "host_os", "sessions", "input_tokens", "cached_input_tokens", "cache_write_5m_tokens", "cache_write_1h_tokens", "cache_read_tokens", "cache_write_tokens", "output_tokens", "reasoning_output_tokens", "tokens", "api_equivalent_cost_usd", "unpriced_tokens"],
+  "properties": {
+    "date": {"type": "string", "pattern": "[0-9]{4}-[0-9]{2}-[0-9]{2}", "description": "UTC calendar date."},
+    "project_id": {"type": "string", "description": "Public project join key."},
+    "vendor": {"type": "string", "enum": ["anthropic", "openai"]},
+    "host_os": {"type": "string", "enum": ["wsl", "windows"]},
+    "sessions": {"type": "integer", "description": "Distinct sessions with an event in this cell."},
+    "input_tokens": {"type": "integer"},
+    "cached_input_tokens": {"type": "integer"},
+    "cache_write_5m_tokens": {"type": "integer"},
+    "cache_write_1h_tokens": {"type": "integer"},
+    "cache_read_tokens": {"type": "integer"},
+    "cache_write_tokens": {"type": "integer"},
+    "output_tokens": {"type": "integer"},
+    "reasoning_output_tokens": {"type": "integer"},
+    "tokens": {"type": "integer", "description": "Vendor-correct total."},
+    "api_equivalent_cost_usd": {"type": "number"},
+    "unpriced_tokens": {"type": "integer"}
+  }
+}

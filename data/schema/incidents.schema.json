@@ -1,0 +1,14 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "agent-telemetry/incidents-record-v1",
+  "title": "Incident aggregate record",
+  "description": "Generated quality and incident counts; finding text and evidence paths stay local.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["incident_id", "observed_at", "metrics"],
+  "properties": {
+    "incident_id": {"type": "string"},
+    "observed_at": {"type": ["string", "null"]},
+    "metrics": {"type": "object", "description": "Adapter-defined sanitized numeric aggregate."}
+  }
+}

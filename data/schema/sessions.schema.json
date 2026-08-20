@@ -1,0 +1,32 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "agent-telemetry/sessions-record-v1",
+  "title": "Public provider session record",
+  "description": "One deduplicated metadata-only provider session. No working directory, path, prompt, message, or code is present.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["session_id", "vendor", "model", "host_os", "project_id", "started_at", "ended_at", "input_tokens", "cached_input_tokens", "cache_write_5m_tokens", "cache_write_1h_tokens", "cache_read_tokens", "cache_write_tokens", "output_tokens", "reasoning_output_tokens", "tokens", "api_equivalent_cost_usd", "unpriced_tokens", "linkage", "attribution", "source_files"],
+  "properties": {
+    "session_id": {"type": "string", "pattern": "sess-[0-9a-f]{16}", "description": "Stable one-way public session identifier."},
+    "vendor": {"type": "string", "enum": ["anthropic", "openai"], "description": "Provider that emitted the usage metadata."},
+    "model": {"type": "string", "description": "Exact observed model, mixed, or unknown."},
+    "host_os": {"type": "string", "enum": ["wsl", "windows"], "description": "Operating system hosting the provider process, not the path the session viewed."},
+    "project_id": {"type": "string", "description": "Public project join key."},
+    "started_at": {"type": ["string", "null"], "description": "Earliest observed UTC session timestamp."},
+    "ended_at": {"type": ["string", "null"], "description": "Latest observed UTC session timestamp."},
+    "input_tokens": {"type": "integer", "description": "Provider-reported input tokens."},
+    "cached_input_tokens": {"type": "integer", "description": "OpenAI cached-input subset; zero for Anthropic."},
+    "cache_write_5m_tokens": {"type": "integer", "description": "Anthropic five-minute cache writes; zero for OpenAI."},
+    "cache_write_1h_tokens": {"type": "integer", "description": "Anthropic one-hour cache writes; zero for OpenAI."},
+    "cache_read_tokens": {"type": "integer", "description": "Anthropic cache reads; zero for OpenAI."},
+    "cache_write_tokens": {"type": "integer", "description": "OpenAI cache writes when observed; zero otherwise."},
+    "output_tokens": {"type": "integer", "description": "Provider-reported output tokens."},
+    "reasoning_output_tokens": {"type": "integer", "description": "OpenAI diagnostic subset of output; never billed twice."},
+    "tokens": {"type": "integer", "description": "Vendor-correct total used for aggregation."},
+    "api_equivalent_cost_usd": {"type": "number", "description": "Exact-string API-equivalent cost."},
+    "unpriced_tokens": {"type": "integer", "description": "Volume excluded from exact dollars."},
+    "linkage": {"type": "string", "enum": ["exact", "correlated", "unattributed"], "description": "Outcome linkage strength."},
+    "attribution": {"type": "string", "description": "Generated registry/canonicalization resolution code."},
+    "source_files": {"type": "integer", "description": "Metadata source fragments contributing after session grouping."}
+  }
+}

@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-08-20T11:53:47+00:00",
+  "generated_at": "2026-08-20T12:40:57+00:00",
   "rounds": [
     {
       "accepted": false,
@@ -38630,6 +38630,93 @@
       "started_at": "2026-08-20T11:41:47+00:00",
       "total_tokens": 26783733,
       "total_usd": 30.456617,
+      "unpriced_tokens": 0,
+      "verdict": "NOT_ACCEPTED"
+    },
+    {
+      "accepted": false,
+      "builder": {
+        "attribution": "exact",
+        "classes": {
+          "cache_read_tokens": 12965774,
+          "cache_write_1h_tokens": 154583,
+          "cache_write_5m_tokens": 0,
+          "input_tokens": 158,
+          "output_tokens": 96300
+        },
+        "cost_status": "complete",
+        "flags": [],
+        "model_declared": "claude-fable-5",
+        "model_observed": "claude-fable-5",
+        "models": {
+          "claude-fable-5": {
+            "best_effort_estimate": null,
+            "classes": {
+              "cache_read_tokens": 12965774,
+              "cache_write_1h_tokens": 154583,
+              "cache_write_5m_tokens": 0,
+              "input_tokens": 158,
+              "output_tokens": 96300
+            },
+            "tokens": 13216815,
+            "unpriced_tokens": 0,
+            "usd": 20.874014
+          }
+        },
+        "sessions_expected": 1,
+        "sessions_found": 1,
+        "tokens": 13216815,
+        "unpriced_tokens": 0,
+        "usd": 20.874014,
+        "vendor": "anthropic"
+      },
+      "cost_status": "complete",
+      "debt_at_accept": null,
+      "duration_minutes": 8.283,
+      "ended_at": "2026-08-20T12:39:34+00:00",
+      "findings": 6,
+      "flags": [],
+      "judge": {
+        "attribution": "exact",
+        "classes": {
+          "cache_write_tokens": 0,
+          "cached_input_tokens": 6292736,
+          "input_tokens": 6654288,
+          "output_tokens": 53874,
+          "reasoning_output_tokens": 34680
+        },
+        "cost_status": "complete",
+        "flags": [],
+        "model_declared": "gpt-5.5",
+        "model_observed": "gpt-5.6-sol",
+        "models": {
+          "gpt-5.6-sol": {
+            "best_effort_estimate": null,
+            "classes": {
+              "cache_write_tokens": 0,
+              "cached_input_tokens": 6292736,
+              "input_tokens": 6654288,
+              "output_tokens": 53874,
+              "reasoning_output_tokens": 34680
+            },
+            "tokens": 6708162,
+            "unpriced_tokens": 0,
+            "usd": 6.570348
+          }
+        },
+        "sessions_expected": 3,
+        "sessions_found": 3,
+        "tokens": 6708162,
+        "unpriced_tokens": 0,
+        "usd": 6.570348,
+        "vendor": "openai"
+      },
+      "round": 2,
+      "row": "g04c",
+      "spec": "triage-projection-over-time",
+      "started_at": "2026-08-20T12:31:17+00:00",
+      "total_tokens": 19924977,
+      "total_usd": 27.444362,
       "unpriced_tokens": 0,
       "verdict": "NOT_ACCEPTED"
     },

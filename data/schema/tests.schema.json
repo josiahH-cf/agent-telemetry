@@ -1,0 +1,18 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "agent-telemetry/tests-record-v1",
+  "title": "Sanitized test-run record",
+  "description": "Suite-level counts and duration only; no test names, output, command, or machine path.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["test_run_id", "observed_at", "tests", "failures", "errors", "skipped", "duration_seconds"],
+  "properties": {
+    "test_run_id": {"type": "string"},
+    "observed_at": {"type": ["string", "null"]},
+    "tests": {"type": "integer"},
+    "failures": {"type": "integer"},
+    "errors": {"type": "integer"},
+    "skipped": {"type": "integer"},
+    "duration_seconds": {"type": "number"}
+  }
+}

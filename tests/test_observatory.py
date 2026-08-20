@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import datetime as dt
+import hashlib
 import json
 import sqlite3
 import tempfile
@@ -232,6 +233,40 @@ class StoreTests(unittest.TestCase):
                 connection.close()
         self.assertEqual(version, observatory.STORE_SCHEMA_VERSION)
         self.assertTrue({"source_files", "usage_observations", "sessions", "projects", "daily_rollups"} <= tables)
+
+    def test_machine_layers_validate_manifest_reconcile_and_execute_join(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            config = fixture_config(root)
+            self.populate(root, config)
+            now = dt.datetime(2026, 8, 20, 3, tzinfo=UTC)
+            summary, _ = observatory.collect_observatory(config, PROJECT_ROOT, loop_snapshot(), now)
+            snapshot = loop_snapshot()
+            snapshot.update({"generated_at": observatory.iso(now), "collection": {"date": "2026-08-20"}})
+            snapshot["metrics"]["observatory"] = summary  # type: ignore[index]
+            output_root = root / "output"
+            (output_root / "data" / "schema").mkdir(parents=True)
+            for schema in (PROJECT_ROOT / "data" / "schema").glob("*.schema.json"):
+                (output_root / "data" / "schema" / schema.name).write_bytes(schema.read_bytes())
+            written = observatory.write_machine_layers(output_root, Path(str(config["cache_root"])), snapshot)
+            manifest = json.loads((output_root / "data" / "machine" / "MANIFEST.json").read_text())
+            for entry in manifest["datasets"]:
+                path = output_root / entry["path"]
+                rows = [json.loads(line) for line in path.read_text().splitlines()]
+                schema = json.loads((output_root / entry["schema"]).read_text())
+                self.assertEqual(len(rows), entry["rows"])
+                self.assertEqual(hashlib.sha256(path.read_bytes()).hexdigest(), entry["sha256"])
+                self.assertEqual([error for row in rows for error in observatory.validate_record(row, schema)], [])
+            machine = output_root / "data" / "machine"
+            projects = {row["project_id"]: row for row in map(json.loads, (machine / "projects.jsonl").read_text().splitlines())}
+            sessions = [row for row in map(json.loads, (machine / "sessions.jsonl").read_text().splitlines()) if row["project_id"] in projects]
+            public_sessions = (machine / "sessions.jsonl").read_text()
+            local_sessions = (Path(str(config["cache_root"])) / "machine" / "sessions.jsonl").read_text()
+        self.assertEqual(len(sessions), sum(item["sessions"] for item in projects.values()))
+        self.assertEqual(snapshot["metrics"]["observatory"]["reconciliation"]["status"], "ok")  # type: ignore[index]
+        self.assertTrue(any(path.name == "MANIFEST.json" for path in written))
+        self.assertNotIn("raw_cwd", public_sessions)
+        self.assertIn("raw_cwd", local_sessions)
 
 
 if __name__ == "__main__":

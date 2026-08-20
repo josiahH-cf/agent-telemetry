@@ -1,0 +1,14 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "agent-telemetry/publications-record-v1",
+  "title": "Publication aggregate record",
+  "description": "Outcome-adapter publication and deployment aggregates. Nested metrics contain only allowlisted counts and dates.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["publication_id", "observed_at", "metrics"],
+  "properties": {
+    "publication_id": {"type": "string"},
+    "observed_at": {"type": ["string", "null"]},
+    "metrics": {"type": "object", "description": "Adapter-defined sanitized numeric aggregate."}
+  }
+}

@@ -1,8 +1,16 @@
-# Agent Build Telemetry
+# Agent Telemetry
 
-Agent Build Telemetry is a read-only, standard-library collector and static dashboard for a governed agent build loop. It measures driver activity, sealed build and judge rounds, vendor token usage, API-equivalent spend, quality proxies, time, publications, and deploys. It never retains product content, prompts, messages, tool text, or operator prose.
+Agent Telemetry is a read-only, standard-library machine-wide LLM observatory.
+It incrementally measures Anthropic and OpenAI provider activity hosted in both
+WSL and Windows, resolves observed session working directories to a privacy-safe
+project registry or explicit ad-hoc/remote bulk bucket, and preserves the
+governed feature loop as its flagship outcome-rich layer. It never retains
+product content, prompts, messages, tool text, code, or operator prose.
 
-The committed repository is the long-term store. Collection and the dashboard need no package install, framework, server, database, or runtime network request.
+The canonical queryable store is local SQLite. The committed repository contains
+only allowlist-bounded derivatives, immutable history, schemas, and the passive
+dashboard. Collection needs no package install, framework, server, or runtime
+network request.
 
 ## Runbook
 
@@ -13,10 +21,16 @@ cd "$HOME/agent-telemetry"
 python3 collect.py --check
 python3 collect.py --doctor
 python3 collect.py
+python3 collect.py --rebuild
 python3 collect.py --scrub
 ```
 
-`--check` probes without writing. A normal run updates `data/telemetry.json`, `data/telemetry.js`, `data/rounds.json`, and current-day history. Missing or timed-out sources become named states without aborting other adapters. Vendor scans resume at line-safe byte offsets from `${XDG_STATE_HOME:-$HOME/.local/state}/agent-telemetry`.
+`--check` probes without writing. A normal run updates the canonical store,
+`data/telemetry.json`, `data/telemetry.js`, `data/rounds.json`, the public machine
+tier, and current-day history. Missing or timed-out sources become named states
+with cached last-good data without aborting other adapters. `--rebuild` creates a
+fresh transactional store from the read-only provider roots and replaces the
+canonical store only after integrity succeeds.
 
 To collect and commit generated data only:
 
@@ -28,7 +42,11 @@ Open `index.html` directly. It loads `data/telemetry.js` locally and works under
 
 ### Dashboard date ranges
 
-The `From` and `Through` controls apply one inclusive UTC date range to worth, daily cost, model cost, build/judge cost, time, activity, quality denominators, per-spec rounds, attribution parity, and measurement continuity. Presets select 7 days, 30 days, or all retained history. Applying a range writes `?from=YYYY-MM-DD&to=YYYY-MM-DD` to the URL so the view is shareable.
+The `From` and `Through` controls apply one inclusive UTC range to global project
+usage, both providers, both host environments, spend, session-days, activity
+patterns, worth, quality denominators, loop rounds, attribution parity, and
+measurement continuity. Presets select 7 days, 30 days, or all retained history.
+Applying a range writes `?from=YYYY-MM-DD&to=YYYY-MM-DD` to the URL.
 
 Current driver state, current provider quota, current source probes, lifetime session counts, and source totals that are not day-attributed stay explicitly labeled as point-in-time or all-time. They are never presented as if the range recomputed them. Subscription cost is prorated by inclusive calendar days in the selected range.
 
@@ -98,6 +116,55 @@ coverage while WSL was unavailable.
 
 The public site is [josiahh-cf.github.io/agent-telemetry](https://josiahh-cf.github.io/agent-telemetry/). GitHub Pages serves `main` from the repository root.
 
+## Canonical store and project identity
+
+The local canonical database is
+`${XDG_STATE_HOME:-$HOME/.local/state}/agent-telemetry/observatory.sqlite3`.
+Schema-versioned migrations, per-file cursors, parser state, usage observations,
+deduplicated sessions, projects, UTC daily rollups, loop outcomes, provenance,
+and run records are transactional. Provider events deduplicate by stable event
+and session identities across roots and host environments. `PRAGMA quick_check`
+and semantic reconciliation are part of the doctor contract.
+
+Canonicalization is string-only and never probes a project repository:
+
+1. WSL UNC forms are normalized to their native absolute Linux form.
+2. Drive-letter and mounted-drive forms normalize to one lower-cased mounted
+   representation because Windows path comparison is case-insensitive.
+3. The ignored local registry applies longest explicit prefix before exact
+   public-tail rules; configured worktree roots roll up to their parent.
+4. Source directories representing remote sessions resolve to `remote`.
+5. Every unmatched working-directory cluster resolves to `ad-hoc` and surfaces
+   only a stable salted `proj-` candidate code.
+
+`projects.json` is the public registry surface. A project is anonymous unless
+its entry has `public_label`. Real paths, real names, the salt, and the mapping
+live only in `projects.local.json` under the telemetry state directory. To add a
+private mapping, add its path to the ignored `observatory.registry_paths`
+configuration, obtain its safe identifiers with:
+
+```bash
+python3 observatory.py --registry-code 'PATH_ENTERED_LOCALLY'
+```
+
+Then add only the returned project id/fingerprint and optional approved label to
+`projects.json`. Never add the path or real name to a tracked file.
+
+## Machine-consumable tiers
+
+The public tier is `data/machine/`: projects, sessions, UTC days, rounds, specs,
+tests, publications, and incidents as stable JSONL. `MANIFEST.json` records each
+path, schema, row count, coverage, semantics, and SHA-256. The verbose record
+schemas are in `data/schema/`; tests validate every line and execute the worked
+join in `AGENTS.md`.
+
+The local tier mirrors that family under the telemetry state directory and adds
+restricted raw session ids, working directories, real mappings, and evidence
+records. It is untracked by location. Local agents may also query SQLite
+read-only; `AGENTS.md` documents joins and interpretation hazards. Public Pages
+serves the manifest at
+<https://josiahh-cf.github.io/agent-telemetry/data/machine/MANIFEST.json>.
+
 ## Read-only sources
 
 | Adapter | Evidence read | Published derivations |
@@ -108,6 +175,12 @@ The public site is [josiahh-cf.github.io/agent-telemetry](https://josiahh-cf.git
 | `provider_usage` | Existing provider snapshot only | Token/session/request totals, remaining percentage, quota windows, age |
 | `anthropic_usage` | Claude project JSONL usage metadata | Deduplicated message usage, observed model, sealed prefix attribution, anonymous machine scope |
 | `openai_usage` | Codex rollout JSONL metadata from configured WSL and Windows session stores | Per-turn usage from cumulative counters, observed model, sealed attribution, live rate-limit windows, anonymous machine scope |
+
+The canonical observatory additionally ingests four explicit roots:
+`wsl_claude`, `wsl_codex`, `windows_claude`, and `windows_codex`. `host_os`
+describes where the provider process ran, even when its working directory names
+the other environment. The legacy usage adapters remain the loop-attribution
+surface while global metrics derive from SQLite.
 
 Adapters default to a 300-second budget. The collector prefilters lines for usage markers before JSON parsing and retains only usage/model/timestamp/session/cwd metadata. It does not invoke the loop, judges, model CLIs, or provider refresh commands. Unterminated trailing JSONL is ignored; incomplete seal directories are `round_in_flight`; unknown event kinds are `other`.
 
@@ -200,6 +273,7 @@ All ratios are stored from 0 to 1. Distribution objects use `count`, `min`, `p25
 | `metrics.cost.prices` | Price verification date, unit, currency, and exact model vocabulary. |
 | `metrics.measurement` | Non-reconstructed daily collection-observation history, latest gaps, source status/skip counts, quota availability counts, and publish state. |
 | `metrics.reliability` | Current doctor checks, observed schedule cadence and gaps, clock watermark status, tracked-manifest count, price age, and conservative disk/free-space runway snapshot. |
+| `metrics.observatory` | Canonical-store global totals, both providers, both host environments, privacy-safe projects and buckets, per-project UTC daily rollups, activity hours, four-root health, deduplication counts, unregistered candidate codes, loop headline, integrity, and store/envelope/machine reconciliation. |
 
 ### Time, ledger, and quality
 

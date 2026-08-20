@@ -1,0 +1,32 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "agent-telemetry/projects-record-v1",
+  "title": "Public project telemetry record",
+  "description": "One registered project or explicit bulk bucket. Anonymous project_id values are stable salted codes; null timestamps mean that operating system has not been observed.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["project_id", "project_code", "public_label", "category", "registered", "first_seen_at", "last_seen_at", "wsl_first_seen_at", "wsl_last_seen_at", "windows_first_seen_at", "windows_last_seen_at", "sessions", "tokens", "api_equivalent_cost_usd", "unpriced_tokens", "anthropic_sessions", "anthropic_tokens", "anthropic_cost_usd", "openai_sessions", "openai_tokens", "openai_cost_usd"],
+  "properties": {
+    "project_id": {"type": "string", "description": "Public join key: approved label, anonymous code, ad-hoc, or remote."},
+    "project_code": {"type": "string", "description": "Stable code even when an approved public label exists."},
+    "public_label": {"type": ["string", "null"], "description": "Approved public name; null preserves the default-anonymous policy."},
+    "category": {"type": "string", "description": "Registry category or explicit bulk-bucket class."},
+    "registered": {"type": "boolean", "description": "True when the registry or an explicit bulk rule resolved the project."},
+    "first_seen_at": {"type": ["string", "null"], "description": "Earliest provider metadata timestamp across both operating systems."},
+    "last_seen_at": {"type": ["string", "null"], "description": "Latest provider metadata timestamp across both operating systems."},
+    "wsl_first_seen_at": {"type": ["string", "null"], "description": "Earliest WSL-hosted provider timestamp."},
+    "wsl_last_seen_at": {"type": ["string", "null"], "description": "Latest WSL-hosted provider timestamp."},
+    "windows_first_seen_at": {"type": ["string", "null"], "description": "Earliest Windows-hosted provider timestamp."},
+    "windows_last_seen_at": {"type": ["string", "null"], "description": "Latest Windows-hosted provider timestamp."},
+    "sessions": {"type": "integer", "description": "Deduplicated provider sessions assigned to this project."},
+    "tokens": {"type": "integer", "description": "Vendor-correct token total; OpenAI reasoning output is not added twice."},
+    "api_equivalent_cost_usd": {"type": "number", "description": "Exact-string API-equivalent cost, not subscription billing."},
+    "unpriced_tokens": {"type": "integer", "description": "Tokens whose observed model or class lacks an exact configured rate."},
+    "anthropic_sessions": {"type": "integer", "description": "Anthropic sessions in this project."},
+    "anthropic_tokens": {"type": "integer", "description": "Anthropic tokens in this project."},
+    "anthropic_cost_usd": {"type": "number", "description": "Anthropic exact API-equivalent cost."},
+    "openai_sessions": {"type": "integer", "description": "OpenAI sessions in this project."},
+    "openai_tokens": {"type": "integer", "description": "OpenAI tokens in this project."},
+    "openai_cost_usd": {"type": "number", "description": "OpenAI exact API-equivalent cost."}
+  }
+}

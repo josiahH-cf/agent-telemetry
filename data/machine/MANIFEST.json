@@ -1,0 +1,102 @@
+{
+  "datasets": [
+    {
+      "coverage": {
+        "from": "2026-02-28T12:19:02+00:00",
+        "to": "2026-08-20T12:40:52+00:00"
+      },
+      "dataset": "projects",
+      "path": "data/machine/projects.jsonl",
+      "rows": 12,
+      "schema": "data/schema/projects.schema.json",
+      "semantics": "One public project identity or bulk bucket with lifetime totals and per-OS coverage.",
+      "sha256": "9241cbddd04e1907f37c426899df40f2943b3bfd1c9cb1808f4b6164eabcf410"
+    },
+    {
+      "coverage": {
+        "from": "2026-02-28T12:19:02+00:00",
+        "to": "2026-08-20T12:40:52+00:00"
+      },
+      "dataset": "sessions",
+      "path": "data/machine/sessions.jsonl",
+      "rows": 9768,
+      "schema": "data/schema/sessions.schema.json",
+      "semantics": "One provider session after cross-source event deduplication; working directories are excluded.",
+      "sha256": "32709f8299e02b63fb50ff082310a8c48dd7280c9b1fcac342f6cb6b70e4c8de"
+    },
+    {
+      "coverage": {
+        "from": "2026-02-28",
+        "to": "2026-08-20"
+      },
+      "dataset": "days",
+      "path": "data/machine/days.jsonl",
+      "rows": 203,
+      "schema": "data/schema/days.schema.json",
+      "semantics": "UTC daily usage by public project identity, vendor, and host operating system.",
+      "sha256": "1b1c7dcd060a4c6ded9de01e4ea16a8d3ca9948d246f533725bc6a8850fff934"
+    },
+    {
+      "coverage": {
+        "from": "2026-08-02T14:37:54+00:00",
+        "to": "2026-08-20T12:39:34+00:00"
+      },
+      "dataset": "rounds",
+      "path": "data/machine/rounds.jsonl",
+      "rows": 540,
+      "schema": "data/schema/rounds.schema.json",
+      "semantics": "Outcome-rich governed-loop round facts with usage attribution.",
+      "sha256": "583b56d342c5f7655ffb055904d57370bca4c90619e1b43cbbe3de70ad109b1c"
+    },
+    {
+      "coverage": {
+        "from": null,
+        "to": null
+      },
+      "dataset": "specs",
+      "path": "data/machine/specs.jsonl",
+      "rows": 61,
+      "schema": "data/schema/specs.schema.json",
+      "semantics": "Outcome-rich governed-loop feature-cycle facts.",
+      "sha256": "d05c4b934e750bae365f2bcb4438384dbdf80d9e336e45d41b7d713ff6b8a721"
+    },
+    {
+      "coverage": {
+        "from": "2026-08-20T07:29:02.045123-05:00",
+        "to": "2026-08-20T07:29:02.045123-05:00"
+      },
+      "dataset": "tests",
+      "path": "data/machine/tests.jsonl",
+      "rows": 1,
+      "schema": "data/schema/tests.schema.json",
+      "semantics": "Sanitized governed-loop test-run facts.",
+      "sha256": "7978bbbca1505882510565c14d806132f3f1f3784dd20bfb0a97ec738388fbf5"
+    },
+    {
+      "coverage": {
+        "from": null,
+        "to": null
+      },
+      "dataset": "publications",
+      "path": "data/machine/publications.jsonl",
+      "rows": 1,
+      "schema": "data/schema/publications.schema.json",
+      "semantics": "Sanitized publication/deploy aggregate observations.",
+      "sha256": "797be545663c048e860a7a172dc25a9d3723ed00c1a44d2ce9fad1b5937c13d6"
+    },
+    {
+      "coverage": {
+        "from": null,
+        "to": null
+      },
+      "dataset": "incidents",
+      "path": "data/machine/incidents.jsonl",
+      "rows": 1,
+      "schema": "data/schema/incidents.schema.json",
+      "semantics": "Sanitized quality/incident aggregate observations.",
+      "sha256": "5d3ff04aa3046b103f0fc73e827adaeab97c21b497f0d0c6f178b8bba2a4d388"
+    }
+  ],
+  "generated_at": "2026-08-20T12:40:57+00:00",
+  "schema_version": 1
+}

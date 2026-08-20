@@ -2135,6 +2135,7 @@ def write_outputs(snapshot: dict[str, Any], project_root: Path) -> list[Path]:
     round_records = snapshot.pop("_round_records", [])
     observation = snapshot.pop("_measurement_observation", None)
     snapshot.pop("_observatory_scan_results", None)
+    observatory_state_text = snapshot.pop("_observatory_state_root", None)
     today = snapshot["collection"]["date"]
     corrections: list[dict[str, str]] = []
     written: list[Path] = []
@@ -2231,6 +2232,8 @@ def write_outputs(snapshot: dict[str, Any], project_root: Path) -> list[Path]:
     rounds_payload = merge_round_records(rounds_path, round_records, snapshot["generated_at"])
     atomic_write(rounds_path, json_text(rounds_payload))
     written.append(rounds_path)
+    if observatory_state_text and snapshot.get("metrics", {}).get("observatory", {}).get("status") != "disabled":
+        written.extend(global_observatory.write_machine_layers(project_root, Path(observatory_state_text), snapshot))
     violations = forbidden_value_violations(snapshot)
     if violations:
         raise RuntimeError("privacy_allowlist_violation")
@@ -2648,6 +2651,7 @@ def collect_snapshot(
     )
     snapshot.setdefault("metrics", {})["observatory"] = observatory_summary
     snapshot["_observatory_scan_results"] = observatory_roots
+    snapshot["_observatory_state_root"] = str(cache_root)
     snapshot.setdefault("metrics", {})["reliability"] = telemetry_stability.run_doctor(
         config,
         project_root,
@@ -2761,6 +2765,8 @@ def commit_existing_generated(project_root: Path) -> None:
         project_root / "data" / "telemetry.js",
         project_root / "data" / "rounds.json",
         *sorted((project_root / "data" / "history").glob("*.json")),
+        *sorted((project_root / "data" / "machine").glob("*.jsonl")),
+        project_root / "data" / "machine" / "MANIFEST.json",
     ]
     commit_generated(project_root, snapshot, [path for path in paths if path.is_file()])
 

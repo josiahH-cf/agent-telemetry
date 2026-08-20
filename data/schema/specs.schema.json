@@ -1,0 +1,24 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "agent-telemetry/specs-record-v1",
+  "title": "Governed-loop feature-cycle record",
+  "description": "One feature-cycle outcome with time, usage, finding, and debt measures.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["spec_id", "outcome", "accepted", "rounds", "wall_hours", "lead_hours", "lead_time_status", "findings", "debt_at_accept", "build_tokens", "build_cost_usd", "judge_tokens", "judge_cost_usd"],
+  "properties": {
+    "spec_id": {"type": "string"},
+    "outcome": {"type": ["string", "null"]},
+    "accepted": {"type": "boolean"},
+    "rounds": {"type": "integer"},
+    "wall_hours": {"type": ["number", "null"]},
+    "lead_hours": {"type": ["number", "null"]},
+    "lead_time_status": {"type": ["string", "null"]},
+    "findings": {"type": "integer"},
+    "debt_at_accept": {"type": ["integer", "null"]},
+    "build_tokens": {"type": "integer"},
+    "build_cost_usd": {"type": "number"},
+    "judge_tokens": {"type": "integer"},
+    "judge_cost_usd": {"type": "number"}
+  }
+}

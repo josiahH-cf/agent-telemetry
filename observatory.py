@@ -1026,6 +1026,23 @@ def public_summary(connection: sqlite3.Connection) -> dict[str, Any]:
         }
     projects = []
     for row in connection.execute("SELECT * FROM projects ORDER BY cost_usd DESC,project_id"):
+        vendor_split: dict[str, dict[str, Any]] = {}
+        host_split: dict[str, dict[str, Any]] = {}
+        for vendor in sorted(VENDORS):
+            sessions = connection.execute("SELECT * FROM sessions WHERE project_id=? AND vendor=?", (row["project_id"], vendor)).fetchall()
+            vendor_split[vendor] = {
+                "sessions": len(sessions),
+                "tokens": sum(usage.token_total(vendor, vendor_classes(vendor, json.loads(item["tokens_json"]))) for item in sessions),
+                "cost_usd": rounded(sum(float(item["cost_usd"]) for item in sessions)) or 0.0,
+                "unpriced_tokens": sum(safe_int(item["unpriced_tokens"]) for item in sessions),
+            }
+        for host in sorted(HOST_OSES):
+            sessions = connection.execute("SELECT * FROM sessions WHERE project_id=? AND host_os=?", (row["project_id"], host)).fetchall()
+            host_split[host] = {
+                "sessions": len(sessions),
+                "tokens": sum(usage.token_total(str(item["vendor"]), vendor_classes(str(item["vendor"]), json.loads(item["tokens_json"]))) for item in sessions),
+                "cost_usd": rounded(sum(float(item["cost_usd"]) for item in sessions)) or 0.0,
+            }
         projects.append(
             {
                 "project_id": row["public_label"] or row["project_code"],
@@ -1034,6 +1051,8 @@ def public_summary(connection: sqlite3.Connection) -> dict[str, Any]:
                 "category": row["category"],
                 "sessions": row["sessions"], "tokens": row["tokens"], "cost_usd": rounded(row["cost_usd"]) or 0.0,
                 "unpriced_tokens": row["unpriced_tokens"], "first_seen_at": row["first_seen_at"], "last_seen_at": row["last_seen_at"],
+                "by_vendor": vendor_split,
+                "by_host_os": host_split,
                 "per_os": {
                     "wsl": {"first_seen_at": row["first_seen_wsl_at"], "last_seen_at": row["last_seen_wsl_at"]},
                     "windows": {"first_seen_at": row["first_seen_windows_at"], "last_seen_at": row["last_seen_windows_at"]},
@@ -1047,11 +1066,28 @@ def public_summary(connection: sqlite3.Connection) -> dict[str, Any]:
     coverage = connection.execute("SELECT min(first_ts),max(last_ts) FROM sessions").fetchone()
     loop_raw = connection.execute("SELECT value FROM meta WHERE key='loop_headline'").fetchone()
     loop_headline = json.loads(loop_raw[0]) if loop_raw else {}
+    public_ids = _public_project_ids(connection)
     days = []
+    for row in connection.execute("SELECT * FROM daily_rollups ORDER BY day_utc,project_id,vendor,host_os"):
+        classes = {key: safe_int(row[key]) for key in TOKEN_COLUMNS}
+        days.append(
+            {
+                "date": row["day_utc"], "project_id": public_ids[str(row["project_id"])], "vendor": row["vendor"],
+                "host_os": row["host_os"], "sessions": row["sessions"], "tokens": _total_tokens(str(row["vendor"]), classes),
+                "cost_usd": rounded(row["cost_usd"]) or 0.0, "unpriced_tokens": row["unpriced_tokens"],
+            }
+        )
+    activity_hours = []
     for row in connection.execute(
-        "SELECT day_utc,vendor,host_os,sum(sessions),sum(input_tokens+output_tokens),sum(cost_usd),sum(unpriced_tokens) FROM daily_rollups GROUP BY day_utc,vendor,host_os ORDER BY day_utc,vendor,host_os"
+        """
+        SELECT day_utc,vendor,host_os,CAST(strftime('%w',timestamp_utc) AS INTEGER) weekday_utc,
+               CAST(strftime('%H',timestamp_utc) AS INTEGER) hour_utc,count(*) events
+        FROM (""" + DEDUP_QUERY.replace("ORDER BY vendor, session_id, day_utc, timestamp_utc, event_id", "") + """)
+        WHERE timestamp_utc IS NOT NULL
+        GROUP BY day_utc,vendor,host_os,weekday_utc,hour_utc ORDER BY day_utc,vendor,host_os,weekday_utc,hour_utc
+        """
     ):
-        days.append({"date": row[0], "vendor": row[1], "host_os": row[2], "sessions": row[3], "tokens": row[4], "cost_usd": rounded(row[5]) or 0.0, "unpriced_tokens": row[6]})
+        activity_hours.append({"date": row[0], "vendor": row[1], "host_os": row[2], "weekday_utc": row[3], "hour_utc": row[4], "events": row[5]})
     return {
         "schema_version": PUBLIC_SCHEMA_VERSION,
         "store_schema_version": STORE_SCHEMA_VERSION,
@@ -1073,9 +1109,329 @@ def public_summary(connection: sqlite3.Connection) -> dict[str, Any]:
         "source_roots": roots,
         "observations": {"raw": raw_observations, "unique": unique_observations, "deduplicated": max(0, raw_observations - unique_observations)},
         "daily": days,
+        "activity_hours": activity_hours,
         "loop_headline": loop_headline,
         "store": {"integrity": store_integrity(connection), "semantic_digest": semantic_digest(connection)},
     }
+
+
+DATASET_NAMES = ("projects", "sessions", "days", "rounds", "specs", "tests", "publications", "incidents")
+
+
+def _public_project_ids(connection: sqlite3.Connection) -> dict[str, str]:
+    return {
+        str(row["project_id"]): str(row["public_label"] or row["project_code"])
+        for row in connection.execute("SELECT project_id,project_code,public_label FROM projects")
+    }
+
+
+def _total_tokens(vendor: str, classes: dict[str, int]) -> int:
+    return usage.token_total(vendor, vendor_classes(vendor, classes))
+
+
+def machine_datasets(connection: sqlite3.Connection) -> tuple[dict[str, list[dict[str, Any]]], dict[str, list[dict[str, Any]]]]:
+    """Return stable public and restricted-local record families from the store."""
+    public_ids = _public_project_ids(connection)
+    public: dict[str, list[dict[str, Any]]] = {name: [] for name in DATASET_NAMES}
+    local: dict[str, list[dict[str, Any]]] = {name: [] for name in DATASET_NAMES}
+    for row in connection.execute("SELECT * FROM projects ORDER BY project_id"):
+        vendor_rows: dict[str, list[sqlite3.Row]] = {
+            vendor: connection.execute("SELECT * FROM sessions WHERE project_id=? AND vendor=?", (row["project_id"], vendor)).fetchall()
+            for vendor in sorted(VENDORS)
+        }
+        item = {
+            "project_id": public_ids[str(row["project_id"])],
+            "project_code": row["project_code"],
+            "public_label": row["public_label"],
+            "category": row["category"],
+            "registered": bool(row["registered"]),
+            "first_seen_at": row["first_seen_at"],
+            "last_seen_at": row["last_seen_at"],
+            "wsl_first_seen_at": row["first_seen_wsl_at"],
+            "wsl_last_seen_at": row["last_seen_wsl_at"],
+            "windows_first_seen_at": row["first_seen_windows_at"],
+            "windows_last_seen_at": row["last_seen_windows_at"],
+            "sessions": row["sessions"],
+            "tokens": row["tokens"],
+            "api_equivalent_cost_usd": rounded(row["cost_usd"]) or 0.0,
+            "unpriced_tokens": row["unpriced_tokens"],
+            "anthropic_sessions": len(vendor_rows["anthropic"]),
+            "anthropic_tokens": sum(usage.token_total("anthropic", vendor_classes("anthropic", json.loads(item["tokens_json"]))) for item in vendor_rows["anthropic"]),
+            "anthropic_cost_usd": rounded(sum(float(item["cost_usd"]) for item in vendor_rows["anthropic"])) or 0.0,
+            "openai_sessions": len(vendor_rows["openai"]),
+            "openai_tokens": sum(usage.token_total("openai", vendor_classes("openai", json.loads(item["tokens_json"]))) for item in vendor_rows["openai"]),
+            "openai_cost_usd": rounded(sum(float(item["cost_usd"]) for item in vendor_rows["openai"])) or 0.0,
+        }
+        public["projects"].append(item)
+        local["projects"].append({**item, "internal_project_id": row["project_id"], "real_name": row["real_name"], "canonical_path": row["canonical_path"]})
+    for row in connection.execute("SELECT * FROM sessions ORDER BY public_session_id"):
+        classes = json.loads(row["tokens_json"])
+        models = json.loads(row["models_json"])
+        item = {
+            "session_id": row["public_session_id"],
+            "vendor": row["vendor"],
+            "model": models[0] if len(models) == 1 else "mixed" if models else "unknown",
+            "host_os": row["host_os"],
+            "project_id": public_ids[str(row["project_id"])],
+            "started_at": row["first_ts"],
+            "ended_at": row["last_ts"],
+            **{key: safe_int(classes.get(key)) for key in TOKEN_COLUMNS},
+            "tokens": _total_tokens(str(row["vendor"]), classes),
+            "api_equivalent_cost_usd": rounded(row["cost_usd"]) or 0.0,
+            "unpriced_tokens": row["unpriced_tokens"],
+            "linkage": row["linkage"],
+            "attribution": row["resolution"],
+            "source_files": row["source_count"],
+        }
+        public["sessions"].append(item)
+        local["sessions"].append(
+            {
+                **item,
+                "raw_session_id": row["session_id"],
+                "raw_cwd": row["raw_cwd"],
+                "canonical_cwd": row["canonical_cwd"],
+                "internal_project_id": row["project_id"],
+                "candidate_code": row["candidate_code"],
+            }
+        )
+    for row in connection.execute("SELECT * FROM daily_rollups ORDER BY day_utc,project_id,vendor,host_os"):
+        classes = {key: safe_int(row[key]) for key in TOKEN_COLUMNS}
+        item = {
+            "date": row["day_utc"],
+            "project_id": public_ids[str(row["project_id"])],
+            "vendor": row["vendor"],
+            "host_os": row["host_os"],
+            "sessions": row["sessions"],
+            **classes,
+            "tokens": _total_tokens(str(row["vendor"]), classes),
+            "api_equivalent_cost_usd": rounded(row["cost_usd"]) or 0.0,
+            "unpriced_tokens": row["unpriced_tokens"],
+        }
+        public["days"].append(item)
+        local["days"].append({**item, "internal_project_id": row["project_id"]})
+
+    for row in connection.execute("SELECT record_id,record_json FROM loop_rounds ORDER BY record_id"):
+        raw = json.loads(row["record_json"])
+        builder = raw.get("builder") if isinstance(raw.get("builder"), dict) else {}
+        judge = raw.get("judge") if isinstance(raw.get("judge"), dict) else {}
+        item = {
+            "round_id": row["record_id"],
+            "spec_id": raw.get("spec"),
+            "row_id": raw.get("row"),
+            "round_number": safe_int(raw.get("round")),
+            "verdict": raw.get("verdict"),
+            "accepted": bool(raw.get("accepted")),
+            "started_at": raw.get("started_at"),
+            "ended_at": raw.get("ended_at"),
+            "duration_minutes": raw.get("duration_minutes"),
+            "findings": safe_int(raw.get("findings")),
+            "builder_vendor": builder.get("vendor"),
+            "builder_model": builder.get("model_observed"),
+            "builder_tokens": safe_int(builder.get("tokens")),
+            "builder_cost_usd": rounded(float(builder.get("usd") or 0)) or 0.0,
+            "builder_attribution": builder.get("attribution"),
+            "judge_vendor": judge.get("vendor"),
+            "judge_model": judge.get("model_observed"),
+            "judge_tokens": safe_int(judge.get("tokens")),
+            "judge_cost_usd": rounded(float(judge.get("usd") or 0)) or 0.0,
+            "judge_attribution": judge.get("attribution"),
+            "tokens": safe_int(raw.get("total_tokens")),
+            "api_equivalent_cost_usd": rounded(float(raw.get("total_usd") or 0)) or 0.0,
+            "unpriced_tokens": safe_int(raw.get("unpriced_tokens")),
+            "cost_status": raw.get("cost_status"),
+        }
+        public["rounds"].append(item)
+        local["rounds"].append({**item, "evidence_record": raw})
+    for row in connection.execute("SELECT record_id,record_json FROM loop_specs ORDER BY record_id"):
+        raw = json.loads(row["record_json"])
+        build = raw.get("build") if isinstance(raw.get("build"), dict) else {}
+        judge = raw.get("judge") if isinstance(raw.get("judge"), dict) else {}
+        item = {
+            "spec_id": row["record_id"],
+            "outcome": raw.get("outcome"),
+            "accepted": bool(raw.get("accepted")),
+            "rounds": safe_int(raw.get("rounds_count"), len(raw.get("rounds", [])) if isinstance(raw.get("rounds"), list) else 0),
+            "wall_hours": raw.get("wall_hours"),
+            "lead_hours": raw.get("lead_hours"),
+            "lead_time_status": raw.get("lead_time_status"),
+            "findings": safe_int(raw.get("findings_total")),
+            "debt_at_accept": raw.get("debt_at_accept"),
+            "build_tokens": safe_int(build.get("tokens")),
+            "build_cost_usd": rounded(float(build.get("usd") or 0)) or 0.0,
+            "judge_tokens": safe_int(judge.get("tokens")),
+            "judge_cost_usd": rounded(float(judge.get("usd") or 0)) or 0.0,
+        }
+        public["specs"].append(item)
+        local["specs"].append({**item, "evidence_record": raw})
+    for row in connection.execute("SELECT record_id,record_json FROM test_runs ORDER BY record_id"):
+        raw = json.loads(row["record_json"])
+        item = {
+            "test_run_id": row["record_id"],
+            "observed_at": raw.get("timestamp"),
+            "tests": safe_int(raw.get("tests")),
+            "failures": safe_int(raw.get("failures")),
+            "errors": safe_int(raw.get("errors")),
+            "skipped": safe_int(raw.get("skipped")),
+            "duration_seconds": rounded(float(raw.get("seconds") or 0)) or 0.0,
+        }
+        public["tests"].append(item)
+        local["tests"].append({**item, "evidence_record": raw})
+    for dataset, table, id_key in (("publications", "publications", "publication_id"), ("incidents", "incidents", "incident_id")):
+        for row in connection.execute(f"SELECT record_id,record_json FROM {table} ORDER BY record_id"):
+            raw = json.loads(row["record_json"])
+            item = {id_key: row["record_id"], "observed_at": None, "metrics": raw}
+            public[dataset].append(item)
+            local[dataset].append(item)
+    return public, local
+
+
+def validate_json_type(value: Any, expected: str) -> bool:
+    return {
+        "object": isinstance(value, dict),
+        "array": isinstance(value, list),
+        "string": isinstance(value, str),
+        "integer": isinstance(value, int) and not isinstance(value, bool),
+        "number": isinstance(value, (int, float)) and not isinstance(value, bool) and math.isfinite(float(value)),
+        "boolean": isinstance(value, bool),
+        "null": value is None,
+    }.get(expected, False)
+
+
+def validate_record(record: dict[str, Any], schema: dict[str, Any]) -> list[str]:
+    """Small deterministic validator for the repository's flat-record schemas."""
+    errors: list[str] = []
+    properties = schema.get("properties") if isinstance(schema.get("properties"), dict) else {}
+    for name in schema.get("required", []):
+        if name not in record:
+            errors.append(f"required:{name}")
+    if schema.get("additionalProperties") is False:
+        for name in record:
+            if name not in properties:
+                errors.append(f"additional:{name}")
+    for name, value in record.items():
+        rule = properties.get(name)
+        if not isinstance(rule, dict):
+            continue
+        raw_types = rule.get("type")
+        types = raw_types if isinstance(raw_types, list) else [raw_types]
+        if not any(validate_json_type(value, expected) for expected in types if isinstance(expected, str)):
+            errors.append(f"type:{name}")
+            continue
+        if isinstance(rule.get("enum"), list) and value not in rule["enum"]:
+            errors.append(f"enum:{name}")
+        if isinstance(value, str) and rule.get("pattern") and not re.fullmatch(str(rule["pattern"]), value):
+            errors.append(f"pattern:{name}")
+    return sorted(errors)
+
+
+def dataset_coverage(rows: list[dict[str, Any]]) -> dict[str, str | None]:
+    candidates = [
+        value
+        for row in rows
+        for key, value in row.items()
+        if (key == "date" or key.endswith("_at")) and isinstance(value, str)
+    ]
+    return {"from": min(candidates) if candidates else None, "to": max(candidates) if candidates else None}
+
+
+def _write_jsonl(path: Path, rows: list[dict[str, Any]]) -> str:
+    payload = "".join(json.dumps(row, sort_keys=True, separators=(",", ":"), ensure_ascii=True) + "\n" for row in rows)
+    atomic_text(path, payload)
+    return hashlib.sha256(payload.encode()).hexdigest()
+
+
+def write_machine_layers(
+    project_root: Path,
+    state_root: Path,
+    snapshot: dict[str, Any],
+) -> list[Path]:
+    store_path = state_root / STORE_NAME
+    connection = connect_store(store_path)
+    try:
+        public, local = machine_datasets(connection)
+        store_summary = public_summary(connection)
+    finally:
+        connection.close()
+    schemas: dict[str, dict[str, Any]] = {}
+    for name in DATASET_NAMES:
+        schema = read_json(project_root / "data" / "schema" / f"{name}.schema.json")
+        if not schema:
+            raise ObservatoryError(f"schema_missing_{name}")
+        schemas[name] = schema
+        violations = [error for row in public[name] for error in validate_record(row, schema)]
+        if violations:
+            raise ObservatoryError(f"schema_validation_{name}_{violations[0]}")
+    generated_at = str(snapshot.get("generated_at") or iso(utc_now()))
+    machine_root = project_root / "data" / "machine"
+    local_root = state_root / "machine"
+    machine_root.mkdir(parents=True, exist_ok=True)
+    local_root.mkdir(parents=True, exist_ok=True)
+    written: list[Path] = []
+    entries: list[dict[str, Any]] = []
+    local_entries: list[dict[str, Any]] = []
+    semantics = {
+        "projects": "One public project identity or bulk bucket with lifetime totals and per-OS coverage.",
+        "sessions": "One provider session after cross-source event deduplication; working directories are excluded.",
+        "days": "UTC daily usage by public project identity, vendor, and host operating system.",
+        "rounds": "Outcome-rich governed-loop round facts with usage attribution.",
+        "specs": "Outcome-rich governed-loop feature-cycle facts.",
+        "tests": "Sanitized governed-loop test-run facts.",
+        "publications": "Sanitized publication/deploy aggregate observations.",
+        "incidents": "Sanitized quality/incident aggregate observations.",
+    }
+    for name in DATASET_NAMES:
+        path = machine_root / f"{name}.jsonl"
+        digest = _write_jsonl(path, public[name])
+        written.append(path)
+        entries.append(
+            {
+                "dataset": name,
+                "path": f"data/machine/{name}.jsonl",
+                "schema": f"data/schema/{name}.schema.json",
+                "rows": len(public[name]),
+                "sha256": digest,
+                "coverage": dataset_coverage(public[name]),
+                "semantics": semantics[name],
+            }
+        )
+        local_path = local_root / f"{name}.jsonl"
+        local_digest = _write_jsonl(local_path, local[name])
+        local_entries.append({"dataset": name, "path": local_path.name, "rows": len(local[name]), "sha256": local_digest, "restricted": True})
+    manifest = {"schema_version": PUBLIC_SCHEMA_VERSION, "generated_at": generated_at, "datasets": entries}
+    manifest_path = machine_root / "MANIFEST.json"
+    atomic_text(manifest_path, json.dumps(manifest, indent=2, sort_keys=True) + "\n")
+    written.append(manifest_path)
+    atomic_text(local_root / "MANIFEST.json", json.dumps({"schema_version": PUBLIC_SCHEMA_VERSION, "generated_at": generated_at, "store": STORE_NAME, "datasets": local_entries}, indent=2, sort_keys=True) + "\n", 0o600)
+
+    machine_totals = {
+        "sessions": len(public["sessions"]),
+        "tokens": sum(safe_int(row["tokens"]) for row in public["sessions"]),
+        "cost_usd": rounded(sum(float(row["api_equivalent_cost_usd"]) for row in public["sessions"])) or 0.0,
+        "unpriced_tokens": sum(safe_int(row["unpriced_tokens"]) for row in public["sessions"]),
+    }
+    envelope = snapshot.get("metrics", {}).get("observatory", {}).get("totals", {})
+    comparisons = {
+        "sessions": safe_int(envelope.get("sessions")) == machine_totals["sessions"] == safe_int(store_summary["totals"]["sessions"]),
+        "tokens": safe_int(envelope.get("tokens")) == machine_totals["tokens"] == safe_int(store_summary["totals"]["tokens"]),
+        "unpriced_tokens": safe_int(envelope.get("unpriced_tokens")) == machine_totals["unpriced_tokens"] == safe_int(store_summary["totals"]["unpriced_tokens"]),
+        "cost_usd": abs(float(envelope.get("cost_usd") or 0) - machine_totals["cost_usd"]) < 0.01 and abs(float(store_summary["totals"]["cost_usd"]) - machine_totals["cost_usd"]) < 0.01,
+    }
+    reconciliation = {"status": "ok" if all(comparisons.values()) else "fail", "store_envelope_machine": comparisons, "machine_totals": machine_totals}
+    snapshot.setdefault("metrics", {}).setdefault("observatory", {})["reconciliation"] = reconciliation
+    if reconciliation["status"] != "ok":
+        raise ObservatoryError("store_envelope_machine_reconciliation_failed")
+
+    today = str(snapshot.get("collection", {}).get("date") or generated_at[:10])
+    global_day = {
+        "schema_version": PUBLIC_SCHEMA_VERSION,
+        "date": today,
+        "collected_at": generated_at,
+        "rollups": [row for row in public["days"] if row["date"] == today],
+    }
+    history_path = project_root / "data" / "history" / f"global-{today}.json"
+    atomic_text(history_path, json.dumps(global_day, indent=2, sort_keys=True) + "\n")
+    written.append(history_path)
+    return written
 
 
 def _collect_into(
