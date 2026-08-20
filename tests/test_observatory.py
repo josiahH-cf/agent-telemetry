@@ -100,9 +100,10 @@ def loop_snapshot() -> dict[str, object]:
 class CanonicalizationTests(unittest.TestCase):
     def test_observed_cross_os_forms_canonicalize_to_one_identity(self) -> None:
         linux = "/" + "/".join(("home", "account", "Project"))
-        unc_localhost = "\\\\" + "wsl.localhost" + "\\Distro\\home\\account\\Project"
-        unc_dollar = "\\\\" + "wsl$" + "\\Distro\\home\\account\\Project"
-        drive = "C:" + "\\Users\\Account\\Project"
+        slash = chr(92)
+        unc_localhost = slash * 2 + slash.join(("wsl.localhost", "Distro", "home", "account", "Project"))
+        unc_dollar = slash * 2 + slash.join(("wsl$", "Distro", "home", "account", "Project"))
+        drive = "C:" + slash + slash.join(("Users", "Account", "Project"))
         mounted = "/" + "/".join(("mnt", "c", "users", "account", "project"))
         self.assertEqual(observatory.canonicalize_path(linux), observatory.canonicalize_path(unc_localhost))
         self.assertEqual(observatory.canonicalize_path(linux), observatory.canonicalize_path(unc_dollar))
@@ -128,11 +129,13 @@ class CanonicalizationTests(unittest.TestCase):
 class StoreTests(unittest.TestCase):
     def populate(self, root: Path, config: dict[str, object]) -> None:
         cwd = "/" + "/".join(("home", "account", "project"))
+        slash = chr(92)
+        windows_cwd = "C:" + slash + slash.join(("Users", "Account", "Project"))
         values = {row["root_id"]: Path(str(row["path"])) for row in config["observatory"]["roots"]}  # type: ignore[index]
         write_lines(values["wsl_claude"] / "project" / "one.jsonl", claude_rows("claude-wsl", "message-wsl", cwd))
-        write_lines(values["windows_claude"] / "Project" / "two.jsonl", claude_rows("claude-windows", "message-windows", "C:" + "\\Users\\Account\\Project"))
+        write_lines(values["windows_claude"] / "Project" / "two.jsonl", claude_rows("claude-windows", "message-windows", windows_cwd))
         write_lines(values["wsl_codex"] / "2026" / "08" / "20" / "one.jsonl", codex_rows("codex-wsl", cwd))
-        write_lines(values["windows_codex"] / "2026" / "08" / "20" / "two.jsonl", codex_rows("codex-windows", "C:" + "\\Users\\Account\\Project"))
+        write_lines(values["windows_codex"] / "2026" / "08" / "20" / "two.jsonl", codex_rows("codex-windows", windows_cwd))
 
     def test_four_roots_transactional_incremental_and_metadata_only(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:

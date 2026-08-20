@@ -38,12 +38,17 @@ WINDOWS_SCHTASKS = Path("/") / "mnt" / "c" / "Windows" / "System32" / "schtasks.
 
 STATIC_TRACKED_PATHS = {
     "AGENTS.md",
+    "CLAUDE.md",
+    ".githooks/pre-commit",
+    ".githooks/pre-push",
     ".gitignore",
     "README.md",
     "collect.py",
+    "metric_catalog.py",
     "dashboard.js",
     "data/schema/days.schema.json",
     "data/schema/incidents.schema.json",
+    "data/schema/metrics.schema.json",
     "data/schema/projects.schema.json",
     "data/schema/publications.schema.json",
     "data/schema/rounds.schema.json",
@@ -53,6 +58,7 @@ STATIC_TRACKED_PATHS = {
     "docs/OUTCOME_ADAPTER.md",
     "docs/STABILITY.md",
     "index.html",
+    "git_guard.py",
     "observatory.py",
     "prices.json",
     "projects.json",
@@ -61,6 +67,8 @@ STATIC_TRACKED_PATHS = {
     "sources.example.json",
     "stability.py",
     "tests/test_collect.py",
+    "tests/test_dashboard.py",
+    "tests/test_git_guard.py",
     "tests/test_observatory.py",
     "tests/test_publish.py",
     "tests/test_retention.py",
@@ -72,7 +80,7 @@ STATIC_TRACKED_PATHS = {
 GENERATED_TRACKED_RE = re.compile(
     r"^data/(?:telemetry\.(?:json|js)|rounds\.json|"
     r"history/(?:cost|daily|measurement|global)-\d{4}-\d{2}-\d{2}\.json|"
-    r"machine/(?:MANIFEST\.json|(?:days|incidents|projects|publications|rounds|sessions|specs|tests)\.jsonl))$"
+    r"machine/(?:MANIFEST\.json|(?:days|incidents|metrics|projects|publications|rounds|sessions|specs|tests)\.jsonl))$"
 )
 LOG_RE = re.compile(
     r"^(?P<timestamp>\S+)\s+mode=(?P<mode>refresh|publish|catchup|lock-probe)"
@@ -526,7 +534,9 @@ def _machine_manifest_status(project_root: Path) -> tuple[str, str]:
             invalid += 1
             continue
         invalid += int(digest != entry.get("sha256") or rows != safe_int(entry.get("rows"), -1))
-    status = "ok" if len(datasets) == 8 and invalid == 0 else "fail"
+    expected = {"projects", "sessions", "days", "rounds", "specs", "tests", "publications", "incidents", "metrics"}
+    observed = {str(entry.get("dataset")) for entry in datasets if isinstance(entry, dict)}
+    status = "ok" if observed == expected and invalid == 0 else "fail"
     return status, f"datasets_{len(datasets)}_invalid_{invalid}"
 
 
@@ -538,6 +548,27 @@ def _reconciliation_status(project_root: Path) -> tuple[str, str]:
     comparisons = reconciliation.get("store_envelope_machine") if isinstance(reconciliation.get("store_envelope_machine"), dict) else {}
     ok = reconciliation.get("status") == "ok" and bool(comparisons) and all(value is True for value in comparisons.values())
     return ("ok", f"fields_{len(comparisons)}_match") if ok else ("fail", "store_envelope_machine_mismatch")
+
+
+def _git_hooks_status(project_root: Path) -> tuple[str, str]:
+    try:
+        configured = subprocess.run(
+            ["git", "-C", str(project_root), "config", "--local", "--get", "core.hooksPath"],
+            check=True,
+            text=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            timeout=5,
+        ).stdout.strip()
+    except (OSError, subprocess.CalledProcessError, subprocess.TimeoutExpired):
+        return "fail", "hooks_path_unset"
+    hooks = [project_root / ".githooks" / name for name in ("pre-commit", "pre-push")]
+    executable = sum(path.is_file() and not path.is_symlink() and bool(path.stat().st_mode & 0o111) for path in hooks)
+    if configured != ".githooks":
+        return "fail", "hooks_path_mismatch"
+    if executable != len(hooks):
+        return "fail", f"executable_{executable}_of_{len(hooks)}"
+    return "ok", "path_and_two_executable_hooks_ok"
 
 
 def run_doctor(
@@ -586,6 +617,8 @@ def run_doctor(
     add("machine_manifest", machine_status, machine_detail)
     reconcile_status, reconcile_detail = _reconciliation_status(project_root)
     add("reconciliation", reconcile_status, reconcile_detail)
+    hooks_status, hooks_detail = _git_hooks_status(project_root)
+    add("git_hooks", hooks_status, hooks_detail)
 
     try:
         manifest = tracked_manifest_violations(project_root)

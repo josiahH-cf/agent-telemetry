@@ -1019,6 +1019,17 @@ def public_summary(connection: sqlite3.Connection) -> dict[str, Any]:
             "tokens": sum(usage.token_total(str(row["vendor"]), vendor_classes(str(row["vendor"]), json.loads(row["tokens_json"]))) for row in rows),
             "cost_usd": rounded(sum(float(row["cost_usd"]) for row in rows)) or 0.0,
         }
+    by_model: dict[str, dict[str, Any]] = {}
+    for row in connection.execute("SELECT vendor,models_json,tokens_json,cost_usd,unpriced_tokens FROM sessions"):
+        models = json.loads(row["models_json"])
+        model = str(models[0]) if len(models) == 1 else "mixed" if models else "unknown"
+        item = by_model.setdefault(model, {"sessions": 0, "tokens": 0, "cost_usd": 0.0, "unpriced_tokens": 0})
+        item["sessions"] += 1
+        item["tokens"] += usage.token_total(str(row["vendor"]), vendor_classes(str(row["vendor"]), json.loads(row["tokens_json"])))
+        item["cost_usd"] += float(row["cost_usd"])
+        item["unpriced_tokens"] += safe_int(row["unpriced_tokens"])
+    for item in by_model.values():
+        item["cost_usd"] = rounded(float(item["cost_usd"])) or 0.0
     projects = []
     for row in connection.execute("SELECT * FROM projects ORDER BY cost_usd DESC,project_id"):
         vendor_split: dict[str, dict[str, Any]] = {}
@@ -1095,6 +1106,7 @@ def public_summary(connection: sqlite3.Connection) -> dict[str, Any]:
         },
         "by_vendor": by_vendor,
         "by_host_os": by_host,
+        "by_model": dict(sorted(by_model.items())),
         "projects": projects,
         "buckets": {
             bucket: next((item for item in projects if item["project_code"] == bucket), {"project_id": bucket, "project_code": bucket, "sessions": 0, "tokens": 0, "cost_usd": 0.0})
@@ -1110,7 +1122,8 @@ def public_summary(connection: sqlite3.Connection) -> dict[str, Any]:
     }
 
 
-DATASET_NAMES = ("projects", "sessions", "days", "rounds", "specs", "tests", "publications", "incidents")
+STORE_DATASET_NAMES = ("projects", "sessions", "days", "rounds", "specs", "tests", "publications", "incidents")
+DATASET_NAMES = STORE_DATASET_NAMES + ("metrics",)
 
 
 def _public_project_ids(connection: sqlite3.Connection) -> dict[str, str]:
@@ -1237,6 +1250,8 @@ def machine_datasets(connection: sqlite3.Connection) -> tuple[dict[str, list[dic
         }
         public["rounds"].append(item)
         local["rounds"].append({**item, "evidence_record": raw})
+    public["rounds"].sort(key=lambda item: (str(item.get("spec_id") or ""), safe_int(item.get("round_number")), str(item.get("round_id") or "")))
+    local["rounds"].sort(key=lambda item: (str(item.get("spec_id") or ""), safe_int(item.get("round_number")), str(item.get("round_id") or "")))
     for row in connection.execute("SELECT record_id,record_json FROM loop_specs ORDER BY record_id"):
         raw = json.loads(row["record_json"])
         build = raw.get("build") if isinstance(raw.get("build"), dict) else {}
@@ -1339,6 +1354,7 @@ def write_machine_layers(
     project_root: Path,
     state_root: Path,
     snapshot: dict[str, Any],
+    metric_catalog: list[dict[str, Any]] | None = None,
 ) -> list[Path]:
     store_path = state_root / STORE_NAME
     connection = connect_store(store_path)
@@ -1347,6 +1363,8 @@ def write_machine_layers(
         store_summary = public_summary(connection)
     finally:
         connection.close()
+    public["metrics"] = [dict(row) for row in (metric_catalog or [])]
+    local["metrics"] = [dict(row) for row in (metric_catalog or [])]
     schemas: dict[str, dict[str, Any]] = {}
     for name in DATASET_NAMES:
         schema = read_json(project_root / "data" / "schema" / f"{name}.schema.json")
@@ -1373,6 +1391,7 @@ def write_machine_layers(
         "tests": "Sanitized governed-loop test-run facts.",
         "publications": "Sanitized publication/deploy aggregate observations.",
         "incidents": "Sanitized quality/incident aggregate observations.",
+        "metrics": "Definitions, exact derivations, sources, caveats, units, and page-versus-machine surface decisions.",
     }
     for name in DATASET_NAMES:
         path = machine_root / f"{name}.jsonl"

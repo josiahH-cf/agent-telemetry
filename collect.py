@@ -35,6 +35,7 @@ from typing import Any, Callable, Iterable
 import usage as vendor_usage
 import stability as telemetry_stability
 import observatory as global_observatory
+import metric_catalog
 
 
 SCHEMA_VERSION = 2
@@ -1921,7 +1922,8 @@ def sensitive_content_reasons(content: bytes, denylist: list[str] | None = None)
     user = getpass.getuser().encode("utf-8", errors="ignore")
     if user and (b"/home/" + user + b"/") in content:
         reasons.add("username_path")
-    if user and (b"\\Users\\" + user + b"\\").lower() in content.lower():
+    backslash = bytes((92,))
+    if user and (backslash + b"Users" + backslash + user + backslash).lower() in content.lower():
         reasons.add("username_path")
     # WSL and Windows account names are not necessarily identical.  Match the
     # structural path/slug forms without banning those character sequences in
@@ -1933,7 +1935,11 @@ def sensitive_content_reasons(content: bytes, denylist: list[str] | None = None)
         rb"[Uu]sers-[A-Za-z0-9._-]+-",
         rb"--wsl(?:-localhost|-dollar)?-[A-Za-z0-9._-]+-home-[A-Za-z0-9._-]+-",
     )
-    if any(re.search(pattern, content) for pattern in private_account_patterns):
+    unc_pattern = (
+        re.escape(backslash * 2)
+        + rb"(?:wsl(?:\.localhost|\$)?[\\/][^\\/\s\"']+|[^\\/\s\"']+)[\\/][^\s\"']+"
+    )
+    if any(re.search(pattern, content) for pattern in private_account_patterns) or re.search(unc_pattern, content):
         reasons.add("username_path")
     for term in denylist or []:
         if term.encode("utf-8") in content:
@@ -1958,7 +1964,9 @@ def repository_scrub_violations(project_root: Path, denylist_path: Path | None =
         relative = os.fsdecode(raw_name)
         path = project_root / relative
         try:
-            content = path.read_bytes()
+            # Scan the link itself rather than following it into a private local
+            # target. Staged and outbound Git objects are handled by git_guard.py.
+            content = os.fsencode(os.readlink(path)) if path.is_symlink() else path.read_bytes()
         except OSError:
             violations.append({"path": relative, "reason": "unreadable_file"})
             continue
@@ -2233,16 +2241,31 @@ def write_outputs(snapshot: dict[str, Any], project_root: Path) -> list[Path]:
     atomic_write(rounds_path, json_text(rounds_payload))
     written.append(rounds_path)
     if observatory_state_text and snapshot.get("metrics", {}).get("observatory", {}).get("status") != "disabled":
-        written.extend(global_observatory.write_machine_layers(project_root, Path(observatory_state_text), snapshot))
+        written.extend(
+            global_observatory.write_machine_layers(
+                project_root,
+                Path(observatory_state_text),
+                snapshot,
+                metric_catalog.catalog_rows(),
+            )
+        )
     violations = forbidden_value_violations(snapshot)
     if violations:
         raise RuntimeError("privacy_allowlist_violation")
 
     payload = json_text(snapshot)
+    page = metric_catalog.build_page_envelope(snapshot)
+    page_text = metric_catalog.page_payload_text(page)
+    page["contract"]["payload_bytes"] = len(page_text.encode("utf-8"))
+    page_text = metric_catalog.page_payload_text(page)
+    page["contract"]["payload_bytes"] = len(page_text.encode("utf-8"))
+    page_text = metric_catalog.page_payload_text(page)
+    if forbidden_value_violations(page):
+        raise RuntimeError("page_privacy_allowlist_violation")
     json_path = data_root / "telemetry.json"
     js_path = data_root / "telemetry.js"
     atomic_write(json_path, payload)
-    atomic_write(js_path, "window.TELEMETRY = " + payload.rstrip() + ";\n")
+    atomic_write(js_path, page_text)
     written.extend([json_path, js_path])
     return written
 

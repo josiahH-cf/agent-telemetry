@@ -1,0 +1,4 @@
+#!/bin/sh
+set -eu
+ROOT=$(git rev-parse --show-toplevel)
+exec python3 "$ROOT/git_guard.py" pre-push "$@"

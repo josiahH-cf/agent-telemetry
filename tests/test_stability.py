@@ -152,8 +152,22 @@ class StabilityTests(unittest.TestCase):
                 {"suite_state": {"status": "ok", "available": True}},
             )
         names = {item["name"] for item in result["checks"]}
-        self.assertTrue({"sources", "scan_caches", "collection_cadence", "publish", "pages", "scheduler", "windows_tasks", "lock", "prices", "schemas", "observatory_store", "provider_roots", "machine_manifest", "reconciliation", "tracked_manifest", "clock", "collection_age", "disk"} <= names)
+        self.assertTrue({"sources", "scan_caches", "collection_cadence", "publish", "pages", "scheduler", "windows_tasks", "lock", "prices", "schemas", "observatory_store", "provider_roots", "machine_manifest", "reconciliation", "git_hooks", "tracked_manifest", "clock", "collection_age", "disk"} <= names)
         self.assertIn("[doctor] status=", stability.doctor_text(result))
+
+    def test_git_hook_doctor_requires_local_path_and_executable_hooks(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            subprocess.run(["git", "init", "-b", "main", str(root)], check=True, stdout=subprocess.DEVNULL)
+            (root / ".githooks").mkdir()
+            for name in ("pre-commit", "pre-push"):
+                path = root / ".githooks" / name
+                path.write_text("#!/bin/sh\nexit 0\n", encoding="utf-8")
+                path.chmod(0o755)
+            subprocess.run(["git", "-C", str(root), "config", "--local", "core.hooksPath", ".githooks"], check=True)
+            self.assertEqual(stability._git_hooks_status(root), ("ok", "path_and_two_executable_hooks_ok"))
+            (root / ".githooks" / "pre-push").unlink()
+            self.assertEqual(stability._git_hooks_status(root), ("fail", "executable_1_of_2"))
 
     def test_history_audit_reports_machine_metadata_without_echoing_value(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:

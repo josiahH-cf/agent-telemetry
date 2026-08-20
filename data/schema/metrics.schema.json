@@ -1,0 +1,30 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://josiahh-cf.github.io/agent-telemetry/data/schema/metrics.schema.json",
+  "additionalProperties": false,
+  "description": "One stable observatory metric definition and derivation.",
+  "properties": {
+    "caveats": {"type": "string"},
+    "definition": {"type": "string"},
+    "derivation": {"type": "string"},
+    "display_label": {"type": "string"},
+    "metric_id": {"pattern": "^[a-z][a-z0-9_]{2,79}$", "type": "string"},
+    "schema_version": {"type": "integer"},
+    "sources": {"type": "array"},
+    "surface": {"enum": ["page", "machine-only"], "type": "string"},
+    "unit": {"type": "string"}
+  },
+  "required": [
+    "schema_version",
+    "metric_id",
+    "display_label",
+    "definition",
+    "derivation",
+    "sources",
+    "caveats",
+    "unit",
+    "surface"
+  ],
+  "title": "Agent telemetry metric catalog row",
+  "type": "object"
+}

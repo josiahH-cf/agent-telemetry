@@ -257,8 +257,9 @@ class OtherAdapterTests(unittest.TestCase):
 
 class HistoryAndPrivacyTests(unittest.TestCase):
     def test_privacy_scanner_blocks_windows_account_path_and_slug_forms(self) -> None:
+        slash = bytes((92,))
         samples = (
-            b"C:" + b"\\" + b"Users" + b"\\private-account\\project",
+            b"C:" + slash + b"Users" + slash + b"private-account" + slash + b"project",
             b"/" + b"mnt/c/" + b"Users/private-account/project",
             b"Users" + b"-private-account-project",
             b"--wsl-" + b"localhost-distro-home-private-account-project",
@@ -330,7 +331,7 @@ class HistoryAndPrivacyTests(unittest.TestCase):
             snapshot = self.minimal_snapshot("2026-08-01", {})
             collect.write_outputs(snapshot, root)
             text = (root / "data" / "telemetry.js").read_text(encoding="utf-8")
-            prefix = "window.TELEMETRY = "
+            prefix = "window.TELEMETRY="
             self.assertTrue(text.startswith(prefix))
             parsed = json.loads(text[len(prefix) :].strip().removesuffix(";"))
             self.assertEqual(parsed["schema_version"], 1)
@@ -348,26 +349,26 @@ class HistoryAndPrivacyTests(unittest.TestCase):
         text = (PROJECT_ROOT / "index.html").read_text(encoding="utf-8")
         self.assertIn('src="data/telemetry.js"', text)
         self.assertIn('src="dashboard.js"', text)
-        self.assertIn('id="range-form"', text)
+        self.assertIn('id="window-controls"', text)
         self.assertIn('id="reliability-cards"', text)
-        self.assertIn('type="date"', text)
+        for window in ("7", "30", "90", "all"):
+            self.assertIn(f'data-window="{window}"', text)
         self.assertNotIn("fetch(" , text)
         self.assertNotIn("XMLHttpRequest", text)
-        for section in ("now", "projects", "cost", "time", "quality", "ledger", "coverage"):
+        for section in ("overview", "activity", "mix", "outcomes", "reliability", "evidence"):
             self.assertIn(f'id="{section}"', text)
         self.assertEqual(text.count("<section "), 6)
-        for check in ("now", "projects", "cost", "time", "quality", "ledger"):
+        for check in ("overview", "reliability", "evidence"):
             self.assertIn(f'id="{check}-check"', text)
-        self.assertIn('id="project-table"', text)
-        self.assertIn('id="root-health"', text)
-        self.assertIn('id="candidate-list"', text)
-        self.assertIn('@media (max-width:560px)', text)
+        self.assertIn('id="metric-dialog"', text)
+        self.assertIn('data-lazy-body', text)
+        self.assertIn('@media (max-width:440px)', text)
         self.assertNotIn("prefers-color-scheme", text)
         self.assertNotIn("theme-toggle", text)
         self.assertNotIn("if (false)", text)
         dashboard = (PROJECT_ROOT / "dashboard.js").read_text(encoding="utf-8")
         self.assertIn("Date.now()", dashboard)
-        self.assertIn("client-data-age", dashboard)
+        self.assertIn("__AGENT_TELEMETRY_TEST__", dashboard)
 
     def test_dashboard_core_dark_palette_meets_wcag_aa_text_contrast(self) -> None:
         text = (PROJECT_ROOT / "index.html").read_text(encoding="utf-8")
@@ -503,12 +504,18 @@ class HistoryAndPrivacyTests(unittest.TestCase):
                 offenders.append(str(path.relative_to(PROJECT_ROOT)))
         self.assertEqual(offenders, [])
 
-    def test_readme_data_dictionary_matches_metric_envelope_exactly(self) -> None:
-        envelope = json.loads((PROJECT_ROOT / "data" / "telemetry.json").read_text(encoding="utf-8"))
-        metric_families = set(envelope["metrics"])
+    def test_governance_routes_to_agents_and_catalog_instead_of_readme_duplication(self) -> None:
         readme = (PROJECT_ROOT / "README.md").read_text(encoding="utf-8")
-        documented = set(re.findall(r"`metrics\.([a-z0-9_]+)(?:[.`])", readme))
-        self.assertEqual(documented, metric_families)
+        agents = (PROJECT_ROOT / "AGENTS.md").read_text(encoding="utf-8")
+        claude = (PROJECT_ROOT / "CLAUDE.md").read_text(encoding="utf-8")
+        self.assertEqual(readme.count("[AGENTS.md](AGENTS.md)"), 1)
+        self.assertEqual(claude.count("[AGENTS.md](AGENTS.md)"), 1)
+        self.assertIn("## Data consumers", agents)
+        self.assertIn("## Maintainers and agents", agents)
+        self.assertIn("data/machine/metrics.jsonl", agents)
+        self.assertIn(".githooks/pre-commit", agents)
+        self.assertNotIn("### Repository guardrails", readme)
+        self.assertNotIn("### Automation inventory", readme)
 
 
 if __name__ == "__main__":

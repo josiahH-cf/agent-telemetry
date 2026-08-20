@@ -1,5 +1,109 @@
 # Stability pass findings and retention report
 
+## V5 finishing-pass register
+
+### ST-39 — Cardinality made the dashboard and browser payload grow without bound
+
+- **Observation:** the former page rendered project, date, model, spec, and
+  round collections directly. Its 4,133,840-byte browser payload fed 7,155 DOM
+  elements, 2,459 visible elements, and 20,935 normalized visible characters at
+  rest; continued ingestion would keep increasing all four measures.
+- **Evidence:** structural capture identified the ledger as the dominant
+  surface. A high-cardinality fixture with at least 50 projects across 365 days
+  reproduced the growth risk independently of the live store.
+- **Action:** **fixed / consolidated** — the browser now receives four fixed UTC
+  windows (7/30/90/all), top-six rankings plus one exact `other` rollup, and
+  trends capped at 48 consecutive buckets. The six-section page keeps only
+  headlines and charts open; bounded tables materialize only after an explicit
+  disclosure. Window headline deltas use the immediately preceding equal-length
+  UTC window; all-time names the absence of a prior retained window. The
+  complete public rows remain in the unchanged machine tier.
+- **Verifying check:** `tests.test_dashboard` proves the live and
+  high-cardinality envelopes have the same surface signature, every ranking and
+  trend respects its cap, overlapping page/machine values reconcile, and both
+  fixture payloads remain below the 500 KB target and 1 MB hard limit. Browser
+  verification at 390 px and 1,440 px records no page-level overflow.
+
+Explicit surface decisions:
+
+- `claude_quota_remaining_percent`, `openai_quota_remaining_percent`,
+  `subscription_cost_per_accepted`, and `best_effort_unpriced_cost` are
+  machine-only because they are local/stale-prone or estimates and must not be
+  confused with exact API-equivalent spend.
+- `duration_anomaly_count` is machine-only because the source count is lifetime
+  and cannot be attributed honestly to a selected day window.
+- `complete_project_rows`, `complete_round_rows`, and `raw_daily_activity` are
+  machine-only because their cardinality grows; the page uses capped rankings,
+  recent previews, and trend buckets while preserving every row in JSONL.
+- The former overlapping usage, duration, model, test/error, judge, and time
+  views are consolidated into one token/cost activity pair, one lifetime model
+  ranking, one round-duration view, one outcome summary, and collapsed
+  diagnostic/evidence tables. This removes redundant denominators without
+  deleting any collector family or machine-tier field.
+
+### ST-40 — Displayed metrics lacked one executable definition and independent math check
+
+- **Observation:** formulas were scattered between Python, prose, and renderer
+  labels. That made it possible for a plausible chart to disagree with the
+  canonical rows, especially around token subsets, UTC boundaries, duration
+  clamps, numeric rounds, and tail rollups.
+- **Evidence:** an independent recomputation found four model-window mismatches
+  in an otherwise matching 111-value sample and then attacked the known trap
+  classes. Targeted fixtures exposed offset-date bucketing, top-N tail handling,
+  duration anomaly, median bucketing, and numeric-order risks.
+- **Action:** **fixed** — `metric_catalog.py` is now the single formula source;
+  the generated `metrics.jsonl` and schema publish definitions, exact
+  derivations, sources, caveats, units, and page/machine surface decisions.
+  Dashboard disclosures render that catalog. Model composition is explicitly
+  lifetime where daily model allocation is unavailable; daily/window metrics
+  derive from canonical UTC rows; anomalies remain counted rather than silently
+  discarded.
+- **Verifying check:** bidirectional catalog/page completeness, exact-window
+  page/machine reconciliation, UTC offset boundaries, cached/reasoning subset
+  pricing, Anthropic token classes, unpriced models, numeric round order,
+  anomaly clamps, and exact `other = total - top` fixtures pass. Final published
+  values are checked by an independent code path rather than importing the
+  collector.
+
+### ST-41 — Repository hygiene checks were callable but not enforced by Git
+
+- **Observation:** the allowlist, ignore probes, scrub, and noreply audit could
+  all pass in CI or a manual run while a future staged blob or outbound commit
+  bypassed them.
+- **Evidence:** adversarial fixtures distinguish the worktree from the Git
+  index, include symlink and UNC-shaped targets, and place a restricted blob in
+  an outbound commit before deleting it in a later commit.
+- **Action:** **hardened** — tracked `.githooks/pre-commit` and
+  `.githooks/pre-push` delegate to `git_guard.py`. Pre-commit scans the staged
+  snapshot and identity; pre-push scans the current public tree, ignore probes,
+  ref policy, and every outbound object. Local `core.hooksPath` points to the
+  tracked directory. Failures report only a path/object class and reason, never
+  the matched value.
+- **Verifying check:** planted staged and outbound violations are blocked while
+  clean generated-only commits and main fast-forward pushes pass. Doctor checks
+  the configured path and executable hooks; the hook tests pin local/state path
+  blocking, `*.local.*`, must-ignore behavior, noreply identity, main-only
+  fast-forward policy, and historical-blob scanning.
+
+### ST-42 — Consumer and maintainer guidance had no single authority
+
+- **Observation:** `AGENTS.md` described only machine consumption while the
+  README duplicated a large, partly stale operating manual; Claude-specific
+  entry guidance was absent.
+- **Evidence:** the prior README described a free-form `From`/`Through` UI after
+  the bounded 7/30/90/all design had replaced it, and governance requirements
+  were split across prose rather than routed from one file.
+- **Action:** **fixed** — `AGENTS.md` now has explicit data-consumer and
+  maintainer/agent sections covering tiers, URLs, catalog, joins, caveats,
+  invariants, runbook, approved configuration edits, extension contracts,
+  retention, hooks, Git behavior, automation inventory, and exact removal.
+  `CLAUDE.md` only points to that authority, and the README is a human
+  quick-start with one authoritative link.
+- **Verifying check:** the worked join executes against generated machine data;
+  both governance files are manifest-classified and scrubbed; link and content
+  checks reject duplicated Claude rules, a missing AGENTS link, or a README that
+  reintroduces a second operating contract.
+
 ## V4 global rebaseline register
 
 This section is the phase-ordered findings register for the machine-wide,
@@ -247,12 +351,13 @@ environment files, logs/backups/editor residue, IDE state, provider-local state,
 test artifacts, caches/locks, core dumps, and Windows interop residue.
 
 The full reachable-history audit checks every blob plus author/committer
-identity. The only content finding is a non-credential fixture address using
-the reserved `.invalid` domain in an old test blob. The three local configuration
-files have zero historical commits. No credential-class leak, real absolute
-machine path, phone number, hostname field/value, or local-only configuration
-was found. The fixture finding is retained because the authorized historical
-rewrite may alter identity metadata only, never file content.
+identity. The expanded UNC/path detector now classifies 12 old synthetic
+scanner or fixture blobs: one reserved-domain fixture address and 11 constructed
+path-shape examples. None is a real account, machine path, credential, phone,
+hostname value, or local configuration value. The three local configuration
+files have zero historical commits. These fixture-only findings remain because
+the historical rewrite gate is closed; tests now construct equivalent probes
+without making current public source self-match.
 
 Repo-local commits now use the public noreply identity. The global identity is
 unchanged and should be updated separately by the operator if that is their
@@ -262,5 +367,5 @@ bundle named `history-before-noreply-20260820T120100Z.bundle` is stored under th
 machine-local telemetry state directory. The rewrite preserved the count and
 ordered tree hash of all 15 main commits and every local branch, then updated
 remote `main` with force-with-lease. The post-update site returned HTTP 200 with
-the expected title. The fixture content finding remains, as required by the
-identity-only gate.
+the expected title. The fixture-only historical findings remain, as required by
+the closed identity-only gate.

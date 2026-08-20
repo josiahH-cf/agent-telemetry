@@ -6,116 +6,129 @@
   <meta name="color-scheme" content="dark">
   <title>Agent telemetry · Machine-wide LLM observatory</title>
   <style>
-    :root { --bg:#080b10; --panel:#10151d; --panel2:#151c26; --line:#293443; --text:#f2f5f8; --muted:#aab4c0; --cyan:#7bdcff; --blue:#8ba9ff; --green:#75e6ad; --amber:#ffd166; --red:#ff8c9b; --radius:14px; --shadow:0 16px 48px rgba(0,0,0,.24); }
+    :root { --bg:#080b10; --panel:#10151d; --panel2:#151c26; --line:#293443; --text:#f2f5f8; --muted:#aab4c0; --cyan:#7bdcff; --blue:#8ba9ff; --green:#75e6ad; --amber:#ffd166; --red:#ff8c9b; --violet:#c4a7ff; --radius:14px; --shadow:0 16px 48px rgba(0,0,0,.24); }
     * { box-sizing:border-box; }
     html { scroll-behavior:smooth; }
     body { margin:0; color:var(--text); background:radial-gradient(circle at 12% -10%,rgba(71,127,255,.14),transparent 30rem),var(--bg); font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif; line-height:1.45; }
     a { color:var(--cyan); }
     button,summary,a { -webkit-tap-highlight-color:transparent; }
     :focus-visible { outline:3px solid var(--amber); outline-offset:3px; border-radius:5px; }
-    .skip { position:fixed; left:1rem; top:-5rem; z-index:20; padding:.7rem 1rem; background:var(--amber); color:#171000; }
+    .skip { position:fixed; left:1rem; top:-5rem; z-index:30; padding:.7rem 1rem; background:var(--amber); color:#171000; }
     .skip:focus { top:1rem; }
-    .shell { width:min(100% - 32px,1400px); margin:0 auto; }
-    header { padding:28px 0 14px; }
-    .mast { display:flex; align-items:end; justify-content:space-between; gap:20px; }
-    .eyebrow { margin:0 0 4px; color:var(--cyan); font:700 .72rem/1.2 ui-monospace,SFMono-Regular,Menlo,monospace; letter-spacing:.13em; text-transform:uppercase; }
-    h1 { margin:0; font-size:clamp(1.75rem,4vw,3.1rem); line-height:1; letter-spacing:-.05em; }
-    .mast-meta { color:var(--muted); font-size:.82rem; text-align:right; }
-    nav { margin-top:20px; display:flex; gap:8px; overflow-x:auto; padding:2px 2px 8px; scrollbar-width:thin; }
-    nav a { flex:0 0 auto; padding:7px 11px; border:1px solid var(--line); border-radius:999px; color:var(--muted); text-decoration:none; font-size:.78rem; }
+    .shell { width:min(100% - 32px,1280px); margin:0 auto; }
+    header { padding:30px 0 12px; }
+    .mast { display:grid; grid-template-columns:minmax(0,1fr) auto; align-items:end; gap:26px; }
+    .eyebrow { margin:0 0 5px; color:var(--cyan); font:700 .72rem/1.2 ui-monospace,SFMono-Regular,Menlo,monospace; letter-spacing:.13em; text-transform:uppercase; }
+    h1 { margin:0; font-size:clamp(1.9rem,4.5vw,3.35rem); line-height:1; letter-spacing:-.055em; }
+    .intro { max-width:900px; margin:13px 0 0; color:var(--muted); font-size:clamp(.84rem,1.5vw,.97rem); }
+    .mast-meta { min-width:170px; color:var(--muted); font-size:.79rem; text-align:right; }
+    nav { margin-top:19px; display:flex; gap:8px; overflow-x:auto; padding:2px 2px 8px; scrollbar-width:thin; }
+    nav a { flex:0 0 auto; padding:7px 11px; border:1px solid var(--line); border-radius:999px; color:var(--muted); text-decoration:none; font-size:.76rem; }
     nav a:hover { color:var(--text); border-color:var(--cyan); }
-    main { padding:6px 0 40px; }
-    section { margin-top:18px; padding:clamp(17px,3vw,28px); border:1px solid var(--line); border-radius:var(--radius); background:linear-gradient(145deg,rgba(21,28,38,.95),rgba(13,18,25,.96)); box-shadow:var(--shadow); }
-    .section-head { display:flex; align-items:end; justify-content:space-between; gap:18px; margin-bottom:18px; }
-    h2 { margin:0; font-size:clamp(1.25rem,2vw,1.65rem); letter-spacing:-.03em; }
-    h3 { margin:0 0 12px; font-size:.86rem; color:var(--muted); letter-spacing:.04em; text-transform:uppercase; }
-    .section-note { color:var(--muted); font-size:.78rem; text-align:right; }
-    .grid { display:grid; gap:12px; }
-    .cards-5 { grid-template-columns:repeat(5,minmax(0,1fr)); }
-    .cards-4 { grid-template-columns:repeat(4,minmax(0,1fr)); }
-    .cards-3 { grid-template-columns:repeat(3,minmax(0,1fr)); }
-    .cards-2 { grid-template-columns:repeat(2,minmax(0,1fr)); }
-    .card { min-width:0; padding:15px; border:1px solid var(--line); border-radius:11px; background:rgba(8,11,16,.5); }
-    .label { display:block; color:var(--muted); font-size:.72rem; text-transform:uppercase; letter-spacing:.08em; }
-    .value { display:block; margin-top:6px; font-size:clamp(1.25rem,2.2vw,2rem); font-weight:730; letter-spacing:-.035em; font-variant-numeric:tabular-nums; overflow-wrap:anywhere; }
-    .detail { display:block; margin-top:5px; color:var(--muted); font-size:.74rem; }
-    .delta { margin-top:9px; color:var(--text); font:650 .7rem/1.25 ui-monospace,SFMono-Regular,Menlo,monospace; }
-    .status { display:inline-flex; align-items:center; gap:6px; padding:4px 8px; border:1px solid currentColor; border-radius:999px; font:700 .68rem/1 ui-monospace,SFMono-Regular,Menlo,monospace; text-transform:uppercase; }
-    .status::before { content:"●"; font-size:.72em; }
-    .good { color:var(--green); } .warn { color:var(--amber); } .bad { color:var(--red); } .neutral { color:var(--blue); }
-    .banner { margin-bottom:12px; padding:11px 13px; border:1px solid currentColor; border-radius:10px; background:rgba(255,209,102,.07); font-size:.82rem; }
-    .split { display:grid; grid-template-columns:minmax(0,1.15fr) minmax(0,.85fr); gap:18px; margin-top:18px; }
-    .split>* { min-width:0; }
-    .stack { display:grid; gap:9px; }
-    .bar-row { display:grid; grid-template-columns:minmax(92px,.8fr) minmax(90px,2fr) auto; gap:10px; align-items:center; font-size:.74rem; }
-    .bar-label { min-width:0; color:var(--muted); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
-    .track { height:9px; overflow:hidden; border-radius:99px; background:#202937; display:flex; }
-    .fill-a { height:100%; background:var(--cyan); } .fill-o { height:100%; background:var(--blue); }
-    .bar-number { font-variant-numeric:tabular-nums; text-align:right; white-space:nowrap; }
-    .table-wrap { width:100%; overflow-x:auto; border:1px solid var(--line); border-radius:10px; scrollbar-width:thin; }
-    table { width:100%; min-width:760px; border-collapse:collapse; font-size:.76rem; font-variant-numeric:tabular-nums; }
-    th,td { padding:10px 12px; text-align:left; border-bottom:1px solid var(--line); vertical-align:top; }
-    th { position:sticky; top:0; z-index:1; color:var(--muted); background:#131a23; font-size:.67rem; text-transform:uppercase; letter-spacing:.07em; white-space:nowrap; }
-    tbody tr:last-child td { border-bottom:0; } td.num,th.num { text-align:right; }
-    th button { all:unset; cursor:pointer; display:inline-flex; align-items:center; gap:5px; color:inherit; }
-    th button::after { content:"↕"; color:var(--blue); } th[aria-sort="ascending"] button::after { content:"↑"; color:var(--amber); } th[aria-sort="descending"] button::after { content:"↓"; color:var(--amber); }
-    details>summary { cursor:pointer; color:var(--cyan); font-weight:700; } details[open]>summary { margin-bottom:10px; }
-    .round-grid { display:grid; gap:7px; }
-    .round-row { display:grid; grid-template-columns:54px minmax(170px,1.4fr) repeat(5,minmax(75px,.55fr)); gap:9px; align-items:center; padding:8px; border:1px solid var(--line); border-radius:8px; background:var(--panel2); font-size:.7rem; }
-    .round-row strong { color:var(--text); } .round-row span { min-width:0; overflow-wrap:anywhere; }
-    .proxy { color:var(--amber); }
-    .heat-wrap { overflow-x:auto; padding-bottom:5px; }
-    .heat { min-width:700px; display:grid; grid-template-columns:35px repeat(24,1fr); gap:3px; font:650 .57rem/1 ui-monospace,SFMono-Regular,Menlo,monospace; }
-    .heat .day { align-self:center; color:var(--muted); } .heat .hour { color:var(--muted); text-align:center; }
-    .heat .cell { min-height:21px; display:grid; place-items:center; border:1px solid #314052; border-radius:3px; color:var(--text); background:rgba(123,220,255,calc(.04 + var(--intensity) * .21)); }
-    .mini-grid { display:grid; grid-template-columns:repeat(9,minmax(105px,1fr)); gap:8px; }
-    .mini { padding:10px; border-left:2px solid var(--blue); background:rgba(8,11,16,.42); }
-    .mini b { display:block; margin-top:4px; font-size:1rem; }
-    .model-pair { font-family:ui-monospace,SFMono-Regular,Menlo,monospace; font-size:.68rem; } .model-pair em { color:var(--muted); font-style:normal; }
-    .coverage-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:14px; }
-    footer { padding:20px 0 40px; color:var(--muted); font-size:.75rem; }
-    footer .panel { padding:18px; border:1px solid var(--line); border-radius:var(--radius); background:#0c1118; }
-    .source-list { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:7px; margin-top:12px; }
-    .source { padding:9px; border:1px solid var(--line); border-radius:8px; overflow-wrap:anywhere; } .source strong { display:block; color:var(--text); margin-bottom:3px; }
-    .footline { display:flex; justify-content:space-between; gap:12px; margin-top:14px; padding-top:12px; border-top:1px solid var(--line); }
-    .empty { color:var(--muted); font-style:italic; }
-    .range-panel { margin-top:12px; padding:12px; display:flex; align-items:end; gap:10px; flex-wrap:wrap; border:1px solid var(--line); border-radius:12px; background:rgba(8,11,16,.58); }
-    .range-panel label { display:grid; gap:4px; color:var(--muted); font-size:.7rem; text-transform:uppercase; letter-spacing:.07em; }
-    .range-panel input { min-height:38px; padding:7px 9px; border:1px solid var(--line); border-radius:8px; color:var(--text); background:#0c1118; font:inherit; color-scheme:dark; }
+    .window-bar { margin-top:11px; padding:11px 12px; display:flex; align-items:center; gap:10px; flex-wrap:wrap; border:1px solid var(--line); border-radius:12px; background:rgba(8,11,16,.58); }
+    .window-label { color:var(--muted); font-size:.71rem; text-transform:uppercase; letter-spacing:.08em; }
     .button-row { display:flex; gap:6px; flex-wrap:wrap; }
-    .control { min-height:38px; padding:7px 11px; border:1px solid var(--line); border-radius:8px; color:var(--text); background:#131a23; font:700 .72rem/1 ui-monospace,SFMono-Regular,Menlo,monospace; cursor:pointer; }
-    .control:hover,.control[aria-pressed="true"] { border-color:var(--cyan); color:var(--cyan); }
-    .control.primary { border-color:var(--cyan); background:rgba(123,220,255,.1); }
-    .range-summary { flex:1 1 300px; min-width:220px; color:var(--muted); font-size:.75rem; text-align:right; }
-    .estimate { color:var(--amber); }
-    .continuity { margin-top:18px; padding-top:16px; border-top:1px solid var(--line); }
-    .reliability-strip { margin-top:16px; padding-top:16px; border-top:1px solid var(--line); }
-    .scope-note { margin:0 0 12px; color:var(--muted); font-size:.76rem; }
-    @media (max-width:1050px) { .cards-5 { grid-template-columns:repeat(3,minmax(0,1fr)); } .cards-4,.mini-grid { grid-template-columns:repeat(3,minmax(0,1fr)); } .source-list { grid-template-columns:repeat(2,minmax(0,1fr)); } }
-    @media (max-width:720px) { .shell { width:min(100% - 20px,1400px); } header { padding-top:20px; } .mast { align-items:start; flex-direction:column; } .mast-meta { text-align:left; } .section-head { align-items:start; flex-direction:column; } .section-note,.range-summary { text-align:left; } .cards-5,.cards-4,.cards-3,.cards-2,.split,.coverage-grid { grid-template-columns:1fr 1fr; } .bar-row { grid-template-columns:80px minmax(70px,1fr) auto; } .source-list { grid-template-columns:1fr; } .footline { flex-direction:column; } }
-    @media (max-width:560px) { section { padding:15px; } .cards-5,.cards-4,.cards-3,.cards-2,.split,.coverage-grid,.mini-grid { grid-template-columns:1fr; } .round-row { grid-template-columns:44px 1fr; } .round-row span:nth-child(n+3) { grid-column:2; } }
+    .control { min-height:38px; padding:7px 12px; border:1px solid var(--line); border-radius:8px; color:var(--text); background:#131a23; font:700 .72rem/1 ui-monospace,SFMono-Regular,Menlo,monospace; cursor:pointer; }
+    .control:hover,.control[aria-pressed="true"] { border-color:var(--cyan); color:var(--cyan); background:rgba(123,220,255,.08); }
+    .window-summary { flex:1 1 310px; color:var(--muted); font-size:.75rem; text-align:right; }
+    main { padding:5px 0 36px; }
+    section { margin-top:18px; padding:clamp(17px,3vw,27px); border:1px solid var(--line); border-radius:var(--radius); background:linear-gradient(145deg,rgba(21,28,38,.95),rgba(13,18,25,.96)); box-shadow:var(--shadow); }
+    .section-head { display:flex; align-items:end; justify-content:space-between; gap:18px; margin-bottom:17px; }
+    h2 { margin:0; font-size:clamp(1.28rem,2.2vw,1.72rem); letter-spacing:-.035em; }
+    h3 { margin:0; font-size:.87rem; letter-spacing:-.01em; }
+    .section-note { max-width:430px; color:var(--muted); font-size:.76rem; text-align:right; }
+    .status { display:inline-flex; align-items:center; gap:6px; padding:4px 8px; border:1px solid currentColor; border-radius:999px; font:700 .67rem/1 ui-monospace,SFMono-Regular,Menlo,monospace; text-transform:uppercase; }
+    .status::before { content:"●"; font-size:.7em; }
+    .good { color:var(--green); } .warn { color:var(--amber); } .bad { color:var(--red); } .neutral { color:var(--blue); }
+    .cards { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:11px; }
+    .card,.chart-card { min-width:0; border:1px solid var(--line); border-radius:11px; background:rgba(8,11,16,.52); }
+    .card { padding:14px; }
+    .metric-head { display:flex; align-items:start; justify-content:space-between; gap:8px; }
+    .label { color:var(--muted); font-size:.69rem; text-transform:uppercase; letter-spacing:.078em; }
+    .value { display:block; margin-top:6px; font-size:clamp(1.28rem,2.35vw,2.05rem); font-weight:740; letter-spacing:-.04em; font-variant-numeric:tabular-nums; overflow-wrap:anywhere; }
+    .detail { display:block; margin-top:5px; color:var(--muted); font-size:.73rem; }
+    .delta { display:block; margin-top:6px; color:var(--blue); font:700 .68rem/1.25 ui-monospace,SFMono-Regular,Menlo,monospace; }
+    .metric-help { flex:0 0 auto; width:25px; height:25px; display:grid; place-items:center; border:1px solid var(--line); border-radius:50%; color:var(--cyan); background:transparent; font:800 .72rem/1 ui-monospace,SFMono-Regular,Menlo,monospace; cursor:pointer; }
+    .metric-help:hover { border-color:var(--cyan); background:rgba(123,220,255,.08); }
+    .charts { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:12px; margin-top:12px; }
+    .chart-card { padding:14px; min-height:245px; }
+    .chart-title { display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:10px; }
+    .chart-title span { color:var(--muted); font-size:.72rem; }
+    .chart-body { min-height:176px; }
+    .donut-layout { min-height:176px; display:grid; grid-template-columns:150px minmax(0,1fr); align-items:center; gap:14px; }
+    .donut { width:145px; height:145px; overflow:visible; transform:rotate(-90deg); }
+    .donut circle { fill:none; stroke-width:18; }
+    .legend { display:grid; gap:7px; min-width:0; }
+    .legend-row { display:grid; grid-template-columns:10px minmax(0,1fr) auto; gap:8px; align-items:center; font-size:.72rem; }
+    .legend-dot { width:9px; height:9px; border-radius:50%; }
+    .legend-name { color:var(--muted); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+    .legend-value { font-variant-numeric:tabular-nums; white-space:nowrap; }
+    .plot { width:100%; height:150px; overflow:visible; }
+    .plot .axis { stroke:#344254; stroke-width:1; }
+    .plot polyline { fill:none; stroke-width:3; stroke-linecap:round; stroke-linejoin:round; vector-effect:non-scaling-stroke; }
+    .plot-labels { display:flex; justify-content:space-between; gap:12px; color:var(--muted); font-size:.66rem; }
+    .series-key { margin-top:7px; display:flex; flex-wrap:wrap; gap:12px; color:var(--muted); font-size:.68rem; }
+    .series-key b { color:var(--text); }
+    .ranked { display:grid; gap:9px; }
+    .rank-row { display:grid; grid-template-columns:minmax(82px,.75fr) minmax(90px,1.5fr) auto; align-items:center; gap:9px; font-size:.71rem; }
+    .rank-name { color:var(--muted); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+    .track { height:9px; overflow:hidden; border-radius:99px; background:#202937; }
+    .fill { display:block; height:100%; background:var(--cyan); border-radius:99px; }
+    .rank-value { text-align:right; white-space:nowrap; font-variant-numeric:tabular-nums; }
+    .empty { color:var(--muted); font-style:italic; }
+    details.drill { margin-top:12px; border-top:1px solid var(--line); padding-top:11px; }
+    details.drill>summary { cursor:pointer; width:max-content; max-width:100%; color:var(--cyan); font-weight:720; font-size:.78rem; }
+    .table-wrap { width:100%; overflow-x:auto; margin-top:11px; border:1px solid var(--line); border-radius:9px; scrollbar-width:thin; }
+    table { width:100%; min-width:700px; border-collapse:collapse; font-size:.73rem; font-variant-numeric:tabular-nums; }
+    th,td { padding:9px 11px; border-bottom:1px solid var(--line); text-align:left; vertical-align:top; }
+    th { color:var(--muted); background:#131a23; font-size:.65rem; text-transform:uppercase; letter-spacing:.07em; white-space:nowrap; }
+    tbody tr:last-child td { border-bottom:0; } .num { text-align:right; }
+    dialog { width:min(620px,calc(100% - 28px)); max-height:min(80vh,720px); overflow:auto; border:1px solid var(--line); border-radius:14px; padding:0; color:var(--text); background:#101720; box-shadow:0 24px 80px rgba(0,0,0,.68); }
+    dialog::backdrop { background:rgba(0,0,0,.72); }
+    .dialog-inner { padding:20px; }
+    .dialog-head { display:flex; justify-content:space-between; align-items:start; gap:16px; }
+    .dialog-head h2 { font-size:1.3rem; }
+    .close { border:1px solid var(--line); border-radius:8px; min-width:36px; min-height:36px; color:var(--text); background:#18212c; cursor:pointer; }
+    .formula { margin:14px 0; padding:12px; border-left:3px solid var(--cyan); background:#0b1118; color:var(--text); font:650 .75rem/1.55 ui-monospace,SFMono-Regular,Menlo,monospace; overflow-wrap:anywhere; }
+    .catalog-meta { color:var(--muted); font-size:.76rem; }
+    footer { padding:0 0 38px; color:var(--muted); font-size:.75rem; }
+    footer .panel { padding:17px; border:1px solid var(--line); border-radius:var(--radius); background:#0c1118; }
+    .footline { display:flex; align-items:start; justify-content:space-between; gap:16px; }
+    .links { display:flex; flex-wrap:wrap; gap:10px; }
+    .visually-hidden { position:absolute!important; width:1px!important; height:1px!important; padding:0!important; margin:-1px!important; overflow:hidden!important; clip:rect(0,0,0,0)!important; white-space:nowrap!important; border:0!important; }
+    @media (max-width:900px) { .cards { grid-template-columns:repeat(2,minmax(0,1fr)); } .donut-layout { grid-template-columns:125px minmax(0,1fr); } .donut { width:120px; height:120px; } }
+    @media (max-width:680px) { .shell { width:min(100% - 20px,1280px); } header { padding-top:21px; } .mast { grid-template-columns:1fr; gap:10px; } .mast-meta,.window-summary,.section-note { text-align:left; } .section-head { align-items:start; flex-direction:column; } .charts { grid-template-columns:1fr; } .chart-card { min-height:220px; } .footline { flex-direction:column; } }
+    @media (max-width:440px) { section { padding:15px; } .cards { grid-template-columns:1fr 1fr; } .card { padding:12px; } .value { font-size:1.35rem; } .donut-layout { grid-template-columns:108px minmax(0,1fr); gap:9px; } .donut { width:104px; height:104px; } .rank-row { grid-template-columns:minmax(70px,.7fr) minmax(60px,1fr) auto; gap:7px; } }
   </style>
 </head>
 <body>
   <a class="skip" href="#main">Skip to telemetry</a>
-  <header class="shell"><div class="mast"><div><p class="eyebrow">Two providers · two host environments · schema v1</p><h1>Machine-wide LLM observatory</h1></div><div class="mast-meta" id="mast-meta">Loading local telemetry…</div></div>
-    <nav aria-label="Dashboard sections"><a href="#now">Machine now</a><a href="#projects">Projects</a><a href="#cost">Usage &amp; cost</a><a href="#time">Time patterns</a><a href="#quality">Outcomes &amp; quality</a><a href="#ledger">Loop ledger</a></nav>
-    <form class="range-panel" id="range-form">
-      <label>From (UTC)<input id="range-from" name="from" type="date" required></label>
-      <label>Through (UTC)<input id="range-to" name="to" type="date" required></label>
-      <div class="button-row" aria-label="Date presets"><button class="control" type="button" data-range="7">7 days</button><button class="control" type="button" data-range="30">30 days</button><button class="control" type="button" data-range="all">All history</button><button class="control primary" type="submit">Apply</button></div>
-      <div class="range-summary" id="range-summary" aria-live="polite">Preparing historical range…</div>
-    </form>
+  <header class="shell">
+    <div class="mast">
+      <div>
+        <p class="eyebrow">Two providers · two host environments · bounded page</p>
+        <h1>Machine-wide LLM observatory</h1>
+        <p class="intro">Agent Telemetry is this operator’s passive, anonymized observatory for Claude Code and Codex CLI activity across WSL and Windows. Dollars are API-equivalent estimates, not subscription bills; collection targets 30 minutes, publication is daily, and live data age appears at right.</p>
+      </div>
+      <div class="mast-meta" id="mast-meta" aria-live="polite">Loading bounded telemetry…</div>
+    </div>
+    <nav aria-label="Dashboard sections"><a href="#overview">Overview</a><a href="#activity">Activity &amp; cost</a><a href="#mix">Where usage lands</a><a href="#outcomes">Outcomes</a><a href="#reliability">Stability</a><a href="#evidence">Evidence</a></nav>
+    <div class="window-bar" aria-label="Exact date-window selector">
+      <span class="window-label">Exact UTC window</span>
+      <div class="button-row" id="window-controls"><button class="control" type="button" data-window="7">7 days</button><button class="control" type="button" data-window="30">30 days</button><button class="control" type="button" data-window="90">90 days</button><button class="control" type="button" data-window="all">All history</button></div>
+      <div class="window-summary" id="window-summary" aria-live="polite">Preparing exact window…</div>
+    </div>
   </header>
   <main class="shell" id="main">
-    <section id="now" aria-labelledby="now-title"><div class="section-head"><div><p class="eyebrow">01 / Global state</p><h2 id="now-title">Machine now</h2></div><span class="status neutral" id="now-check">Checking contract</span></div><div id="now-banners" aria-live="polite"></div><div class="grid cards-5" id="now-cards"></div><div class="split"><div><h3>Host environment split</h3><div class="grid cards-2" id="host-cards"></div></div><div><h3>Flagship loop now</h3><div class="grid cards-2" id="driver-cards"></div></div></div><div class="reliability-strip"><h3>Telemetry reliability</h3><div class="grid cards-4" id="reliability-cards" aria-live="polite"></div></div></section>
-    <section id="projects" aria-labelledby="projects-title"><div class="section-head"><div><p class="eyebrow">02 / Attribution</p><h2 id="projects-title">Projects</h2></div><span class="status neutral" id="projects-check">Checking totals</span></div><div class="grid cards-4" id="project-cards"></div><div class="table-wrap" style="margin-top:16px"><table id="project-table"><thead><tr><th data-key="project_id" aria-sort="ascending"><button type="button">Project</button></th><th class="num" data-key="sessions"><button type="button">Session-days</button></th><th class="num" data-key="anthropic_tokens"><button type="button">Claude tokens</button></th><th class="num" data-key="openai_tokens"><button type="button">OpenAI tokens</button></th><th class="num" data-key="tokens"><button type="button">All tokens</button></th><th class="num" data-key="cost_usd"><button type="button">Exact USD</button></th><th class="num" data-key="unpriced_tokens"><button type="button">Unpriced</button></th><th>Last seen</th></tr></thead><tbody id="project-body"></tbody></table></div></section>
-    <section id="cost" aria-labelledby="cost-title"><div class="section-head"><div><p class="eyebrow">03 / Usage economics</p><h2 id="cost-title">Usage &amp; cost</h2></div><span class="status neutral" id="cost-check">Checking range</span></div><div class="grid cards-2" id="vendor-cards"></div><div class="split"><div><h3>Daily machine-wide API-equivalent spend</h3><div class="stack" id="daily-cost"></div></div><div><h3>Host environment usage</h3><div class="stack" id="host-usage"></div><h3 style="margin-top:18px">Provider-root coverage</h3><div class="source-list" id="root-health"></div></div></div><p class="scope-note" id="price-note"></p></section>
-    <section id="time" aria-labelledby="time-title"><div class="section-head"><div><p class="eyebrow">04 / UTC activity</p><h2 id="time-title">Time patterns</h2></div><span class="status neutral" id="time-check">Checking coverage</span></div><div class="grid cards-4" id="time-cards"></div><h3 style="margin-top:18px">Machine-wide provider events by UTC hour</h3><div class="heat-wrap"><div class="heat" id="heatmap" role="img" aria-label="Provider usage event heatmap by weekday and UTC hour"></div></div><div class="split"><div><h3>Flagship round duration · median / p95 minutes</h3><div class="stack" id="round-trend"></div></div><div><h3>Flagship time in phase</h3><div class="stack" id="phase-time"></div></div></div></section>
-    <section id="quality" aria-labelledby="quality-title"><div class="section-head"><div><p class="eyebrow">05 / Outcome depth</p><h2 id="quality-title">Outcomes &amp; quality</h2></div><span class="status neutral" id="quality-check">Checking denominators</span></div><h3>Worth it? · accepted feature cycles in selected range</h3><div class="grid cards-5" id="worth-cards"></div><div class="mini-grid" id="legacy-health" style="margin-top:16px"></div><div class="split"><div><h3>Findings vs spend by spec</h3><div class="stack" id="quality-spend"></div></div><div><h3>Failure locations</h3><div class="stack" id="failure-groups"></div><div class="grid cards-3" id="quality-cards" style="margin-top:14px"></div></div></div></section>
-    <section id="ledger" aria-labelledby="ledger-title"><div class="section-head"><div><p class="eyebrow">06 / Flagship evidence</p><h2 id="ledger-title">Loop ledger</h2></div><div><span class="status neutral" id="ledger-check">Checking joins</span><div class="section-note" id="ledger-count"></div></div></div><div class="table-wrap"><table id="ledger-table"><thead><tr><th data-key="spec" aria-sort="ascending"><button type="button">Spec / rounds</button></th><th data-key="outcome"><button type="button">Outcome</button></th><th class="num" data-key="rounds_count"><button type="button">Rounds</button></th><th class="num" data-key="wall_hours"><button type="button">Wall h</button></th><th class="num" data-key="lead_hours"><button type="button">Lead h</button></th><th class="num" data-key="tokens"><button type="button">Tokens</button></th><th class="num" data-key="usd"><button type="button">USD</button></th><th class="num" data-key="findings_total"><button type="button">Findings</button></th><th class="num" data-key="debt_at_accept"><button type="button">Debt</button></th></tr></thead><tbody id="ledger-body"></tbody></table></div></section>
+    <section id="overview" aria-labelledby="overview-title"><div class="section-head"><div><p class="eyebrow">01 / Global state</p><h2 id="overview-title">Machine-wide overview</h2></div><span class="status neutral" id="overview-check">Checking totals</span></div><div class="cards" id="overview-cards"></div><div class="charts"><div class="chart-card" id="vendor-chart"></div><div class="chart-card" id="host-chart"></div></div></section>
+    <section id="activity" aria-labelledby="activity-title"><div class="section-head"><div><p class="eyebrow">02 / Windowed economics</p><h2 id="activity-title">Activity &amp; cost</h2></div><div class="section-note">Exact selected-window totals; plotted series use at most 48 consecutive UTC buckets.</div></div><div class="cards" id="activity-cards"></div><div class="charts"><div class="chart-card" id="token-trend"></div><div class="chart-card" id="cost-trend"></div></div></section>
+    <section id="mix" aria-labelledby="mix-title"><div class="section-head"><div><p class="eyebrow">03 / Attribution</p><h2 id="mix-title">Where usage lands</h2></div><div class="section-note">Anonymous-or-approved identities · top six plus an exact other rollup</div></div><div class="cards" id="mix-cards"></div><div class="charts"><div class="chart-card" id="project-chart"></div><div class="chart-card" id="model-chart"></div></div><details class="drill" id="project-detail"><summary>Inspect the bounded project ranking</summary><div data-lazy-body></div></details></section>
+    <section id="outcomes" aria-labelledby="outcomes-title"><div class="section-head"><div><p class="eyebrow">04 / Outcome depth</p><h2 id="outcomes-title">Feature outcomes</h2></div><div class="section-note">Governed-loop evidence only · UTC completion window</div></div><div class="cards" id="outcome-cards"></div><div class="charts"><div class="chart-card" id="round-outcome-chart"></div><div class="chart-card" id="spec-cost-chart"></div></div><details class="drill" id="spec-detail"><summary>Inspect the bounded feature-cost ranking</summary><div data-lazy-body></div></details></section>
+    <section id="reliability" aria-labelledby="reliability-title"><div class="section-head"><div><p class="eyebrow">05 / Continuity</p><h2 id="reliability-title">Stability &amp; coverage</h2></div><span class="status neutral" id="reliability-check">Checking system</span></div><div class="cards" id="reliability-cards"></div><div class="charts"><div class="chart-card" id="root-chart"></div><div class="chart-card" id="probe-chart"></div></div><details class="drill" id="diagnostic-detail"><summary>Inspect current doctor checks and provider roots</summary><div data-lazy-body></div></details></section>
+    <section id="evidence" aria-labelledby="evidence-title"><div class="section-head"><div><p class="eyebrow">06 / Flagship evidence</p><h2 id="evidence-title">Loop evidence</h2></div><span class="status neutral" id="evidence-check">Checking joins</span></div><div class="cards" id="evidence-cards"></div><div class="charts"><div class="chart-card" id="duration-chart"></div><div class="chart-card" id="recent-chart"></div></div><details class="drill" id="ledger-detail"><summary>Inspect six recent feature records</summary><div data-lazy-body></div></details></section>
   </main>
-  <footer class="shell" id="coverage"><div class="panel"><div class="section-head"><div><p class="eyebrow">Coverage / honesty</p><h2>Attribution, candidates &amp; continuity</h2></div><div class="section-note">Anonymous codes are intentional; paths and mappings stay local</div></div><h3>Unregistered candidate clusters</h3><div class="source-list" id="candidate-list"></div><h3 style="margin-top:18px">Flagship vendor parity</h3><div class="coverage-grid" id="parity-grid"></div><div class="source-list" id="source-list"></div><div class="continuity"><h3>Measurement continuity</h3><p class="scope-note">Observations begin when each capability was installed; earlier health states are never reconstructed.</p><div class="grid cards-4" id="measurement-cards"></div><div class="source-list" id="measurement-gaps"></div></div><div class="footline"><span id="generated-foot"></span><span>Passive static dashboard · no external data requests · dark theme only</span></div></div></footer>
+  <footer class="shell"><div class="panel"><div class="footline"><div><strong>Complete data stays complete.</strong><br><span id="generated-foot">Loading contract status…</span></div><div class="links"><a href="data/machine/MANIFEST.json">Machine manifest</a><a href="data/machine/metrics.jsonl">Metric catalog</a><a href="data/machine/days.jsonl">Daily rows</a><a href="data/machine/rounds.jsonl">Round rows</a><a href="AGENTS.md">Consumer &amp; maintainer guide</a></div></div></div></footer>
+  <dialog id="metric-dialog" aria-labelledby="metric-dialog-title"><div class="dialog-inner"><div class="dialog-head"><div><p class="eyebrow">Metric catalog</p><h2 id="metric-dialog-title">Metric definition</h2></div><button class="close" id="metric-dialog-close" type="button" aria-label="Close metric definition">×</button></div><div id="metric-dialog-body"></div></div></dialog>
   <script src="data/telemetry.js"></script>
   <script src="dashboard.js"></script>
 </body>
