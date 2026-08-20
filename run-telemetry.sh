@@ -16,7 +16,16 @@ if [ "${AGENT_TELEMETRY_LOCKED:-0}" != "1" ]; then
     fi
     exec >>"$LOG_PATH" 2>&1
     printf '%s mode=%s trigger=%s start\n' "$(date -u +%Y-%m-%dT%H:%M:%SZ)" "$MODE" "$TRIGGER"
-    exec python3 "$PROJECT_ROOT/stability.py" --lock-run "$LOCK_PATH" -- "$0" "$MODE" "$TRIGGER"
+    python3 "$PROJECT_ROOT/stability.py" --lock-run "$LOCK_PATH" -- "$0" "$MODE" "$TRIGGER"
+    RESULT=$?
+    # The lock supervisor has returned, so this bounded network outcome check
+    # cannot hold the collection lock or be killed as an orphaned subprocess.
+    if [ -f "$STATE_ROOT/pages-check-request.json" ]; then
+        if ! python3 "$PROJECT_ROOT/collect.py" --check-pages; then
+            printf '%s pages_check=degraded\n' "$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+        fi
+    fi
+    exit "$RESULT"
 fi
 
 case "$MODE" in
@@ -60,12 +69,6 @@ else
     if ! python3 "$PROJECT_ROOT/collect.py"; then
         RESULT=2
     fi
-fi
-
-if [ -f "$STATE_ROOT/pages-check-request.json" ]; then
-    (
-        python3 "$PROJECT_ROOT/collect.py" --check-pages
-    ) </dev/null >>"$LOG_PATH" 2>&1 &
 fi
 
 printf '%s mode=%s trigger=%s finish exit=%s\n' "$(date -u +%Y-%m-%dT%H:%M:%SZ)" "$MODE" "$TRIGGER" "$RESULT"

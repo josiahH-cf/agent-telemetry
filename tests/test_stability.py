@@ -131,6 +131,14 @@ class StabilityTests(unittest.TestCase):
         self.assertEqual(result["status"], "success")
         self.assertFalse(request_exists)
 
+    def test_wrapper_checks_pages_only_after_lock_supervisor_returns(self) -> None:
+        script = (PROJECT_ROOT / "run-telemetry.sh").read_text(encoding="utf-8")
+        supervisor = script.index('python3 "$PROJECT_ROOT/stability.py" --lock-run')
+        pages = script.index('python3 "$PROJECT_ROOT/collect.py" --check-pages')
+        self.assertLess(supervisor, pages)
+        self.assertNotIn('exec python3 "$PROJECT_ROOT/stability.py"', script)
+        self.assertNotIn('--check-pages\n    )', script)
+
     def test_lock_supervisor_releases_lock_when_hard_killed_while_child_lives(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary)
