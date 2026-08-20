@@ -2,6 +2,76 @@ window.TELEMETRY = {
   "collection": {
     "coverage_corrections": [
       {
+        "date": "2026-08-02",
+        "kind": "coverage_correction",
+        "source": "aggregate"
+      },
+      {
+        "date": "2026-08-03",
+        "kind": "coverage_correction",
+        "source": "aggregate"
+      },
+      {
+        "date": "2026-08-04",
+        "kind": "coverage_correction",
+        "source": "aggregate"
+      },
+      {
+        "date": "2026-08-05",
+        "kind": "coverage_correction",
+        "source": "aggregate"
+      },
+      {
+        "date": "2026-08-06",
+        "kind": "coverage_correction",
+        "source": "aggregate"
+      },
+      {
+        "date": "2026-08-07",
+        "kind": "coverage_correction",
+        "source": "aggregate"
+      },
+      {
+        "date": "2026-08-08",
+        "kind": "coverage_correction",
+        "source": "aggregate"
+      },
+      {
+        "date": "2026-08-09",
+        "kind": "coverage_correction",
+        "source": "aggregate"
+      },
+      {
+        "date": "2026-08-10",
+        "kind": "coverage_correction",
+        "source": "aggregate"
+      },
+      {
+        "date": "2026-08-11",
+        "kind": "coverage_correction",
+        "source": "aggregate"
+      },
+      {
+        "date": "2026-08-15",
+        "kind": "coverage_correction",
+        "source": "aggregate"
+      },
+      {
+        "date": "2026-08-16",
+        "kind": "coverage_correction",
+        "source": "aggregate"
+      },
+      {
+        "date": "2026-08-17",
+        "kind": "coverage_correction",
+        "source": "aggregate"
+      },
+      {
+        "date": "2026-08-18",
+        "kind": "coverage_correction",
+        "source": "aggregate"
+      },
+      {
         "date": "2026-08-19",
         "kind": "coverage_correction",
         "source": "aggregate"
@@ -101,7 +171,7 @@ window.TELEMETRY = {
     "sources_available": 6,
     "sources_enabled": 6
   },
-  "generated_at": "2026-08-20T10:52:26+00:00",
+  "generated_at": "2026-08-20T11:49:28+00:00",
   "history": [
     {
       "accept_commits": 7,
@@ -597,13 +667,83 @@ window.TELEMETRY = {
       "test_runs": 40
     },
     {
-      "accept_commits": 0,
-      "accepted_steps": 0,
+      "accept_commits": 2,
+      "accepted_steps": 2,
       "builder_models": {
-        "claude-fable-5": 4
+        "claude-fable-5": 13
       },
-      "collected_at": "2026-08-20T10:52:26+00:00",
+      "collected_at": "2026-08-20T11:49:28+00:00",
       "coverage_corrections": [
+        {
+          "date": "2026-08-02",
+          "kind": "coverage_correction",
+          "source": "aggregate"
+        },
+        {
+          "date": "2026-08-03",
+          "kind": "coverage_correction",
+          "source": "aggregate"
+        },
+        {
+          "date": "2026-08-04",
+          "kind": "coverage_correction",
+          "source": "aggregate"
+        },
+        {
+          "date": "2026-08-05",
+          "kind": "coverage_correction",
+          "source": "aggregate"
+        },
+        {
+          "date": "2026-08-06",
+          "kind": "coverage_correction",
+          "source": "aggregate"
+        },
+        {
+          "date": "2026-08-07",
+          "kind": "coverage_correction",
+          "source": "aggregate"
+        },
+        {
+          "date": "2026-08-08",
+          "kind": "coverage_correction",
+          "source": "aggregate"
+        },
+        {
+          "date": "2026-08-09",
+          "kind": "coverage_correction",
+          "source": "aggregate"
+        },
+        {
+          "date": "2026-08-10",
+          "kind": "coverage_correction",
+          "source": "aggregate"
+        },
+        {
+          "date": "2026-08-11",
+          "kind": "coverage_correction",
+          "source": "aggregate"
+        },
+        {
+          "date": "2026-08-15",
+          "kind": "coverage_correction",
+          "source": "aggregate"
+        },
+        {
+          "date": "2026-08-16",
+          "kind": "coverage_correction",
+          "source": "aggregate"
+        },
+        {
+          "date": "2026-08-17",
+          "kind": "coverage_correction",
+          "source": "aggregate"
+        },
+        {
+          "date": "2026-08-18",
+          "kind": "coverage_correction",
+          "source": "aggregate"
+        },
         {
           "date": "2026-08-19",
           "kind": "coverage_correction",
@@ -701,24 +841,24 @@ window.TELEMETRY = {
         }
       ],
       "date": "2026-08-20",
-      "deploys": 1,
-      "events": 28,
-      "floor_evaluated": 4,
-      "floor_met": 4,
+      "deploys": 2,
+      "events": 87,
+      "floor_evaluated": 13,
+      "floor_met": 12,
       "judge_models": {
-        "gpt-5.5": 4
+        "gpt-5.5": 13
       },
-      "judge_rounds": 4,
-      "latest_test_seconds": 135.431,
-      "latest_tests": 4314,
-      "merged_events": 0,
+      "judge_rounds": 13,
+      "latest_test_seconds": 124.883,
+      "latest_tests": 4318,
+      "merged_events": 2,
       "proof_failures": 0,
-      "proofs": 9,
-      "publications": 0,
-      "rejected_steps": 2,
-      "rows_touched": 2,
+      "proofs": 26,
+      "publications": 2,
+      "rejected_steps": 8,
+      "rows_touched": 4,
       "schema_version": 2,
-      "test_runs": 4
+      "test_runs": 13
     }
   ],
   "metrics": {
@@ -4450,16 +4590,16 @@ window.TELEMETRY = {
           "attribution": {
             "anthropic": {
               "correlated": 0,
-              "exact": 12,
+              "exact": 13,
               "unattributed": 0
             },
             "openai": {
               "correlated": 1,
-              "exact": 11,
+              "exact": 12,
               "unattributed": 0
             }
           },
-          "collected_at": "2026-08-20T10:52:26+00:00",
+          "collected_at": "2026-08-20T11:49:28+00:00",
           "date": "2026-08-20",
           "schema_version": 2,
           "vendors": {
@@ -4479,28 +4619,28 @@ window.TELEMETRY = {
                 "claude-fable-5": {
                   "best_effort_estimate": null,
                   "classes": {
-                    "cache_read_tokens": 217730205,
-                    "cache_write_1h_tokens": 2173157,
+                    "cache_read_tokens": 236937976,
+                    "cache_write_1h_tokens": 2300909,
                     "cache_write_5m_tokens": 0,
-                    "input_tokens": 884,
-                    "output_tokens": 682146
+                    "input_tokens": 984,
+                    "output_tokens": 782782
                   },
-                  "tokens": 220586392,
+                  "tokens": 240022651,
                   "unpriced_tokens": 0,
-                  "usd": 295.309485
+                  "usd": 322.105096
                 },
                 "claude-opus-5": {
                   "best_effort_estimate": null,
                   "classes": {
-                    "cache_read_tokens": 127532,
-                    "cache_write_1h_tokens": 152053,
+                    "cache_read_tokens": 163816,
+                    "cache_write_1h_tokens": 171710,
                     "cache_write_5m_tokens": 0,
-                    "input_tokens": 20,
-                    "output_tokens": 1410
+                    "input_tokens": 24,
+                    "output_tokens": 1692
                   },
-                  "tokens": 281015,
+                  "tokens": 337242,
                   "unpriced_tokens": 0,
-                  "usd": 1.619646
+                  "usd": 1.841428
                 }
               },
               "by_scope": {
@@ -4520,40 +4660,40 @@ window.TELEMETRY = {
                     "claude-fable-5": {
                       "best_effort_estimate": null,
                       "classes": {
-                        "cache_read_tokens": 217730205,
-                        "cache_write_1h_tokens": 2173157,
+                        "cache_read_tokens": 236937976,
+                        "cache_write_1h_tokens": 2300909,
                         "cache_write_5m_tokens": 0,
-                        "input_tokens": 884,
-                        "output_tokens": 682146
+                        "input_tokens": 984,
+                        "output_tokens": 782782
                       },
-                      "tokens": 220586392,
+                      "tokens": 240022651,
                       "unpriced_tokens": 0,
-                      "usd": 295.309485
+                      "usd": 322.105096
                     },
                     "claude-opus-5": {
                       "best_effort_estimate": null,
                       "classes": {
-                        "cache_read_tokens": 127532,
-                        "cache_write_1h_tokens": 152053,
+                        "cache_read_tokens": 163816,
+                        "cache_write_1h_tokens": 171710,
                         "cache_write_5m_tokens": 0,
-                        "input_tokens": 20,
-                        "output_tokens": 1410
+                        "input_tokens": 24,
+                        "output_tokens": 1692
                       },
-                      "tokens": 281015,
+                      "tokens": 337242,
                       "unpriced_tokens": 0,
-                      "usd": 1.619646
+                      "usd": 1.841428
                     }
                   },
                   "classes": {
-                    "cache_read_tokens": 217857737,
-                    "cache_write_1h_tokens": 2325210,
+                    "cache_read_tokens": 237101792,
+                    "cache_write_1h_tokens": 2472619,
                     "cache_write_5m_tokens": 0,
-                    "input_tokens": 904,
-                    "output_tokens": 683556
+                    "input_tokens": 1008,
+                    "output_tokens": 784474
                   },
-                  "tokens": 220867407,
+                  "tokens": 240359893,
                   "unpriced_tokens": 0,
-                  "usd": 296.929131
+                  "usd": 323.946524
                 },
                 "other": {
                   "best_effort_estimate": {
@@ -4580,9 +4720,9 @@ window.TELEMETRY = {
                   "usd": 0.0
                 }
               },
-              "tokens": 220867407,
+              "tokens": 240359893,
               "unpriced_tokens": 0,
-              "usd": 296.929131
+              "usd": 323.946524
             },
             "openai": {
               "best_effort_estimate": {
@@ -4601,14 +4741,14 @@ window.TELEMETRY = {
                   "best_effort_estimate": null,
                   "classes": {
                     "cache_write_tokens": 0,
-                    "cached_input_tokens": 167567744,
-                    "input_tokens": 175360595,
-                    "output_tokens": 1182313,
-                    "reasoning_output_tokens": 536903
+                    "cached_input_tokens": 216444032,
+                    "input_tokens": 225828106,
+                    "output_tokens": 1490294,
+                    "reasoning_output_tokens": 669370
                   },
-                  "tokens": 176542908,
+                  "tokens": 227318400,
                   "unpriced_tokens": 0,
-                  "usd": 158.217517
+                  "usd": 199.851206
                 }
               },
               "by_scope": {
@@ -4629,26 +4769,26 @@ window.TELEMETRY = {
                       "best_effort_estimate": null,
                       "classes": {
                         "cache_write_tokens": 0,
-                        "cached_input_tokens": 68390400,
-                        "input_tokens": 73172406,
-                        "output_tokens": 621831,
-                        "reasoning_output_tokens": 362254
+                        "cached_input_tokens": 82178816,
+                        "input_tokens": 87873680,
+                        "output_tokens": 736317,
+                        "reasoning_output_tokens": 422059
                       },
-                      "tokens": 73794237,
+                      "tokens": 88609997,
                       "unpriced_tokens": 0,
-                      "usd": 76.76016
+                      "usd": 91.653238
                     }
                   },
                   "classes": {
                     "cache_write_tokens": 0,
-                    "cached_input_tokens": 68390400,
-                    "input_tokens": 73172406,
-                    "output_tokens": 621831,
-                    "reasoning_output_tokens": 362254
+                    "cached_input_tokens": 82178816,
+                    "input_tokens": 87873680,
+                    "output_tokens": 736317,
+                    "reasoning_output_tokens": 422059
                   },
-                  "tokens": 73794237,
+                  "tokens": 88609997,
                   "unpriced_tokens": 0,
-                  "usd": 76.76016
+                  "usd": 91.653238
                 },
                 "other": {
                   "best_effort_estimate": {
@@ -4667,31 +4807,31 @@ window.TELEMETRY = {
                       "best_effort_estimate": null,
                       "classes": {
                         "cache_write_tokens": 0,
-                        "cached_input_tokens": 99177344,
-                        "input_tokens": 102188189,
-                        "output_tokens": 560482,
-                        "reasoning_output_tokens": 174649
+                        "cached_input_tokens": 134265216,
+                        "input_tokens": 137954426,
+                        "output_tokens": 753977,
+                        "reasoning_output_tokens": 247311
                       },
-                      "tokens": 102748671,
+                      "tokens": 138708403,
                       "unpriced_tokens": 0,
-                      "usd": 81.457357
+                      "usd": 108.197968
                     }
                   },
                   "classes": {
                     "cache_write_tokens": 0,
-                    "cached_input_tokens": 99177344,
-                    "input_tokens": 102188189,
-                    "output_tokens": 560482,
-                    "reasoning_output_tokens": 174649
+                    "cached_input_tokens": 134265216,
+                    "input_tokens": 137954426,
+                    "output_tokens": 753977,
+                    "reasoning_output_tokens": 247311
                   },
-                  "tokens": 102748671,
+                  "tokens": 138708403,
                   "unpriced_tokens": 0,
-                  "usd": 81.457357
+                  "usd": 108.197968
                 }
               },
-              "tokens": 176542908,
+              "tokens": 227318400,
               "unpriced_tokens": 0,
-              "usd": 158.217517
+              "usd": 199.851206
             }
           }
         }
@@ -4700,19 +4840,19 @@ window.TELEMETRY = {
         "anthropic": {
           "build_rounds": {
             "correlated": 0,
-            "exact": 496,
+            "exact": 497,
             "unattributed": 0
           },
-          "build_tokens": 6731495209,
+          "build_tokens": 6752932168,
           "judge_rounds": {
             "correlated": 80,
             "exact": 2,
             "unattributed": 4
           },
           "judge_tokens": 717258427,
-          "sessions_found": 6218,
+          "sessions_found": 6220,
           "unpriced_tokens": 0,
-          "usd_computed": 7196.366333
+          "usd_computed": 7219.581172
         },
         "openai": {
           "build_rounds": {
@@ -4723,13 +4863,17 @@ window.TELEMETRY = {
           "build_tokens": 781006998,
           "judge_rounds": {
             "correlated": 4,
-            "exact": 447,
+            "exact": 448,
             "unattributed": 0
           },
-          "judge_tokens": 2530723314,
-          "sessions_found": 2594,
+          "judge_tokens": 2537345649,
+          "sessions_found": 2603,
           "unpriced_tokens": 0,
-          "usd_computed": 3086.528069
+          "usd_computed": 3092.860549
+        },
+        "unknown": {
+          "build_rounds": 39,
+          "judge_rounds": 0
         }
       },
       "prices": {
@@ -4754,7 +4898,7 @@ window.TELEMETRY = {
       },
       "usage_left": {
         "anthropic": {
-          "age_hours": 685.7,
+          "age_hours": 686.6,
           "capture_status": "ready_awaiting_slash_usage_snapshot",
           "observed_at": "2026-07-22T21:13:06+00:00",
           "provider": "claude",
@@ -4766,19 +4910,19 @@ window.TELEMETRY = {
         },
         "openai": {
           "age_hours": 0.0,
-          "observed_at": "2026-08-20T10:52:24+00:00",
+          "observed_at": "2026-08-20T11:49:30+00:00",
           "provider": "openai",
           "quota_status": "available",
           "quota_windows": [
             {
-              "remaining_percent": 94.0,
+              "remaining_percent": 91.0,
               "resets_at": "2026-08-27T06:42:37+00:00",
-              "used_percent": 6.0,
+              "used_percent": 9.0,
               "window": "primary",
               "window_minutes": 10080
             }
           ],
-          "remaining_percent": 94.0,
+          "remaining_percent": 91.0,
           "remaining_status": "available",
           "source": "rollout_token_count"
         }
@@ -4800,15 +4944,15 @@ window.TELEMETRY = {
             "claude-fable-5": {
               "best_effort_estimate": null,
               "classes": {
-                "cache_read_tokens": 4510622026,
-                "cache_write_1h_tokens": 18219678,
+                "cache_read_tokens": 4529829797,
+                "cache_write_1h_tokens": 18347430,
                 "cache_write_5m_tokens": 3625246,
-                "input_tokens": 40804,
-                "output_tokens": 9109310
+                "input_tokens": 40904,
+                "output_tokens": 9209946
               },
-              "tokens": 4541617064,
+              "tokens": 4561053323,
               "unpriced_tokens": 0,
-              "usd": 5376.204701
+              "usd": 5403.000312
             },
             "claude-haiku-4-5-20251001": {
               "best_effort_estimate": null,
@@ -4839,15 +4983,15 @@ window.TELEMETRY = {
             "claude-opus-5": {
               "best_effort_estimate": null,
               "classes": {
-                "cache_read_tokens": 6601872492,
-                "cache_write_1h_tokens": 58436119,
+                "cache_read_tokens": 6601908776,
+                "cache_write_1h_tokens": 58455776,
                 "cache_write_5m_tokens": 26569693,
-                "input_tokens": 229891,
-                "output_tokens": 28839229
+                "input_tokens": 229895,
+                "output_tokens": 28839511
               },
-              "tokens": 6715947424,
+              "tokens": 6716003651,
               "unpriced_tokens": 0,
-              "usd": 4773.488197
+              "usd": 4773.709979
             },
             "claude-sonnet-5": {
               "best_effort_estimate": null,
@@ -4893,15 +5037,15 @@ window.TELEMETRY = {
                 "claude-fable-5": {
                   "best_effort_estimate": null,
                   "classes": {
-                    "cache_read_tokens": 4510604043,
-                    "cache_write_1h_tokens": 18181778,
+                    "cache_read_tokens": 4529811814,
+                    "cache_write_1h_tokens": 18309530,
                     "cache_write_5m_tokens": 3625246,
-                    "input_tokens": 40800,
-                    "output_tokens": 9109273
+                    "input_tokens": 40900,
+                    "output_tokens": 9209909
                   },
-                  "tokens": 4541561140,
+                  "tokens": 4560997399,
                   "unpriced_tokens": 0,
-                  "usd": 5375.426828
+                  "usd": 5402.222439
                 },
                 "claude-haiku-4-5-20251001": {
                   "best_effort_estimate": null,
@@ -4932,15 +5076,15 @@ window.TELEMETRY = {
                 "claude-opus-5": {
                   "best_effort_estimate": null,
                   "classes": {
-                    "cache_read_tokens": 6601836546,
-                    "cache_write_1h_tokens": 58392413,
+                    "cache_read_tokens": 6601872830,
+                    "cache_write_1h_tokens": 58412070,
                     "cache_write_5m_tokens": 26569693,
-                    "input_tokens": 229885,
-                    "output_tokens": 28839217
+                    "input_tokens": 229889,
+                    "output_tokens": 28839499
                   },
-                  "tokens": 6715867754,
+                  "tokens": 6715923981,
                   "unpriced_tokens": 0,
-                  "usd": 4773.032834
+                  "usd": 4773.254616
                 },
                 "claude-sonnet-5": {
                   "best_effort_estimate": null,
@@ -4970,15 +5114,15 @@ window.TELEMETRY = {
                 }
               },
               "classes": {
-                "cache_read_tokens": 11698903926,
-                "cache_write_1h_tokens": 102177753,
+                "cache_read_tokens": 11718147981,
+                "cache_write_1h_tokens": 102325162,
                 "cache_write_5m_tokens": 31648573,
-                "input_tokens": 309025,
-                "output_tokens": 41954708
+                "input_tokens": 309129,
+                "output_tokens": 42055626
               },
-              "tokens": 11874993985,
+              "tokens": 11894486471,
               "unpriced_tokens": 0,
-              "usd": 10806.289099
+              "usd": 10833.306492
             },
             "other": {
               "best_effort_estimate": {
@@ -5072,10 +5216,10 @@ window.TELEMETRY = {
             }
           },
           "loop_share": 0.9957,
-          "sessions": 6218,
-          "tokens": 11925867126,
+          "sessions": 6220,
+          "tokens": 11945359612,
           "unpriced_tokens": 0,
-          "usd": 10855.145472
+          "usd": 10882.162865
         },
         "openai": {
           "best_effort_estimate": {
@@ -5190,14 +5334,14 @@ window.TELEMETRY = {
               "best_effort_estimate": null,
               "classes": {
                 "cache_write_tokens": 0,
-                "cached_input_tokens": 10282403072,
-                "input_tokens": 10563352393,
-                "output_tokens": 37598303,
-                "reasoning_output_tokens": 15741917
+                "cached_input_tokens": 10331279360,
+                "input_tokens": 10613819904,
+                "output_tokens": 37906284,
+                "reasoning_output_tokens": 15874384
               },
-              "tokens": 10600950696,
+              "tokens": 10651726188,
               "unpriced_tokens": 0,
-              "usd": 7679.593303
+              "usd": 7721.226992
             },
             "gpt-5.6-terra": {
               "best_effort_estimate": null,
@@ -5275,26 +5419,26 @@ window.TELEMETRY = {
                   "best_effort_estimate": null,
                   "classes": {
                     "cache_write_tokens": 0,
-                    "cached_input_tokens": 2787007488,
-                    "input_tokens": 2904056914,
-                    "output_tokens": 15654398,
-                    "reasoning_output_tokens": 8753289
+                    "cached_input_tokens": 2800795904,
+                    "input_tokens": 2918758188,
+                    "output_tokens": 15768884,
+                    "reasoning_output_tokens": 8813094
                   },
-                  "tokens": 2919711312,
+                  "tokens": 2934527072,
                   "unpriced_tokens": 0,
-                  "usd": 2448.382814
+                  "usd": 2463.275892
                 }
               },
               "classes": {
                 "cache_write_tokens": 0,
-                "cached_input_tokens": 3708253696,
-                "input_tokens": 3914400204,
-                "output_tokens": 25437200,
-                "reasoning_output_tokens": 12957400
+                "cached_input_tokens": 3722042112,
+                "input_tokens": 3929101478,
+                "output_tokens": 25551686,
+                "reasoning_output_tokens": 13017205
               },
-              "tokens": 3939837404,
+              "tokens": 3954653164,
               "unpriced_tokens": 0,
-              "usd": 3647.975388
+              "usd": 3662.868466
             },
             "other": {
               "best_effort_estimate": {
@@ -5409,14 +5553,14 @@ window.TELEMETRY = {
                   "best_effort_estimate": null,
                   "classes": {
                     "cache_write_tokens": 0,
-                    "cached_input_tokens": 7495395584,
-                    "input_tokens": 7659295479,
-                    "output_tokens": 21943905,
-                    "reasoning_output_tokens": 6988628
+                    "cached_input_tokens": 7530483456,
+                    "input_tokens": 7695061716,
+                    "output_tokens": 22137400,
+                    "reasoning_output_tokens": 7061290
                   },
-                  "tokens": 7681239384,
+                  "tokens": 7717199116,
                   "unpriced_tokens": 0,
-                  "usd": 5231.210489
+                  "usd": 5257.9511
                 },
                 "gpt-5.6-terra": {
                   "best_effort_estimate": null,
@@ -5465,21 +5609,21 @@ window.TELEMETRY = {
               },
               "classes": {
                 "cache_write_tokens": 0,
-                "cached_input_tokens": 18276716928,
-                "input_tokens": 18663037040,
-                "output_tokens": 51176501,
-                "reasoning_output_tokens": 17019717
+                "cached_input_tokens": 18311804800,
+                "input_tokens": 18698803277,
+                "output_tokens": 51369996,
+                "reasoning_output_tokens": 17092379
               },
-              "tokens": 18714213541,
+              "tokens": 18750173273,
               "unpriced_tokens": 10267797999,
-              "usd": 5815.768445
+              "usd": 5842.509056
             }
           },
-          "loop_share": 0.1739,
-          "sessions": 2594,
-          "tokens": 22654050945,
+          "loop_share": 0.1742,
+          "sessions": 2603,
+          "tokens": 22704826437,
           "unpriced_tokens": 10267797999,
-          "usd": 9463.743833
+          "usd": 9505.377522
         }
       }
     },
@@ -5489,147 +5633,156 @@ window.TELEMETRY = {
         "anomalies": 0,
         "by_day": {
           "2026-08-02": {
-            "count": 40,
+            "count": 26,
             "max": 6.633,
-            "median": 4.683,
+            "median": 4.6,
             "min": 3.45,
-            "p25": 4.388,
-            "p75": 5.137,
-            "p95": 6.19
+            "p25": 4.329,
+            "p75": 4.896,
+            "p95": 5.713
           },
           "2026-08-03": {
-            "count": 50,
+            "count": 51,
             "max": 6.817,
-            "median": 4.65,
-            "min": 2.967,
-            "p25": 4.217,
-            "p75": 5.287,
-            "p95": 6.133
+            "median": 4.783,
+            "min": 3.55,
+            "p25": 4.283,
+            "p75": 5.325,
+            "p95": 6.158
           },
           "2026-08-04": {
-            "count": 67,
+            "count": 80,
             "max": 10.317,
-            "median": 5.3,
-            "min": 3.1,
-            "p25": 4.725,
-            "p75": 5.967,
-            "p95": 6.783
+            "median": 5.117,
+            "min": 2.967,
+            "p25": 4.625,
+            "p75": 5.787,
+            "p95": 6.675
           },
           "2026-08-05": {
-            "count": 54,
+            "count": 49,
             "max": 11.9,
-            "median": 5.925,
+            "median": 5.967,
             "min": 0.05,
-            "p25": 4.987,
-            "p75": 6.821,
-            "p95": 9.026
+            "p25": 5.183,
+            "p75": 6.783,
+            "p95": 9.163
           },
           "2026-08-06": {
-            "count": 19,
+            "count": 24,
             "max": 13.45,
-            "median": 9.683,
+            "median": 8.567,
             "min": 3.467,
-            "p25": 8.258,
-            "p75": 11.4,
-            "p95": 12.955
+            "p25": 6.683,
+            "p75": 11.192,
+            "p95": 12.898
           },
           "2026-08-07": {
-            "count": 17,
+            "count": 14,
             "max": 21.167,
-            "median": 18.417,
+            "median": 18.9,
             "min": 11.483,
-            "p25": 17.567,
-            "p75": 19.333,
-            "p95": 20.86
+            "p25": 17.821,
+            "p75": 20.196,
+            "p95": 20.918
+          },
+          "2026-08-08": {
+            "count": 3,
+            "max": 18.067,
+            "median": 17.567,
+            "min": 14.0,
+            "p25": 15.783,
+            "p75": 17.817,
+            "p95": 18.017
           },
           "2026-08-09": {
-            "count": 36,
+            "count": 26,
             "max": 17.083,
-            "median": 11.875,
-            "min": 5.45,
-            "p25": 11.025,
-            "p75": 13.875,
-            "p95": 15.954
+            "median": 11.783,
+            "min": 7.967,
+            "p25": 11.088,
+            "p75": 13.892,
+            "p95": 16.096
           },
           "2026-08-10": {
-            "count": 5,
+            "count": 15,
             "max": 18.75,
-            "median": 14.95,
-            "min": 8.983,
-            "p25": 11.617,
-            "p75": 15.817,
-            "p95": 18.163
+            "median": 12.267,
+            "min": 5.45,
+            "p25": 11.108,
+            "p75": 14.667,
+            "p95": 16.697
           },
           "2026-08-15": {
-            "count": 62,
+            "count": 49,
             "max": 15.05,
-            "median": 7.592,
+            "median": 7.383,
             "min": 4.933,
-            "p25": 6.654,
-            "p75": 8.446,
-            "p95": 9.763
+            "p25": 6.45,
+            "p75": 8.183,
+            "p95": 10.06
           },
           "2026-08-16": {
             "count": 58,
             "max": 11.367,
-            "median": 7.883,
+            "median": 7.992,
             "min": 5.533,
-            "p25": 7.092,
-            "p75": 8.65,
-            "p95": 10.99
+            "p25": 7.246,
+            "p75": 8.746,
+            "p95": 10.766
           },
           "2026-08-17": {
-            "count": 53,
-            "max": 15.767,
-            "median": 8.317,
-            "min": 6.25,
-            "p25": 7.867,
-            "p75": 9.35,
-            "p95": 12.023
+            "count": 55,
+            "max": 12.333,
+            "median": 8.217,
+            "min": 5.917,
+            "p25": 7.817,
+            "p75": 9.25,
+            "p95": 10.75
           },
           "2026-08-18": {
-            "count": 33,
-            "max": 14.317,
-            "median": 8.667,
-            "min": 5.683,
-            "p25": 7.7,
-            "p75": 9.567,
-            "p95": 12.837
+            "count": 36,
+            "max": 15.767,
+            "median": 8.908,
+            "min": 6.65,
+            "p25": 7.992,
+            "p75": 10.333,
+            "p95": 13.492
           },
           "2026-08-19": {
             "count": 39,
             "max": 10.5,
-            "median": 7.85,
+            "median": 7.933,
             "min": 4.767,
-            "p25": 7.125,
-            "p75": 9.142,
+            "p25": 7.083,
+            "p75": 9.392,
             "p95": 10.035
           },
           "2026-08-20": {
-            "count": 4,
+            "count": 13,
             "max": 12.317,
-            "median": 7.342,
+            "median": 7.4,
             "min": 6.183,
-            "p25": 6.833,
-            "p75": 8.804,
-            "p95": 11.614
+            "p25": 7.05,
+            "p75": 7.85,
+            "p95": 10.157
           }
         },
-        "coverage_rate": 1.0,
-        "dispatches": 537,
-        "matched": 537,
+        "coverage_rate": 0.9981,
+        "dispatches": 539,
+        "matched": 538,
         "minutes": {
-          "count": 537,
+          "count": 538,
           "max": 21.167,
           "median": 7.3,
           "min": 0.05,
-          "p25": 5.367,
-          "p75": 9.033,
-          "p95": 14.343
+          "p25": 5.371,
+          "p75": 9.025,
+          "p95": 14.337
         },
-        "unmatched_dispatches": 0,
+        "unmatched_dispatches": 1,
         "unmatched_verdicts": 0,
-        "verdicts": 537
+        "verdicts": 538
       },
       "labels": {
         "judge_rounds": "wall_time_including_queue_idle",
@@ -5639,22 +5792,22 @@ window.TELEMETRY = {
       },
       "proof_minutes": {
         "broad": {
-          "count": 245,
+          "count": 247,
           "max": 2.486,
           "median": 1.62,
           "min": 1.495,
           "p25": 1.533,
-          "p75": 1.778,
-          "p95": 2.229
+          "p75": 1.783,
+          "p95": 2.233
         },
         "checklist": {
-          "count": 542,
+          "count": 543,
           "max": 90.7,
-          "median": 9.125,
+          "median": 9.133,
           "min": 0.1,
-          "p25": 2.904,
-          "p75": 14.317,
-          "p95": 30.132
+          "p25": 2.908,
+          "p75": 14.342,
+          "p95": 30.705
         }
       },
       "row_elapsed": [
@@ -5850,6 +6003,11 @@ window.TELEMETRY = {
         },
         {
           "end_kind": "merged",
+          "minutes": 25.733,
+          "row": "g04b2"
+        },
+        {
+          "end_kind": "merged",
           "minutes": 1055.067,
           "row": "g06b"
         },
@@ -5905,17 +6063,17 @@ window.TELEMETRY = {
         }
       ],
       "row_elapsed_summary": {
-        "count": 49,
+        "count": 50,
         "max": 3222.217,
-        "median": 147.033,
+        "median": 144.825,
         "min": 12.383,
-        "p25": 49.933,
-        "p75": 630.85,
-        "p95": 2584.73
+        "p25": 49.908,
+        "p75": 622.488,
+        "p95": 2544.961
       }
     },
     "efficacy": {
-      "accepted_rows": 58,
+      "accepted_rows": 59,
       "debt_register_entries": null,
       "deploys": {
         "by_day": {
@@ -5928,25 +6086,26 @@ window.TELEMETRY = {
           "2026-08-16": 3,
           "2026-08-18": 5,
           "2026-08-19": 3,
-          "2026-08-20": 1
+          "2026-08-20": 2
         },
-        "total": 49
+        "total": 50
       },
       "escalation_entries_derived": 80,
       "ledger_harness_defect_headings_derived": 3,
       "publications": {
         "by_day": {
           "2026-08-10": 5,
-          "2026-08-15": 2,
-          "2026-08-16": 2,
-          "2026-08-18": 7,
-          "2026-08-19": 3
+          "2026-08-15": 1,
+          "2026-08-16": 3,
+          "2026-08-18": 6,
+          "2026-08-19": 3,
+          "2026-08-20": 2
         },
         "by_provenance": {
-          "independently-judged-acceptance": 10,
+          "independently-judged-acceptance": 11,
           "operator-published-unjudged": 9
         },
-        "total": 19
+        "total": 20
       }
     },
     "errors": {
@@ -5961,71 +6120,72 @@ window.TELEMETRY = {
         "merge-conflict": 2,
         "static-gate-failed": 41
       },
-      "proof_error_rate": 0.0474,
+      "proof_error_rate": 0.0473,
       "proof_failures": 51,
       "proof_failures_by_day": {
         "2026-08-02": 1,
-        "2026-08-03": 3,
-        "2026-08-04": 3,
+        "2026-08-03": 2,
+        "2026-08-04": 4,
         "2026-08-05": 6,
         "2026-08-06": 4,
-        "2026-08-09": 13,
-        "2026-08-10": 2,
-        "2026-08-16": 6,
-        "2026-08-17": 2,
+        "2026-08-09": 12,
+        "2026-08-10": 3,
+        "2026-08-16": 3,
+        "2026-08-17": 5,
         "2026-08-18": 1,
         "2026-08-19": 10
       },
       "proof_total_by_day": {
-        "2026-08-02": 73,
-        "2026-08-03": 92,
-        "2026-08-04": 135,
-        "2026-08-05": 109,
-        "2026-08-06": 40,
-        "2026-08-07": 30,
-        "2026-08-09": 84,
-        "2026-08-10": 12,
-        "2026-08-15": 118,
-        "2026-08-16": 113,
-        "2026-08-17": 98,
-        "2026-08-18": 67,
-        "2026-08-19": 95,
-        "2026-08-20": 9
+        "2026-08-02": 49,
+        "2026-08-03": 93,
+        "2026-08-04": 158,
+        "2026-08-05": 101,
+        "2026-08-06": 48,
+        "2026-08-07": 26,
+        "2026-08-08": 4,
+        "2026-08-09": 66,
+        "2026-08-10": 30,
+        "2026-08-15": 94,
+        "2026-08-16": 110,
+        "2026-08-17": 105,
+        "2026-08-18": 71,
+        "2026-08-19": 97,
+        "2026-08-20": 26
       },
-      "proofs": 1075,
+      "proofs": 1078,
       "proofs_by_group": {
-        "broad": 526,
-        "checklist": 549
+        "broad": 528,
+        "checklist": 550
       },
       "weekly": [
         {
-          "error_rate": 0.0137,
+          "error_rate": 0.0204,
           "failures": 1,
-          "proofs": 73,
+          "proofs": 49,
           "week": "2026-W31"
         },
         {
-          "error_rate": 0.0592,
-          "failures": 29,
-          "proofs": 490,
+          "error_rate": 0.0565,
+          "failures": 28,
+          "proofs": 496,
           "week": "2026-W32"
         },
         {
-          "error_rate": 0.0329,
-          "failures": 8,
-          "proofs": 243,
+          "error_rate": 0.0256,
+          "failures": 6,
+          "proofs": 234,
           "week": "2026-W33"
         },
         {
-          "error_rate": 0.0483,
-          "failures": 13,
-          "proofs": 269,
+          "error_rate": 0.0535,
+          "failures": 16,
+          "proofs": 299,
           "week": "2026-W34"
         }
       ]
     },
     "judges": {
-      "acceptance_rate": 0.1175,
+      "acceptance_rate": 0.1198,
       "accepted_at_round": {
         "1": 4,
         "10": 1,
@@ -6041,41 +6201,47 @@ window.TELEMETRY = {
         "31": 1,
         "4": 6,
         "45": 1,
-        "5": 1,
+        "5": 2,
         "6": 1,
         "7": 1,
         "8": 3,
         "9": 1
       },
-      "accepted_steps": 45,
+      "accepted_steps": 46,
       "accepted_steps_by_day": {
-        "2026-08-02": 5,
-        "2026-08-03": 1,
+        "2026-08-02": 2,
+        "2026-08-03": 4,
         "2026-08-04": 8,
-        "2026-08-05": 7,
-        "2026-08-06": 8,
-        "2026-08-09": 4,
-        "2026-08-10": 2,
-        "2026-08-15": 2,
-        "2026-08-16": 2,
-        "2026-08-18": 3,
-        "2026-08-19": 3
+        "2026-08-05": 4,
+        "2026-08-06": 11,
+        "2026-08-09": 2,
+        "2026-08-10": 4,
+        "2026-08-15": 1,
+        "2026-08-16": 3,
+        "2026-08-18": 2,
+        "2026-08-19": 3,
+        "2026-08-20": 2
       },
       "blocking_findings": {
-        "1": 163,
-        "10": 1,
-        "11": 1,
-        "2": 129,
-        "3": 77,
-        "4": 44,
-        "5": 22,
-        "6": 7,
-        "7": 10,
-        "8": 1,
-        "9": 1,
-        "unavailable": 81
+        "0": 64,
+        "1": 88,
+        "10": 7,
+        "11": 10,
+        "12": 2,
+        "13": 1,
+        "14": 2,
+        "15": 5,
+        "17": 1,
+        "2": 110,
+        "3": 97,
+        "4": 53,
+        "5": 36,
+        "6": 20,
+        "7": 23,
+        "8": 8,
+        "9": 11
       },
-      "complete_rounds": 537,
+      "complete_rounds": 538,
       "defect_curves": {
         "21d": [
           10.0
@@ -6130,22 +6296,23 @@ window.TELEMETRY = {
       "escalation_events": 70,
       "rejected_steps": 338,
       "rejected_steps_by_day": {
-        "2026-08-02": 17,
-        "2026-08-03": 33,
-        "2026-08-04": 38,
-        "2026-08-05": 33,
-        "2026-08-06": 9,
-        "2026-08-07": 16,
-        "2026-08-09": 26,
-        "2026-08-10": 2,
-        "2026-08-15": 43,
+        "2026-08-02": 9,
+        "2026-08-03": 32,
+        "2026-08-04": 47,
+        "2026-08-05": 31,
+        "2026-08-06": 11,
+        "2026-08-07": 13,
+        "2026-08-08": 3,
+        "2026-08-09": 20,
+        "2026-08-10": 8,
+        "2026-08-15": 33,
         "2026-08-16": 38,
-        "2026-08-17": 40,
-        "2026-08-18": 19,
-        "2026-08-19": 22,
-        "2026-08-20": 2
+        "2026-08-17": 42,
+        "2026-08-18": 24,
+        "2026-08-19": 19,
+        "2026-08-20": 8
       },
-      "round_directories": 604,
+      "round_directories": 606,
       "rounds_by_spec": [
         {
           "rounds": [
@@ -6954,10 +7121,17 @@ window.TELEMETRY = {
         },
         {
           "rounds": [
+            1
+          ],
+          "spec": "triage-projection-over-time"
+        },
+        {
+          "rounds": [
             1,
             2,
             3,
-            4
+            4,
+            5
           ],
           "spec": "triage-section-on-goals"
         },
@@ -7082,11 +7256,11 @@ window.TELEMETRY = {
           "spec": "work-two-sentence-drafting"
         }
       ],
-      "spec_directories": 72,
+      "spec_directories": 73,
       "step_states": {
         "BLOCKED": 30,
-        "BUILD": 81,
-        "DISPATCHED_ACCEPT": 45,
+        "BUILD": 82,
+        "DISPATCHED_ACCEPT": 46,
         "DISPATCHED_REJECT": 338,
         "DONE": 1,
         "ESCALATED": 70,
@@ -7094,7 +7268,7 @@ window.TELEMETRY = {
         "REPAIR": 108
       },
       "verdict_counts": {
-        "ACCEPT": 49,
+        "ACCEPT": 50,
         "HOLD": 65,
         "NOT_ACCEPTED": 423
       }
@@ -7142,7 +7316,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 11.367,
           "ended_at": "2026-08-18T23:12:26+00:00",
-          "findings": 0,
+          "findings": 8,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -7229,7 +7403,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 9.5,
           "ended_at": "2026-08-19T00:12:22+00:00",
-          "findings": 0,
+          "findings": 6,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -7316,7 +7490,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 7.667,
           "ended_at": "2026-08-19T14:07:18+00:00",
-          "findings": 0,
+          "findings": 4,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -7403,7 +7577,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 7.917,
           "ended_at": "2026-08-19T14:23:46+00:00",
-          "findings": 0,
+          "findings": 2,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -7490,7 +7664,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 9.35,
           "ended_at": "2026-08-19T14:39:15+00:00",
-          "findings": 0,
+          "findings": 2,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -7577,7 +7751,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 9.75,
           "ended_at": "2026-08-19T14:53:18+00:00",
-          "findings": 0,
+          "findings": 3,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -7664,7 +7838,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 9.5,
           "ended_at": "2026-08-19T15:07:34+00:00",
-          "findings": 0,
+          "findings": 3,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -7751,7 +7925,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 10.5,
           "ended_at": "2026-08-19T15:24:06+00:00",
-          "findings": 0,
+          "findings": 4,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -7925,7 +8099,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 9.183,
           "ended_at": "2026-08-18T00:55:04+00:00",
-          "findings": 0,
+          "findings": 10,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -8012,7 +8186,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 11.917,
           "ended_at": "2026-08-18T01:19:14+00:00",
-          "findings": 0,
+          "findings": 15,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -8099,7 +8273,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 15.767,
           "ended_at": "2026-08-18T01:55:26+00:00",
-          "findings": 0,
+          "findings": 12,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -8186,7 +8360,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 10.483,
           "ended_at": "2026-08-18T02:21:43+00:00",
-          "findings": 0,
+          "findings": 11,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -8273,7 +8447,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 7.817,
           "ended_at": "2026-08-18T02:45:55+00:00",
-          "findings": 0,
+          "findings": 7,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -8360,7 +8534,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 6.65,
           "ended_at": "2026-08-18T03:07:27+00:00",
-          "findings": 0,
+          "findings": 5,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -8447,7 +8621,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 8.133,
           "ended_at": "2026-08-18T03:42:46+00:00",
-          "findings": 0,
+          "findings": 5,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -8534,7 +8708,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 10.283,
           "ended_at": "2026-08-18T04:09:29+00:00",
-          "findings": 0,
+          "findings": 4,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -8621,7 +8795,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 8.75,
           "ended_at": "2026-08-18T04:30:50+00:00",
-          "findings": 0,
+          "findings": 5,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -8708,7 +8882,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 7.35,
           "ended_at": "2026-08-18T04:52:44+00:00",
-          "findings": 0,
+          "findings": 4,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -8783,7 +8957,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 13.55,
           "ended_at": "2026-08-10T01:20:35+00:00",
-          "findings": 0,
+          "findings": 3,
           "flags": [
             "builder_prefix_missing",
             "cwd_and_round_window_correlation"
@@ -8863,7 +9037,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 13.033,
           "ended_at": "2026-08-10T01:58:43+00:00",
-          "findings": 0,
+          "findings": 1,
           "flags": [
             "builder_prefix_missing",
             "cwd_and_round_window_correlation"
@@ -8956,7 +9130,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 14.883,
           "ended_at": "2026-08-10T02:27:22+00:00",
-          "findings": 0,
+          "findings": 4,
           "flags": [
             "builder_prefix_missing",
             "cwd_and_round_window_correlation"
@@ -9049,7 +9223,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 14.45,
           "ended_at": "2026-08-10T02:57:46+00:00",
-          "findings": 0,
+          "findings": 3,
           "flags": [
             "builder_prefix_missing",
             "cwd_and_round_window_correlation"
@@ -9142,7 +9316,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 5.45,
           "ended_at": "2026-08-10T03:11:21+00:00",
-          "findings": 0,
+          "findings": 3,
           "flags": [
             "builder_prefix_missing",
             "cwd_and_round_window_correlation"
@@ -9222,7 +9396,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 9.133,
           "ended_at": "2026-08-10T03:33:36+00:00",
-          "findings": 0,
+          "findings": 3,
           "flags": [
             "builder_prefix_missing",
             "cwd_and_round_window_correlation"
@@ -9315,7 +9489,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 11.617,
           "ended_at": "2026-08-10T05:17:55+00:00",
-          "findings": 0,
+          "findings": 4,
           "flags": [
             "builder_prefix_missing",
             "cwd_and_round_window_correlation"
@@ -9667,7 +9841,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 6.617,
           "ended_at": "2026-08-04T04:31:12+00:00",
-          "findings": 0,
+          "findings": 6,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -9754,7 +9928,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 4.417,
           "ended_at": "2026-08-04T04:56:29+00:00",
-          "findings": 0,
+          "findings": 4,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -9841,7 +10015,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 4.967,
           "ended_at": "2026-08-04T05:14:03+00:00",
-          "findings": 0,
+          "findings": 7,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -9928,7 +10102,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 5.167,
           "ended_at": "2026-08-04T05:32:00+00:00",
-          "findings": 0,
+          "findings": 3,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -10015,7 +10189,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 6.1,
           "ended_at": "2026-08-04T11:34:36+00:00",
-          "findings": 0,
+          "findings": 2,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -10102,7 +10276,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 4.417,
           "ended_at": "2026-08-04T11:45:42+00:00",
-          "findings": 0,
+          "findings": 4,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -10189,7 +10363,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 10.317,
           "ended_at": "2026-08-04T12:09:39+00:00",
-          "findings": 0,
+          "findings": 2,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -10276,7 +10450,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 6.667,
           "ended_at": "2026-08-04T12:24:37+00:00",
-          "findings": 0,
+          "findings": 2,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -10363,7 +10537,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 6.15,
           "ended_at": "2026-08-04T12:37:07+00:00",
-          "findings": 0,
+          "findings": 3,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -10450,7 +10624,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 5.767,
           "ended_at": "2026-08-05T10:01:35+00:00",
-          "findings": 0,
+          "findings": 2,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -10537,7 +10711,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 6.083,
           "ended_at": "2026-08-05T10:24:57+00:00",
-          "findings": 0,
+          "findings": 3,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -10624,7 +10798,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 6.917,
           "ended_at": "2026-08-05T10:48:39+00:00",
-          "findings": 0,
+          "findings": 4,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -10711,7 +10885,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 7.433,
           "ended_at": "2026-08-05T11:02:32+00:00",
-          "findings": 0,
+          "findings": 4,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -10798,7 +10972,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 6.05,
           "ended_at": "2026-08-05T11:13:08+00:00",
-          "findings": 0,
+          "findings": 2,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -10885,7 +11059,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 11.9,
           "ended_at": "2026-08-05T11:37:36+00:00",
-          "findings": 0,
+          "findings": 4,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -10972,7 +11146,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 6.833,
           "ended_at": "2026-08-05T11:57:55+00:00",
-          "findings": 0,
+          "findings": 3,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -11059,7 +11233,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 5.45,
           "ended_at": "2026-08-05T12:11:21+00:00",
-          "findings": 0,
+          "findings": 4,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -11146,7 +11320,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 6.417,
           "ended_at": "2026-08-05T12:24:07+00:00",
-          "findings": 0,
+          "findings": 4,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -11233,7 +11407,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 5.817,
           "ended_at": "2026-08-05T12:38:28+00:00",
-          "findings": 0,
+          "findings": 2,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -11320,7 +11494,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 5.5,
           "ended_at": "2026-08-05T12:49:37+00:00",
-          "findings": 0,
+          "findings": 3,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -11407,7 +11581,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 11.2,
           "ended_at": "2026-08-05T13:16:48+00:00",
-          "findings": 0,
+          "findings": 2,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -11494,7 +11668,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 6.967,
           "ended_at": "2026-08-05T13:27:02+00:00",
-          "findings": 0,
+          "findings": 3,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -11581,7 +11755,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 6.783,
           "ended_at": "2026-08-05T13:42:38+00:00",
-          "findings": 0,
+          "findings": 1,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -11668,7 +11842,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 8.567,
           "ended_at": "2026-08-05T13:51:55+00:00",
-          "findings": 0,
+          "findings": 3,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -11755,7 +11929,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 7.683,
           "ended_at": "2026-08-05T14:10:23+00:00",
-          "findings": 0,
+          "findings": 2,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -11842,7 +12016,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 9.383,
           "ended_at": "2026-08-05T14:25:33+00:00",
-          "findings": 0,
+          "findings": 3,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -11929,7 +12103,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 5.367,
           "ended_at": "2026-08-05T14:36:33+00:00",
-          "findings": 0,
+          "findings": 3,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -12016,7 +12190,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 4.683,
           "ended_at": "2026-08-05T14:47:44+00:00",
-          "findings": 0,
+          "findings": 3,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -12103,7 +12277,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 6.25,
           "ended_at": "2026-08-05T15:14:08+00:00",
-          "findings": 0,
+          "findings": 2,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -12190,7 +12364,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 4.85,
           "ended_at": "2026-08-05T20:33:24+00:00",
-          "findings": 0,
+          "findings": 2,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -12277,7 +12451,7 @@ window.TELEMETRY = {
           "debt_at_accept": 1,
           "duration_minutes": 7.917,
           "ended_at": "2026-08-06T07:48:41+00:00",
-          "findings": 0,
+          "findings": 1,
           "flags": [
             "cwd_and_round_window_correlation"
           ],
@@ -12459,7 +12633,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 5.2,
           "ended_at": "2026-08-03T01:16:21+00:00",
-          "findings": 0,
+          "findings": 3,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -12546,7 +12720,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 4.783,
           "ended_at": "2026-08-03T01:33:42+00:00",
-          "findings": 0,
+          "findings": 3,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -12633,7 +12807,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 3.767,
           "ended_at": "2026-08-03T01:50:25+00:00",
-          "findings": 0,
+          "findings": 2,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -12720,7 +12894,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 5.9,
           "ended_at": "2026-08-03T02:11:56+00:00",
-          "findings": 0,
+          "findings": 3,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -12807,7 +12981,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 5.25,
           "ended_at": "2026-08-03T02:31:39+00:00",
-          "findings": 0,
+          "findings": 2,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -12894,7 +13068,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 6.317,
           "ended_at": "2026-08-03T02:41:40+00:00",
-          "findings": 0,
+          "findings": 4,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -13068,7 +13242,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 6.333,
           "ended_at": "2026-08-04T09:54:28+00:00",
-          "findings": 0,
+          "findings": 3,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -13155,7 +13329,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 5.483,
           "ended_at": "2026-08-04T10:03:31+00:00",
-          "findings": 0,
+          "findings": 1,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -13242,7 +13416,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 5.383,
           "ended_at": "2026-08-04T10:15:14+00:00",
-          "findings": 0,
+          "findings": 1,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -13416,7 +13590,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 17.567,
           "ended_at": "2026-08-08T00:51:12+00:00",
-          "findings": 0,
+          "findings": 4,
           "flags": [
             "cwd_and_round_window_correlation"
           ],
@@ -13598,7 +13772,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 14.0,
           "ended_at": "2026-08-08T01:50:18+00:00",
-          "findings": 0,
+          "findings": 3,
           "flags": [
             "judge_usage_unattributed"
           ],
@@ -13663,7 +13837,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 11.583,
           "ended_at": "2026-08-09T10:19:43+00:00",
-          "findings": 0,
+          "findings": 4,
           "flags": [
             "builder_prefix_missing",
             "cwd_and_round_window_correlation"
@@ -13743,7 +13917,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 16.167,
           "ended_at": "2026-08-09T11:08:00+00:00",
-          "findings": 0,
+          "findings": 2,
           "flags": [
             "builder_prefix_missing",
             "cwd_and_round_window_correlation"
@@ -13823,7 +13997,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 17.083,
           "ended_at": "2026-08-09T11:31:30+00:00",
-          "findings": 0,
+          "findings": 2,
           "flags": [
             "builder_prefix_missing",
             "cwd_and_round_window_correlation"
@@ -13903,7 +14077,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 11.183,
           "ended_at": "2026-08-09T11:58:58+00:00",
-          "findings": 0,
+          "findings": 3,
           "flags": [
             "builder_prefix_missing",
             "cwd_and_round_window_correlation"
@@ -13983,7 +14157,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 12.267,
           "ended_at": "2026-08-09T12:21:52+00:00",
-          "findings": 0,
+          "findings": 4,
           "flags": [
             "builder_prefix_missing",
             "cwd_and_round_window_correlation"
@@ -14063,7 +14237,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 11.217,
           "ended_at": "2026-08-09T12:43:18+00:00",
-          "findings": 0,
+          "findings": 11,
           "flags": [
             "builder_prefix_missing",
             "cwd_and_round_window_correlation"
@@ -14143,7 +14317,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 11.15,
           "ended_at": "2026-08-09T13:09:56+00:00",
-          "findings": 0,
+          "findings": 2,
           "flags": [
             "builder_prefix_missing",
             "cwd_and_round_window_correlation"
@@ -14223,7 +14397,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 12.833,
           "ended_at": "2026-08-09T13:28:27+00:00",
-          "findings": 0,
+          "findings": 1,
           "flags": [
             "builder_prefix_missing",
             "cwd_and_round_window_correlation"
@@ -14303,7 +14477,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 11.4,
           "ended_at": "2026-08-09T21:05:33+00:00",
-          "findings": 0,
+          "findings": 2,
           "flags": [
             "builder_prefix_missing",
             "cwd_and_round_window_correlation"
@@ -14383,7 +14557,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 11.067,
           "ended_at": "2026-08-09T21:33:36+00:00",
-          "findings": 0,
+          "findings": 2,
           "flags": [
             "builder_prefix_missing",
             "cwd_and_round_window_correlation"
@@ -14463,7 +14637,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 13.167,
           "ended_at": "2026-08-09T21:56:48+00:00",
-          "findings": 0,
+          "findings": 2,
           "flags": [
             "builder_prefix_missing",
             "cwd_and_round_window_correlation"
@@ -14556,7 +14730,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 11.983,
           "ended_at": "2026-08-09T22:16:53+00:00",
-          "findings": 0,
+          "findings": 2,
           "flags": [
             "builder_prefix_missing",
             "cwd_and_round_window_correlation"
@@ -14636,7 +14810,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 8.683,
           "ended_at": "2026-08-09T22:37:51+00:00",
-          "findings": 0,
+          "findings": 2,
           "flags": [
             "builder_prefix_missing",
             "cwd_and_round_window_correlation"
@@ -14716,7 +14890,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 10.383,
           "ended_at": "2026-08-09T23:17:05+00:00",
-          "findings": 0,
+          "findings": 3,
           "flags": [
             "builder_prefix_missing",
             "cwd_and_round_window_correlation"
@@ -15069,7 +15243,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 11.6,
           "ended_at": "2026-08-06T10:32:12+00:00",
-          "findings": 0,
+          "findings": 1,
           "flags": [
             "cwd_and_round_window_correlation"
           ],
@@ -15251,7 +15425,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 5.35,
           "ended_at": "2026-08-04T16:00:01+00:00",
-          "findings": 0,
+          "findings": 8,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -15338,7 +15512,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 4.883,
           "ended_at": "2026-08-04T16:14:37+00:00",
-          "findings": 0,
+          "findings": 5,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -15425,7 +15599,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 8.783,
           "ended_at": "2026-08-04T16:31:13+00:00",
-          "findings": 0,
+          "findings": 4,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -15512,7 +15686,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 5.467,
           "ended_at": "2026-08-04T16:42:51+00:00",
-          "findings": 0,
+          "findings": 3,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -15599,7 +15773,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 5.033,
           "ended_at": "2026-08-04T16:54:52+00:00",
-          "findings": 0,
+          "findings": 3,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -15686,7 +15860,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 6.3,
           "ended_at": "2026-08-04T17:16:03+00:00",
-          "findings": 0,
+          "findings": 3,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -15773,7 +15947,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 6.35,
           "ended_at": "2026-08-04T17:31:21+00:00",
-          "findings": 0,
+          "findings": 3,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -15947,7 +16121,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 6.317,
           "ended_at": "2026-08-05T17:24:43+00:00",
-          "findings": 0,
+          "findings": 3,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -16034,7 +16208,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 6.15,
           "ended_at": "2026-08-05T17:42:57+00:00",
-          "findings": 0,
+          "findings": 1,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -16121,7 +16295,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 4.117,
           "ended_at": "2026-08-05T20:12:26+00:00",
-          "findings": 0,
+          "findings": 3,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -16208,7 +16382,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 4.483,
           "ended_at": "2026-08-05T20:40:39+00:00",
-          "findings": 0,
+          "findings": 2,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -16532,7 +16706,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 8.983,
           "ended_at": "2026-08-10T10:58:45+00:00",
-          "findings": 0,
+          "findings": 1,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -16619,7 +16793,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 8.683,
           "ended_at": "2026-08-04T14:13:42+00:00",
-          "findings": 0,
+          "findings": 6,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -16706,7 +16880,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 5.033,
           "ended_at": "2026-08-04T14:31:09+00:00",
-          "findings": 0,
+          "findings": 3,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -16793,7 +16967,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 4.117,
           "ended_at": "2026-08-04T14:41:56+00:00",
-          "findings": 0,
+          "findings": 1,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -16880,7 +17054,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 4.45,
           "ended_at": "2026-08-04T15:25:23+00:00",
-          "findings": 0,
+          "findings": 3,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -16967,7 +17141,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 5.367,
           "ended_at": "2026-08-04T15:39:56+00:00",
-          "findings": 0,
+          "findings": 3,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -17054,7 +17228,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 5.767,
           "ended_at": "2026-08-04T15:52:10+00:00",
-          "findings": 0,
+          "findings": 1,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -17141,7 +17315,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 5.183,
           "ended_at": "2026-08-05T10:36:42+00:00",
-          "findings": 0,
+          "findings": 1,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -17228,7 +17402,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 4.767,
           "ended_at": "2026-08-05T15:23:58+00:00",
-          "findings": 0,
+          "findings": 2,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -17315,7 +17489,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 5.967,
           "ended_at": "2026-08-05T15:46:43+00:00",
-          "findings": 0,
+          "findings": 3,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -17402,7 +17576,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 5.55,
           "ended_at": "2026-08-05T15:57:52+00:00",
-          "findings": 0,
+          "findings": 2,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -17489,7 +17663,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 4.917,
           "ended_at": "2026-08-05T16:22:02+00:00",
-          "findings": 0,
+          "findings": 3,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -17576,7 +17750,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 5.65,
           "ended_at": "2026-08-05T16:38:03+00:00",
-          "findings": 0,
+          "findings": 2,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -17663,7 +17837,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 5.8,
           "ended_at": "2026-08-05T16:48:44+00:00",
-          "findings": 0,
+          "findings": 2,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -17837,7 +18011,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 6.2,
           "ended_at": "2026-08-04T08:02:07+00:00",
-          "findings": 0,
+          "findings": 4,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -17924,7 +18098,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 4.5,
           "ended_at": "2026-08-04T08:13:59+00:00",
-          "findings": 0,
+          "findings": 3,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -18011,7 +18185,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 5.3,
           "ended_at": "2026-08-04T08:27:43+00:00",
-          "findings": 0,
+          "findings": 5,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -18098,7 +18272,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 6.05,
           "ended_at": "2026-08-04T08:47:36+00:00",
-          "findings": 0,
+          "findings": 2,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -18185,7 +18359,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 3.767,
           "ended_at": "2026-08-04T09:01:40+00:00",
-          "findings": 0,
+          "findings": 2,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -18272,7 +18446,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 6.017,
           "ended_at": "2026-08-04T09:15:54+00:00",
-          "findings": 0,
+          "findings": 2,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -18359,7 +18533,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 5.017,
           "ended_at": "2026-08-04T09:22:57+00:00",
-          "findings": 0,
+          "findings": 5,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -18446,7 +18620,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 3.883,
           "ended_at": "2026-08-04T09:35:50+00:00",
-          "findings": 0,
+          "findings": 4,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -18533,7 +18707,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 5.267,
           "ended_at": "2026-08-04T11:54:42+00:00",
-          "findings": 0,
+          "findings": 1,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -18620,7 +18794,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 5.717,
           "ended_at": "2026-08-04T12:45:31+00:00",
-          "findings": 0,
+          "findings": 4,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -18707,7 +18881,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 5.083,
           "ended_at": "2026-08-04T12:56:04+00:00",
-          "findings": 0,
+          "findings": 2,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -18794,7 +18968,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 6.4,
           "ended_at": "2026-08-04T13:06:39+00:00",
-          "findings": 0,
+          "findings": 2,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -18881,7 +19055,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 4.717,
           "ended_at": "2026-08-04T13:21:12+00:00",
-          "findings": 0,
+          "findings": 1,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -19055,7 +19229,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 8.6,
           "ended_at": "2026-08-16T10:40:38+00:00",
-          "findings": 0,
+          "findings": 4,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -19142,7 +19316,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 6.783,
           "ended_at": "2026-08-16T11:08:38+00:00",
-          "findings": 0,
+          "findings": 3,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -19229,7 +19403,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 9.617,
           "ended_at": "2026-08-16T11:37:31+00:00",
-          "findings": 0,
+          "findings": 3,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -19316,7 +19490,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 8.45,
           "ended_at": "2026-08-16T12:24:07+00:00",
-          "findings": 0,
+          "findings": 3,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -19403,7 +19577,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 8.033,
           "ended_at": "2026-08-16T12:44:35+00:00",
-          "findings": 0,
+          "findings": 3,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -19490,7 +19664,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 7.433,
           "ended_at": "2026-08-16T13:17:20+00:00",
-          "findings": 0,
+          "findings": 2,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -19577,7 +19751,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 7.7,
           "ended_at": "2026-08-16T13:47:09+00:00",
-          "findings": 0,
+          "findings": 4,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -19664,7 +19838,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 9.983,
           "ended_at": "2026-08-16T14:11:24+00:00",
-          "findings": 0,
+          "findings": 2,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -19751,7 +19925,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 7.283,
           "ended_at": "2026-08-16T14:34:07+00:00",
-          "findings": 0,
+          "findings": 2,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -19838,7 +20012,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 6.333,
           "ended_at": "2026-08-16T14:53:07+00:00",
-          "findings": 0,
+          "findings": 2,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -19925,7 +20099,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 7.883,
           "ended_at": "2026-08-16T15:24:59+00:00",
-          "findings": 0,
+          "findings": 3,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -20012,7 +20186,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 8.667,
           "ended_at": "2026-08-16T16:01:18+00:00",
-          "findings": 0,
+          "findings": 1,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -20099,7 +20273,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 11.217,
           "ended_at": "2026-08-16T16:28:49+00:00",
-          "findings": 0,
+          "findings": 2,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -20186,7 +20360,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 8.15,
           "ended_at": "2026-08-16T16:56:10+00:00",
-          "findings": 0,
+          "findings": 1,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -20360,7 +20534,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 4.617,
           "ended_at": "2026-08-03T19:38:27+00:00",
-          "findings": 0,
+          "findings": 6,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -20447,7 +20621,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 4.45,
           "ended_at": "2026-08-03T20:03:37+00:00",
-          "findings": 0,
+          "findings": 6,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -20534,7 +20708,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 5.333,
           "ended_at": "2026-08-03T20:27:58+00:00",
-          "findings": 0,
+          "findings": 4,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -20621,7 +20795,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 3.967,
           "ended_at": "2026-08-03T20:43:10+00:00",
-          "findings": 0,
+          "findings": 5,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -20708,7 +20882,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 3.75,
           "ended_at": "2026-08-03T21:11:07+00:00",
-          "findings": 0,
+          "findings": 4,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -20795,7 +20969,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 6.133,
           "ended_at": "2026-08-03T21:38:18+00:00",
-          "findings": 0,
+          "findings": 4,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -20882,7 +21056,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 4.317,
           "ended_at": "2026-08-03T22:05:14+00:00",
-          "findings": 0,
+          "findings": 4,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -20969,7 +21143,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 4.267,
           "ended_at": "2026-08-03T22:15:18+00:00",
-          "findings": 0,
+          "findings": 1,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -21056,7 +21230,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 4.983,
           "ended_at": "2026-08-03T22:41:52+00:00",
-          "findings": 0,
+          "findings": 2,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -21143,7 +21317,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 4.733,
           "ended_at": "2026-08-03T22:57:44+00:00",
-          "findings": 0,
+          "findings": 1,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -21230,7 +21404,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 5.933,
           "ended_at": "2026-08-03T23:14:13+00:00",
-          "findings": 0,
+          "findings": 1,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -21317,7 +21491,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 5.383,
           "ended_at": "2026-08-03T23:49:23+00:00",
-          "findings": 0,
+          "findings": 1,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -21404,7 +21578,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 4.217,
           "ended_at": "2026-08-03T23:58:33+00:00",
-          "findings": 0,
+          "findings": 3,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -21491,7 +21665,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 4.667,
           "ended_at": "2026-08-04T00:16:24+00:00",
-          "findings": 0,
+          "findings": 1,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -21578,7 +21752,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 5.233,
           "ended_at": "2026-08-04T00:22:44+00:00",
-          "findings": 0,
+          "findings": 1,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -21665,7 +21839,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 5.3,
           "ended_at": "2026-08-04T00:39:26+00:00",
-          "findings": 0,
+          "findings": 2,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -21752,7 +21926,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 6.15,
           "ended_at": "2026-08-04T17:41:41+00:00",
-          "findings": 0,
+          "findings": 3,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -21839,7 +22013,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 4.867,
           "ended_at": "2026-08-04T17:52:14+00:00",
-          "findings": 0,
+          "findings": 1,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -21926,7 +22100,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 5.117,
           "ended_at": "2026-08-04T18:03:57+00:00",
-          "findings": 0,
+          "findings": 1,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -22013,7 +22187,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 5.65,
           "ended_at": "2026-08-04T18:14:42+00:00",
-          "findings": 0,
+          "findings": 2,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -22100,7 +22274,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 5.367,
           "ended_at": "2026-08-04T18:29:02+00:00",
-          "findings": 0,
+          "findings": 1,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -22187,7 +22361,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 4.433,
           "ended_at": "2026-08-04T18:38:30+00:00",
-          "findings": 0,
+          "findings": 2,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -22274,7 +22448,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 6.833,
           "ended_at": "2026-08-04T18:52:32+00:00",
-          "findings": 0,
+          "findings": 1,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -22361,7 +22535,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 4.717,
           "ended_at": "2026-08-04T19:03:54+00:00",
-          "findings": 0,
+          "findings": 1,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -22448,7 +22622,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 6.483,
           "ended_at": "2026-08-04T19:15:39+00:00",
-          "findings": 0,
+          "findings": 2,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -22535,7 +22709,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 5.117,
           "ended_at": "2026-08-04T19:26:01+00:00",
-          "findings": 0,
+          "findings": 1,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -22709,7 +22883,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 7.7,
           "ended_at": "2026-08-18T05:36:51+00:00",
-          "findings": 0,
+          "findings": 10,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -22796,7 +22970,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 12.583,
           "ended_at": "2026-08-18T06:04:16+00:00",
-          "findings": 0,
+          "findings": 15,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -22883,7 +23057,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 8.55,
           "ended_at": "2026-08-18T06:40:46+00:00",
-          "findings": 0,
+          "findings": 11,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -22970,7 +23144,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 7.283,
           "ended_at": "2026-08-18T07:10:22+00:00",
-          "findings": 0,
+          "findings": 7,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -23057,7 +23231,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 8.983,
           "ended_at": "2026-08-18T07:34:02+00:00",
-          "findings": 0,
+          "findings": 8,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -23144,7 +23318,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 7.5,
           "ended_at": "2026-08-18T08:01:32+00:00",
-          "findings": 0,
+          "findings": 6,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -23231,7 +23405,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 6.783,
           "ended_at": "2026-08-18T08:25:24+00:00",
-          "findings": 0,
+          "findings": 4,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -23318,7 +23492,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 9.217,
           "ended_at": "2026-08-18T08:48:49+00:00",
-          "findings": 0,
+          "findings": 6,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -23405,7 +23579,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 9.067,
           "ended_at": "2026-08-18T09:16:34+00:00",
-          "findings": 0,
+          "findings": 7,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -23492,7 +23666,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 8.183,
           "ended_at": "2026-08-18T09:40:18+00:00",
-          "findings": 0,
+          "findings": 4,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -23670,7 +23844,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 5.567,
           "ended_at": "2026-08-04T05:54:59+00:00",
-          "findings": 0,
+          "findings": 5,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -23757,7 +23931,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 4.133,
           "ended_at": "2026-08-04T06:17:34+00:00",
-          "findings": 0,
+          "findings": 1,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -23931,7 +24105,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 5.067,
           "ended_at": "2026-08-04T01:02:46+00:00",
-          "findings": 0,
+          "findings": 5,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -24018,7 +24192,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 3.717,
           "ended_at": "2026-08-04T01:19:14+00:00",
-          "findings": 0,
+          "findings": 5,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -24105,7 +24279,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 4.633,
           "ended_at": "2026-08-04T01:36:06+00:00",
-          "findings": 0,
+          "findings": 3,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -24192,7 +24366,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 2.967,
           "ended_at": "2026-08-04T01:50:38+00:00",
-          "findings": 0,
+          "findings": 2,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -24279,7 +24453,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 3.7,
           "ended_at": "2026-08-04T02:06:35+00:00",
-          "findings": 0,
+          "findings": 2,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -24366,7 +24540,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 3.767,
           "ended_at": "2026-08-04T02:11:26+00:00",
-          "findings": 0,
+          "findings": 1,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -24453,7 +24627,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 4.933,
           "ended_at": "2026-08-04T02:27:08+00:00",
-          "findings": 0,
+          "findings": 2,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -24540,7 +24714,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 4.217,
           "ended_at": "2026-08-04T02:43:30+00:00",
-          "findings": 0,
+          "findings": 1,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -24627,7 +24801,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 12.883,
           "ended_at": "2026-08-06T16:07:21+00:00",
-          "findings": 0,
+          "findings": 2,
           "flags": [
             "cwd_and_round_window_correlation"
           ],
@@ -24718,7 +24892,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 8.683,
           "ended_at": "2026-08-06T16:33:10+00:00",
-          "findings": 0,
+          "findings": 2,
           "flags": [
             "cwd_and_round_window_correlation"
           ],
@@ -24809,7 +24983,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 12.9,
           "ended_at": "2026-08-06T16:53:21+00:00",
-          "findings": 0,
+          "findings": 1,
           "flags": [
             "cwd_and_round_window_correlation"
           ],
@@ -24979,7 +25153,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 11.317,
           "ended_at": "2026-08-10T04:15:18+00:00",
-          "findings": 0,
+          "findings": 2,
           "flags": [
             "builder_prefix_missing",
             "cwd_and_round_window_correlation"
@@ -25059,7 +25233,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 10.9,
           "ended_at": "2026-08-10T04:33:31+00:00",
-          "findings": 0,
+          "findings": 2,
           "flags": [
             "builder_prefix_missing",
             "cwd_and_round_window_correlation"
@@ -25244,7 +25418,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 9.767,
           "ended_at": "2026-08-16T01:02:44+00:00",
-          "findings": 0,
+          "findings": 10,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -25331,7 +25505,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 7.683,
           "ended_at": "2026-08-16T01:23:37+00:00",
-          "findings": 0,
+          "findings": 7,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -25418,7 +25592,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 8.733,
           "ended_at": "2026-08-16T01:45:58+00:00",
-          "findings": 0,
+          "findings": 9,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -25505,7 +25679,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 7.233,
           "ended_at": "2026-08-16T02:05:59+00:00",
-          "findings": 0,
+          "findings": 5,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -25592,7 +25766,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 7.4,
           "ended_at": "2026-08-16T02:25:54+00:00",
-          "findings": 0,
+          "findings": 9,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -25679,7 +25853,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 8.133,
           "ended_at": "2026-08-16T02:46:32+00:00",
-          "findings": 0,
+          "findings": 5,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -25766,7 +25940,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 9.083,
           "ended_at": "2026-08-16T03:09:18+00:00",
-          "findings": 0,
+          "findings": 6,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -25853,7 +26027,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 9.233,
           "ended_at": "2026-08-16T03:53:07+00:00",
-          "findings": 0,
+          "findings": 4,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -25940,7 +26114,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 7.55,
           "ended_at": "2026-08-16T04:02:04+00:00",
-          "findings": 0,
+          "findings": 2,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -26027,7 +26201,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 8.2,
           "ended_at": "2026-08-16T04:22:42+00:00",
-          "findings": 0,
+          "findings": 2,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -26114,7 +26288,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 7.9,
           "ended_at": "2026-08-16T04:42:45+00:00",
-          "findings": 0,
+          "findings": 4,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -26201,7 +26375,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 7.633,
           "ended_at": "2026-08-16T05:23:22+00:00",
-          "findings": 0,
+          "findings": 2,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -26288,7 +26462,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 7.0,
           "ended_at": "2026-08-16T05:33:19+00:00",
-          "findings": 0,
+          "findings": 1,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -26375,7 +26549,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 7.95,
           "ended_at": "2026-08-16T05:44:32+00:00",
-          "findings": 0,
+          "findings": 3,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -26462,7 +26636,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 6.75,
           "ended_at": "2026-08-16T06:04:13+00:00",
-          "findings": 0,
+          "findings": 2,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -26549,7 +26723,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 6.983,
           "ended_at": "2026-08-16T06:22:50+00:00",
-          "findings": 0,
+          "findings": 1,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -26636,7 +26810,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 9.783,
           "ended_at": "2026-08-16T06:44:26+00:00",
-          "findings": 0,
+          "findings": 2,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -26723,7 +26897,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 10.733,
           "ended_at": "2026-08-16T06:55:57+00:00",
-          "findings": 0,
+          "findings": 2,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -26810,7 +26984,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 9.033,
           "ended_at": "2026-08-16T07:18:04+00:00",
-          "findings": 0,
+          "findings": 3,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -26897,7 +27071,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 6.817,
           "ended_at": "2026-08-16T07:37:38+00:00",
-          "findings": 0,
+          "findings": 4,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -26984,7 +27158,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 6.167,
           "ended_at": "2026-08-16T08:15:09+00:00",
-          "findings": 0,
+          "findings": 3,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -27071,7 +27245,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 10.95,
           "ended_at": "2026-08-16T08:26:50+00:00",
-          "findings": 0,
+          "findings": 3,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -27158,7 +27332,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 6.917,
           "ended_at": "2026-08-16T08:46:10+00:00",
-          "findings": 0,
+          "findings": 2,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -27245,7 +27419,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 8.75,
           "ended_at": "2026-08-16T09:07:02+00:00",
-          "findings": 0,
+          "findings": 3,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -27332,7 +27506,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 8.083,
           "ended_at": "2026-08-16T09:31:35+00:00",
-          "findings": 0,
+          "findings": 2,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -27419,7 +27593,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 6.617,
           "ended_at": "2026-08-16T09:40:49+00:00",
-          "findings": 0,
+          "findings": 1,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -27593,7 +27767,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 4.5,
           "ended_at": "2026-08-02T14:42:24+00:00",
-          "findings": 0,
+          "findings": 5,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -27680,7 +27854,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 4.083,
           "ended_at": "2026-08-02T15:05:52+00:00",
-          "findings": 0,
+          "findings": 3,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -27767,7 +27941,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 4.583,
           "ended_at": "2026-08-02T15:28:06+00:00",
-          "findings": 0,
+          "findings": 1,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -27941,7 +28115,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 4.783,
           "ended_at": "2026-08-02T23:20:48+00:00",
-          "findings": 0,
+          "findings": 1,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -28028,7 +28202,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 3.45,
           "ended_at": "2026-08-02T23:40:57+00:00",
-          "findings": 0,
+          "findings": 1,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -28115,7 +28289,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 4.417,
           "ended_at": "2026-08-02T23:56:27+00:00",
-          "findings": 0,
+          "findings": 1,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -28202,7 +28376,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 4.233,
           "ended_at": "2026-08-03T00:12:26+00:00",
-          "findings": 0,
+          "findings": 1,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -28376,7 +28550,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 5.6,
           "ended_at": "2026-08-04T21:36:54+00:00",
-          "findings": 0,
+          "findings": 5,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -28550,7 +28724,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 4.55,
           "ended_at": "2026-08-03T12:01:17+00:00",
-          "findings": 0,
+          "findings": 4,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -28637,7 +28811,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 4.183,
           "ended_at": "2026-08-03T12:20:14+00:00",
-          "findings": 0,
+          "findings": 3,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -28724,7 +28898,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 4.5,
           "ended_at": "2026-08-03T12:31:31+00:00",
-          "findings": 0,
+          "findings": 3,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -28811,7 +28985,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 5.767,
           "ended_at": "2026-08-03T13:00:17+00:00",
-          "findings": 0,
+          "findings": 3,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -28898,7 +29072,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 6.817,
           "ended_at": "2026-08-03T13:19:05+00:00",
-          "findings": 0,
+          "findings": 2,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -28985,7 +29159,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 5.25,
           "ended_at": "2026-08-03T13:36:41+00:00",
-          "findings": 0,
+          "findings": 2,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -29072,7 +29246,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 4.983,
           "ended_at": "2026-08-03T13:48:38+00:00",
-          "findings": 0,
+          "findings": 3,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -29159,7 +29333,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 4.95,
           "ended_at": "2026-08-03T14:00:36+00:00",
-          "findings": 0,
+          "findings": 3,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -29246,7 +29420,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 4.25,
           "ended_at": "2026-08-03T14:12:10+00:00",
-          "findings": 0,
+          "findings": 3,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -29333,7 +29507,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 4.9,
           "ended_at": "2026-08-04T22:21:41+00:00",
-          "findings": 0,
+          "findings": 6,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -29420,7 +29594,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 4.9,
           "ended_at": "2026-08-04T22:49:09+00:00",
-          "findings": 0,
+          "findings": 1,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -29507,7 +29681,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 6.067,
           "ended_at": "2026-08-04T23:00:33+00:00",
-          "findings": 0,
+          "findings": 2,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -29594,7 +29768,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 4.133,
           "ended_at": "2026-08-04T23:15:31+00:00",
-          "findings": 0,
+          "findings": 3,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -29681,7 +29855,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 5.033,
           "ended_at": "2026-08-04T23:21:16+00:00",
-          "findings": 0,
+          "findings": 3,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -29768,7 +29942,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 7.1,
           "ended_at": "2026-08-05T18:05:32+00:00",
-          "findings": 0,
+          "findings": 4,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -29855,7 +30029,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 6.583,
           "ended_at": "2026-08-05T18:26:16+00:00",
-          "findings": 0,
+          "findings": 3,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -29942,7 +30116,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 5.0,
           "ended_at": "2026-08-05T18:39:10+00:00",
-          "findings": 0,
+          "findings": 1,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -30029,7 +30203,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 4.983,
           "ended_at": "2026-08-05T18:50:00+00:00",
-          "findings": 0,
+          "findings": 3,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -30116,7 +30290,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 6.617,
           "ended_at": "2026-08-05T19:03:05+00:00",
-          "findings": 0,
+          "findings": 2,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -30203,7 +30377,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 5.3,
           "ended_at": "2026-08-05T19:16:25+00:00",
-          "findings": 0,
+          "findings": 3,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -30290,7 +30464,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 6.35,
           "ended_at": "2026-08-05T19:37:02+00:00",
-          "findings": 0,
+          "findings": 3,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -30377,7 +30551,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 5.533,
           "ended_at": "2026-08-05T19:50:47+00:00",
-          "findings": 0,
+          "findings": 1,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -30464,7 +30638,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 6.467,
           "ended_at": "2026-08-05T20:04:40+00:00",
-          "findings": 0,
+          "findings": 1,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -30642,7 +30816,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 4.617,
           "ended_at": "2026-08-02T16:15:49+00:00",
-          "findings": 0,
+          "findings": 3,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -30998,7 +31172,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 19.333,
           "ended_at": "2026-08-07T16:25:27+00:00",
-          "findings": 0,
+          "findings": 1,
           "flags": [
             "cwd_and_round_window_correlation"
           ],
@@ -31089,7 +31263,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 18.417,
           "ended_at": "2026-08-07T17:14:08+00:00",
-          "findings": 0,
+          "findings": 1,
           "flags": [
             "cwd_and_round_window_correlation"
           ],
@@ -31180,7 +31354,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 17.45,
           "ended_at": "2026-08-07T17:57:28+00:00",
-          "findings": 0,
+          "findings": 1,
           "flags": [
             "cwd_and_round_window_correlation"
           ],
@@ -31271,7 +31445,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 19.1,
           "ended_at": "2026-08-07T18:38:40+00:00",
-          "findings": 0,
+          "findings": 2,
           "flags": [
             "cwd_and_round_window_correlation"
           ],
@@ -31362,7 +31536,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 20.783,
           "ended_at": "2026-08-07T19:11:32+00:00",
-          "findings": 0,
+          "findings": 1,
           "flags": [
             "cwd_and_round_window_correlation"
           ],
@@ -31544,7 +31718,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 20.65,
           "ended_at": "2026-08-07T20:14:04+00:00",
-          "findings": 0,
+          "findings": 3,
           "flags": [
             "cwd_and_round_window_correlation"
           ],
@@ -31817,7 +31991,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 17.667,
           "ended_at": "2026-08-07T21:49:41+00:00",
-          "findings": 0,
+          "findings": 2,
           "flags": [
             "cwd_and_round_window_correlation"
           ],
@@ -31908,7 +32082,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 18.283,
           "ended_at": "2026-08-07T22:23:10+00:00",
-          "findings": 0,
+          "findings": 2,
           "flags": [
             "cwd_and_round_window_correlation"
           ],
@@ -31999,7 +32173,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 20.483,
           "ended_at": "2026-08-07T22:55:31+00:00",
-          "findings": 0,
+          "findings": 1,
           "flags": [
             "cwd_and_round_window_correlation"
           ],
@@ -32090,7 +32264,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 21.167,
           "ended_at": "2026-08-07T23:39:03+00:00",
-          "findings": 0,
+          "findings": 2,
           "flags": [
             "cwd_and_round_window_correlation"
           ],
@@ -32169,7 +32343,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 10.733,
           "ended_at": "2026-08-09T20:12:46+00:00",
-          "findings": 0,
+          "findings": 2,
           "flags": [
             "builder_prefix_missing",
             "cwd_and_round_window_correlation"
@@ -32249,7 +32423,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 11.383,
           "ended_at": "2026-08-09T20:28:19+00:00",
-          "findings": 0,
+          "findings": 3,
           "flags": [
             "builder_prefix_missing",
             "cwd_and_round_window_correlation"
@@ -32407,7 +32581,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 5.117,
           "ended_at": "2026-08-02T19:07:51+00:00",
-          "findings": 0,
+          "findings": 9,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -32494,7 +32668,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 5.767,
           "ended_at": "2026-08-02T19:33:00+00:00",
-          "findings": 0,
+          "findings": 4,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -32581,7 +32755,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 6.633,
           "ended_at": "2026-08-02T20:07:46+00:00",
-          "findings": 0,
+          "findings": 5,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -32668,7 +32842,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 4.55,
           "ended_at": "2026-08-02T20:23:48+00:00",
-          "findings": 0,
+          "findings": 2,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -32755,7 +32929,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 4.733,
           "ended_at": "2026-08-02T20:47:37+00:00",
-          "findings": 0,
+          "findings": 2,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -32842,7 +33016,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 4.25,
           "ended_at": "2026-08-02T20:54:15+00:00",
-          "findings": 0,
+          "findings": 3,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -32929,7 +33103,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 4.9,
           "ended_at": "2026-08-02T21:05:31+00:00",
-          "findings": 0,
+          "findings": 3,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -33016,7 +33190,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 5.033,
           "ended_at": "2026-08-02T21:19:41+00:00",
-          "findings": 0,
+          "findings": 2,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -33103,7 +33277,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 4.633,
           "ended_at": "2026-08-02T21:31:28+00:00",
-          "findings": 0,
+          "findings": 1,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -33190,7 +33364,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 4.5,
           "ended_at": "2026-08-02T21:46:44+00:00",
-          "findings": 0,
+          "findings": 2,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -33277,7 +33451,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 4.867,
           "ended_at": "2026-08-02T21:57:34+00:00",
-          "findings": 0,
+          "findings": 2,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -33364,7 +33538,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 4.167,
           "ended_at": "2026-08-02T22:08:05+00:00",
-          "findings": 0,
+          "findings": 2,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -33451,7 +33625,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 5.217,
           "ended_at": "2026-08-02T22:20:53+00:00",
-          "findings": 0,
+          "findings": 4,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -33526,7 +33700,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 13.867,
           "ended_at": "2026-08-09T17:55:24+00:00",
-          "findings": 0,
+          "findings": 3,
           "flags": [
             "builder_prefix_missing",
             "cwd_and_round_window_correlation"
@@ -33619,7 +33793,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 15.883,
           "ended_at": "2026-08-09T18:21:17+00:00",
-          "findings": 0,
+          "findings": 5,
           "flags": [
             "builder_prefix_missing",
             "cwd_and_round_window_correlation"
@@ -33712,7 +33886,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 13.9,
           "ended_at": "2026-08-09T18:48:10+00:00",
-          "findings": 0,
+          "findings": 4,
           "flags": [
             "builder_prefix_missing",
             "cwd_and_round_window_correlation"
@@ -33805,7 +33979,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 14.917,
           "ended_at": "2026-08-09T19:10:13+00:00",
-          "findings": 0,
+          "findings": 1,
           "flags": [
             "builder_prefix_missing",
             "cwd_and_round_window_correlation"
@@ -33898,7 +34072,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 13.7,
           "ended_at": "2026-08-09T19:27:58+00:00",
-          "findings": 0,
+          "findings": 1,
           "flags": [
             "builder_prefix_missing",
             "cwd_and_round_window_correlation"
@@ -33978,7 +34152,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 14.25,
           "ended_at": "2026-08-09T19:48:20+00:00",
-          "findings": 0,
+          "findings": 1,
           "flags": [
             "builder_prefix_missing",
             "cwd_and_round_window_correlation"
@@ -34071,7 +34245,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 7.967,
           "ended_at": "2026-08-09T14:01:41+00:00",
-          "findings": 0,
+          "findings": 2,
           "flags": [
             "builder_prefix_missing",
             "cwd_and_round_window_correlation"
@@ -34151,7 +34325,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 15.667,
           "ended_at": "2026-08-09T14:22:29+00:00",
-          "findings": 0,
+          "findings": 1,
           "flags": [
             "builder_prefix_missing",
             "cwd_and_round_window_correlation"
@@ -34309,7 +34483,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 11.367,
           "ended_at": "2026-08-16T18:51:43+00:00",
-          "findings": 0,
+          "findings": 14,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -34396,7 +34570,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 10.267,
           "ended_at": "2026-08-16T19:33:35+00:00",
-          "findings": 0,
+          "findings": 11,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -34483,7 +34657,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 8.033,
           "ended_at": "2026-08-16T19:56:24+00:00",
-          "findings": 0,
+          "findings": 6,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -34570,7 +34744,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 9.817,
           "ended_at": "2026-08-16T20:19:05+00:00",
-          "findings": 0,
+          "findings": 11,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -34657,7 +34831,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 8.35,
           "ended_at": "2026-08-16T20:53:04+00:00",
-          "findings": 0,
+          "findings": 11,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -34744,7 +34918,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 7.317,
           "ended_at": "2026-08-16T21:01:39+00:00",
-          "findings": 0,
+          "findings": 8,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -34831,7 +35005,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 7.117,
           "ended_at": "2026-08-16T21:25:50+00:00",
-          "findings": 0,
+          "findings": 5,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -34918,7 +35092,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 7.55,
           "ended_at": "2026-08-16T21:46:03+00:00",
-          "findings": 0,
+          "findings": 3,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -35005,7 +35179,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 8.583,
           "ended_at": "2026-08-16T22:08:46+00:00",
-          "findings": 0,
+          "findings": 7,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -35092,7 +35266,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 7.117,
           "ended_at": "2026-08-16T22:32:02+00:00",
-          "findings": 0,
+          "findings": 3,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -35179,7 +35353,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 7.5,
           "ended_at": "2026-08-16T22:52:58+00:00",
-          "findings": 0,
+          "findings": 5,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -35266,7 +35440,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 6.75,
           "ended_at": "2026-08-16T23:14:11+00:00",
-          "findings": 0,
+          "findings": 4,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -35353,7 +35527,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 5.533,
           "ended_at": "2026-08-16T23:21:11+00:00",
-          "findings": 0,
+          "findings": 3,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -35440,7 +35614,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 8.217,
           "ended_at": "2026-08-16T23:53:20+00:00",
-          "findings": 0,
+          "findings": 2,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -35527,7 +35701,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 7.617,
           "ended_at": "2026-08-17T00:14:06+00:00",
-          "findings": 0,
+          "findings": 2,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -35614,7 +35788,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 7.083,
           "ended_at": "2026-08-17T00:34:03+00:00",
-          "findings": 0,
+          "findings": 3,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -35701,7 +35875,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 7.933,
           "ended_at": "2026-08-17T00:42:47+00:00",
-          "findings": 0,
+          "findings": 1,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -35788,7 +35962,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 6.217,
           "ended_at": "2026-08-17T01:01:48+00:00",
-          "findings": 0,
+          "findings": 2,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -35875,7 +36049,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 7.833,
           "ended_at": "2026-08-17T01:22:05+00:00",
-          "findings": 0,
+          "findings": 2,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -35962,7 +36136,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 8.683,
           "ended_at": "2026-08-17T01:54:00+00:00",
-          "findings": 0,
+          "findings": 2,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -36049,7 +36223,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 8.3,
           "ended_at": "2026-08-17T02:15:25+00:00",
-          "findings": 0,
+          "findings": 2,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -36136,7 +36310,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 7.567,
           "ended_at": "2026-08-17T03:04:23+00:00",
-          "findings": 0,
+          "findings": 1,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -36223,7 +36397,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 8.467,
           "ended_at": "2026-08-17T03:25:23+00:00",
-          "findings": 0,
+          "findings": 2,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -36310,7 +36484,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 7.883,
           "ended_at": "2026-08-17T03:46:32+00:00",
-          "findings": 0,
+          "findings": 3,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -36397,7 +36571,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 11.333,
           "ended_at": "2026-08-17T04:10:52+00:00",
-          "findings": 0,
+          "findings": 3,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -36484,7 +36658,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 5.917,
           "ended_at": "2026-08-17T04:29:22+00:00",
-          "findings": 0,
+          "findings": 1,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -36571,7 +36745,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 9.35,
           "ended_at": "2026-08-17T04:51:10+00:00",
-          "findings": 0,
+          "findings": 2,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -36658,7 +36832,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 6.633,
           "ended_at": "2026-08-17T05:11:17+00:00",
-          "findings": 0,
+          "findings": 1,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -36745,7 +36919,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 6.25,
           "ended_at": "2026-08-17T05:30:00+00:00",
-          "findings": 0,
+          "findings": 1,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -36832,7 +37006,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 12.333,
           "ended_at": "2026-08-17T05:54:39+00:00",
-          "findings": 0,
+          "findings": 1,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -36919,7 +37093,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 9.317,
           "ended_at": "2026-08-17T06:16:41+00:00",
-          "findings": 0,
+          "findings": 1,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -37093,7 +37267,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 8.833,
           "ended_at": "2026-08-18T14:01:11+00:00",
-          "findings": 0,
+          "findings": 5,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -37180,7 +37354,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 14.317,
           "ended_at": "2026-08-18T14:35:36+00:00",
-          "findings": 0,
+          "findings": 5,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -37267,7 +37441,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 8.367,
           "ended_at": "2026-08-18T15:04:08+00:00",
-          "findings": 0,
+          "findings": 7,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -37354,7 +37528,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 11.017,
           "ended_at": "2026-08-18T15:33:35+00:00",
-          "findings": 0,
+          "findings": 6,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -37441,7 +37615,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 9.317,
           "ended_at": "2026-08-18T16:18:34+00:00",
-          "findings": 0,
+          "findings": 5,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -37528,7 +37702,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 9.567,
           "ended_at": "2026-08-18T16:59:24+00:00",
-          "findings": 0,
+          "findings": 7,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -37615,7 +37789,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 10.483,
           "ended_at": "2026-08-18T17:26:45+00:00",
-          "findings": 0,
+          "findings": 4,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -37702,7 +37876,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 9.933,
           "ended_at": "2026-08-18T17:53:36+00:00",
-          "findings": 0,
+          "findings": 3,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -37789,7 +37963,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 8.417,
           "ended_at": "2026-08-18T18:16:30+00:00",
-          "findings": 0,
+          "findings": 2,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -37963,7 +38137,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 13.217,
           "ended_at": "2026-08-18T20:05:31+00:00",
-          "findings": 0,
+          "findings": 1,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -38050,7 +38224,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 8.667,
           "ended_at": "2026-08-18T20:28:15+00:00",
-          "findings": 0,
+          "findings": 3,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -38137,7 +38311,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 6.85,
           "ended_at": "2026-08-18T21:06:25+00:00",
-          "findings": 0,
+          "findings": 4,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -38311,7 +38485,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 8.183,
           "ended_at": "2026-08-17T07:17:01+00:00",
-          "findings": 0,
+          "findings": 13,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -38398,7 +38572,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 8.75,
           "ended_at": "2026-08-17T08:09:33+00:00",
-          "findings": 0,
+          "findings": 7,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -38485,7 +38659,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 8.817,
           "ended_at": "2026-08-17T08:36:04+00:00",
-          "findings": 0,
+          "findings": 10,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -38572,7 +38746,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 8.317,
           "ended_at": "2026-08-17T09:02:34+00:00",
-          "findings": 0,
+          "findings": 9,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -38659,7 +38833,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 8.117,
           "ended_at": "2026-08-17T09:12:10+00:00",
-          "findings": 0,
+          "findings": 7,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -38746,7 +38920,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 8.15,
           "ended_at": "2026-08-17T09:40:19+00:00",
-          "findings": 0,
+          "findings": 7,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -38833,7 +39007,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 8.217,
           "ended_at": "2026-08-17T10:16:34+00:00",
-          "findings": 0,
+          "findings": 2,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -38920,7 +39094,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 7.517,
           "ended_at": "2026-08-17T10:38:39+00:00",
-          "findings": 0,
+          "findings": 3,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -39007,7 +39181,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 7.867,
           "ended_at": "2026-08-17T11:16:20+00:00",
-          "findings": 0,
+          "findings": 3,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -39094,7 +39268,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 7.983,
           "ended_at": "2026-08-17T11:25:37+00:00",
-          "findings": 0,
+          "findings": 10,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -39181,7 +39355,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 9.367,
           "ended_at": "2026-08-17T12:11:14+00:00",
-          "findings": 0,
+          "findings": 5,
           "flags": [
             "cwd_and_round_window_correlation"
           ],
@@ -39272,7 +39446,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 12.183,
           "ended_at": "2026-08-17T12:41:14+00:00",
-          "findings": 0,
+          "findings": 8,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -39359,7 +39533,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 10.317,
           "ended_at": "2026-08-17T13:09:25+00:00",
-          "findings": 0,
+          "findings": 7,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -39446,7 +39620,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 9.35,
           "ended_at": "2026-08-17T13:19:50+00:00",
-          "findings": 0,
+          "findings": 7,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -39533,7 +39707,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 9.25,
           "ended_at": "2026-08-17T13:45:03+00:00",
-          "findings": 0,
+          "findings": 4,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -39620,7 +39794,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 9.2,
           "ended_at": "2026-08-17T14:10:14+00:00",
-          "findings": 0,
+          "findings": 9,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -39707,7 +39881,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 10.167,
           "ended_at": "2026-08-17T14:36:34+00:00",
-          "findings": 0,
+          "findings": 7,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -39794,7 +39968,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 7.417,
           "ended_at": "2026-08-17T14:45:00+00:00",
-          "findings": 0,
+          "findings": 6,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -39881,7 +40055,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 9.25,
           "ended_at": "2026-08-17T15:11:59+00:00",
-          "findings": 0,
+          "findings": 3,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -39968,7 +40142,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 8.15,
           "ended_at": "2026-08-17T15:44:49+00:00",
-          "findings": 0,
+          "findings": 2,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -40055,7 +40229,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 7.983,
           "ended_at": "2026-08-17T16:06:54+00:00",
-          "findings": 0,
+          "findings": 2,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -40324,7 +40498,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 8.933,
           "ended_at": "2026-08-19T03:59:06+00:00",
-          "findings": 0,
+          "findings": 11,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -40411,7 +40585,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 6.117,
           "ended_at": "2026-08-19T06:05:42+00:00",
-          "findings": 0,
+          "findings": 9,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -40498,7 +40672,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 9.45,
           "ended_at": "2026-08-19T06:32:21+00:00",
-          "findings": 0,
+          "findings": 6,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -40585,7 +40759,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 7.65,
           "ended_at": "2026-08-19T07:22:51+00:00",
-          "findings": 0,
+          "findings": 7,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -40672,7 +40846,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 5.483,
           "ended_at": "2026-08-04T07:10:34+00:00",
-          "findings": 0,
+          "findings": 1,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -40933,7 +41107,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 5.317,
           "ended_at": "2026-08-03T09:58:32+00:00",
-          "findings": 0,
+          "findings": 6,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -41020,7 +41194,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 4.817,
           "ended_at": "2026-08-03T10:14:31+00:00",
-          "findings": 0,
+          "findings": 1,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -41107,7 +41281,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 4.883,
           "ended_at": "2026-08-03T10:36:53+00:00",
-          "findings": 0,
+          "findings": 3,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -41194,7 +41368,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 3.933,
           "ended_at": "2026-08-03T10:53:01+00:00",
-          "findings": 0,
+          "findings": 3,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -41281,7 +41455,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 5.683,
           "ended_at": "2026-08-03T11:01:48+00:00",
-          "findings": 0,
+          "findings": 4,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -41368,7 +41542,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 4.517,
           "ended_at": "2026-08-03T11:18:33+00:00",
-          "findings": 0,
+          "findings": 4,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -41455,7 +41629,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 5.467,
           "ended_at": "2026-08-03T11:32:00+00:00",
-          "findings": 0,
+          "findings": 5,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -41542,7 +41716,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 9.683,
           "ended_at": "2026-08-06T14:30:10+00:00",
-          "findings": 0,
+          "findings": 2,
           "flags": [
             "cwd_and_round_window_correlation"
           ],
@@ -41633,7 +41807,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 13.45,
           "ended_at": "2026-08-06T14:56:36+00:00",
-          "findings": 0,
+          "findings": 1,
           "flags": [
             "cwd_and_round_window_correlation"
           ],
@@ -41724,7 +41898,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 11.267,
           "ended_at": "2026-08-06T15:16:31+00:00",
-          "findings": 0,
+          "findings": 1,
           "flags": [
             "cwd_and_round_window_correlation"
           ],
@@ -41906,7 +42080,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 7.867,
           "ended_at": "2026-08-20T02:11:55+00:00",
-          "findings": 0,
+          "findings": 4,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -41993,7 +42167,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 7.1,
           "ended_at": "2026-08-20T02:25:01+00:00",
-          "findings": 0,
+          "findings": 2,
           "flags": [
             "cwd_and_round_window_correlation"
           ],
@@ -42084,7 +42258,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 7.533,
           "ended_at": "2026-08-20T02:49:52+00:00",
-          "findings": 0,
+          "findings": 2,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -42171,7 +42345,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 7.4,
           "ended_at": "2026-08-20T03:16:17+00:00",
-          "findings": 0,
+          "findings": 2,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -42258,7 +42432,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 8.717,
           "ended_at": "2026-08-20T03:40:47+00:00",
-          "findings": 0,
+          "findings": 2,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -42432,7 +42606,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 7.85,
           "ended_at": "2026-08-20T04:12:41+00:00",
-          "findings": 0,
+          "findings": 1,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -42606,7 +42780,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 5.1,
           "ended_at": "2026-08-03T04:35:21+00:00",
-          "findings": 0,
+          "findings": 5,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -42693,7 +42867,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 4.65,
           "ended_at": "2026-08-03T04:52:30+00:00",
-          "findings": 0,
+          "findings": 3,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -42780,7 +42954,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 3.55,
           "ended_at": "2026-08-03T05:08:42+00:00",
-          "findings": 0,
+          "findings": 2,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -42867,7 +43041,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 4.383,
           "ended_at": "2026-08-03T05:25:50+00:00",
-          "findings": 0,
+          "findings": 1,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -42954,7 +43128,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 6.133,
           "ended_at": "2026-08-03T05:43:17+00:00",
-          "findings": 0,
+          "findings": 1,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -43041,7 +43215,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 3.983,
           "ended_at": "2026-08-03T05:58:26+00:00",
-          "findings": 0,
+          "findings": 2,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -43128,7 +43302,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 4.883,
           "ended_at": "2026-08-03T06:05:42+00:00",
-          "findings": 0,
+          "findings": 7,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -43215,7 +43389,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 4.017,
           "ended_at": "2026-08-03T06:22:52+00:00",
-          "findings": 0,
+          "findings": 5,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -43302,7 +43476,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 3.717,
           "ended_at": "2026-08-03T11:42:08+00:00",
-          "findings": 0,
+          "findings": 5,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -43389,7 +43563,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 6.183,
           "ended_at": "2026-08-03T03:41:33+00:00",
-          "findings": 0,
+          "findings": 2,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -43476,7 +43650,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 4.717,
           "ended_at": "2026-08-03T03:59:28+00:00",
-          "findings": 0,
+          "findings": 1,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -43650,7 +43824,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 9.517,
           "ended_at": "2026-08-19T10:55:57+00:00",
-          "findings": 0,
+          "findings": 12,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -43737,7 +43911,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 10.35,
           "ended_at": "2026-08-19T11:17:25+00:00",
-          "findings": 0,
+          "findings": 15,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -43824,7 +43998,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 7.317,
           "ended_at": "2026-08-19T11:33:42+00:00",
-          "findings": 0,
+          "findings": 11,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -43911,7 +44085,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 6.5,
           "ended_at": "2026-08-19T11:46:15+00:00",
-          "findings": 0,
+          "findings": 9,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -43998,7 +44172,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 8.35,
           "ended_at": "2026-08-19T11:58:51+00:00",
-          "findings": 0,
+          "findings": 9,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -44085,7 +44259,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 10.0,
           "ended_at": "2026-08-19T12:21:34+00:00",
-          "findings": 0,
+          "findings": 9,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -44172,7 +44346,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 7.817,
           "ended_at": "2026-08-19T12:40:11+00:00",
-          "findings": 0,
+          "findings": 10,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -44259,7 +44433,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 7.933,
           "ended_at": "2026-08-19T12:52:26+00:00",
-          "findings": 0,
+          "findings": 10,
           "flags": [
             "cwd_and_round_window_correlation"
           ],
@@ -44350,7 +44524,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 9.433,
           "ended_at": "2026-08-19T13:08:22+00:00",
-          "findings": 0,
+          "findings": 11,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -44528,7 +44702,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 5.917,
           "ended_at": "2026-08-04T20:31:10+00:00",
-          "findings": 0,
+          "findings": 3,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -44615,7 +44789,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 3.1,
           "ended_at": "2026-08-04T20:43:57+00:00",
-          "findings": 0,
+          "findings": 1,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -44702,7 +44876,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 4.417,
           "ended_at": "2026-08-04T20:57:01+00:00",
-          "findings": 0,
+          "findings": 1,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -44876,7 +45050,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 9.967,
           "ended_at": "2026-08-06T11:48:35+00:00",
-          "findings": 0,
+          "findings": 2,
           "flags": [
             "cwd_and_round_window_correlation"
           ],
@@ -44967,7 +45141,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 8.45,
           "ended_at": "2026-08-06T12:03:14+00:00",
-          "findings": 0,
+          "findings": 1,
           "flags": [
             "cwd_and_round_window_correlation"
           ],
@@ -45331,7 +45505,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 4.983,
           "ended_at": "2026-08-04T19:57:08+00:00",
-          "findings": 0,
+          "findings": 2,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -45687,7 +45861,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 12.317,
           "ended_at": "2026-08-20T09:13:25+00:00",
-          "findings": 0,
+          "findings": 5,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -45774,7 +45948,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 7.05,
           "ended_at": "2026-08-20T09:28:48+00:00",
-          "findings": 0,
+          "findings": 4,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -45861,7 +46035,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 6.183,
           "ended_at": "2026-08-20T09:59:07+00:00",
-          "findings": 0,
+          "findings": 7,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -45948,7 +46122,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 7.633,
           "ended_at": "2026-08-20T10:30:02+00:00",
-          "findings": 0,
+          "findings": 8,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -45995,6 +46169,93 @@ window.TELEMETRY = {
           "verdict": "NOT_ACCEPTED"
         },
         {
+          "accepted": true,
+          "builder": {
+            "attribution": "exact",
+            "classes": {
+              "cache_read_tokens": 21379919,
+              "cache_write_1h_tokens": 33836,
+              "cache_write_5m_tokens": 0,
+              "input_tokens": 50,
+              "output_tokens": 23154
+            },
+            "cost_status": "complete",
+            "flags": [],
+            "model_declared": "claude-fable-5",
+            "model_observed": "claude-fable-5",
+            "models": {
+              "claude-fable-5": {
+                "best_effort_estimate": null,
+                "classes": {
+                  "cache_read_tokens": 21379919,
+                  "cache_write_1h_tokens": 33836,
+                  "cache_write_5m_tokens": 0,
+                  "input_tokens": 50,
+                  "output_tokens": 23154
+                },
+                "tokens": 21436959,
+                "unpriced_tokens": 0,
+                "usd": 23.214839
+              }
+            },
+            "sessions_expected": 1,
+            "sessions_found": 1,
+            "tokens": 21436959,
+            "unpriced_tokens": 0,
+            "usd": 23.214839,
+            "vendor": "anthropic"
+          },
+          "cost_status": "complete",
+          "debt_at_accept": 1,
+          "duration_minutes": 6.55,
+          "ended_at": "2026-08-20T10:59:30+00:00",
+          "findings": 0,
+          "flags": [],
+          "judge": {
+            "attribution": "exact",
+            "classes": {
+              "cache_write_tokens": 0,
+              "cached_input_tokens": 6184960,
+              "input_tokens": 6580210,
+              "output_tokens": 42125,
+              "reasoning_output_tokens": 19882
+            },
+            "cost_status": "complete",
+            "flags": [],
+            "model_declared": "gpt-5.5",
+            "model_observed": "gpt-5.6-sol",
+            "models": {
+              "gpt-5.6-sol": {
+                "best_effort_estimate": null,
+                "classes": {
+                  "cache_write_tokens": 0,
+                  "cached_input_tokens": 6184960,
+                  "input_tokens": 6580210,
+                  "output_tokens": 42125,
+                  "reasoning_output_tokens": 19882
+                },
+                "tokens": 6622335,
+                "unpriced_tokens": 0,
+                "usd": 6.33248
+              }
+            },
+            "sessions_expected": 3,
+            "sessions_found": 3,
+            "tokens": 6622335,
+            "unpriced_tokens": 0,
+            "usd": 6.33248,
+            "vendor": "openai"
+          },
+          "round": 5,
+          "row": "g04b2",
+          "spec": "triage-section-on-goals",
+          "started_at": "2026-08-20T10:52:57+00:00",
+          "total_tokens": 28059294,
+          "total_usd": 29.547319,
+          "unpriced_tokens": 0,
+          "verdict": "ACCEPT"
+        },
+        {
           "accepted": false,
           "builder": {
             "attribution": "exact",
@@ -46035,7 +46296,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 9.967,
           "ended_at": "2026-08-19T07:55:02+00:00",
-          "findings": 0,
+          "findings": 3,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -46122,7 +46383,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 5.833,
           "ended_at": "2026-08-19T08:55:29+00:00",
-          "findings": 0,
+          "findings": 3,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -46209,7 +46470,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 7.15,
           "ended_at": "2026-08-19T09:18:07+00:00",
-          "findings": 0,
+          "findings": 4,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -46296,7 +46557,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 8.933,
           "ended_at": "2026-08-19T09:43:47+00:00",
-          "findings": 0,
+          "findings": 5,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -46383,7 +46644,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 7.017,
           "ended_at": "2026-08-19T16:09:30+00:00",
-          "findings": 0,
+          "findings": 6,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -46470,7 +46731,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 7.3,
           "ended_at": "2026-08-19T16:21:14+00:00",
-          "findings": 0,
+          "findings": 4,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -46557,7 +46818,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 5.867,
           "ended_at": "2026-08-19T16:31:51+00:00",
-          "findings": 0,
+          "findings": 3,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -46644,7 +46905,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 5.867,
           "ended_at": "2026-08-19T16:47:50+00:00",
-          "findings": 0,
+          "findings": 1,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -46731,7 +46992,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 8.733,
           "ended_at": "2026-08-19T17:10:33+00:00",
-          "findings": 0,
+          "findings": 4,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -46818,7 +47079,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 8.467,
           "ended_at": "2026-08-19T17:28:44+00:00",
-          "findings": 0,
+          "findings": 3,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -46905,7 +47166,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 4.767,
           "ended_at": "2026-08-19T17:40:31+00:00",
-          "findings": 0,
+          "findings": 4,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -46992,7 +47253,7 @@ window.TELEMETRY = {
           "debt_at_accept": 3,
           "duration_minutes": 8.283,
           "ended_at": "2026-08-19T17:56:35+00:00",
-          "findings": 0,
+          "findings": 2,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -47253,7 +47514,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 5.55,
           "ended_at": "2026-08-02T17:59:26+00:00",
-          "findings": 0,
+          "findings": 1,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -47427,7 +47688,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 9.467,
           "ended_at": "2026-08-17T16:50:49+00:00",
-          "findings": 0,
+          "findings": 15,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -47514,7 +47775,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 8.317,
           "ended_at": "2026-08-17T17:24:45+00:00",
-          "findings": 0,
+          "findings": 14,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -47601,7 +47862,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 7.95,
           "ended_at": "2026-08-17T17:46:57+00:00",
-          "findings": 0,
+          "findings": 17,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -47688,7 +47949,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 8.55,
           "ended_at": "2026-08-17T18:12:04+00:00",
-          "findings": 0,
+          "findings": 15,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -47775,7 +48036,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 6.633,
           "ended_at": "2026-08-17T18:19:51+00:00",
-          "findings": 0,
+          "findings": 5,
           "flags": [
             "cwd_and_round_window_correlation"
           ],
@@ -47866,7 +48127,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 7.183,
           "ended_at": "2026-08-17T18:43:06+00:00",
-          "findings": 0,
+          "findings": 6,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -47953,7 +48214,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 9.067,
           "ended_at": "2026-08-17T19:17:38+00:00",
-          "findings": 0,
+          "findings": 7,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -48040,7 +48301,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 9.0,
           "ended_at": "2026-08-17T19:42:26+00:00",
-          "findings": 0,
+          "findings": 5,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -48127,7 +48388,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 7.367,
           "ended_at": "2026-08-17T20:03:26+00:00",
-          "findings": 0,
+          "findings": 7,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -48214,7 +48475,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 7.65,
           "ended_at": "2026-08-17T20:24:53+00:00",
-          "findings": 0,
+          "findings": 5,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -48301,7 +48562,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 7.8,
           "ended_at": "2026-08-17T21:00:18+00:00",
-          "findings": 0,
+          "findings": 4,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -48388,7 +48649,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 9.8,
           "ended_at": "2026-08-17T21:28:07+00:00",
-          "findings": 0,
+          "findings": 9,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -48475,7 +48736,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 9.783,
           "ended_at": "2026-08-17T22:10:22+00:00",
-          "findings": 0,
+          "findings": 5,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -48562,7 +48823,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 8.167,
           "ended_at": "2026-08-17T22:36:40+00:00",
-          "findings": 0,
+          "findings": 5,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -48649,7 +48910,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 7.867,
           "ended_at": "2026-08-17T23:17:11+00:00",
-          "findings": 0,
+          "findings": 5,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -48736,7 +48997,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 8.683,
           "ended_at": "2026-08-17T23:43:40+00:00",
-          "findings": 0,
+          "findings": 6,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -48823,7 +49084,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 7.25,
           "ended_at": "2026-08-18T00:06:55+00:00",
-          "findings": 0,
+          "findings": 4,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -48910,7 +49171,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 6.65,
           "ended_at": "2026-08-19T01:11:31+00:00",
-          "findings": 0,
+          "findings": 1,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -48997,7 +49258,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 8.067,
           "ended_at": "2026-08-19T01:47:00+00:00",
-          "findings": 0,
+          "findings": 3,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -49084,7 +49345,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 7.4,
           "ended_at": "2026-08-19T02:10:20+00:00",
-          "findings": 0,
+          "findings": 2,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -49171,7 +49432,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 5.683,
           "ended_at": "2026-08-19T02:30:24+00:00",
-          "findings": 0,
+          "findings": 1,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -49258,7 +49519,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 8.283,
           "ended_at": "2026-08-19T02:53:06+00:00",
-          "findings": 0,
+          "findings": 2,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -49345,7 +49606,7 @@ window.TELEMETRY = {
           "debt_at_accept": 2,
           "duration_minutes": 7.517,
           "ended_at": "2026-08-19T03:15:35+00:00",
-          "findings": 0,
+          "findings": 1,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -49432,7 +49693,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 9.633,
           "ended_at": "2026-08-15T12:48:41+00:00",
-          "findings": 0,
+          "findings": 6,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -49519,7 +49780,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 11.05,
           "ended_at": "2026-08-15T13:12:53+00:00",
-          "findings": 0,
+          "findings": 6,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -49606,7 +49867,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 7.633,
           "ended_at": "2026-08-15T13:35:13+00:00",
-          "findings": 0,
+          "findings": 3,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -49693,7 +49954,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 7.8,
           "ended_at": "2026-08-15T13:52:06+00:00",
-          "findings": 0,
+          "findings": 4,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -49780,7 +50041,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 6.6,
           "ended_at": "2026-08-15T14:10:02+00:00",
-          "findings": 0,
+          "findings": 8,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -49954,7 +50215,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 8.733,
           "ended_at": "2026-08-15T14:50:33+00:00",
-          "findings": 0,
+          "findings": 11,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -50041,7 +50302,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 7.033,
           "ended_at": "2026-08-15T15:11:51+00:00",
-          "findings": 0,
+          "findings": 7,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -50128,7 +50389,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 15.05,
           "ended_at": "2026-08-15T15:36:34+00:00",
-          "findings": 0,
+          "findings": 9,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -50215,7 +50476,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 8.183,
           "ended_at": "2026-08-15T15:53:58+00:00",
-          "findings": 0,
+          "findings": 6,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -50302,7 +50563,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 6.033,
           "ended_at": "2026-08-15T16:05:23+00:00",
-          "findings": 0,
+          "findings": 7,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -50389,7 +50650,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 6.533,
           "ended_at": "2026-08-15T16:17:33+00:00",
-          "findings": 0,
+          "findings": 7,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -50476,7 +50737,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 7.483,
           "ended_at": "2026-08-15T16:26:37+00:00",
-          "findings": 0,
+          "findings": 8,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -50563,7 +50824,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 7.683,
           "ended_at": "2026-08-15T16:40:20+00:00",
-          "findings": 0,
+          "findings": 7,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -50650,7 +50911,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 7.85,
           "ended_at": "2026-08-15T16:52:46+00:00",
-          "findings": 0,
+          "findings": 5,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -50737,7 +50998,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 8.15,
           "ended_at": "2026-08-15T17:05:35+00:00",
-          "findings": 0,
+          "findings": 5,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -50824,7 +51085,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 6.4,
           "ended_at": "2026-08-15T17:14:53+00:00",
-          "findings": 0,
+          "findings": 4,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -50911,7 +51172,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 5.75,
           "ended_at": "2026-08-15T17:26:20+00:00",
-          "findings": 0,
+          "findings": 2,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -50998,7 +51259,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 8.733,
           "ended_at": "2026-08-15T17:38:50+00:00",
-          "findings": 0,
+          "findings": 3,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -51085,7 +51346,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 7.233,
           "ended_at": "2026-08-15T17:52:27+00:00",
-          "findings": 0,
+          "findings": 3,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -51172,7 +51433,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 8.45,
           "ended_at": "2026-08-15T18:04:12+00:00",
-          "findings": 0,
+          "findings": 3,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -51259,7 +51520,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 6.283,
           "ended_at": "2026-08-15T18:16:26+00:00",
-          "findings": 0,
+          "findings": 2,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -51346,7 +51607,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 7.3,
           "ended_at": "2026-08-15T18:26:14+00:00",
-          "findings": 0,
+          "findings": 1,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -51433,7 +51694,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 6.45,
           "ended_at": "2026-08-15T18:35:41+00:00",
-          "findings": 0,
+          "findings": 2,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -51520,7 +51781,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 8.6,
           "ended_at": "2026-08-15T18:46:41+00:00",
-          "findings": 0,
+          "findings": 2,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -51607,7 +51868,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 7.0,
           "ended_at": "2026-08-15T18:57:34+00:00",
-          "findings": 0,
+          "findings": 3,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -51694,7 +51955,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 8.167,
           "ended_at": "2026-08-15T19:08:14+00:00",
-          "findings": 0,
+          "findings": 3,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -51781,7 +52042,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 7.55,
           "ended_at": "2026-08-15T19:18:40+00:00",
-          "findings": 0,
+          "findings": 2,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -51868,7 +52129,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 5.8,
           "ended_at": "2026-08-15T19:27:00+00:00",
-          "findings": 0,
+          "findings": 2,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -51955,7 +52216,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 9.167,
           "ended_at": "2026-08-15T19:40:04+00:00",
-          "findings": 0,
+          "findings": 3,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -52042,7 +52303,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 6.133,
           "ended_at": "2026-08-15T19:51:02+00:00",
-          "findings": 0,
+          "findings": 2,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -52129,7 +52390,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 6.817,
           "ended_at": "2026-08-15T20:01:02+00:00",
-          "findings": 0,
+          "findings": 1,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -52303,7 +52564,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 7.917,
           "ended_at": "2026-08-15T20:22:14+00:00",
-          "findings": 0,
+          "findings": 2,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -52390,7 +52651,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 6.317,
           "ended_at": "2026-08-15T20:31:10+00:00",
-          "findings": 0,
+          "findings": 1,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -52477,7 +52738,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 8.717,
           "ended_at": "2026-08-15T20:42:16+00:00",
-          "findings": 0,
+          "findings": 2,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -52564,7 +52825,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 7.35,
           "ended_at": "2026-08-15T20:52:16+00:00",
-          "findings": 0,
+          "findings": 2,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -52651,7 +52912,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 9.7,
           "ended_at": "2026-08-15T21:08:37+00:00",
-          "findings": 0,
+          "findings": 1,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -52738,7 +52999,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 7.383,
           "ended_at": "2026-08-15T21:19:36+00:00",
-          "findings": 0,
+          "findings": 1,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -52825,7 +53086,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 6.317,
           "ended_at": "2026-08-15T21:29:08+00:00",
-          "findings": 0,
+          "findings": 3,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -52912,7 +53173,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 4.933,
           "ended_at": "2026-08-15T21:51:18+00:00",
-          "findings": 0,
+          "findings": 1,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -52999,7 +53260,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 7.55,
           "ended_at": "2026-08-15T22:01:32+00:00",
-          "findings": 0,
+          "findings": 2,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -53086,7 +53347,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 8.3,
           "ended_at": "2026-08-15T22:15:21+00:00",
-          "findings": 0,
+          "findings": 1,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -53173,7 +53434,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 5.133,
           "ended_at": "2026-08-15T22:26:58+00:00",
-          "findings": 0,
+          "findings": 1,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -53260,7 +53521,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 6.567,
           "ended_at": "2026-08-15T22:36:05+00:00",
-          "findings": 0,
+          "findings": 2,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -53347,7 +53608,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 7.95,
           "ended_at": "2026-08-15T23:12:15+00:00",
-          "findings": 0,
+          "findings": 3,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -53521,7 +53782,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 5.383,
           "ended_at": "2026-08-15T23:30:11+00:00",
-          "findings": 0,
+          "findings": 1,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -53608,7 +53869,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 10.3,
           "ended_at": "2026-08-15T23:53:48+00:00",
-          "findings": 0,
+          "findings": 3,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -53695,7 +53956,7 @@ window.TELEMETRY = {
           "debt_at_accept": null,
           "duration_minutes": 9.667,
           "ended_at": "2026-08-16T00:16:43+00:00",
-          "findings": 0,
+          "findings": 1,
           "flags": [],
           "judge": {
             "attribution": "exact",
@@ -53837,7 +54098,7 @@ window.TELEMETRY = {
             "usd": 131.947
           },
           "debt_at_accept": 9,
-          "findings_total": 0,
+          "findings_total": 32,
           "judge": {
             "tokens": 83766430,
             "usd": 78.975,
@@ -53896,7 +54157,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 11.367,
               "ended_at": "2026-08-18T23:12:26+00:00",
-              "findings": 0,
+              "findings": 8,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -53983,7 +54244,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 9.5,
               "ended_at": "2026-08-19T00:12:22+00:00",
-              "findings": 0,
+              "findings": 6,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -54070,7 +54331,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 7.667,
               "ended_at": "2026-08-19T14:07:18+00:00",
-              "findings": 0,
+              "findings": 4,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -54157,7 +54418,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 7.917,
               "ended_at": "2026-08-19T14:23:46+00:00",
-              "findings": 0,
+              "findings": 2,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -54244,7 +54505,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 9.35,
               "ended_at": "2026-08-19T14:39:15+00:00",
-              "findings": 0,
+              "findings": 2,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -54331,7 +54592,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 9.75,
               "ended_at": "2026-08-19T14:53:18+00:00",
-              "findings": 0,
+              "findings": 3,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -54418,7 +54679,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 9.5,
               "ended_at": "2026-08-19T15:07:34+00:00",
-              "findings": 0,
+              "findings": 3,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -54505,7 +54766,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 10.5,
               "ended_at": "2026-08-19T15:24:06+00:00",
-              "findings": 0,
+              "findings": 4,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -54654,7 +54915,7 @@ window.TELEMETRY = {
             "usd": 209.388
           },
           "debt_at_accept": null,
-          "findings_total": 0,
+          "findings_total": 78,
           "judge": {
             "tokens": 90027245,
             "usd": 83.276,
@@ -54713,7 +54974,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 9.183,
               "ended_at": "2026-08-18T00:55:04+00:00",
-              "findings": 0,
+              "findings": 10,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -54800,7 +55061,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 11.917,
               "ended_at": "2026-08-18T01:19:14+00:00",
-              "findings": 0,
+              "findings": 15,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -54887,7 +55148,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 15.767,
               "ended_at": "2026-08-18T01:55:26+00:00",
-              "findings": 0,
+              "findings": 12,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -54974,7 +55235,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 10.483,
               "ended_at": "2026-08-18T02:21:43+00:00",
-              "findings": 0,
+              "findings": 11,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -55061,7 +55322,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 7.817,
               "ended_at": "2026-08-18T02:45:55+00:00",
-              "findings": 0,
+              "findings": 7,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -55148,7 +55409,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 6.65,
               "ended_at": "2026-08-18T03:07:27+00:00",
-              "findings": 0,
+              "findings": 5,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -55235,7 +55496,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 8.133,
               "ended_at": "2026-08-18T03:42:46+00:00",
-              "findings": 0,
+              "findings": 5,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -55322,7 +55583,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 10.283,
               "ended_at": "2026-08-18T04:09:29+00:00",
-              "findings": 0,
+              "findings": 4,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -55409,7 +55670,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 8.75,
               "ended_at": "2026-08-18T04:30:50+00:00",
-              "findings": 0,
+              "findings": 5,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -55496,7 +55757,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 7.35,
               "ended_at": "2026-08-18T04:52:44+00:00",
-              "findings": 0,
+              "findings": 4,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -55558,7 +55819,7 @@ window.TELEMETRY = {
             "usd": 0.0
           },
           "debt_at_accept": 2,
-          "findings_total": 0,
+          "findings_total": 21,
           "judge": {
             "tokens": 50396793,
             "usd": 77.159,
@@ -55605,7 +55866,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 13.55,
               "ended_at": "2026-08-10T01:20:35+00:00",
-              "findings": 0,
+              "findings": 3,
               "flags": [
                 "builder_prefix_missing",
                 "cwd_and_round_window_correlation"
@@ -55685,7 +55946,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 13.033,
               "ended_at": "2026-08-10T01:58:43+00:00",
-              "findings": 0,
+              "findings": 1,
               "flags": [
                 "builder_prefix_missing",
                 "cwd_and_round_window_correlation"
@@ -55778,7 +56039,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 14.883,
               "ended_at": "2026-08-10T02:27:22+00:00",
-              "findings": 0,
+              "findings": 4,
               "flags": [
                 "builder_prefix_missing",
                 "cwd_and_round_window_correlation"
@@ -55871,7 +56132,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 14.45,
               "ended_at": "2026-08-10T02:57:46+00:00",
-              "findings": 0,
+              "findings": 3,
               "flags": [
                 "builder_prefix_missing",
                 "cwd_and_round_window_correlation"
@@ -55964,7 +56225,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 5.45,
               "ended_at": "2026-08-10T03:11:21+00:00",
-              "findings": 0,
+              "findings": 3,
               "flags": [
                 "builder_prefix_missing",
                 "cwd_and_round_window_correlation"
@@ -56044,7 +56305,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 9.133,
               "ended_at": "2026-08-10T03:33:36+00:00",
-              "findings": 0,
+              "findings": 3,
               "flags": [
                 "builder_prefix_missing",
                 "cwd_and_round_window_correlation"
@@ -56137,7 +56398,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 11.617,
               "ended_at": "2026-08-10T05:17:55+00:00",
-              "findings": 0,
+              "findings": 4,
               "flags": [
                 "builder_prefix_missing",
                 "cwd_and_round_window_correlation"
@@ -56498,7 +56759,7 @@ window.TELEMETRY = {
             "usd": 649.251
           },
           "debt_at_accept": 1,
-          "findings_total": 0,
+          "findings_total": 93,
           "judge": {
             "tokens": 153724950,
             "usd": 168.516,
@@ -56558,7 +56819,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 6.617,
               "ended_at": "2026-08-04T04:31:12+00:00",
-              "findings": 0,
+              "findings": 6,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -56645,7 +56906,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 4.417,
               "ended_at": "2026-08-04T04:56:29+00:00",
-              "findings": 0,
+              "findings": 4,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -56732,7 +56993,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 4.967,
               "ended_at": "2026-08-04T05:14:03+00:00",
-              "findings": 0,
+              "findings": 7,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -56819,7 +57080,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 5.167,
               "ended_at": "2026-08-04T05:32:00+00:00",
-              "findings": 0,
+              "findings": 3,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -56906,7 +57167,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 6.1,
               "ended_at": "2026-08-04T11:34:36+00:00",
-              "findings": 0,
+              "findings": 2,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -56993,7 +57254,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 4.417,
               "ended_at": "2026-08-04T11:45:42+00:00",
-              "findings": 0,
+              "findings": 4,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -57080,7 +57341,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 10.317,
               "ended_at": "2026-08-04T12:09:39+00:00",
-              "findings": 0,
+              "findings": 2,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -57167,7 +57428,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 6.667,
               "ended_at": "2026-08-04T12:24:37+00:00",
-              "findings": 0,
+              "findings": 2,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -57254,7 +57515,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 6.15,
               "ended_at": "2026-08-04T12:37:07+00:00",
-              "findings": 0,
+              "findings": 3,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -57341,7 +57602,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 5.767,
               "ended_at": "2026-08-05T10:01:35+00:00",
-              "findings": 0,
+              "findings": 2,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -57428,7 +57689,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 6.083,
               "ended_at": "2026-08-05T10:24:57+00:00",
-              "findings": 0,
+              "findings": 3,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -57515,7 +57776,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 6.917,
               "ended_at": "2026-08-05T10:48:39+00:00",
-              "findings": 0,
+              "findings": 4,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -57602,7 +57863,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 7.433,
               "ended_at": "2026-08-05T11:02:32+00:00",
-              "findings": 0,
+              "findings": 4,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -57689,7 +57950,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 6.05,
               "ended_at": "2026-08-05T11:13:08+00:00",
-              "findings": 0,
+              "findings": 2,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -57776,7 +58037,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 11.9,
               "ended_at": "2026-08-05T11:37:36+00:00",
-              "findings": 0,
+              "findings": 4,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -57863,7 +58124,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 6.833,
               "ended_at": "2026-08-05T11:57:55+00:00",
-              "findings": 0,
+              "findings": 3,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -57950,7 +58211,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 5.45,
               "ended_at": "2026-08-05T12:11:21+00:00",
-              "findings": 0,
+              "findings": 4,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -58037,7 +58298,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 6.417,
               "ended_at": "2026-08-05T12:24:07+00:00",
-              "findings": 0,
+              "findings": 4,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -58124,7 +58385,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 5.817,
               "ended_at": "2026-08-05T12:38:28+00:00",
-              "findings": 0,
+              "findings": 2,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -58211,7 +58472,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 5.5,
               "ended_at": "2026-08-05T12:49:37+00:00",
-              "findings": 0,
+              "findings": 3,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -58298,7 +58559,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 11.2,
               "ended_at": "2026-08-05T13:16:48+00:00",
-              "findings": 0,
+              "findings": 2,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -58385,7 +58646,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 6.967,
               "ended_at": "2026-08-05T13:27:02+00:00",
-              "findings": 0,
+              "findings": 3,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -58472,7 +58733,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 6.783,
               "ended_at": "2026-08-05T13:42:38+00:00",
-              "findings": 0,
+              "findings": 1,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -58559,7 +58820,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 8.567,
               "ended_at": "2026-08-05T13:51:55+00:00",
-              "findings": 0,
+              "findings": 3,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -58646,7 +58907,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 7.683,
               "ended_at": "2026-08-05T14:10:23+00:00",
-              "findings": 0,
+              "findings": 2,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -58733,7 +58994,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 9.383,
               "ended_at": "2026-08-05T14:25:33+00:00",
-              "findings": 0,
+              "findings": 3,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -58820,7 +59081,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 5.367,
               "ended_at": "2026-08-05T14:36:33+00:00",
-              "findings": 0,
+              "findings": 3,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -58907,7 +59168,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 4.683,
               "ended_at": "2026-08-05T14:47:44+00:00",
-              "findings": 0,
+              "findings": 3,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -58994,7 +59255,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 6.25,
               "ended_at": "2026-08-05T15:14:08+00:00",
-              "findings": 0,
+              "findings": 2,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -59081,7 +59342,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 4.85,
               "ended_at": "2026-08-05T20:33:24+00:00",
-              "findings": 0,
+              "findings": 2,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -59168,7 +59429,7 @@ window.TELEMETRY = {
               "debt_at_accept": 1,
               "duration_minutes": 7.917,
               "ended_at": "2026-08-06T07:48:41+00:00",
-              "findings": 0,
+              "findings": 1,
               "flags": [
                 "cwd_and_round_window_correlation"
               ],
@@ -59325,7 +59586,7 @@ window.TELEMETRY = {
             "usd": 51.332
           },
           "debt_at_accept": 1,
-          "findings_total": 0,
+          "findings_total": 17,
           "judge": {
             "tokens": 24426591,
             "usd": 29.386,
@@ -59383,7 +59644,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 5.2,
               "ended_at": "2026-08-03T01:16:21+00:00",
-              "findings": 0,
+              "findings": 3,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -59470,7 +59731,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 4.783,
               "ended_at": "2026-08-03T01:33:42+00:00",
-              "findings": 0,
+              "findings": 3,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -59557,7 +59818,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 3.767,
               "ended_at": "2026-08-03T01:50:25+00:00",
-              "findings": 0,
+              "findings": 2,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -59644,7 +59905,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 5.9,
               "ended_at": "2026-08-03T02:11:56+00:00",
-              "findings": 0,
+              "findings": 3,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -59731,7 +59992,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 5.25,
               "ended_at": "2026-08-03T02:31:39+00:00",
-              "findings": 0,
+              "findings": 2,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -59818,7 +60079,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 6.317,
               "ended_at": "2026-08-03T02:41:40+00:00",
-              "findings": 0,
+              "findings": 4,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -59967,7 +60228,7 @@ window.TELEMETRY = {
             "usd": 40.351
           },
           "debt_at_accept": 0,
-          "findings_total": 0,
+          "findings_total": 5,
           "judge": {
             "tokens": 15130434,
             "usd": 18.39,
@@ -60025,7 +60286,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 6.333,
               "ended_at": "2026-08-04T09:54:28+00:00",
-              "findings": 0,
+              "findings": 3,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -60112,7 +60373,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 5.483,
               "ended_at": "2026-08-04T10:03:31+00:00",
-              "findings": 0,
+              "findings": 1,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -60199,7 +60460,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 5.383,
               "ended_at": "2026-08-04T10:15:14+00:00",
-              "findings": 0,
+              "findings": 1,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -60348,7 +60609,7 @@ window.TELEMETRY = {
             "usd": 45.015
           },
           "debt_at_accept": 0,
-          "findings_total": 0,
+          "findings_total": 49,
           "judge": {
             "tokens": 203359144,
             "usd": 222.465,
@@ -60407,7 +60668,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 17.567,
               "ended_at": "2026-08-08T00:51:12+00:00",
-              "findings": 0,
+              "findings": 4,
               "flags": [
                 "cwd_and_round_window_correlation"
               ],
@@ -60589,7 +60850,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 14.0,
               "ended_at": "2026-08-08T01:50:18+00:00",
-              "findings": 0,
+              "findings": 3,
               "flags": [
                 "judge_usage_unattributed"
               ],
@@ -60654,7 +60915,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 11.583,
               "ended_at": "2026-08-09T10:19:43+00:00",
-              "findings": 0,
+              "findings": 4,
               "flags": [
                 "builder_prefix_missing",
                 "cwd_and_round_window_correlation"
@@ -60734,7 +60995,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 16.167,
               "ended_at": "2026-08-09T11:08:00+00:00",
-              "findings": 0,
+              "findings": 2,
               "flags": [
                 "builder_prefix_missing",
                 "cwd_and_round_window_correlation"
@@ -60814,7 +61075,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 17.083,
               "ended_at": "2026-08-09T11:31:30+00:00",
-              "findings": 0,
+              "findings": 2,
               "flags": [
                 "builder_prefix_missing",
                 "cwd_and_round_window_correlation"
@@ -60894,7 +61155,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 11.183,
               "ended_at": "2026-08-09T11:58:58+00:00",
-              "findings": 0,
+              "findings": 3,
               "flags": [
                 "builder_prefix_missing",
                 "cwd_and_round_window_correlation"
@@ -60974,7 +61235,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 12.267,
               "ended_at": "2026-08-09T12:21:52+00:00",
-              "findings": 0,
+              "findings": 4,
               "flags": [
                 "builder_prefix_missing",
                 "cwd_and_round_window_correlation"
@@ -61054,7 +61315,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 11.217,
               "ended_at": "2026-08-09T12:43:18+00:00",
-              "findings": 0,
+              "findings": 11,
               "flags": [
                 "builder_prefix_missing",
                 "cwd_and_round_window_correlation"
@@ -61134,7 +61395,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 11.15,
               "ended_at": "2026-08-09T13:09:56+00:00",
-              "findings": 0,
+              "findings": 2,
               "flags": [
                 "builder_prefix_missing",
                 "cwd_and_round_window_correlation"
@@ -61214,7 +61475,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 12.833,
               "ended_at": "2026-08-09T13:28:27+00:00",
-              "findings": 0,
+              "findings": 1,
               "flags": [
                 "builder_prefix_missing",
                 "cwd_and_round_window_correlation"
@@ -61294,7 +61555,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 11.4,
               "ended_at": "2026-08-09T21:05:33+00:00",
-              "findings": 0,
+              "findings": 2,
               "flags": [
                 "builder_prefix_missing",
                 "cwd_and_round_window_correlation"
@@ -61374,7 +61635,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 11.067,
               "ended_at": "2026-08-09T21:33:36+00:00",
-              "findings": 0,
+              "findings": 2,
               "flags": [
                 "builder_prefix_missing",
                 "cwd_and_round_window_correlation"
@@ -61454,7 +61715,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 13.167,
               "ended_at": "2026-08-09T21:56:48+00:00",
-              "findings": 0,
+              "findings": 2,
               "flags": [
                 "builder_prefix_missing",
                 "cwd_and_round_window_correlation"
@@ -61547,7 +61808,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 11.983,
               "ended_at": "2026-08-09T22:16:53+00:00",
-              "findings": 0,
+              "findings": 2,
               "flags": [
                 "builder_prefix_missing",
                 "cwd_and_round_window_correlation"
@@ -61627,7 +61888,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 8.683,
               "ended_at": "2026-08-09T22:37:51+00:00",
-              "findings": 0,
+              "findings": 2,
               "flags": [
                 "builder_prefix_missing",
                 "cwd_and_round_window_correlation"
@@ -61707,7 +61968,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 10.383,
               "ended_at": "2026-08-09T23:17:05+00:00",
-              "findings": 0,
+              "findings": 3,
               "flags": [
                 "builder_prefix_missing",
                 "cwd_and_round_window_correlation"
@@ -62068,7 +62329,7 @@ window.TELEMETRY = {
             "usd": 190.173
           },
           "debt_at_accept": 0,
-          "findings_total": 0,
+          "findings_total": 1,
           "judge": {
             "tokens": 15564755,
             "usd": 17.547,
@@ -62126,7 +62387,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 11.6,
               "ended_at": "2026-08-06T10:32:12+00:00",
-              "findings": 0,
+              "findings": 1,
               "flags": [
                 "cwd_and_round_window_correlation"
               ],
@@ -62283,7 +62544,7 @@ window.TELEMETRY = {
             "usd": 142.656
           },
           "debt_at_accept": 3,
-          "findings_total": 0,
+          "findings_total": 38,
           "judge": {
             "tokens": 57626458,
             "usd": 64.601,
@@ -62343,7 +62604,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 5.35,
               "ended_at": "2026-08-04T16:00:01+00:00",
-              "findings": 0,
+              "findings": 8,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -62430,7 +62691,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 4.883,
               "ended_at": "2026-08-04T16:14:37+00:00",
-              "findings": 0,
+              "findings": 5,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -62517,7 +62778,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 8.783,
               "ended_at": "2026-08-04T16:31:13+00:00",
-              "findings": 0,
+              "findings": 4,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -62604,7 +62865,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 5.467,
               "ended_at": "2026-08-04T16:42:51+00:00",
-              "findings": 0,
+              "findings": 3,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -62691,7 +62952,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 5.033,
               "ended_at": "2026-08-04T16:54:52+00:00",
-              "findings": 0,
+              "findings": 3,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -62778,7 +63039,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 6.3,
               "ended_at": "2026-08-04T17:16:03+00:00",
-              "findings": 0,
+              "findings": 3,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -62865,7 +63126,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 6.35,
               "ended_at": "2026-08-04T17:31:21+00:00",
-              "findings": 0,
+              "findings": 3,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -63039,7 +63300,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 6.317,
               "ended_at": "2026-08-05T17:24:43+00:00",
-              "findings": 0,
+              "findings": 3,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -63126,7 +63387,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 6.15,
               "ended_at": "2026-08-05T17:42:57+00:00",
-              "findings": 0,
+              "findings": 1,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -63213,7 +63474,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 4.117,
               "ended_at": "2026-08-05T20:12:26+00:00",
-              "findings": 0,
+              "findings": 3,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -63300,7 +63561,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 4.483,
               "ended_at": "2026-08-05T20:40:39+00:00",
-              "findings": 0,
+              "findings": 2,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -63599,7 +63860,7 @@ window.TELEMETRY = {
             "usd": 45.206
           },
           "debt_at_accept": null,
-          "findings_total": 0,
+          "findings_total": 1,
           "judge": {
             "tokens": 4883500,
             "usd": 8.524,
@@ -63658,7 +63919,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 8.983,
               "ended_at": "2026-08-10T10:58:45+00:00",
-              "findings": 0,
+              "findings": 1,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -63720,7 +63981,7 @@ window.TELEMETRY = {
             "usd": 243.096
           },
           "debt_at_accept": 1,
-          "findings_total": 0,
+          "findings_total": 32,
           "judge": {
             "tokens": 64998324,
             "usd": 70.898,
@@ -63779,7 +64040,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 8.683,
               "ended_at": "2026-08-04T14:13:42+00:00",
-              "findings": 0,
+              "findings": 6,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -63866,7 +64127,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 5.033,
               "ended_at": "2026-08-04T14:31:09+00:00",
-              "findings": 0,
+              "findings": 3,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -63953,7 +64214,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 4.117,
               "ended_at": "2026-08-04T14:41:56+00:00",
-              "findings": 0,
+              "findings": 1,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -64040,7 +64301,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 4.45,
               "ended_at": "2026-08-04T15:25:23+00:00",
-              "findings": 0,
+              "findings": 3,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -64127,7 +64388,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 5.367,
               "ended_at": "2026-08-04T15:39:56+00:00",
-              "findings": 0,
+              "findings": 3,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -64214,7 +64475,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 5.767,
               "ended_at": "2026-08-04T15:52:10+00:00",
-              "findings": 0,
+              "findings": 1,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -64301,7 +64562,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 5.183,
               "ended_at": "2026-08-05T10:36:42+00:00",
-              "findings": 0,
+              "findings": 1,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -64388,7 +64649,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 4.767,
               "ended_at": "2026-08-05T15:23:58+00:00",
-              "findings": 0,
+              "findings": 2,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -64475,7 +64736,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 5.967,
               "ended_at": "2026-08-05T15:46:43+00:00",
-              "findings": 0,
+              "findings": 3,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -64562,7 +64823,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 5.55,
               "ended_at": "2026-08-05T15:57:52+00:00",
-              "findings": 0,
+              "findings": 2,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -64649,7 +64910,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 4.917,
               "ended_at": "2026-08-05T16:22:02+00:00",
-              "findings": 0,
+              "findings": 3,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -64736,7 +64997,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 5.65,
               "ended_at": "2026-08-05T16:38:03+00:00",
-              "findings": 0,
+              "findings": 2,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -64823,7 +65084,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 5.8,
               "ended_at": "2026-08-05T16:48:44+00:00",
-              "findings": 0,
+              "findings": 2,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -64972,7 +65233,7 @@ window.TELEMETRY = {
             "usd": 154.553
           },
           "debt_at_accept": 2,
-          "findings_total": 0,
+          "findings_total": 37,
           "judge": {
             "tokens": 55794671,
             "usd": 64.358,
@@ -65031,7 +65292,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 6.2,
               "ended_at": "2026-08-04T08:02:07+00:00",
-              "findings": 0,
+              "findings": 4,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -65118,7 +65379,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 4.5,
               "ended_at": "2026-08-04T08:13:59+00:00",
-              "findings": 0,
+              "findings": 3,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -65205,7 +65466,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 5.3,
               "ended_at": "2026-08-04T08:27:43+00:00",
-              "findings": 0,
+              "findings": 5,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -65292,7 +65553,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 6.05,
               "ended_at": "2026-08-04T08:47:36+00:00",
-              "findings": 0,
+              "findings": 2,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -65379,7 +65640,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 3.767,
               "ended_at": "2026-08-04T09:01:40+00:00",
-              "findings": 0,
+              "findings": 2,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -65466,7 +65727,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 6.017,
               "ended_at": "2026-08-04T09:15:54+00:00",
-              "findings": 0,
+              "findings": 2,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -65553,7 +65814,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 5.017,
               "ended_at": "2026-08-04T09:22:57+00:00",
-              "findings": 0,
+              "findings": 5,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -65640,7 +65901,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 3.883,
               "ended_at": "2026-08-04T09:35:50+00:00",
-              "findings": 0,
+              "findings": 4,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -65727,7 +65988,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 5.267,
               "ended_at": "2026-08-04T11:54:42+00:00",
-              "findings": 0,
+              "findings": 1,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -65814,7 +66075,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 5.717,
               "ended_at": "2026-08-04T12:45:31+00:00",
-              "findings": 0,
+              "findings": 4,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -65901,7 +66162,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 5.083,
               "ended_at": "2026-08-04T12:56:04+00:00",
-              "findings": 0,
+              "findings": 2,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -65988,7 +66249,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 6.4,
               "ended_at": "2026-08-04T13:06:39+00:00",
-              "findings": 0,
+              "findings": 2,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -66075,7 +66336,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 4.717,
               "ended_at": "2026-08-04T13:21:12+00:00",
-              "findings": 0,
+              "findings": 1,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -66224,7 +66485,7 @@ window.TELEMETRY = {
             "usd": 241.208
           },
           "debt_at_accept": 2,
-          "findings_total": 0,
+          "findings_total": 35,
           "judge": {
             "tokens": 116639255,
             "usd": 113.297,
@@ -66283,7 +66544,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 8.6,
               "ended_at": "2026-08-16T10:40:38+00:00",
-              "findings": 0,
+              "findings": 4,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -66370,7 +66631,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 6.783,
               "ended_at": "2026-08-16T11:08:38+00:00",
-              "findings": 0,
+              "findings": 3,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -66457,7 +66718,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 9.617,
               "ended_at": "2026-08-16T11:37:31+00:00",
-              "findings": 0,
+              "findings": 3,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -66544,7 +66805,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 8.45,
               "ended_at": "2026-08-16T12:24:07+00:00",
-              "findings": 0,
+              "findings": 3,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -66631,7 +66892,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 8.033,
               "ended_at": "2026-08-16T12:44:35+00:00",
-              "findings": 0,
+              "findings": 3,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -66718,7 +66979,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 7.433,
               "ended_at": "2026-08-16T13:17:20+00:00",
-              "findings": 0,
+              "findings": 2,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -66805,7 +67066,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 7.7,
               "ended_at": "2026-08-16T13:47:09+00:00",
-              "findings": 0,
+              "findings": 4,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -66892,7 +67153,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 9.983,
               "ended_at": "2026-08-16T14:11:24+00:00",
-              "findings": 0,
+              "findings": 2,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -66979,7 +67240,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 7.283,
               "ended_at": "2026-08-16T14:34:07+00:00",
-              "findings": 0,
+              "findings": 2,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -67066,7 +67327,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 6.333,
               "ended_at": "2026-08-16T14:53:07+00:00",
-              "findings": 0,
+              "findings": 2,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -67153,7 +67414,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 7.883,
               "ended_at": "2026-08-16T15:24:59+00:00",
-              "findings": 0,
+              "findings": 3,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -67240,7 +67501,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 8.667,
               "ended_at": "2026-08-16T16:01:18+00:00",
-              "findings": 0,
+              "findings": 1,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -67327,7 +67588,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 11.217,
               "ended_at": "2026-08-16T16:28:49+00:00",
-              "findings": 0,
+              "findings": 2,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -67414,7 +67675,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 8.15,
               "ended_at": "2026-08-16T16:56:10+00:00",
-              "findings": 0,
+              "findings": 1,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -67563,7 +67824,7 @@ window.TELEMETRY = {
             "usd": 237.724
           },
           "debt_at_accept": 2,
-          "findings_total": 0,
+          "findings_total": 61,
           "judge": {
             "tokens": 122101183,
             "usd": 130.585,
@@ -67622,7 +67883,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 4.617,
               "ended_at": "2026-08-03T19:38:27+00:00",
-              "findings": 0,
+              "findings": 6,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -67709,7 +67970,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 4.45,
               "ended_at": "2026-08-03T20:03:37+00:00",
-              "findings": 0,
+              "findings": 6,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -67796,7 +68057,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 5.333,
               "ended_at": "2026-08-03T20:27:58+00:00",
-              "findings": 0,
+              "findings": 4,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -67883,7 +68144,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 3.967,
               "ended_at": "2026-08-03T20:43:10+00:00",
-              "findings": 0,
+              "findings": 5,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -67970,7 +68231,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 3.75,
               "ended_at": "2026-08-03T21:11:07+00:00",
-              "findings": 0,
+              "findings": 4,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -68057,7 +68318,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 6.133,
               "ended_at": "2026-08-03T21:38:18+00:00",
-              "findings": 0,
+              "findings": 4,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -68144,7 +68405,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 4.317,
               "ended_at": "2026-08-03T22:05:14+00:00",
-              "findings": 0,
+              "findings": 4,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -68231,7 +68492,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 4.267,
               "ended_at": "2026-08-03T22:15:18+00:00",
-              "findings": 0,
+              "findings": 1,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -68318,7 +68579,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 4.983,
               "ended_at": "2026-08-03T22:41:52+00:00",
-              "findings": 0,
+              "findings": 2,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -68405,7 +68666,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 4.733,
               "ended_at": "2026-08-03T22:57:44+00:00",
-              "findings": 0,
+              "findings": 1,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -68492,7 +68753,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 5.933,
               "ended_at": "2026-08-03T23:14:13+00:00",
-              "findings": 0,
+              "findings": 1,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -68579,7 +68840,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 5.383,
               "ended_at": "2026-08-03T23:49:23+00:00",
-              "findings": 0,
+              "findings": 1,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -68666,7 +68927,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 4.217,
               "ended_at": "2026-08-03T23:58:33+00:00",
-              "findings": 0,
+              "findings": 3,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -68753,7 +69014,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 4.667,
               "ended_at": "2026-08-04T00:16:24+00:00",
-              "findings": 0,
+              "findings": 1,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -68840,7 +69101,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 5.233,
               "ended_at": "2026-08-04T00:22:44+00:00",
-              "findings": 0,
+              "findings": 1,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -68927,7 +69188,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 5.3,
               "ended_at": "2026-08-04T00:39:26+00:00",
-              "findings": 0,
+              "findings": 2,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -69014,7 +69275,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 6.15,
               "ended_at": "2026-08-04T17:41:41+00:00",
-              "findings": 0,
+              "findings": 3,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -69101,7 +69362,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 4.867,
               "ended_at": "2026-08-04T17:52:14+00:00",
-              "findings": 0,
+              "findings": 1,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -69188,7 +69449,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 5.117,
               "ended_at": "2026-08-04T18:03:57+00:00",
-              "findings": 0,
+              "findings": 1,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -69275,7 +69536,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 5.65,
               "ended_at": "2026-08-04T18:14:42+00:00",
-              "findings": 0,
+              "findings": 2,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -69362,7 +69623,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 5.367,
               "ended_at": "2026-08-04T18:29:02+00:00",
-              "findings": 0,
+              "findings": 1,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -69449,7 +69710,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 4.433,
               "ended_at": "2026-08-04T18:38:30+00:00",
-              "findings": 0,
+              "findings": 2,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -69536,7 +69797,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 6.833,
               "ended_at": "2026-08-04T18:52:32+00:00",
-              "findings": 0,
+              "findings": 1,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -69623,7 +69884,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 4.717,
               "ended_at": "2026-08-04T19:03:54+00:00",
-              "findings": 0,
+              "findings": 1,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -69710,7 +69971,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 6.483,
               "ended_at": "2026-08-04T19:15:39+00:00",
-              "findings": 0,
+              "findings": 2,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -69797,7 +70058,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 5.117,
               "ended_at": "2026-08-04T19:26:01+00:00",
-              "findings": 0,
+              "findings": 1,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -69946,7 +70207,7 @@ window.TELEMETRY = {
             "usd": 158.717
           },
           "debt_at_accept": null,
-          "findings_total": 0,
+          "findings_total": 78,
           "judge": {
             "tokens": 77424479,
             "usd": 75.306,
@@ -70005,7 +70266,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 7.7,
               "ended_at": "2026-08-18T05:36:51+00:00",
-              "findings": 0,
+              "findings": 10,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -70092,7 +70353,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 12.583,
               "ended_at": "2026-08-18T06:04:16+00:00",
-              "findings": 0,
+              "findings": 15,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -70179,7 +70440,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 8.55,
               "ended_at": "2026-08-18T06:40:46+00:00",
-              "findings": 0,
+              "findings": 11,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -70266,7 +70527,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 7.283,
               "ended_at": "2026-08-18T07:10:22+00:00",
-              "findings": 0,
+              "findings": 7,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -70353,7 +70614,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 8.983,
               "ended_at": "2026-08-18T07:34:02+00:00",
-              "findings": 0,
+              "findings": 8,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -70440,7 +70701,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 7.5,
               "ended_at": "2026-08-18T08:01:32+00:00",
-              "findings": 0,
+              "findings": 6,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -70527,7 +70788,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 6.783,
               "ended_at": "2026-08-18T08:25:24+00:00",
-              "findings": 0,
+              "findings": 4,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -70614,7 +70875,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 9.217,
               "ended_at": "2026-08-18T08:48:49+00:00",
-              "findings": 0,
+              "findings": 6,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -70701,7 +70962,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 9.067,
               "ended_at": "2026-08-18T09:16:34+00:00",
-              "findings": 0,
+              "findings": 7,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -70788,7 +71049,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 8.183,
               "ended_at": "2026-08-18T09:40:18+00:00",
-              "findings": 0,
+              "findings": 4,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -70974,7 +71235,7 @@ window.TELEMETRY = {
             "usd": 66.072
           },
           "debt_at_accept": 4,
-          "findings_total": 0,
+          "findings_total": 6,
           "judge": {
             "tokens": 8188600,
             "usd": 11.19,
@@ -71033,7 +71294,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 5.567,
               "ended_at": "2026-08-04T05:54:59+00:00",
-              "findings": 0,
+              "findings": 5,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -71120,7 +71381,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 4.133,
               "ended_at": "2026-08-04T06:17:34+00:00",
-              "findings": 0,
+              "findings": 1,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -71269,7 +71530,7 @@ window.TELEMETRY = {
             "usd": 55.025
           },
           "debt_at_accept": null,
-          "findings_total": 0,
+          "findings_total": 21,
           "judge": {
             "tokens": 16441916,
             "usd": 23.121,
@@ -71327,7 +71588,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 5.067,
               "ended_at": "2026-08-04T01:02:46+00:00",
-              "findings": 0,
+              "findings": 5,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -71414,7 +71675,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 3.717,
               "ended_at": "2026-08-04T01:19:14+00:00",
-              "findings": 0,
+              "findings": 5,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -71501,7 +71762,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 4.633,
               "ended_at": "2026-08-04T01:36:06+00:00",
-              "findings": 0,
+              "findings": 3,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -71588,7 +71849,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 2.967,
               "ended_at": "2026-08-04T01:50:38+00:00",
-              "findings": 0,
+              "findings": 2,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -71675,7 +71936,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 3.7,
               "ended_at": "2026-08-04T02:06:35+00:00",
-              "findings": 0,
+              "findings": 2,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -71762,7 +72023,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 3.767,
               "ended_at": "2026-08-04T02:11:26+00:00",
-              "findings": 0,
+              "findings": 1,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -71849,7 +72110,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 4.933,
               "ended_at": "2026-08-04T02:27:08+00:00",
-              "findings": 0,
+              "findings": 2,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -71936,7 +72197,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 4.217,
               "ended_at": "2026-08-04T02:43:30+00:00",
-              "findings": 0,
+              "findings": 1,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -71998,7 +72259,7 @@ window.TELEMETRY = {
             "usd": 61.632
           },
           "debt_at_accept": 1,
-          "findings_total": 0,
+          "findings_total": 5,
           "judge": {
             "tokens": 22322675,
             "usd": 30.711,
@@ -72056,7 +72317,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 12.883,
               "ended_at": "2026-08-06T16:07:21+00:00",
-              "findings": 0,
+              "findings": 2,
               "flags": [
                 "cwd_and_round_window_correlation"
               ],
@@ -72147,7 +72408,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 8.683,
               "ended_at": "2026-08-06T16:33:10+00:00",
-              "findings": 0,
+              "findings": 2,
               "flags": [
                 "cwd_and_round_window_correlation"
               ],
@@ -72238,7 +72499,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 12.9,
               "ended_at": "2026-08-06T16:53:21+00:00",
-              "findings": 0,
+              "findings": 1,
               "flags": [
                 "cwd_and_round_window_correlation"
               ],
@@ -72395,7 +72656,7 @@ window.TELEMETRY = {
             "usd": 0.0
           },
           "debt_at_accept": 0,
-          "findings_total": 0,
+          "findings_total": 4,
           "judge": {
             "tokens": 21001094,
             "usd": 29.428,
@@ -72442,7 +72703,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 11.317,
               "ended_at": "2026-08-10T04:15:18+00:00",
-              "findings": 0,
+              "findings": 2,
               "flags": [
                 "builder_prefix_missing",
                 "cwd_and_round_window_correlation"
@@ -72522,7 +72783,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 10.9,
               "ended_at": "2026-08-10T04:33:31+00:00",
-              "findings": 0,
+              "findings": 2,
               "flags": [
                 "builder_prefix_missing",
                 "cwd_and_round_window_correlation"
@@ -72682,7 +72943,7 @@ window.TELEMETRY = {
             "usd": 163.805
           },
           "debt_at_accept": 0,
-          "findings_total": 0,
+          "findings_total": 97,
           "judge": {
             "tokens": 173069837,
             "usd": 173.111,
@@ -72741,7 +73002,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 9.767,
               "ended_at": "2026-08-16T01:02:44+00:00",
-              "findings": 0,
+              "findings": 10,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -72828,7 +73089,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 7.683,
               "ended_at": "2026-08-16T01:23:37+00:00",
-              "findings": 0,
+              "findings": 7,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -72915,7 +73176,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 8.733,
               "ended_at": "2026-08-16T01:45:58+00:00",
-              "findings": 0,
+              "findings": 9,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -73002,7 +73263,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 7.233,
               "ended_at": "2026-08-16T02:05:59+00:00",
-              "findings": 0,
+              "findings": 5,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -73089,7 +73350,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 7.4,
               "ended_at": "2026-08-16T02:25:54+00:00",
-              "findings": 0,
+              "findings": 9,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -73176,7 +73437,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 8.133,
               "ended_at": "2026-08-16T02:46:32+00:00",
-              "findings": 0,
+              "findings": 5,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -73263,7 +73524,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 9.083,
               "ended_at": "2026-08-16T03:09:18+00:00",
-              "findings": 0,
+              "findings": 6,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -73350,7 +73611,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 9.233,
               "ended_at": "2026-08-16T03:53:07+00:00",
-              "findings": 0,
+              "findings": 4,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -73437,7 +73698,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 7.55,
               "ended_at": "2026-08-16T04:02:04+00:00",
-              "findings": 0,
+              "findings": 2,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -73524,7 +73785,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 8.2,
               "ended_at": "2026-08-16T04:22:42+00:00",
-              "findings": 0,
+              "findings": 2,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -73611,7 +73872,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 7.9,
               "ended_at": "2026-08-16T04:42:45+00:00",
-              "findings": 0,
+              "findings": 4,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -73698,7 +73959,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 7.633,
               "ended_at": "2026-08-16T05:23:22+00:00",
-              "findings": 0,
+              "findings": 2,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -73785,7 +74046,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 7.0,
               "ended_at": "2026-08-16T05:33:19+00:00",
-              "findings": 0,
+              "findings": 1,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -73872,7 +74133,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 7.95,
               "ended_at": "2026-08-16T05:44:32+00:00",
-              "findings": 0,
+              "findings": 3,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -73959,7 +74220,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 6.75,
               "ended_at": "2026-08-16T06:04:13+00:00",
-              "findings": 0,
+              "findings": 2,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -74046,7 +74307,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 6.983,
               "ended_at": "2026-08-16T06:22:50+00:00",
-              "findings": 0,
+              "findings": 1,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -74133,7 +74394,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 9.783,
               "ended_at": "2026-08-16T06:44:26+00:00",
-              "findings": 0,
+              "findings": 2,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -74220,7 +74481,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 10.733,
               "ended_at": "2026-08-16T06:55:57+00:00",
-              "findings": 0,
+              "findings": 2,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -74307,7 +74568,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 9.033,
               "ended_at": "2026-08-16T07:18:04+00:00",
-              "findings": 0,
+              "findings": 3,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -74394,7 +74655,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 6.817,
               "ended_at": "2026-08-16T07:37:38+00:00",
-              "findings": 0,
+              "findings": 4,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -74481,7 +74742,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 6.167,
               "ended_at": "2026-08-16T08:15:09+00:00",
-              "findings": 0,
+              "findings": 3,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -74568,7 +74829,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 10.95,
               "ended_at": "2026-08-16T08:26:50+00:00",
-              "findings": 0,
+              "findings": 3,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -74655,7 +74916,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 6.917,
               "ended_at": "2026-08-16T08:46:10+00:00",
-              "findings": 0,
+              "findings": 2,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -74742,7 +75003,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 8.75,
               "ended_at": "2026-08-16T09:07:02+00:00",
-              "findings": 0,
+              "findings": 3,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -74829,7 +75090,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 8.083,
               "ended_at": "2026-08-16T09:31:35+00:00",
-              "findings": 0,
+              "findings": 2,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -74916,7 +75177,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 6.617,
               "ended_at": "2026-08-16T09:40:49+00:00",
-              "findings": 0,
+              "findings": 1,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -75065,7 +75326,7 @@ window.TELEMETRY = {
             "usd": 76.366
           },
           "debt_at_accept": 3,
-          "findings_total": 0,
+          "findings_total": 9,
           "judge": {
             "tokens": 10896804,
             "usd": 13.711,
@@ -75122,7 +75383,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 4.5,
               "ended_at": "2026-08-02T14:42:24+00:00",
-              "findings": 0,
+              "findings": 5,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -75209,7 +75470,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 4.083,
               "ended_at": "2026-08-02T15:05:52+00:00",
-              "findings": 0,
+              "findings": 3,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -75296,7 +75557,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 4.583,
               "ended_at": "2026-08-02T15:28:06+00:00",
-              "findings": 0,
+              "findings": 1,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -75445,7 +75706,7 @@ window.TELEMETRY = {
             "usd": 54.637
           },
           "debt_at_accept": 5,
-          "findings_total": 0,
+          "findings_total": 4,
           "judge": {
             "tokens": 10043350,
             "usd": 15.207,
@@ -75503,7 +75764,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 4.783,
               "ended_at": "2026-08-02T23:20:48+00:00",
-              "findings": 0,
+              "findings": 1,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -75590,7 +75851,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 3.45,
               "ended_at": "2026-08-02T23:40:57+00:00",
-              "findings": 0,
+              "findings": 1,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -75677,7 +75938,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 4.417,
               "ended_at": "2026-08-02T23:56:27+00:00",
-              "findings": 0,
+              "findings": 1,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -75764,7 +76025,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 4.233,
               "ended_at": "2026-08-03T00:12:26+00:00",
-              "findings": 0,
+              "findings": 1,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -75913,7 +76174,7 @@ window.TELEMETRY = {
             "usd": 31.253
           },
           "debt_at_accept": 2,
-          "findings_total": 0,
+          "findings_total": 5,
           "judge": {
             "tokens": 11148948,
             "usd": 11.596,
@@ -75971,7 +76232,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 5.6,
               "ended_at": "2026-08-04T21:36:54+00:00",
-              "findings": 0,
+              "findings": 5,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -76120,7 +76381,7 @@ window.TELEMETRY = {
             "usd": 86.159
           },
           "debt_at_accept": null,
-          "findings_total": 0,
+          "findings_total": 26,
           "judge": {
             "tokens": 27500850,
             "usd": 34.631,
@@ -76178,7 +76439,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 4.55,
               "ended_at": "2026-08-03T12:01:17+00:00",
-              "findings": 0,
+              "findings": 4,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -76265,7 +76526,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 4.183,
               "ended_at": "2026-08-03T12:20:14+00:00",
-              "findings": 0,
+              "findings": 3,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -76352,7 +76613,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 4.5,
               "ended_at": "2026-08-03T12:31:31+00:00",
-              "findings": 0,
+              "findings": 3,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -76439,7 +76700,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 5.767,
               "ended_at": "2026-08-03T13:00:17+00:00",
-              "findings": 0,
+              "findings": 3,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -76526,7 +76787,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 6.817,
               "ended_at": "2026-08-03T13:19:05+00:00",
-              "findings": 0,
+              "findings": 2,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -76613,7 +76874,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 5.25,
               "ended_at": "2026-08-03T13:36:41+00:00",
-              "findings": 0,
+              "findings": 2,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -76700,7 +76961,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 4.983,
               "ended_at": "2026-08-03T13:48:38+00:00",
-              "findings": 0,
+              "findings": 3,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -76787,7 +77048,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 4.95,
               "ended_at": "2026-08-03T14:00:36+00:00",
-              "findings": 0,
+              "findings": 3,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -76874,7 +77135,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 4.25,
               "ended_at": "2026-08-03T14:12:10+00:00",
-              "findings": 0,
+              "findings": 3,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -76936,7 +77197,7 @@ window.TELEMETRY = {
             "usd": 178.957
           },
           "debt_at_accept": 0,
-          "findings_total": 0,
+          "findings_total": 36,
           "judge": {
             "tokens": 57613655,
             "usd": 69.988,
@@ -76995,7 +77256,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 4.9,
               "ended_at": "2026-08-04T22:21:41+00:00",
-              "findings": 0,
+              "findings": 6,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -77082,7 +77343,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 4.9,
               "ended_at": "2026-08-04T22:49:09+00:00",
-              "findings": 0,
+              "findings": 1,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -77169,7 +77430,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 6.067,
               "ended_at": "2026-08-04T23:00:33+00:00",
-              "findings": 0,
+              "findings": 2,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -77256,7 +77517,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 4.133,
               "ended_at": "2026-08-04T23:15:31+00:00",
-              "findings": 0,
+              "findings": 3,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -77343,7 +77604,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 5.033,
               "ended_at": "2026-08-04T23:21:16+00:00",
-              "findings": 0,
+              "findings": 3,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -77430,7 +77691,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 7.1,
               "ended_at": "2026-08-05T18:05:32+00:00",
-              "findings": 0,
+              "findings": 4,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -77517,7 +77778,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 6.583,
               "ended_at": "2026-08-05T18:26:16+00:00",
-              "findings": 0,
+              "findings": 3,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -77604,7 +77865,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 5.0,
               "ended_at": "2026-08-05T18:39:10+00:00",
-              "findings": 0,
+              "findings": 1,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -77691,7 +77952,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 4.983,
               "ended_at": "2026-08-05T18:50:00+00:00",
-              "findings": 0,
+              "findings": 3,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -77778,7 +78039,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 6.617,
               "ended_at": "2026-08-05T19:03:05+00:00",
-              "findings": 0,
+              "findings": 2,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -77865,7 +78126,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 5.3,
               "ended_at": "2026-08-05T19:16:25+00:00",
-              "findings": 0,
+              "findings": 3,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -77952,7 +78213,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 6.35,
               "ended_at": "2026-08-05T19:37:02+00:00",
-              "findings": 0,
+              "findings": 3,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -78039,7 +78300,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 5.533,
               "ended_at": "2026-08-05T19:50:47+00:00",
-              "findings": 0,
+              "findings": 1,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -78126,7 +78387,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 6.467,
               "ended_at": "2026-08-05T20:04:40+00:00",
-              "findings": 0,
+              "findings": 1,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -78279,7 +78540,7 @@ window.TELEMETRY = {
             "usd": 16.015
           },
           "debt_at_accept": 1,
-          "findings_total": 0,
+          "findings_total": 3,
           "judge": {
             "tokens": 5120048,
             "usd": 7.383,
@@ -78336,7 +78597,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 4.617,
               "ended_at": "2026-08-02T16:15:49+00:00",
-              "findings": 0,
+              "findings": 3,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -78609,7 +78870,7 @@ window.TELEMETRY = {
             "usd": 76.024
           },
           "debt_at_accept": 0,
-          "findings_total": 0,
+          "findings_total": 21,
           "judge": {
             "tokens": 172515291,
             "usd": 208.325,
@@ -78759,7 +79020,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 19.333,
               "ended_at": "2026-08-07T16:25:27+00:00",
-              "findings": 0,
+              "findings": 1,
               "flags": [
                 "cwd_and_round_window_correlation"
               ],
@@ -78850,7 +79111,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 18.417,
               "ended_at": "2026-08-07T17:14:08+00:00",
-              "findings": 0,
+              "findings": 1,
               "flags": [
                 "cwd_and_round_window_correlation"
               ],
@@ -78941,7 +79202,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 17.45,
               "ended_at": "2026-08-07T17:57:28+00:00",
-              "findings": 0,
+              "findings": 1,
               "flags": [
                 "cwd_and_round_window_correlation"
               ],
@@ -79032,7 +79293,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 19.1,
               "ended_at": "2026-08-07T18:38:40+00:00",
-              "findings": 0,
+              "findings": 2,
               "flags": [
                 "cwd_and_round_window_correlation"
               ],
@@ -79123,7 +79384,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 20.783,
               "ended_at": "2026-08-07T19:11:32+00:00",
-              "findings": 0,
+              "findings": 1,
               "flags": [
                 "cwd_and_round_window_correlation"
               ],
@@ -79305,7 +79566,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 20.65,
               "ended_at": "2026-08-07T20:14:04+00:00",
-              "findings": 0,
+              "findings": 3,
               "flags": [
                 "cwd_and_round_window_correlation"
               ],
@@ -79578,7 +79839,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 17.667,
               "ended_at": "2026-08-07T21:49:41+00:00",
-              "findings": 0,
+              "findings": 2,
               "flags": [
                 "cwd_and_round_window_correlation"
               ],
@@ -79669,7 +79930,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 18.283,
               "ended_at": "2026-08-07T22:23:10+00:00",
-              "findings": 0,
+              "findings": 2,
               "flags": [
                 "cwd_and_round_window_correlation"
               ],
@@ -79760,7 +80021,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 20.483,
               "ended_at": "2026-08-07T22:55:31+00:00",
-              "findings": 0,
+              "findings": 1,
               "flags": [
                 "cwd_and_round_window_correlation"
               ],
@@ -79851,7 +80112,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 21.167,
               "ended_at": "2026-08-07T23:39:03+00:00",
-              "findings": 0,
+              "findings": 2,
               "flags": [
                 "cwd_and_round_window_correlation"
               ],
@@ -79930,7 +80191,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 10.733,
               "ended_at": "2026-08-09T20:12:46+00:00",
-              "findings": 0,
+              "findings": 2,
               "flags": [
                 "builder_prefix_missing",
                 "cwd_and_round_window_correlation"
@@ -80010,7 +80271,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 11.383,
               "ended_at": "2026-08-09T20:28:19+00:00",
-              "findings": 0,
+              "findings": 3,
               "flags": [
                 "builder_prefix_missing",
                 "cwd_and_round_window_correlation"
@@ -80143,7 +80404,7 @@ window.TELEMETRY = {
             "usd": 89.971
           },
           "debt_at_accept": null,
-          "findings_total": 0,
+          "findings_total": 41,
           "judge": {
             "tokens": 47727986,
             "usd": 54.216,
@@ -80202,7 +80463,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 5.117,
               "ended_at": "2026-08-02T19:07:51+00:00",
-              "findings": 0,
+              "findings": 9,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -80289,7 +80550,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 5.767,
               "ended_at": "2026-08-02T19:33:00+00:00",
-              "findings": 0,
+              "findings": 4,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -80376,7 +80637,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 6.633,
               "ended_at": "2026-08-02T20:07:46+00:00",
-              "findings": 0,
+              "findings": 5,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -80463,7 +80724,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 4.55,
               "ended_at": "2026-08-02T20:23:48+00:00",
-              "findings": 0,
+              "findings": 2,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -80550,7 +80811,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 4.733,
               "ended_at": "2026-08-02T20:47:37+00:00",
-              "findings": 0,
+              "findings": 2,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -80637,7 +80898,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 4.25,
               "ended_at": "2026-08-02T20:54:15+00:00",
-              "findings": 0,
+              "findings": 3,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -80724,7 +80985,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 4.9,
               "ended_at": "2026-08-02T21:05:31+00:00",
-              "findings": 0,
+              "findings": 3,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -80811,7 +81072,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 5.033,
               "ended_at": "2026-08-02T21:19:41+00:00",
-              "findings": 0,
+              "findings": 2,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -80898,7 +81159,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 4.633,
               "ended_at": "2026-08-02T21:31:28+00:00",
-              "findings": 0,
+              "findings": 1,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -80985,7 +81246,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 4.5,
               "ended_at": "2026-08-02T21:46:44+00:00",
-              "findings": 0,
+              "findings": 2,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -81072,7 +81333,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 4.867,
               "ended_at": "2026-08-02T21:57:34+00:00",
-              "findings": 0,
+              "findings": 2,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -81159,7 +81420,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 4.167,
               "ended_at": "2026-08-02T22:08:05+00:00",
-              "findings": 0,
+              "findings": 2,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -81246,7 +81507,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 5.217,
               "ended_at": "2026-08-02T22:20:53+00:00",
-              "findings": 0,
+              "findings": 4,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -81308,7 +81569,7 @@ window.TELEMETRY = {
             "usd": 0.0
           },
           "debt_at_accept": null,
-          "findings_total": 0,
+          "findings_total": 15,
           "judge": {
             "tokens": 69872145,
             "usd": 80.496,
@@ -81355,7 +81616,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 13.867,
               "ended_at": "2026-08-09T17:55:24+00:00",
-              "findings": 0,
+              "findings": 3,
               "flags": [
                 "builder_prefix_missing",
                 "cwd_and_round_window_correlation"
@@ -81448,7 +81709,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 15.883,
               "ended_at": "2026-08-09T18:21:17+00:00",
-              "findings": 0,
+              "findings": 5,
               "flags": [
                 "builder_prefix_missing",
                 "cwd_and_round_window_correlation"
@@ -81541,7 +81802,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 13.9,
               "ended_at": "2026-08-09T18:48:10+00:00",
-              "findings": 0,
+              "findings": 4,
               "flags": [
                 "builder_prefix_missing",
                 "cwd_and_round_window_correlation"
@@ -81634,7 +81895,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 14.917,
               "ended_at": "2026-08-09T19:10:13+00:00",
-              "findings": 0,
+              "findings": 1,
               "flags": [
                 "builder_prefix_missing",
                 "cwd_and_round_window_correlation"
@@ -81727,7 +81988,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 13.7,
               "ended_at": "2026-08-09T19:27:58+00:00",
-              "findings": 0,
+              "findings": 1,
               "flags": [
                 "builder_prefix_missing",
                 "cwd_and_round_window_correlation"
@@ -81807,7 +82068,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 14.25,
               "ended_at": "2026-08-09T19:48:20+00:00",
-              "findings": 0,
+              "findings": 1,
               "flags": [
                 "builder_prefix_missing",
                 "cwd_and_round_window_correlation"
@@ -81887,7 +82148,7 @@ window.TELEMETRY = {
             "usd": 0.0
           },
           "debt_at_accept": 0,
-          "findings_total": 0,
+          "findings_total": 3,
           "judge": {
             "tokens": 21551340,
             "usd": 26.427,
@@ -81933,7 +82194,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 7.967,
               "ended_at": "2026-08-09T14:01:41+00:00",
-              "findings": 0,
+              "findings": 2,
               "flags": [
                 "builder_prefix_missing",
                 "cwd_and_round_window_correlation"
@@ -82013,7 +82274,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 15.667,
               "ended_at": "2026-08-09T14:22:29+00:00",
-              "findings": 0,
+              "findings": 1,
               "flags": [
                 "builder_prefix_missing",
                 "cwd_and_round_window_correlation"
@@ -82146,7 +82407,7 @@ window.TELEMETRY = {
             "usd": 317.95
           },
           "debt_at_accept": null,
-          "findings_total": 0,
+          "findings_total": 123,
           "judge": {
             "tokens": 249906371,
             "usd": 235.399,
@@ -82205,7 +82466,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 11.367,
               "ended_at": "2026-08-16T18:51:43+00:00",
-              "findings": 0,
+              "findings": 14,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -82292,7 +82553,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 10.267,
               "ended_at": "2026-08-16T19:33:35+00:00",
-              "findings": 0,
+              "findings": 11,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -82379,7 +82640,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 8.033,
               "ended_at": "2026-08-16T19:56:24+00:00",
-              "findings": 0,
+              "findings": 6,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -82466,7 +82727,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 9.817,
               "ended_at": "2026-08-16T20:19:05+00:00",
-              "findings": 0,
+              "findings": 11,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -82553,7 +82814,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 8.35,
               "ended_at": "2026-08-16T20:53:04+00:00",
-              "findings": 0,
+              "findings": 11,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -82640,7 +82901,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 7.317,
               "ended_at": "2026-08-16T21:01:39+00:00",
-              "findings": 0,
+              "findings": 8,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -82727,7 +82988,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 7.117,
               "ended_at": "2026-08-16T21:25:50+00:00",
-              "findings": 0,
+              "findings": 5,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -82814,7 +83075,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 7.55,
               "ended_at": "2026-08-16T21:46:03+00:00",
-              "findings": 0,
+              "findings": 3,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -82901,7 +83162,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 8.583,
               "ended_at": "2026-08-16T22:08:46+00:00",
-              "findings": 0,
+              "findings": 7,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -82988,7 +83249,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 7.117,
               "ended_at": "2026-08-16T22:32:02+00:00",
-              "findings": 0,
+              "findings": 3,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -83075,7 +83336,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 7.5,
               "ended_at": "2026-08-16T22:52:58+00:00",
-              "findings": 0,
+              "findings": 5,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -83162,7 +83423,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 6.75,
               "ended_at": "2026-08-16T23:14:11+00:00",
-              "findings": 0,
+              "findings": 4,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -83249,7 +83510,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 5.533,
               "ended_at": "2026-08-16T23:21:11+00:00",
-              "findings": 0,
+              "findings": 3,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -83336,7 +83597,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 8.217,
               "ended_at": "2026-08-16T23:53:20+00:00",
-              "findings": 0,
+              "findings": 2,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -83423,7 +83684,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 7.617,
               "ended_at": "2026-08-17T00:14:06+00:00",
-              "findings": 0,
+              "findings": 2,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -83510,7 +83771,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 7.083,
               "ended_at": "2026-08-17T00:34:03+00:00",
-              "findings": 0,
+              "findings": 3,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -83597,7 +83858,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 7.933,
               "ended_at": "2026-08-17T00:42:47+00:00",
-              "findings": 0,
+              "findings": 1,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -83684,7 +83945,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 6.217,
               "ended_at": "2026-08-17T01:01:48+00:00",
-              "findings": 0,
+              "findings": 2,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -83771,7 +84032,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 7.833,
               "ended_at": "2026-08-17T01:22:05+00:00",
-              "findings": 0,
+              "findings": 2,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -83858,7 +84119,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 8.683,
               "ended_at": "2026-08-17T01:54:00+00:00",
-              "findings": 0,
+              "findings": 2,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -83945,7 +84206,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 8.3,
               "ended_at": "2026-08-17T02:15:25+00:00",
-              "findings": 0,
+              "findings": 2,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -84032,7 +84293,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 7.567,
               "ended_at": "2026-08-17T03:04:23+00:00",
-              "findings": 0,
+              "findings": 1,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -84119,7 +84380,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 8.467,
               "ended_at": "2026-08-17T03:25:23+00:00",
-              "findings": 0,
+              "findings": 2,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -84206,7 +84467,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 7.883,
               "ended_at": "2026-08-17T03:46:32+00:00",
-              "findings": 0,
+              "findings": 3,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -84293,7 +84554,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 11.333,
               "ended_at": "2026-08-17T04:10:52+00:00",
-              "findings": 0,
+              "findings": 3,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -84380,7 +84641,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 5.917,
               "ended_at": "2026-08-17T04:29:22+00:00",
-              "findings": 0,
+              "findings": 1,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -84467,7 +84728,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 9.35,
               "ended_at": "2026-08-17T04:51:10+00:00",
-              "findings": 0,
+              "findings": 2,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -84554,7 +84815,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 6.633,
               "ended_at": "2026-08-17T05:11:17+00:00",
-              "findings": 0,
+              "findings": 1,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -84641,7 +84902,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 6.25,
               "ended_at": "2026-08-17T05:30:00+00:00",
-              "findings": 0,
+              "findings": 1,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -84728,7 +84989,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 12.333,
               "ended_at": "2026-08-17T05:54:39+00:00",
-              "findings": 0,
+              "findings": 1,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -84815,7 +85076,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 9.317,
               "ended_at": "2026-08-17T06:16:41+00:00",
-              "findings": 0,
+              "findings": 1,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -84964,7 +85225,7 @@ window.TELEMETRY = {
             "usd": 102.807
           },
           "debt_at_accept": 3,
-          "findings_total": 0,
+          "findings_total": 44,
           "judge": {
             "tokens": 84859577,
             "usd": 80.265,
@@ -85023,7 +85284,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 8.833,
               "ended_at": "2026-08-18T14:01:11+00:00",
-              "findings": 0,
+              "findings": 5,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -85110,7 +85371,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 14.317,
               "ended_at": "2026-08-18T14:35:36+00:00",
-              "findings": 0,
+              "findings": 5,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -85197,7 +85458,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 8.367,
               "ended_at": "2026-08-18T15:04:08+00:00",
-              "findings": 0,
+              "findings": 7,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -85284,7 +85545,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 11.017,
               "ended_at": "2026-08-18T15:33:35+00:00",
-              "findings": 0,
+              "findings": 6,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -85371,7 +85632,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 9.317,
               "ended_at": "2026-08-18T16:18:34+00:00",
-              "findings": 0,
+              "findings": 5,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -85458,7 +85719,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 9.567,
               "ended_at": "2026-08-18T16:59:24+00:00",
-              "findings": 0,
+              "findings": 7,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -85545,7 +85806,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 10.483,
               "ended_at": "2026-08-18T17:26:45+00:00",
-              "findings": 0,
+              "findings": 4,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -85632,7 +85893,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 9.933,
               "ended_at": "2026-08-18T17:53:36+00:00",
-              "findings": 0,
+              "findings": 3,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -85719,7 +85980,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 8.417,
               "ended_at": "2026-08-18T18:16:30+00:00",
-              "findings": 0,
+              "findings": 2,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -85868,7 +86129,7 @@ window.TELEMETRY = {
             "usd": 45.208
           },
           "debt_at_accept": 11,
-          "findings_total": 0,
+          "findings_total": 8,
           "judge": {
             "tokens": 18944621,
             "usd": 23.319,
@@ -85926,7 +86187,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 13.217,
               "ended_at": "2026-08-18T20:05:31+00:00",
-              "findings": 0,
+              "findings": 1,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -86013,7 +86274,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 8.667,
               "ended_at": "2026-08-18T20:28:15+00:00",
-              "findings": 0,
+              "findings": 3,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -86100,7 +86361,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 6.85,
               "ended_at": "2026-08-18T21:06:25+00:00",
-              "findings": 0,
+              "findings": 4,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -86249,7 +86510,7 @@ window.TELEMETRY = {
             "usd": 287.676
           },
           "debt_at_accept": null,
-          "findings_total": 0,
+          "findings_total": 131,
           "judge": {
             "tokens": 153133343,
             "usd": 153.137,
@@ -86308,7 +86569,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 8.183,
               "ended_at": "2026-08-17T07:17:01+00:00",
-              "findings": 0,
+              "findings": 13,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -86395,7 +86656,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 8.75,
               "ended_at": "2026-08-17T08:09:33+00:00",
-              "findings": 0,
+              "findings": 7,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -86482,7 +86743,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 8.817,
               "ended_at": "2026-08-17T08:36:04+00:00",
-              "findings": 0,
+              "findings": 10,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -86569,7 +86830,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 8.317,
               "ended_at": "2026-08-17T09:02:34+00:00",
-              "findings": 0,
+              "findings": 9,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -86656,7 +86917,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 8.117,
               "ended_at": "2026-08-17T09:12:10+00:00",
-              "findings": 0,
+              "findings": 7,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -86743,7 +87004,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 8.15,
               "ended_at": "2026-08-17T09:40:19+00:00",
-              "findings": 0,
+              "findings": 7,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -86830,7 +87091,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 8.217,
               "ended_at": "2026-08-17T10:16:34+00:00",
-              "findings": 0,
+              "findings": 2,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -86917,7 +87178,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 7.517,
               "ended_at": "2026-08-17T10:38:39+00:00",
-              "findings": 0,
+              "findings": 3,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -87004,7 +87265,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 7.867,
               "ended_at": "2026-08-17T11:16:20+00:00",
-              "findings": 0,
+              "findings": 3,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -87091,7 +87352,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 7.983,
               "ended_at": "2026-08-17T11:25:37+00:00",
-              "findings": 0,
+              "findings": 10,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -87178,7 +87439,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 9.367,
               "ended_at": "2026-08-17T12:11:14+00:00",
-              "findings": 0,
+              "findings": 5,
               "flags": [
                 "cwd_and_round_window_correlation"
               ],
@@ -87269,7 +87530,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 12.183,
               "ended_at": "2026-08-17T12:41:14+00:00",
-              "findings": 0,
+              "findings": 8,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -87356,7 +87617,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 10.317,
               "ended_at": "2026-08-17T13:09:25+00:00",
-              "findings": 0,
+              "findings": 7,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -87443,7 +87704,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 9.35,
               "ended_at": "2026-08-17T13:19:50+00:00",
-              "findings": 0,
+              "findings": 7,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -87530,7 +87791,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 9.25,
               "ended_at": "2026-08-17T13:45:03+00:00",
-              "findings": 0,
+              "findings": 4,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -87617,7 +87878,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 9.2,
               "ended_at": "2026-08-17T14:10:14+00:00",
-              "findings": 0,
+              "findings": 9,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -87704,7 +87965,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 10.167,
               "ended_at": "2026-08-17T14:36:34+00:00",
-              "findings": 0,
+              "findings": 7,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -87791,7 +88052,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 7.417,
               "ended_at": "2026-08-17T14:45:00+00:00",
-              "findings": 0,
+              "findings": 6,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -87878,7 +88139,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 9.25,
               "ended_at": "2026-08-17T15:11:59+00:00",
-              "findings": 0,
+              "findings": 3,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -87965,7 +88226,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 8.15,
               "ended_at": "2026-08-17T15:44:49+00:00",
-              "findings": 0,
+              "findings": 2,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -88052,7 +88313,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 7.983,
               "ended_at": "2026-08-17T16:06:54+00:00",
-              "findings": 0,
+              "findings": 2,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -88329,7 +88590,7 @@ window.TELEMETRY = {
             "usd": 51.044
           },
           "debt_at_accept": null,
-          "findings_total": 0,
+          "findings_total": 33,
           "judge": {
             "tokens": 26534803,
             "usd": 27.021,
@@ -88388,7 +88649,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 8.933,
               "ended_at": "2026-08-19T03:59:06+00:00",
-              "findings": 0,
+              "findings": 11,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -88475,7 +88736,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 6.117,
               "ended_at": "2026-08-19T06:05:42+00:00",
-              "findings": 0,
+              "findings": 9,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -88562,7 +88823,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 9.45,
               "ended_at": "2026-08-19T06:32:21+00:00",
-              "findings": 0,
+              "findings": 6,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -88649,7 +88910,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 7.65,
               "ended_at": "2026-08-19T07:22:51+00:00",
-              "findings": 0,
+              "findings": 7,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -88711,7 +88972,7 @@ window.TELEMETRY = {
             "usd": 0.021
           },
           "debt_at_accept": 1,
-          "findings_total": 0,
+          "findings_total": 1,
           "judge": {
             "tokens": 9622623,
             "usd": 11.138,
@@ -88770,7 +89031,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 5.483,
               "ended_at": "2026-08-04T07:10:34+00:00",
-              "findings": 0,
+              "findings": 1,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -88919,7 +89180,7 @@ window.TELEMETRY = {
             "usd": 116.12
           },
           "debt_at_accept": 8,
-          "findings_total": 0,
+          "findings_total": 26,
           "judge": {
             "tokens": 28214023,
             "usd": 34.097,
@@ -89064,7 +89325,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 5.317,
               "ended_at": "2026-08-03T09:58:32+00:00",
-              "findings": 0,
+              "findings": 6,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -89151,7 +89412,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 4.817,
               "ended_at": "2026-08-03T10:14:31+00:00",
-              "findings": 0,
+              "findings": 1,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -89238,7 +89499,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 4.883,
               "ended_at": "2026-08-03T10:36:53+00:00",
-              "findings": 0,
+              "findings": 3,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -89325,7 +89586,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 3.933,
               "ended_at": "2026-08-03T10:53:01+00:00",
-              "findings": 0,
+              "findings": 3,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -89412,7 +89673,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 5.683,
               "ended_at": "2026-08-03T11:01:48+00:00",
-              "findings": 0,
+              "findings": 4,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -89499,7 +89760,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 4.517,
               "ended_at": "2026-08-03T11:18:33+00:00",
-              "findings": 0,
+              "findings": 4,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -89586,7 +89847,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 5.467,
               "ended_at": "2026-08-03T11:32:00+00:00",
-              "findings": 0,
+              "findings": 5,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -89648,7 +89909,7 @@ window.TELEMETRY = {
             "usd": 170.644
           },
           "debt_at_accept": 0,
-          "findings_total": 0,
+          "findings_total": 4,
           "judge": {
             "tokens": 34958598,
             "usd": 39.285,
@@ -89707,7 +89968,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 9.683,
               "ended_at": "2026-08-06T14:30:10+00:00",
-              "findings": 0,
+              "findings": 2,
               "flags": [
                 "cwd_and_round_window_correlation"
               ],
@@ -89798,7 +90059,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 13.45,
               "ended_at": "2026-08-06T14:56:36+00:00",
-              "findings": 0,
+              "findings": 1,
               "flags": [
                 "cwd_and_round_window_correlation"
               ],
@@ -89889,7 +90150,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 11.267,
               "ended_at": "2026-08-06T15:16:31+00:00",
-              "findings": 0,
+              "findings": 1,
               "flags": [
                 "cwd_and_round_window_correlation"
               ],
@@ -90046,7 +90307,7 @@ window.TELEMETRY = {
             "usd": 105.774
           },
           "debt_at_accept": 1,
-          "findings_total": 0,
+          "findings_total": 13,
           "judge": {
             "tokens": 47371687,
             "usd": 49.837,
@@ -90105,7 +90366,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 7.867,
               "ended_at": "2026-08-20T02:11:55+00:00",
-              "findings": 0,
+              "findings": 4,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -90192,7 +90453,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 7.1,
               "ended_at": "2026-08-20T02:25:01+00:00",
-              "findings": 0,
+              "findings": 2,
               "flags": [
                 "cwd_and_round_window_correlation"
               ],
@@ -90283,7 +90544,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 7.533,
               "ended_at": "2026-08-20T02:49:52+00:00",
-              "findings": 0,
+              "findings": 2,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -90370,7 +90631,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 7.4,
               "ended_at": "2026-08-20T03:16:17+00:00",
-              "findings": 0,
+              "findings": 2,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -90457,7 +90718,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 8.717,
               "ended_at": "2026-08-20T03:40:47+00:00",
-              "findings": 0,
+              "findings": 2,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -90631,7 +90892,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 7.85,
               "ended_at": "2026-08-20T04:12:41+00:00",
-              "findings": 0,
+              "findings": 1,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -90780,7 +91041,7 @@ window.TELEMETRY = {
             "usd": 70.745
           },
           "debt_at_accept": null,
-          "findings_total": 0,
+          "findings_total": 31,
           "judge": {
             "tokens": 29284834,
             "usd": 35.158,
@@ -90838,7 +91099,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 5.1,
               "ended_at": "2026-08-03T04:35:21+00:00",
-              "findings": 0,
+              "findings": 5,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -90925,7 +91186,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 4.65,
               "ended_at": "2026-08-03T04:52:30+00:00",
-              "findings": 0,
+              "findings": 3,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -91012,7 +91273,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 3.55,
               "ended_at": "2026-08-03T05:08:42+00:00",
-              "findings": 0,
+              "findings": 2,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -91099,7 +91360,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 4.383,
               "ended_at": "2026-08-03T05:25:50+00:00",
-              "findings": 0,
+              "findings": 1,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -91186,7 +91447,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 6.133,
               "ended_at": "2026-08-03T05:43:17+00:00",
-              "findings": 0,
+              "findings": 1,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -91273,7 +91534,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 3.983,
               "ended_at": "2026-08-03T05:58:26+00:00",
-              "findings": 0,
+              "findings": 2,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -91360,7 +91621,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 4.883,
               "ended_at": "2026-08-03T06:05:42+00:00",
-              "findings": 0,
+              "findings": 7,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -91447,7 +91708,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 4.017,
               "ended_at": "2026-08-03T06:22:52+00:00",
-              "findings": 0,
+              "findings": 5,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -91534,7 +91795,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 3.717,
               "ended_at": "2026-08-03T11:42:08+00:00",
-              "findings": 0,
+              "findings": 5,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -91596,7 +91857,7 @@ window.TELEMETRY = {
             "usd": 31.552
           },
           "debt_at_accept": 3,
-          "findings_total": 0,
+          "findings_total": 3,
           "judge": {
             "tokens": 13391551,
             "usd": 15.248,
@@ -91655,7 +91916,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 6.183,
               "ended_at": "2026-08-03T03:41:33+00:00",
-              "findings": 0,
+              "findings": 2,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -91742,7 +92003,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 4.717,
               "ended_at": "2026-08-03T03:59:28+00:00",
-              "findings": 0,
+              "findings": 1,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -91891,7 +92152,7 @@ window.TELEMETRY = {
             "usd": 81.671
           },
           "debt_at_accept": null,
-          "findings_total": 0,
+          "findings_total": 96,
           "judge": {
             "tokens": 83885105,
             "usd": 78.078,
@@ -91950,7 +92211,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 9.517,
               "ended_at": "2026-08-19T10:55:57+00:00",
-              "findings": 0,
+              "findings": 12,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -92037,7 +92298,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 10.35,
               "ended_at": "2026-08-19T11:17:25+00:00",
-              "findings": 0,
+              "findings": 15,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -92124,7 +92385,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 7.317,
               "ended_at": "2026-08-19T11:33:42+00:00",
-              "findings": 0,
+              "findings": 11,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -92211,7 +92472,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 6.5,
               "ended_at": "2026-08-19T11:46:15+00:00",
-              "findings": 0,
+              "findings": 9,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -92298,7 +92559,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 8.35,
               "ended_at": "2026-08-19T11:58:51+00:00",
-              "findings": 0,
+              "findings": 9,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -92385,7 +92646,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 10.0,
               "ended_at": "2026-08-19T12:21:34+00:00",
-              "findings": 0,
+              "findings": 9,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -92472,7 +92733,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 7.817,
               "ended_at": "2026-08-19T12:40:11+00:00",
-              "findings": 0,
+              "findings": 10,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -92559,7 +92820,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 7.933,
               "ended_at": "2026-08-19T12:52:26+00:00",
-              "findings": 0,
+              "findings": 10,
               "flags": [
                 "cwd_and_round_window_correlation"
               ],
@@ -92650,7 +92911,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 9.433,
               "ended_at": "2026-08-19T13:08:22+00:00",
-              "findings": 0,
+              "findings": 11,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -92836,7 +93097,7 @@ window.TELEMETRY = {
             "usd": 71.254
           },
           "debt_at_accept": 0,
-          "findings_total": 0,
+          "findings_total": 5,
           "judge": {
             "tokens": 13004145,
             "usd": 15.305,
@@ -92894,7 +93155,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 5.917,
               "ended_at": "2026-08-04T20:31:10+00:00",
-              "findings": 0,
+              "findings": 3,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -92981,7 +93242,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 3.1,
               "ended_at": "2026-08-04T20:43:57+00:00",
-              "findings": 0,
+              "findings": 1,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -93068,7 +93329,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 4.417,
               "ended_at": "2026-08-04T20:57:01+00:00",
-              "findings": 0,
+              "findings": 1,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -93217,7 +93478,7 @@ window.TELEMETRY = {
             "usd": 82.682
           },
           "debt_at_accept": 0,
-          "findings_total": 0,
+          "findings_total": 3,
           "judge": {
             "tokens": 19795256,
             "usd": 24.891,
@@ -93276,7 +93537,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 9.967,
               "ended_at": "2026-08-06T11:48:35+00:00",
-              "findings": 0,
+              "findings": 2,
               "flags": [
                 "cwd_and_round_window_correlation"
               ],
@@ -93367,7 +93628,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 8.45,
               "ended_at": "2026-08-06T12:03:14+00:00",
-              "findings": 0,
+              "findings": 1,
               "flags": [
                 "cwd_and_round_window_correlation"
               ],
@@ -93739,7 +94000,7 @@ window.TELEMETRY = {
             "usd": 40.283
           },
           "debt_at_accept": 4,
-          "findings_total": 0,
+          "findings_total": 2,
           "judge": {
             "tokens": 6826626,
             "usd": 9.213,
@@ -93797,7 +94058,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 4.983,
               "ended_at": "2026-08-04T19:57:08+00:00",
-              "findings": 0,
+              "findings": 2,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -94155,23 +94416,23 @@ window.TELEMETRY = {
           "wall_hours": 0.719
         },
         {
-          "accepted": false,
+          "accepted": true,
           "build": {
-            "tokens": 111020136,
-            "usd": 133.88
+            "tokens": 132457095,
+            "usd": 157.094
           },
-          "debt_at_accept": null,
-          "findings_total": 0,
+          "debt_at_accept": 1,
+          "findings_total": 24,
           "judge": {
-            "tokens": 26273230,
-            "usd": 26.607,
+            "tokens": 32895565,
+            "usd": 32.94,
             "usd_by_vendor": {
-              "openai": 26.607
+              "openai": 32.94
             }
           },
           "lead_hours": null,
           "lead_time_status": "created_or_accept_timestamp_missing",
-          "outcome": "not_accepted",
+          "outcome": "accepted",
           "phase_hours": {
             "build": 14.881,
             "judge": 0.553,
@@ -94220,7 +94481,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 12.317,
               "ended_at": "2026-08-20T09:13:25+00:00",
-              "findings": 0,
+              "findings": 5,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -94307,7 +94568,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 7.05,
               "ended_at": "2026-08-20T09:28:48+00:00",
-              "findings": 0,
+              "findings": 4,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -94394,7 +94655,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 6.183,
               "ended_at": "2026-08-20T09:59:07+00:00",
-              "findings": 0,
+              "findings": 7,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -94481,7 +94742,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 7.633,
               "ended_at": "2026-08-20T10:30:02+00:00",
-              "findings": 0,
+              "findings": 8,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -94526,14 +94787,101 @@ window.TELEMETRY = {
               "total_usd": 24.142514,
               "unpriced_tokens": 0,
               "verdict": "NOT_ACCEPTED"
+            },
+            {
+              "accepted": true,
+              "builder": {
+                "attribution": "exact",
+                "classes": {
+                  "cache_read_tokens": 21379919,
+                  "cache_write_1h_tokens": 33836,
+                  "cache_write_5m_tokens": 0,
+                  "input_tokens": 50,
+                  "output_tokens": 23154
+                },
+                "cost_status": "complete",
+                "flags": [],
+                "model_declared": "claude-fable-5",
+                "model_observed": "claude-fable-5",
+                "models": {
+                  "claude-fable-5": {
+                    "best_effort_estimate": null,
+                    "classes": {
+                      "cache_read_tokens": 21379919,
+                      "cache_write_1h_tokens": 33836,
+                      "cache_write_5m_tokens": 0,
+                      "input_tokens": 50,
+                      "output_tokens": 23154
+                    },
+                    "tokens": 21436959,
+                    "unpriced_tokens": 0,
+                    "usd": 23.214839
+                  }
+                },
+                "sessions_expected": 1,
+                "sessions_found": 1,
+                "tokens": 21436959,
+                "unpriced_tokens": 0,
+                "usd": 23.214839,
+                "vendor": "anthropic"
+              },
+              "cost_status": "complete",
+              "debt_at_accept": 1,
+              "duration_minutes": 6.55,
+              "ended_at": "2026-08-20T10:59:30+00:00",
+              "findings": 0,
+              "flags": [],
+              "judge": {
+                "attribution": "exact",
+                "classes": {
+                  "cache_write_tokens": 0,
+                  "cached_input_tokens": 6184960,
+                  "input_tokens": 6580210,
+                  "output_tokens": 42125,
+                  "reasoning_output_tokens": 19882
+                },
+                "cost_status": "complete",
+                "flags": [],
+                "model_declared": "gpt-5.5",
+                "model_observed": "gpt-5.6-sol",
+                "models": {
+                  "gpt-5.6-sol": {
+                    "best_effort_estimate": null,
+                    "classes": {
+                      "cache_write_tokens": 0,
+                      "cached_input_tokens": 6184960,
+                      "input_tokens": 6580210,
+                      "output_tokens": 42125,
+                      "reasoning_output_tokens": 19882
+                    },
+                    "tokens": 6622335,
+                    "unpriced_tokens": 0,
+                    "usd": 6.33248
+                  }
+                },
+                "sessions_expected": 3,
+                "sessions_found": 3,
+                "tokens": 6622335,
+                "unpriced_tokens": 0,
+                "usd": 6.33248,
+                "vendor": "openai"
+              },
+              "round": 5,
+              "row": "g04b2",
+              "spec": "triage-section-on-goals",
+              "started_at": "2026-08-20T10:52:57+00:00",
+              "total_tokens": 28059294,
+              "total_usd": 29.547319,
+              "unpriced_tokens": 0,
+              "verdict": "ACCEPT"
             }
           ],
-          "rounds_count": 4,
+          "rounds_count": 5,
           "row": "g04b",
           "spec": "triage-section-on-goals",
-          "tokens": 137293366,
+          "tokens": 165352660,
           "unpriced_tokens": 0,
-          "usd": 160.487,
+          "usd": 190.034,
           "wall_hours": 16.433
         },
         {
@@ -94543,7 +94891,7 @@ window.TELEMETRY = {
             "usd": 94.654
           },
           "debt_at_accept": 3,
-          "findings_total": 0,
+          "findings_total": 42,
           "judge": {
             "tokens": 66097065,
             "usd": 69.294,
@@ -94602,7 +94950,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 9.967,
               "ended_at": "2026-08-19T07:55:02+00:00",
-              "findings": 0,
+              "findings": 3,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -94689,7 +95037,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 5.833,
               "ended_at": "2026-08-19T08:55:29+00:00",
-              "findings": 0,
+              "findings": 3,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -94776,7 +95124,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 7.15,
               "ended_at": "2026-08-19T09:18:07+00:00",
-              "findings": 0,
+              "findings": 4,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -94863,7 +95211,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 8.933,
               "ended_at": "2026-08-19T09:43:47+00:00",
-              "findings": 0,
+              "findings": 5,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -94950,7 +95298,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 7.017,
               "ended_at": "2026-08-19T16:09:30+00:00",
-              "findings": 0,
+              "findings": 6,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -95037,7 +95385,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 7.3,
               "ended_at": "2026-08-19T16:21:14+00:00",
-              "findings": 0,
+              "findings": 4,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -95124,7 +95472,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 5.867,
               "ended_at": "2026-08-19T16:31:51+00:00",
-              "findings": 0,
+              "findings": 3,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -95211,7 +95559,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 5.867,
               "ended_at": "2026-08-19T16:47:50+00:00",
-              "findings": 0,
+              "findings": 1,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -95298,7 +95646,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 8.733,
               "ended_at": "2026-08-19T17:10:33+00:00",
-              "findings": 0,
+              "findings": 4,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -95385,7 +95733,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 8.467,
               "ended_at": "2026-08-19T17:28:44+00:00",
-              "findings": 0,
+              "findings": 3,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -95472,7 +95820,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 4.767,
               "ended_at": "2026-08-19T17:40:31+00:00",
-              "findings": 0,
+              "findings": 4,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -95559,7 +95907,7 @@ window.TELEMETRY = {
               "debt_at_accept": 3,
               "duration_minutes": 8.283,
               "ended_at": "2026-08-19T17:56:35+00:00",
-              "findings": 0,
+              "findings": 2,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -95828,7 +96176,7 @@ window.TELEMETRY = {
             "usd": 23.503
           },
           "debt_at_accept": 3,
-          "findings_total": 0,
+          "findings_total": 1,
           "judge": {
             "tokens": 8305078,
             "usd": 9.635,
@@ -95886,7 +96234,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 5.55,
               "ended_at": "2026-08-02T17:59:26+00:00",
-              "findings": 0,
+              "findings": 1,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -96035,7 +96383,7 @@ window.TELEMETRY = {
             "usd": 321.724
           },
           "debt_at_accept": 2,
-          "findings_total": 0,
+          "findings_total": 144,
           "judge": {
             "tokens": 139799799,
             "usd": 145.782,
@@ -96094,7 +96442,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 9.467,
               "ended_at": "2026-08-17T16:50:49+00:00",
-              "findings": 0,
+              "findings": 15,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -96181,7 +96529,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 8.317,
               "ended_at": "2026-08-17T17:24:45+00:00",
-              "findings": 0,
+              "findings": 14,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -96268,7 +96616,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 7.95,
               "ended_at": "2026-08-17T17:46:57+00:00",
-              "findings": 0,
+              "findings": 17,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -96355,7 +96703,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 8.55,
               "ended_at": "2026-08-17T18:12:04+00:00",
-              "findings": 0,
+              "findings": 15,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -96442,7 +96790,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 6.633,
               "ended_at": "2026-08-17T18:19:51+00:00",
-              "findings": 0,
+              "findings": 5,
               "flags": [
                 "cwd_and_round_window_correlation"
               ],
@@ -96533,7 +96881,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 7.183,
               "ended_at": "2026-08-17T18:43:06+00:00",
-              "findings": 0,
+              "findings": 6,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -96620,7 +96968,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 9.067,
               "ended_at": "2026-08-17T19:17:38+00:00",
-              "findings": 0,
+              "findings": 7,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -96707,7 +97055,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 9.0,
               "ended_at": "2026-08-17T19:42:26+00:00",
-              "findings": 0,
+              "findings": 5,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -96794,7 +97142,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 7.367,
               "ended_at": "2026-08-17T20:03:26+00:00",
-              "findings": 0,
+              "findings": 7,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -96881,7 +97229,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 7.65,
               "ended_at": "2026-08-17T20:24:53+00:00",
-              "findings": 0,
+              "findings": 5,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -96968,7 +97316,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 7.8,
               "ended_at": "2026-08-17T21:00:18+00:00",
-              "findings": 0,
+              "findings": 4,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -97055,7 +97403,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 9.8,
               "ended_at": "2026-08-17T21:28:07+00:00",
-              "findings": 0,
+              "findings": 9,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -97142,7 +97490,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 9.783,
               "ended_at": "2026-08-17T22:10:22+00:00",
-              "findings": 0,
+              "findings": 5,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -97229,7 +97577,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 8.167,
               "ended_at": "2026-08-17T22:36:40+00:00",
-              "findings": 0,
+              "findings": 5,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -97316,7 +97664,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 7.867,
               "ended_at": "2026-08-17T23:17:11+00:00",
-              "findings": 0,
+              "findings": 5,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -97403,7 +97751,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 8.683,
               "ended_at": "2026-08-17T23:43:40+00:00",
-              "findings": 0,
+              "findings": 6,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -97490,7 +97838,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 7.25,
               "ended_at": "2026-08-18T00:06:55+00:00",
-              "findings": 0,
+              "findings": 4,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -97577,7 +97925,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 6.65,
               "ended_at": "2026-08-19T01:11:31+00:00",
-              "findings": 0,
+              "findings": 1,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -97664,7 +98012,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 8.067,
               "ended_at": "2026-08-19T01:47:00+00:00",
-              "findings": 0,
+              "findings": 3,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -97751,7 +98099,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 7.4,
               "ended_at": "2026-08-19T02:10:20+00:00",
-              "findings": 0,
+              "findings": 2,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -97838,7 +98186,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 5.683,
               "ended_at": "2026-08-19T02:30:24+00:00",
-              "findings": 0,
+              "findings": 1,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -97925,7 +98273,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 8.283,
               "ended_at": "2026-08-19T02:53:06+00:00",
-              "findings": 0,
+              "findings": 2,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -98012,7 +98360,7 @@ window.TELEMETRY = {
               "debt_at_accept": 2,
               "duration_minutes": 7.517,
               "ended_at": "2026-08-19T03:15:35+00:00",
-              "findings": 0,
+              "findings": 1,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -98074,7 +98422,7 @@ window.TELEMETRY = {
             "usd": 121.276
           },
           "debt_at_accept": 8,
-          "findings_total": 0,
+          "findings_total": 27,
           "judge": {
             "tokens": 39371596,
             "usd": 40.501,
@@ -98133,7 +98481,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 9.633,
               "ended_at": "2026-08-15T12:48:41+00:00",
-              "findings": 0,
+              "findings": 6,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -98220,7 +98568,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 11.05,
               "ended_at": "2026-08-15T13:12:53+00:00",
-              "findings": 0,
+              "findings": 6,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -98307,7 +98655,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 7.633,
               "ended_at": "2026-08-15T13:35:13+00:00",
-              "findings": 0,
+              "findings": 3,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -98394,7 +98742,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 7.8,
               "ended_at": "2026-08-15T13:52:06+00:00",
-              "findings": 0,
+              "findings": 4,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -98481,7 +98829,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 6.6,
               "ended_at": "2026-08-15T14:10:02+00:00",
-              "findings": 0,
+              "findings": 8,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -98630,7 +98978,7 @@ window.TELEMETRY = {
             "usd": 308.801
           },
           "debt_at_accept": 0,
-          "findings_total": 0,
+          "findings_total": 137,
           "judge": {
             "tokens": 271339211,
             "usd": 266.755,
@@ -98689,7 +99037,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 8.733,
               "ended_at": "2026-08-15T14:50:33+00:00",
-              "findings": 0,
+              "findings": 11,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -98776,7 +99124,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 7.033,
               "ended_at": "2026-08-15T15:11:51+00:00",
-              "findings": 0,
+              "findings": 7,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -98863,7 +99211,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 15.05,
               "ended_at": "2026-08-15T15:36:34+00:00",
-              "findings": 0,
+              "findings": 9,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -98950,7 +99298,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 8.183,
               "ended_at": "2026-08-15T15:53:58+00:00",
-              "findings": 0,
+              "findings": 6,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -99037,7 +99385,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 6.033,
               "ended_at": "2026-08-15T16:05:23+00:00",
-              "findings": 0,
+              "findings": 7,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -99124,7 +99472,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 6.533,
               "ended_at": "2026-08-15T16:17:33+00:00",
-              "findings": 0,
+              "findings": 7,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -99211,7 +99559,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 7.483,
               "ended_at": "2026-08-15T16:26:37+00:00",
-              "findings": 0,
+              "findings": 8,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -99298,7 +99646,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 7.683,
               "ended_at": "2026-08-15T16:40:20+00:00",
-              "findings": 0,
+              "findings": 7,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -99385,7 +99733,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 7.85,
               "ended_at": "2026-08-15T16:52:46+00:00",
-              "findings": 0,
+              "findings": 5,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -99472,7 +99820,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 8.15,
               "ended_at": "2026-08-15T17:05:35+00:00",
-              "findings": 0,
+              "findings": 5,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -99559,7 +99907,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 6.4,
               "ended_at": "2026-08-15T17:14:53+00:00",
-              "findings": 0,
+              "findings": 4,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -99646,7 +99994,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 5.75,
               "ended_at": "2026-08-15T17:26:20+00:00",
-              "findings": 0,
+              "findings": 2,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -99733,7 +100081,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 8.733,
               "ended_at": "2026-08-15T17:38:50+00:00",
-              "findings": 0,
+              "findings": 3,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -99820,7 +100168,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 7.233,
               "ended_at": "2026-08-15T17:52:27+00:00",
-              "findings": 0,
+              "findings": 3,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -99907,7 +100255,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 8.45,
               "ended_at": "2026-08-15T18:04:12+00:00",
-              "findings": 0,
+              "findings": 3,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -99994,7 +100342,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 6.283,
               "ended_at": "2026-08-15T18:16:26+00:00",
-              "findings": 0,
+              "findings": 2,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -100081,7 +100429,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 7.3,
               "ended_at": "2026-08-15T18:26:14+00:00",
-              "findings": 0,
+              "findings": 1,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -100168,7 +100516,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 6.45,
               "ended_at": "2026-08-15T18:35:41+00:00",
-              "findings": 0,
+              "findings": 2,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -100255,7 +100603,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 8.6,
               "ended_at": "2026-08-15T18:46:41+00:00",
-              "findings": 0,
+              "findings": 2,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -100342,7 +100690,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 7.0,
               "ended_at": "2026-08-15T18:57:34+00:00",
-              "findings": 0,
+              "findings": 3,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -100429,7 +100777,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 8.167,
               "ended_at": "2026-08-15T19:08:14+00:00",
-              "findings": 0,
+              "findings": 3,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -100516,7 +100864,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 7.55,
               "ended_at": "2026-08-15T19:18:40+00:00",
-              "findings": 0,
+              "findings": 2,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -100603,7 +100951,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 5.8,
               "ended_at": "2026-08-15T19:27:00+00:00",
-              "findings": 0,
+              "findings": 2,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -100690,7 +101038,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 9.167,
               "ended_at": "2026-08-15T19:40:04+00:00",
-              "findings": 0,
+              "findings": 3,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -100777,7 +101125,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 6.133,
               "ended_at": "2026-08-15T19:51:02+00:00",
-              "findings": 0,
+              "findings": 2,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -100864,7 +101212,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 6.817,
               "ended_at": "2026-08-15T20:01:02+00:00",
-              "findings": 0,
+              "findings": 1,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -101038,7 +101386,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 7.917,
               "ended_at": "2026-08-15T20:22:14+00:00",
-              "findings": 0,
+              "findings": 2,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -101125,7 +101473,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 6.317,
               "ended_at": "2026-08-15T20:31:10+00:00",
-              "findings": 0,
+              "findings": 1,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -101212,7 +101560,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 8.717,
               "ended_at": "2026-08-15T20:42:16+00:00",
-              "findings": 0,
+              "findings": 2,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -101299,7 +101647,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 7.35,
               "ended_at": "2026-08-15T20:52:16+00:00",
-              "findings": 0,
+              "findings": 2,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -101386,7 +101734,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 9.7,
               "ended_at": "2026-08-15T21:08:37+00:00",
-              "findings": 0,
+              "findings": 1,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -101473,7 +101821,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 7.383,
               "ended_at": "2026-08-15T21:19:36+00:00",
-              "findings": 0,
+              "findings": 1,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -101560,7 +101908,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 6.317,
               "ended_at": "2026-08-15T21:29:08+00:00",
-              "findings": 0,
+              "findings": 3,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -101647,7 +101995,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 4.933,
               "ended_at": "2026-08-15T21:51:18+00:00",
-              "findings": 0,
+              "findings": 1,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -101734,7 +102082,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 7.55,
               "ended_at": "2026-08-15T22:01:32+00:00",
-              "findings": 0,
+              "findings": 2,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -101821,7 +102169,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 8.3,
               "ended_at": "2026-08-15T22:15:21+00:00",
-              "findings": 0,
+              "findings": 1,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -101908,7 +102256,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 5.133,
               "ended_at": "2026-08-15T22:26:58+00:00",
-              "findings": 0,
+              "findings": 1,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -101995,7 +102343,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 6.567,
               "ended_at": "2026-08-15T22:36:05+00:00",
-              "findings": 0,
+              "findings": 2,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -102082,7 +102430,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 7.95,
               "ended_at": "2026-08-15T23:12:15+00:00",
-              "findings": 0,
+              "findings": 3,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -102256,7 +102604,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 5.383,
               "ended_at": "2026-08-15T23:30:11+00:00",
-              "findings": 0,
+              "findings": 1,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -102343,7 +102691,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 10.3,
               "ended_at": "2026-08-15T23:53:48+00:00",
-              "findings": 0,
+              "findings": 3,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -102430,7 +102778,7 @@ window.TELEMETRY = {
               "debt_at_accept": null,
               "duration_minutes": 9.667,
               "ended_at": "2026-08-16T00:16:43+00:00",
-              "findings": 0,
+              "findings": 1,
               "flags": [],
               "judge": {
                 "attribution": "exact",
@@ -102578,16 +102926,24 @@ window.TELEMETRY = {
       "current": {
         "date": "2026-08-20",
         "first_observed_at": "2026-08-20T10:37:08+00:00",
-        "last_observed_at": "2026-08-20T10:52:26+00:00",
+        "last_observed_at": "2026-08-20T11:49:28+00:00",
         "latest": {
-          "accepted_features": 47,
-          "observed_at": "2026-08-20T10:52:26+00:00",
+          "accepted_features": 48,
+          "observed_at": "2026-08-20T11:49:28+00:00",
           "publish": {
             "last_success_at": "2026-08-20T10:52:26+00:00",
             "reason": "pushed",
             "status": "success"
           },
-          "rounds": 537
+          "reliability": {
+            "cadence_status": "ok",
+            "clock_status": "ok",
+            "disk_headline": "conservative_mtime_upper_bound",
+            "doctor_status": "warn",
+            "last_start_at": "2026-08-20T11:45:38+00:00",
+            "missed_intervals": 0
+          },
+          "rounds": 538
         },
         "latest_gaps": [
           "quota_anthropic_unavailable",
@@ -102596,9 +102952,12 @@ window.TELEMETRY = {
           "source_spec_corpus_partial",
           "source_suite_state_partial"
         ],
-        "observations": 7,
+        "observations": 14,
         "publish_status_counts": {
-          "success": 7
+          "success": 14
+        },
+        "reliability_status_counts": {
+          "warn": 5
         },
         "schema_version": 2,
         "sources": {
@@ -102606,38 +102965,43 @@ window.TELEMETRY = {
             "latest_available": true,
             "latest_coverage": {
               "from": "2026-08-02T10:48:43-05:00",
-              "to": "2026-08-19T23:37:09-05:00"
+              "to": "2026-08-20T05:59:30-05:00"
             },
             "latest_status": "ok",
             "skip_counts": {},
             "status_counts": {
-              "ok": 7
+              "ok": 14
             }
           },
           "anthropic_usage": {
             "latest_available": true,
             "latest_coverage": {
               "from": "2026-07-22T07:23:27+00:00",
-              "to": "2026-08-20T10:50:24+00:00"
+              "to": "2026-08-20T11:41:52+00:00"
             },
             "latest_status": "partial",
             "skip_counts": {
-              "partial_trailing_line": 7
+              "cursor_fingerprint_missing": 2,
+              "partial_trailing_line": 14
             },
             "status_counts": {
-              "partial": 7
+              "partial": 14
             }
           },
           "openai_usage": {
             "latest_available": true,
             "latest_coverage": {
               "from": "2026-02-28T12:19:02+00:00",
-              "to": "2026-08-20T10:52:24+00:00"
+              "to": "2026-08-20T11:49:30+00:00"
             },
             "latest_status": "ok",
-            "skip_counts": {},
+            "skip_counts": {
+              "cursor_fingerprint_missing": 2,
+              "source_timeout_cached_last_good": 2
+            },
             "status_counts": {
-              "ok": 7
+              "ok": 11,
+              "partial": 3
             }
           },
           "provider_usage": {
@@ -102648,10 +103012,10 @@ window.TELEMETRY = {
             },
             "latest_status": "partial",
             "skip_counts": {
-              "provider_snapshot_stale": 7
+              "provider_snapshot_stale": 14
             },
             "status_counts": {
-              "partial": 7
+              "partial": 14
             }
           },
           "spec_corpus": {
@@ -102662,77 +103026,77 @@ window.TELEMETRY = {
             },
             "latest_status": "partial",
             "skip_counts": {
-              "frontmatter_missing_feature_id": 28
+              "frontmatter_missing_feature_id": 56
             },
             "status_counts": {
-              "partial": 7
+              "partial": 14
             }
           },
           "suite_state": {
             "latest_available": true,
             "latest_coverage": {
               "from": "2026-08-02T09:13:15-05:00",
-              "to": "2026-08-20T05:50:34-05:00"
+              "to": "2026-08-20T06:41:47-05:00"
             },
             "latest_status": "partial",
             "skip_counts": {
-              "debt_register_absent": 7,
-              "round_in_flight": 469
+              "debt_register_absent": 14,
+              "round_in_flight": 940
             },
             "status_counts": {
-              "partial": 7
+              "partial": 14
             }
           }
         },
         "vendors": {
           "anthropic": {
             "capture_status_counts": {
-              "ready_awaiting_slash_usage_snapshot": 5
+              "ready_awaiting_slash_usage_snapshot": 12
             },
             "latest": {
               "capture_status": "ready_awaiting_slash_usage_snapshot",
               "estimate_status": "not_needed",
-              "quota_age_hours": 685.7,
+              "quota_age_hours": 686.6,
               "quota_observed_at": "2026-07-22T21:13:06+00:00",
               "quota_source": "provider_usage_snapshot",
               "quota_status": "unavailable",
               "remaining_percent": null,
               "remaining_status": "unknown",
-              "sessions": 6218,
-              "tokens": 11925867126,
+              "sessions": 6220,
+              "tokens": 11945359612,
               "unpriced_tokens": 0,
-              "usd": 10855.145
+              "usd": 10882.163
             },
             "quota_status_counts": {
-              "unavailable": 7
+              "unavailable": 14
             },
             "remaining_status_counts": {
-              "unknown": 7
+              "unknown": 14
             }
           },
           "openai": {
             "capture_status_counts": {
-              "not_applicable": 5
+              "not_applicable": 12
             },
             "latest": {
               "capture_status": "not_applicable",
               "estimate_status": "available",
               "quota_age_hours": 0.0,
-              "quota_observed_at": "2026-08-20T10:52:24+00:00",
+              "quota_observed_at": "2026-08-20T11:49:30+00:00",
               "quota_source": "rollout_token_count",
               "quota_status": "available",
-              "remaining_percent": 94.0,
+              "remaining_percent": 91.0,
               "remaining_status": "available",
-              "sessions": 2594,
-              "tokens": 22654050945,
+              "sessions": 2603,
+              "tokens": 22704826437,
               "unpriced_tokens": 10267797999,
-              "usd": 9463.744
+              "usd": 9505.378
             },
             "quota_status_counts": {
-              "available": 7
+              "available": 14
             },
             "remaining_status_counts": {
-              "available": 7
+              "available": 14
             }
           }
         }
@@ -102741,16 +103105,24 @@ window.TELEMETRY = {
         {
           "date": "2026-08-20",
           "first_observed_at": "2026-08-20T10:37:08+00:00",
-          "last_observed_at": "2026-08-20T10:52:26+00:00",
+          "last_observed_at": "2026-08-20T11:49:28+00:00",
           "latest": {
-            "accepted_features": 47,
-            "observed_at": "2026-08-20T10:52:26+00:00",
+            "accepted_features": 48,
+            "observed_at": "2026-08-20T11:49:28+00:00",
             "publish": {
               "last_success_at": "2026-08-20T10:52:26+00:00",
               "reason": "pushed",
               "status": "success"
             },
-            "rounds": 537
+            "reliability": {
+              "cadence_status": "ok",
+              "clock_status": "ok",
+              "disk_headline": "conservative_mtime_upper_bound",
+              "doctor_status": "warn",
+              "last_start_at": "2026-08-20T11:45:38+00:00",
+              "missed_intervals": 0
+            },
+            "rounds": 538
           },
           "latest_gaps": [
             "quota_anthropic_unavailable",
@@ -102759,9 +103131,12 @@ window.TELEMETRY = {
             "source_spec_corpus_partial",
             "source_suite_state_partial"
           ],
-          "observations": 7,
+          "observations": 14,
           "publish_status_counts": {
-            "success": 7
+            "success": 14
+          },
+          "reliability_status_counts": {
+            "warn": 5
           },
           "schema_version": 2,
           "sources": {
@@ -102769,38 +103144,43 @@ window.TELEMETRY = {
               "latest_available": true,
               "latest_coverage": {
                 "from": "2026-08-02T10:48:43-05:00",
-                "to": "2026-08-19T23:37:09-05:00"
+                "to": "2026-08-20T05:59:30-05:00"
               },
               "latest_status": "ok",
               "skip_counts": {},
               "status_counts": {
-                "ok": 7
+                "ok": 14
               }
             },
             "anthropic_usage": {
               "latest_available": true,
               "latest_coverage": {
                 "from": "2026-07-22T07:23:27+00:00",
-                "to": "2026-08-20T10:50:24+00:00"
+                "to": "2026-08-20T11:41:52+00:00"
               },
               "latest_status": "partial",
               "skip_counts": {
-                "partial_trailing_line": 7
+                "cursor_fingerprint_missing": 2,
+                "partial_trailing_line": 14
               },
               "status_counts": {
-                "partial": 7
+                "partial": 14
               }
             },
             "openai_usage": {
               "latest_available": true,
               "latest_coverage": {
                 "from": "2026-02-28T12:19:02+00:00",
-                "to": "2026-08-20T10:52:24+00:00"
+                "to": "2026-08-20T11:49:30+00:00"
               },
               "latest_status": "ok",
-              "skip_counts": {},
+              "skip_counts": {
+                "cursor_fingerprint_missing": 2,
+                "source_timeout_cached_last_good": 2
+              },
               "status_counts": {
-                "ok": 7
+                "ok": 11,
+                "partial": 3
               }
             },
             "provider_usage": {
@@ -102811,10 +103191,10 @@ window.TELEMETRY = {
               },
               "latest_status": "partial",
               "skip_counts": {
-                "provider_snapshot_stale": 7
+                "provider_snapshot_stale": 14
               },
               "status_counts": {
-                "partial": 7
+                "partial": 14
               }
             },
             "spec_corpus": {
@@ -102825,77 +103205,77 @@ window.TELEMETRY = {
               },
               "latest_status": "partial",
               "skip_counts": {
-                "frontmatter_missing_feature_id": 28
+                "frontmatter_missing_feature_id": 56
               },
               "status_counts": {
-                "partial": 7
+                "partial": 14
               }
             },
             "suite_state": {
               "latest_available": true,
               "latest_coverage": {
                 "from": "2026-08-02T09:13:15-05:00",
-                "to": "2026-08-20T05:50:34-05:00"
+                "to": "2026-08-20T06:41:47-05:00"
               },
               "latest_status": "partial",
               "skip_counts": {
-                "debt_register_absent": 7,
-                "round_in_flight": 469
+                "debt_register_absent": 14,
+                "round_in_flight": 940
               },
               "status_counts": {
-                "partial": 7
+                "partial": 14
               }
             }
           },
           "vendors": {
             "anthropic": {
               "capture_status_counts": {
-                "ready_awaiting_slash_usage_snapshot": 5
+                "ready_awaiting_slash_usage_snapshot": 12
               },
               "latest": {
                 "capture_status": "ready_awaiting_slash_usage_snapshot",
                 "estimate_status": "not_needed",
-                "quota_age_hours": 685.7,
+                "quota_age_hours": 686.6,
                 "quota_observed_at": "2026-07-22T21:13:06+00:00",
                 "quota_source": "provider_usage_snapshot",
                 "quota_status": "unavailable",
                 "remaining_percent": null,
                 "remaining_status": "unknown",
-                "sessions": 6218,
-                "tokens": 11925867126,
+                "sessions": 6220,
+                "tokens": 11945359612,
                 "unpriced_tokens": 0,
-                "usd": 10855.145
+                "usd": 10882.163
               },
               "quota_status_counts": {
-                "unavailable": 7
+                "unavailable": 14
               },
               "remaining_status_counts": {
-                "unknown": 7
+                "unknown": 14
               }
             },
             "openai": {
               "capture_status_counts": {
-                "not_applicable": 5
+                "not_applicable": 12
               },
               "latest": {
                 "capture_status": "not_applicable",
                 "estimate_status": "available",
                 "quota_age_hours": 0.0,
-                "quota_observed_at": "2026-08-20T10:52:24+00:00",
+                "quota_observed_at": "2026-08-20T11:49:30+00:00",
                 "quota_source": "rollout_token_count",
                 "quota_status": "available",
-                "remaining_percent": 94.0,
+                "remaining_percent": 91.0,
                 "remaining_status": "available",
-                "sessions": 2594,
-                "tokens": 22654050945,
+                "sessions": 2603,
+                "tokens": 22704826437,
                 "unpriced_tokens": 10267797999,
-                "usd": 9463.744
+                "usd": 9505.378
               },
               "quota_status_counts": {
-                "available": 7
+                "available": 14
               },
               "remaining_status_counts": {
-                "available": 7
+                "available": 14
               }
             }
           }
@@ -102906,134 +103286,140 @@ window.TELEMETRY = {
     },
     "models": {
       "adherence": {
-        "evaluated_rounds": 537,
+        "evaluated_rounds": 538,
         "floor": "distinct_vendor",
-        "met_rounds": 449,
-        "rate": 0.8361,
+        "met_rounds": 450,
+        "rate": 0.8364,
         "unverified_rounds": 43
       },
       "builder_by_model": {
-        "claude-fable-5": 316,
+        "claude-fable-5": 317,
         "claude-opus-4-8": 70,
         "claude-opus-5": 110,
         "gpt-5.6-sol": 2,
         "unknown": 39
       },
       "builder_by_vendor": {
-        "anthropic": 496,
+        "anthropic": 497,
         "openai": 2,
         "unknown": 39
       },
       "builds_by_day": {
         "2026-08-02": {
-          "claude-opus-4-8": 13,
-          "claude-opus-5": 27
+          "claude-opus-4-8": 7,
+          "claude-opus-5": 19
         },
         "2026-08-03": {
-          "claude-fable-5": 9,
-          "claude-opus-4-8": 24,
-          "claude-opus-5": 17
+          "claude-fable-5": 3,
+          "claude-opus-4-8": 23,
+          "claude-opus-5": 25
         },
         "2026-08-04": {
-          "claude-fable-5": 41,
-          "claude-opus-4-8": 26
+          "claude-fable-5": 47,
+          "claude-opus-4-8": 33
         },
         "2026-08-05": {
-          "claude-fable-5": 52,
+          "claude-fable-5": 47,
           "claude-opus-4-8": 2
         },
         "2026-08-06": {
-          "claude-fable-5": 19
+          "claude-fable-5": 24
         },
         "2026-08-07": {
-          "claude-opus-4-8": 5,
-          "claude-opus-5": 12
+          "claude-opus-4-8": 4,
+          "claude-opus-5": 10
+        },
+        "2026-08-08": {
+          "claude-opus-4-8": 1,
+          "claude-opus-5": 2
         },
         "2026-08-09": {
-          "unknown": 36
+          "unknown": 26
         },
         "2026-08-10": {
           "gpt-5.6-sol": 2,
-          "unknown": 3
+          "unknown": 13
         },
         "2026-08-15": {
-          "claude-fable-5": 62
+          "claude-fable-5": 49
         },
         "2026-08-16": {
           "claude-fable-5": 58
         },
         "2026-08-17": {
-          "claude-fable-5": 53
+          "claude-fable-5": 55
         },
         "2026-08-18": {
-          "claude-fable-5": 10,
-          "claude-opus-5": 23
+          "claude-fable-5": 21,
+          "claude-opus-5": 15
         },
         "2026-08-19": {
-          "claude-fable-5": 8,
-          "claude-opus-5": 31
+          "claude-opus-5": 39
         },
         "2026-08-20": {
-          "claude-fable-5": 4
+          "claude-fable-5": 13
         }
       },
       "independence_levels": {
-        "distinct_vendor": 1395,
+        "distinct_vendor": 1398,
         "same_vendor": 148,
         "unverified": 128
       },
       "judge_by_model": {
         "claude-fable-5": 28,
         "claude-opus-5": 58,
-        "gpt-5.5": 451
+        "gpt-5.5": 452
       },
       "judge_by_vendor": {
         "anthropic": 86,
-        "openai": 451
+        "openai": 452
       },
       "judges_by_day": {
         "2026-08-02": {
-          "gpt-5.5": 40
+          "gpt-5.5": 26
         },
         "2026-08-03": {
-          "gpt-5.5": 50
+          "gpt-5.5": 51
         },
         "2026-08-04": {
-          "gpt-5.5": 67
+          "gpt-5.5": 80
         },
         "2026-08-05": {
-          "claude-fable-5": 9,
+          "claude-fable-5": 4,
           "gpt-5.5": 45
         },
         "2026-08-06": {
-          "claude-fable-5": 19
+          "claude-fable-5": 24
         },
         "2026-08-07": {
-          "claude-opus-5": 17
+          "claude-opus-5": 14
+        },
+        "2026-08-08": {
+          "claude-opus-5": 3
         },
         "2026-08-09": {
-          "claude-opus-5": 36
+          "claude-opus-5": 26
         },
         "2026-08-10": {
-          "claude-opus-5": 5
+          "claude-opus-5": 15
         },
         "2026-08-15": {
-          "gpt-5.5": 62
+          "gpt-5.5": 49
         },
         "2026-08-16": {
           "gpt-5.5": 58
         },
         "2026-08-17": {
-          "gpt-5.5": 53
+          "gpt-5.5": 55
         },
         "2026-08-18": {
-          "gpt-5.5": 33
+          "gpt-5.5": 36
         },
         "2026-08-19": {
           "gpt-5.5": 39
         },
         "2026-08-20": {
-          "gpt-5.5": 4
+          "gpt-5.5": 13
         }
       },
       "policy": {
@@ -103076,38 +103462,38 @@ window.TELEMETRY = {
     "now": {
       "current_row": null,
       "current_state": "idle",
-      "last_collect_at": "2026-08-20T10:52:26+00:00",
-      "last_driver_event_at": "2026-08-20T10:50:34+00:00",
+      "last_collect_at": "2026-08-20T11:49:28+00:00",
+      "last_driver_event_at": "2026-08-20T11:41:47+00:00",
       "last_publish_at": "2026-08-20T10:52:26+00:00",
       "last_publish_attempt_at": "2026-08-20T10:52:26+00:00",
-      "minutes_since_driver": 1.9,
-      "publish_age_hours": 0.0,
+      "minutes_since_driver": 7.7,
+      "publish_age_hours": 1.0,
       "publish_reason": "pushed",
       "publish_stale": false,
       "publish_status": "success",
       "stall_threshold_minutes": 90,
       "stalled": false,
       "today": {
-        "events": 75,
-        "merges": 1,
-        "rounds": 12
+        "events": 87,
+        "merges": 2,
+        "rounds": 13
       }
     },
     "overview": {
-      "accepted_rows": 58,
+      "accepted_rows": 59,
       "builds_by_vendor": {
-        "anthropic": 496,
+        "anthropic": 497,
         "openai": 2,
         "unknown": 39
       },
-      "distinct_vendor_rate": 0.8361,
-      "judge_acceptance_rate": 0.1175,
-      "judge_rounds": 537,
-      "latest_test_seconds": 135.431,
-      "latest_tests": 4314,
+      "distinct_vendor_rate": 0.8364,
+      "judge_acceptance_rate": 0.1198,
+      "judge_rounds": 538,
+      "latest_test_seconds": 124.883,
+      "latest_tests": 4318,
       "median_judge_round_minutes": 7.3,
-      "median_rounds_per_accepted_spec": 4,
-      "proof_error_rate": 0.0474
+      "median_rounds_per_accepted_spec": 4.0,
+      "proof_error_rate": 0.0473
     },
     "provider_usage": {
       "providers": [
@@ -103167,19 +103553,119 @@ window.TELEMETRY = {
         }
       ],
       "snapshot": {
-        "age_hours": 685.7,
+        "age_hours": 686.6,
         "freshness": "stale",
         "generated_at": "2026-07-22T21:13:06+00:00",
         "window_days": 7
       }
     },
+    "reliability": {
+      "cadence": {
+        "current_age_minutes": 3.8,
+        "expected_interval_minutes": 30,
+        "failed_finishes": 0,
+        "first_start_at": "2026-08-20T10:03:49+00:00",
+        "gap_threshold_minutes": 45,
+        "gaps": [],
+        "last_finish_at": "2026-08-20T11:45:48+00:00",
+        "last_start_at": "2026-08-20T11:45:38+00:00",
+        "longest_gap_minutes": 0.0,
+        "malformed_log_records": 0,
+        "missed_intervals": 0,
+        "observed_finishes": 6,
+        "observed_starts": 6,
+        "status": "ok"
+      },
+      "checks": [
+        {
+          "detail": "available_6_of_6",
+          "name": "sources",
+          "status": "ok"
+        },
+        {
+          "detail": "valid_3_invalid_0",
+          "name": "scan_caches",
+          "status": "ok"
+        },
+        {
+          "detail": "status_ok_missed_0",
+          "name": "collection_cadence",
+          "status": "ok"
+        },
+        {
+          "detail": "last_success_age_hours_1.0",
+          "name": "publish",
+          "status": "ok"
+        },
+        {
+          "detail": "no_pages_outcome_recorded",
+          "name": "pages",
+          "status": "warn"
+        },
+        {
+          "detail": "three_entries_present_and_reduced_priority",
+          "name": "scheduler",
+          "status": "ok"
+        },
+        {
+          "detail": "free",
+          "name": "lock",
+          "status": "ok"
+        },
+        {
+          "detail": "verified_age_days_0",
+          "name": "prices",
+          "status": "ok"
+        },
+        {
+          "detail": "all_schema_versions_match",
+          "name": "schemas",
+          "status": "ok"
+        },
+        {
+          "detail": "violations_0",
+          "name": "tracked_manifest",
+          "status": "ok"
+        },
+        {
+          "detail": "ok",
+          "name": "clock",
+          "status": "ok"
+        },
+        {
+          "detail": "free_percent_91.0_conservative_mtime_upper_bound",
+          "name": "disk",
+          "status": "ok"
+        }
+      ],
+      "clock": {
+        "last_anomaly_at": null,
+        "last_success_at": "2026-08-20T11:45:38+00:00",
+        "schema_version": 2,
+        "skew_seconds": 0.0,
+        "status": "ok"
+      },
+      "disk": {
+        "free_bytes": 984282001408,
+        "free_percent": 0.9104,
+        "headline": "conservative_mtime_upper_bound",
+        "measured_at": "2026-08-20T11:43:45+00:00",
+        "projected_annual_growth_bytes": 146553852171,
+        "runway_years": 6.714
+      },
+      "observed_at": "2026-08-20T11:49:28+00:00",
+      "price_age_days": 0,
+      "schema_version": 2,
+      "status": "warn",
+      "tracked_manifest_violations": 0
+    },
     "specs": {
       "counts": {
-        "active_files": 9,
-        "archived_files": 81,
+        "active_files": 8,
+        "archived_files": 82,
         "by_location": {
-          "active": 9,
-          "archived": 81
+          "active": 8,
+          "archived": 82
         },
         "by_status": {
           "approved": 3,
@@ -103243,14 +103729,6 @@ window.TELEMETRY = {
           "archived": false,
           "created": "2026-08-20",
           "feature_id": "triage-projection-over-time",
-          "status": "review",
-          "suite": "governance-activation",
-          "wave": "C"
-        },
-        {
-          "archived": false,
-          "created": "2026-08-19",
-          "feature_id": "triage-section-on-goals",
           "status": "review",
           "suite": "governance-activation",
           "wave": "C"
@@ -103842,6 +104320,14 @@ window.TELEMETRY = {
         {
           "archived": true,
           "created": "2026-08-19",
+          "feature_id": "triage-section-on-goals",
+          "status": "review",
+          "suite": "governance-activation",
+          "wave": "C"
+        },
+        {
+          "archived": true,
+          "created": "2026-08-19",
           "feature_id": "triage-signals-and-no-score",
           "status": "review",
           "suite": "governance-activation",
@@ -103898,17 +104384,17 @@ window.TELEMETRY = {
       ]
     },
     "tests": {
-      "files": 245,
+      "files": 247,
       "latest": {
         "errors": 0,
         "failures": 0,
-        "hash": "9d0741e2bb71",
-        "seconds": 135.431,
+        "hash": "afa980504ac3",
+        "seconds": 124.883,
         "skipped": 0,
-        "tests": 4314,
-        "timestamp": "2026-08-20T05:20:06.267966-05:00"
+        "tests": 4318,
+        "timestamp": "2026-08-20T06:39:34.550105-05:00"
       },
-      "parseable": 245,
+      "parseable": 247,
       "series": [
         {
           "errors": 0,
@@ -106114,6 +106600,24 @@ window.TELEMETRY = {
           "skipped": 0,
           "tests": 4314,
           "timestamp": "2026-08-20T05:20:06.267966-05:00"
+        },
+        {
+          "errors": 0,
+          "failures": 0,
+          "hash": "499361cc0cce",
+          "seconds": 138.381,
+          "skipped": 0,
+          "tests": 4311,
+          "timestamp": "2026-08-20T05:50:35.475872-05:00"
+        },
+        {
+          "errors": 0,
+          "failures": 0,
+          "hash": "afa980504ac3",
+          "seconds": 124.883,
+          "skipped": 0,
+          "tests": 4318,
+          "timestamp": "2026-08-20T06:39:34.550105-05:00"
         }
       ]
     },
@@ -106132,7 +106636,7 @@ window.TELEMETRY = {
           "week": "2026-W33"
         },
         {
-          "accepts": 6,
+          "accepts": 7,
           "week": "2026-W34"
         }
       ],
@@ -106589,7 +107093,7 @@ window.TELEMETRY = {
         },
         {
           "date": "2026-08-20",
-          "events": 75,
+          "events": 87,
           "hours": [
             3,
             2,
@@ -106601,8 +107105,8 @@ window.TELEMETRY = {
             0,
             2,
             16,
-            10,
-            0,
+            14,
+            8,
             0,
             0,
             0,
@@ -107030,12 +107534,12 @@ window.TELEMETRY = {
           "weekday": 3
         },
         {
-          "events": 24,
+          "events": 28,
           "hour": 10,
           "weekday": 3
         },
         {
-          "events": 12,
+          "events": 20,
           "hour": 11,
           "weekday": 3
         },
@@ -107462,12 +107966,12 @@ window.TELEMETRY = {
       ],
       "anomalies": 0,
       "derivation": "derived_driver_sequence",
-      "last_event_at": "2026-08-20T10:50:34+00:00",
-      "last_step_row": "g04b2",
+      "last_event_at": "2026-08-20T11:41:47+00:00",
+      "last_step_row": "g04c",
       "last_step_state": "BUILD",
       "phase_hours": {
-        "build": 82.726,
-        "judge": 68.858,
+        "build": 83.346,
+        "judge": 68.967,
         "repair": 17.02,
         "residual_idle": 437.576
       },
@@ -107497,9 +108001,9 @@ window.TELEMETRY = {
           "round": 4
         },
         {
-          "count": 31,
-          "median": 6.633,
-          "p95": 14.934,
+          "count": 32,
+          "median": 6.617,
+          "p95": 14.81,
           "round": 5
         },
         {
@@ -107763,9 +108267,9 @@ window.TELEMETRY = {
           "week": "2026-W33"
         },
         {
-          "count": 142,
-          "median": 8.25,
-          "p95": 11.889,
+          "count": 143,
+          "median": 8.217,
+          "p95": 11.862,
           "week": "2026-W34"
         }
       ],
@@ -108356,14 +108860,27 @@ window.TELEMETRY = {
         },
         {
           "first_at": "2026-08-20T10:33:48+00:00",
-          "merged_at": null,
+          "merged_at": "2026-08-20T10:59:32+00:00",
           "phases_hours": {
-            "build": 0.279,
-            "residual_idle": 0.0
+            "build": 0.319,
+            "judge": 0.109,
+            "residual_idle": 0.001
           },
           "row": "g04b2",
-          "terminal_at": "2026-08-20T10:50:34+00:00",
-          "wall_hours": 0.279
+          "terminal_at": "2026-08-20T10:59:32+00:00",
+          "wall_hours": 0.429
+        },
+        {
+          "first_at": "2026-08-20T11:06:56+00:00",
+          "merged_at": null,
+          "phases_hours": {
+            "build": 0.581,
+            "judge": 0.0,
+            "residual_idle": 0.0
+          },
+          "row": "g04c",
+          "terminal_at": "2026-08-20T11:41:47+00:00",
+          "wall_hours": 0.581
         },
         {
           "first_at": "2026-08-18T00:20:01+00:00",
@@ -108578,9 +109095,9 @@ window.TELEMETRY = {
         }
       ],
       "today": {
-        "events": 75,
-        "merges": 1,
-        "rounds": 12
+        "events": 87,
+        "merges": 2,
+        "rounds": 13
       }
     },
     "usage": {
@@ -108884,110 +109401,122 @@ window.TELEMETRY = {
           "row": "mr1",
           "sha": "8e65a6fb4fcec6828fa9cd3514fa3b4aab3a65b4",
           "timestamp": "2026-08-19T23:37:09-05:00"
+        },
+        {
+          "digest": "499361cc0cce",
+          "row": "g04b2",
+          "sha": "344ede69e5a91779324b1e0f691466b5858a94f5",
+          "timestamp": "2026-08-20T05:59:30-05:00"
         }
       ],
       "accept_commits_by_day": {
-        "2026-08-02": 7,
+        "2026-08-02": 4,
+        "2026-08-03": 3,
         "2026-08-04": 8,
-        "2026-08-05": 7,
-        "2026-08-06": 8,
-        "2026-08-09": 4,
-        "2026-08-10": 2,
-        "2026-08-15": 2,
-        "2026-08-16": 2,
-        "2026-08-18": 7,
-        "2026-08-19": 3
+        "2026-08-05": 4,
+        "2026-08-06": 11,
+        "2026-08-09": 2,
+        "2026-08-10": 4,
+        "2026-08-15": 1,
+        "2026-08-16": 3,
+        "2026-08-18": 6,
+        "2026-08-19": 3,
+        "2026-08-20": 2
       },
-      "accept_commits_total": 50,
+      "accept_commits_total": 51,
       "event_kinds": {
-        "before-preview": 65,
+        "before-preview": 66,
         "before-preview-failed": 3,
-        "dispatch": 537,
+        "dispatch": 539,
         "escalated": 70,
         "escalation-cleared": 57,
-        "finalized": 29,
+        "finalized": 30,
         "hosting-recovered": 3,
         "merge-conflict": 2,
-        "merged": 47,
+        "merged": 48,
         "operator-accept-unjudged": 9,
         "operator-publication-archive": 7,
         "operator-publication-deploy": 7,
-        "proof": 1075,
+        "proof": 1078,
         "publication-history-reconciled": 1,
         "queue-empty": 12,
         "static-gate-failed": 41,
-        "step": 738,
-        "verdict": 537,
-        "worktree-cut": 64
+        "step": 740,
+        "verdict": 538,
+        "worktree-cut": 65
       },
       "events_by_day": {
-        "2026-08-02": 230,
-        "2026-08-03": 286,
-        "2026-08-04": 402,
-        "2026-08-05": 317,
-        "2026-08-06": 145,
-        "2026-08-07": 87,
-        "2026-08-09": 242,
-        "2026-08-10": 61,
-        "2026-08-15": 355,
-        "2026-08-16": 347,
-        "2026-08-17": 302,
-        "2026-08-18": 226,
+        "2026-08-02": 147,
+        "2026-08-03": 299,
+        "2026-08-04": 472,
+        "2026-08-05": 282,
+        "2026-08-06": 180,
+        "2026-08-07": 74,
+        "2026-08-08": 13,
+        "2026-08-09": 181,
+        "2026-08-10": 119,
+        "2026-08-11": 3,
+        "2026-08-15": 280,
+        "2026-08-16": 350,
+        "2026-08-17": 306,
+        "2026-08-18": 247,
         "2026-08-19": 276,
-        "2026-08-20": 28
+        "2026-08-20": 87
       },
-      "events_total": 3304,
+      "events_total": 3316,
       "merged_events_by_day": {
-        "2026-08-02": 7,
-        "2026-08-03": 1,
+        "2026-08-02": 4,
+        "2026-08-03": 4,
         "2026-08-04": 8,
-        "2026-08-05": 7,
-        "2026-08-06": 8,
-        "2026-08-09": 4,
-        "2026-08-10": 2,
-        "2026-08-15": 2,
-        "2026-08-16": 2,
-        "2026-08-18": 3,
-        "2026-08-19": 3
-      },
-      "merged_events_total": 47,
-      "physical_lines": 3304,
-      "rows_touched_by_day": {
-        "2026-08-02": 10,
-        "2026-08-03": 6,
-        "2026-08-04": 12,
-        "2026-08-05": 8,
-        "2026-08-06": 8,
-        "2026-08-07": 2,
-        "2026-08-09": 6,
-        "2026-08-10": 7,
-        "2026-08-15": 3,
+        "2026-08-05": 4,
+        "2026-08-06": 11,
+        "2026-08-09": 2,
+        "2026-08-10": 4,
+        "2026-08-15": 1,
         "2026-08-16": 3,
-        "2026-08-17": 5,
-        "2026-08-18": 9,
-        "2026-08-19": 7,
+        "2026-08-18": 2,
+        "2026-08-19": 3,
         "2026-08-20": 2
       },
+      "merged_events_total": 48,
+      "physical_lines": 3316,
+      "rows_touched_by_day": {
+        "2026-08-02": 7,
+        "2026-08-03": 7,
+        "2026-08-04": 13,
+        "2026-08-05": 6,
+        "2026-08-06": 11,
+        "2026-08-07": 2,
+        "2026-08-08": 1,
+        "2026-08-09": 5,
+        "2026-08-10": 9,
+        "2026-08-15": 2,
+        "2026-08-16": 4,
+        "2026-08-17": 3,
+        "2026-08-18": 8,
+        "2026-08-19": 7,
+        "2026-08-20": 4
+      },
       "state_current": null,
-      "state_done": 58,
+      "state_done": 59,
       "state_escalated": 4,
       "state_held": 0
     },
     "worth": {
-      "acceptance_efficiency": 0.7833,
-      "accepted_features": 47,
-      "accepted_with_wall_time": 47,
+      "acceptance_efficiency": 0.8,
+      "accepted_features": 48,
+      "accepted_with_wall_time": 48,
       "medians": {
-        "hours": 2.377,
-        "rounds": 4,
-        "tokens": 104072332,
-        "usd": 90.077
+        "hours": 2.414,
+        "rounds": 4.0,
+        "tokens": 108231180.0,
+        "usd": 91.21
       },
       "per_accepted": {
-        "hours": 9.381,
-        "rounds": 8.532,
-        "tokens": 172255973.4,
-        "usd": 165.542
+        "hours": 9.528,
+        "rounds": 8.458,
+        "tokens": 172112154.4,
+        "usd": 166.053
       },
       "subscription_amortization": {
         "allocation_basis": "calendar_day_proration",
@@ -109001,43 +109530,43 @@ window.TELEMETRY = {
         "monthly_total_usd": 400.0,
         "reason": "calendar_day_proration_and_observed_accepts",
         "status": "available",
-        "usd_per_accepted": 8.511
+        "usd_per_accepted": 8.333
       },
       "totals": {
-        "hours": 440.9,
-        "rounds": 401,
-        "tokens": 8096030750,
-        "usd": 7780.49
+        "hours": 457.333,
+        "rounds": 406,
+        "tokens": 8261383410,
+        "usd": 7970.524
       },
       "week_over_week": {
         "acceptance_efficiency": {
-          "current": 0.4615,
-          "delta": -0.3956,
-          "previous": 0.8571,
+          "current": 0.5385,
+          "delta": -0.3504,
+          "previous": 0.8889,
           "reason": null
         },
         "hours": {
-          "current": 12.983,
-          "delta": 6.676,
-          "previous": 6.307,
+          "current": 13.476,
+          "delta": 0.955,
+          "previous": 12.522,
           "reason": null
         },
         "rounds": {
-          "current": 11.0,
-          "delta": -6.167,
-          "previous": 17.167,
+          "current": 10.143,
+          "delta": -5.357,
+          "previous": 15.5,
           "reason": null
         },
         "tokens": {
-          "current": 258231465.0,
-          "delta": -92986082.333,
-          "previous": 351217547.333,
+          "current": 244963064.286,
+          "delta": -57050253.839,
+          "previous": 302013318.125,
           "reason": null
         },
         "usd": {
-          "current": 208.264,
-          "delta": -117.566,
-          "previous": 325.83,
+          "current": 205.66,
+          "delta": -75.826,
+          "previous": 281.486,
           "reason": null
         }
       }
@@ -109049,15 +109578,15 @@ window.TELEMETRY = {
       "available": true,
       "coverage": {
         "from": "2026-08-02T10:48:43-05:00",
-        "to": "2026-08-19T23:37:09-05:00"
+        "to": "2026-08-20T05:59:30-05:00"
       },
       "high_water": {
-        "accept_commit_count": 50,
-        "head": "006cf3475d4bfc51e852e0bd0c41b566564a7db6",
-        "last_accept_sha": "8e65a6fb4fcec6828fa9cd3514fa3b4aab3a65b4"
+        "accept_commit_count": 51,
+        "head": "344ede69e5a91779324b1e0f691466b5858a94f5",
+        "last_accept_sha": "344ede69e5a91779324b1e0f691466b5858a94f5"
       },
       "ingested": {
-        "accept_commits": 50,
+        "accept_commits": 51,
         "model_candidates": 3
       },
       "skips": [],
@@ -109067,16 +109596,16 @@ window.TELEMETRY = {
       "available": true,
       "coverage": {
         "from": "2026-07-22T07:23:27+00:00",
-        "to": "2026-08-20T10:50:24+00:00"
+        "to": "2026-08-20T11:41:52+00:00"
       },
       "high_water": {
-        "bytes": 658206630,
-        "cache_hits": 6218,
-        "files": 6218
+        "bytes": 659035648,
+        "cache_hits": 6220,
+        "files": 6220
       },
       "ingested": {
-        "cache_hits": 6218,
-        "files": 6218,
+        "cache_hits": 6220,
+        "files": 6220,
         "rescanned": 0
       },
       "skips": [
@@ -109092,17 +109621,17 @@ window.TELEMETRY = {
       "available": true,
       "coverage": {
         "from": "2026-02-28T12:19:02+00:00",
-        "to": "2026-08-20T10:52:24+00:00"
+        "to": "2026-08-20T11:49:30+00:00"
       },
       "high_water": {
-        "bytes": 5413652493,
-        "cache_hits": 2978,
-        "files": 2980
+        "bytes": 5421754530,
+        "cache_hits": 2984,
+        "files": 2989
       },
       "ingested": {
-        "cache_hits": 2978,
-        "files": 2980,
-        "rescanned": 2
+        "cache_hits": 2984,
+        "files": 2989,
+        "rescanned": 5
       },
       "skips": [],
       "status": "ok",
@@ -109137,7 +109666,7 @@ window.TELEMETRY = {
       },
       "high_water": {
         "files": 90,
-        "records_signature": "bafdddfdff3aace3"
+        "records_signature": "2c692ef7d1dc3c70"
       },
       "ingested": {
         "files": 90,
@@ -109156,23 +109685,23 @@ window.TELEMETRY = {
       "available": true,
       "coverage": {
         "from": "2026-08-02T09:13:15-05:00",
-        "to": "2026-08-20T05:50:34-05:00"
+        "to": "2026-08-20T06:41:47-05:00"
       },
       "high_water": {
-        "driver_last_ts": "2026-08-20T05:50:34-05:00",
-        "driver_lines": 3304,
-        "junit_files": 245,
-        "junit_signature": "eeb064516cce8428",
-        "round_directories": 604,
-        "round_signature": "bce038b2c44913bf"
+        "driver_last_ts": "2026-08-20T06:41:47-05:00",
+        "driver_lines": 3316,
+        "junit_files": 247,
+        "junit_signature": "1c0303489b16d2bf",
+        "round_directories": 606,
+        "round_signature": "d6be1b6eb0275490"
       },
       "ingested": {
-        "complete_rounds": 537,
-        "deploys": 49,
-        "events": 3304,
-        "junit_files": 245,
-        "publications": 19,
-        "round_directories": 604
+        "complete_rounds": 538,
+        "deploys": 50,
+        "events": 3316,
+        "junit_files": 247,
+        "publications": 20,
+        "round_directories": 606
       },
       "skips": [
         {
@@ -109180,7 +109709,7 @@ window.TELEMETRY = {
           "reason": "debt_register_absent"
         },
         {
-          "count": 67,
+          "count": 68,
           "reason": "round_in_flight"
         }
       ],
