@@ -83,12 +83,52 @@ class StabilityTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as temporary:
             executable = Path(temporary) / "schtasks.exe"
             executable.write_bytes(b"fixture")
-            complete = mock.Mock(return_value=subprocess.CompletedProcess([], 0))
+            xml = """<?xml version="1.0"?>
+<Task xmlns="http://schemas.microsoft.com/windows/2004/02/mit/task">
+  <Triggers>{trigger}</Triggers>
+  <Settings><DisallowStartIfOnBatteries>{battery}</DisallowStartIfOnBatteries><StopIfGoingOnBatteries>false</StopIfGoingOnBatteries><MultipleInstancesPolicy>IgnoreNew</MultipleInstancesPolicy></Settings>
+  <Actions><Exec><Command>wsl.exe</Command><Arguments>-d Ubuntu -- /local/agent-telemetry/run-telemetry.sh {action}</Arguments></Exec></Actions>
+</Task>"""
+
+            def query(args: list[str], **_kwargs: object) -> subprocess.CompletedProcess[str]:
+                name = args[3]
+                if name == "agent-telemetry-logon":
+                    body = xml.format(trigger="<LogonTrigger />", battery="false", action="catchup windows-task-logon")
+                else:
+                    body = xml.format(
+                        trigger="<TimeTrigger><Repetition><Interval>PT30M</Interval></Repetition></TimeTrigger>",
+                        battery="false",
+                        action="refresh windows-task-continuity",
+                    )
+                return subprocess.CompletedProcess(args, 0, stdout=body)
+
+            complete = mock.Mock(side_effect=query)
             with mock.patch.object(stability, "WINDOWS_SCHTASKS", executable), mock.patch("stability.subprocess.run", complete):
                 status, detail = stability._windows_task_status()
-        self.assertEqual((status, detail), ("ok", "two_agent_telemetry_tasks_present"))
+        self.assertEqual((status, detail), ("ok", "two_tasks_action_schedule_and_power_policy_ok"))
         queried = [call.args[0][3] for call in complete.call_args_list]
         self.assertEqual(tuple(queried), stability.WINDOWS_TASK_NAMES)
+
+    def test_windows_task_check_rejects_default_battery_policy(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            executable = Path(temporary) / "schtasks.exe"
+            executable.write_bytes(b"fixture")
+            xml = """<Task xmlns="http://schemas.microsoft.com/windows/2004/02/mit/task">
+<Triggers>{trigger}</Triggers><Settings><DisallowStartIfOnBatteries>{battery}</DisallowStartIfOnBatteries><StopIfGoingOnBatteries>false</StopIfGoingOnBatteries><MultipleInstancesPolicy>IgnoreNew</MultipleInstancesPolicy></Settings>
+<Actions><Exec><Command>wsl.exe</Command><Arguments>-d Ubuntu -- /local/agent-telemetry/run-telemetry.sh {action}</Arguments></Exec></Actions></Task>"""
+
+            def query(args: list[str], **_kwargs: object) -> subprocess.CompletedProcess[str]:
+                logon = args[3] == "agent-telemetry-logon"
+                body = xml.format(
+                    trigger="<LogonTrigger />" if logon else "<TimeTrigger><Repetition><Interval>PT30M</Interval></Repetition></TimeTrigger>",
+                    battery="false" if logon else "true",
+                    action="catchup windows-task-logon" if logon else "refresh windows-task-continuity",
+                )
+                return subprocess.CompletedProcess(args, 0, stdout=body)
+
+            with mock.patch.object(stability, "WINDOWS_SCHTASKS", executable), mock.patch("stability.subprocess.run", side_effect=query):
+                status, detail = stability._windows_task_status()
+        self.assertEqual((status, detail), ("warn", "task_power_policy_mismatch"))
 
     def test_doctor_emits_text_and_required_check_names(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:

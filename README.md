@@ -95,8 +95,9 @@ Create exactly the two tasks from Windows PowerShell:
 ```powershell
 $LinuxHome = (wsl.exe -d Ubuntu -- /bin/sh -c 'printf %s "$HOME"').Trim()
 $Sid = [Security.Principal.WindowsIdentity]::GetCurrent().User.Value
-$ContinuityAction = "wsl.exe -d Ubuntu -- $LinuxHome/agent-telemetry/run-telemetry.sh refresh windows-task-continuity"
+$StartBoundary = (Get-Date).Date.AddMinutes(7).ToString('s')
 $LogonXmlPath = Join-Path $env:TEMP 'agent-telemetry-logon.xml'
+$ContinuityXmlPath = Join-Path $env:TEMP 'agent-telemetry-continuity.xml'
 $LogonXml = @"
 <?xml version="1.0" encoding="UTF-16"?>
 <Task version="1.4" xmlns="http://schemas.microsoft.com/windows/2004/02/mit/task">
@@ -106,10 +107,20 @@ $LogonXml = @"
   <Actions Context="Author"><Exec><Command>wsl.exe</Command><Arguments>-d Ubuntu -- $LinuxHome/agent-telemetry/run-telemetry.sh catchup windows-task-logon</Arguments></Exec></Actions>
 </Task>
 "@
+$ContinuityXml = @"
+<?xml version="1.0" encoding="UTF-16"?>
+<Task version="1.4" xmlns="http://schemas.microsoft.com/windows/2004/02/mit/task">
+  <Triggers><TimeTrigger><Repetition><Interval>PT30M</Interval><StopAtDurationEnd>false</StopAtDurationEnd></Repetition><StartBoundary>$StartBoundary</StartBoundary><Enabled>true</Enabled></TimeTrigger></Triggers>
+  <Principals><Principal id="Author"><UserId>$Sid</UserId><LogonType>InteractiveToken</LogonType><RunLevel>LeastPrivilege</RunLevel></Principal></Principals>
+  <Settings><MultipleInstancesPolicy>IgnoreNew</MultipleInstancesPolicy><DisallowStartIfOnBatteries>false</DisallowStartIfOnBatteries><StopIfGoingOnBatteries>false</StopIfGoingOnBatteries><StartWhenAvailable>true</StartWhenAvailable><AllowStartOnDemand>true</AllowStartOnDemand><Enabled>true</Enabled><ExecutionTimeLimit>PT2H</ExecutionTimeLimit><Priority>7</Priority></Settings>
+  <Actions Context="Author"><Exec><Command>wsl.exe</Command><Arguments>-d Ubuntu -- $LinuxHome/agent-telemetry/run-telemetry.sh refresh windows-task-continuity</Arguments></Exec></Actions>
+</Task>
+"@
 [IO.File]::WriteAllText($LogonXmlPath, $LogonXml, [Text.UnicodeEncoding]::new($false, $true))
+[IO.File]::WriteAllText($ContinuityXmlPath, $ContinuityXml, [Text.UnicodeEncoding]::new($false, $true))
 schtasks.exe /Create /TN 'agent-telemetry-logon' /XML $LogonXmlPath /F
-schtasks.exe /Create /TN 'agent-telemetry-continuity' /SC MINUTE /MO 30 /ST 00:07 /IT /RL LIMITED /TR $ContinuityAction /F
-Remove-Item $LogonXmlPath
+schtasks.exe /Create /TN 'agent-telemetry-continuity' /XML $ContinuityXmlPath /F
+Remove-Item $LogonXmlPath, $ContinuityXmlPath
 ```
 
 Remove exactly these tasks with:

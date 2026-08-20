@@ -19,6 +19,7 @@ import shutil
 import sqlite3
 import subprocess
 import tempfile
+import xml.etree.ElementTree as ET
 from pathlib import Path
 from typing import Any, Iterable
 
@@ -330,22 +331,61 @@ def _cron_status() -> tuple[str, str]:
 def _windows_task_status() -> tuple[str, str]:
     if not WINDOWS_SCHTASKS.is_file():
         return "warn", "task_scheduler_unavailable"
-    present = 0
+    task_xml: dict[str, ET.Element] = {}
     for name in WINDOWS_TASK_NAMES:
         try:
             result = subprocess.run(
-                [str(WINDOWS_SCHTASKS), "/Query", "/TN", name, "/FO", "LIST"],
+                [str(WINDOWS_SCHTASKS), "/Query", "/TN", name, "/XML"],
                 check=False,
-                stdout=subprocess.DEVNULL,
+                text=True,
+                stdout=subprocess.PIPE,
                 stderr=subprocess.DEVNULL,
                 timeout=10,
             )
         except (OSError, subprocess.TimeoutExpired):
             return "warn", "task_query_failed"
-        present += int(result.returncode == 0)
-    if present == len(WINDOWS_TASK_NAMES):
-        return "ok", "two_agent_telemetry_tasks_present"
-    return "warn", f"tasks_{present}_of_{len(WINDOWS_TASK_NAMES)}"
+        if result.returncode != 0:
+            return "warn", "tasks_missing"
+        try:
+            task_xml[name] = ET.fromstring(result.stdout.lstrip("\ufeff"))
+        except ET.ParseError:
+            return "warn", "task_xml_invalid"
+
+    namespace = {"t": "http://schemas.microsoft.com/windows/2004/02/mit/task"}
+
+    def text_at(root: ET.Element, path: str) -> str:
+        node = root.find(path, namespace)
+        return (node.text or "").strip() if node is not None else ""
+
+    expected = {
+        "agent-telemetry-logon": "catchup windows-task-logon",
+        "agent-telemetry-continuity": "refresh windows-task-continuity",
+    }
+    for name, suffix in expected.items():
+        root = task_xml[name]
+        command = text_at(root, ".//t:Actions/t:Exec/t:Command").replace("\\", "/").lower()
+        arguments = text_at(root, ".//t:Actions/t:Exec/t:Arguments")
+        if command.rsplit("/", 1)[-1] != "wsl.exe":
+            return "warn", "task_contract_mismatch"
+        if not re.fullmatch(
+            rf"-d Ubuntu -- /[^\s]+/agent-telemetry/run-telemetry\.sh {re.escape(suffix)}",
+            arguments,
+        ):
+            return "warn", "task_contract_mismatch"
+        if text_at(root, ".//t:Settings/t:MultipleInstancesPolicy") != "IgnoreNew":
+            return "warn", "task_contract_mismatch"
+        if text_at(root, ".//t:Settings/t:DisallowStartIfOnBatteries").lower() != "false":
+            return "warn", "task_power_policy_mismatch"
+        if text_at(root, ".//t:Settings/t:StopIfGoingOnBatteries").lower() != "false":
+            return "warn", "task_power_policy_mismatch"
+
+    logon = task_xml["agent-telemetry-logon"]
+    continuity = task_xml["agent-telemetry-continuity"]
+    if logon.find(".//t:LogonTrigger", namespace) is None:
+        return "warn", "task_trigger_mismatch"
+    if text_at(continuity, ".//t:TimeTrigger/t:Repetition/t:Interval") != "PT30M":
+        return "warn", "task_trigger_mismatch"
+    return "ok", "two_tasks_action_schedule_and_power_policy_ok"
 
 
 def _lock_status(state_root: Path) -> tuple[str, str]:

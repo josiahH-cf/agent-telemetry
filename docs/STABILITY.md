@@ -15,6 +15,7 @@ pre-rework baseline.
 | ST-34 | Machine consumers lacked a stable global contract and local full-fidelity query surface. | medium | **fixed** — eight public JSONL datasets plus schemas/manifest and an untracked local tier derive from the store. | Per-line validation, manifest hashes/counts, executed worked join, scrub, and store=envelope=machine totals pass. |
 | ST-35 | Dual-drive growth and retention consequences were not measured together. | medium | **hardened / Tier B proposals only** — both drives and every named store are inventoried; real plans remain dry-run. | Selected-candidate metadata is unchanged; destructive behavior passes only against a marked fixture. |
 | ST-36 | Repeated cumulative token snapshots inside one rollout collided during a real full rebuild. | high | **fixed** — same-file event insertion is idempotent, preserving one stable cumulative observation. | The first temporary rebuild failed before replacement; a regression fixture and the second 4m40s real rebuild pass. |
+| ST-37 | The periodic Windows task inherited the default stop/do-not-start-on-battery policy. | high | **fixed** — both task definitions now opt out of battery suppression, and doctor validates actions, triggers, repetition, instance policy, and power policy from task XML. | The adversarial query exposed the mismatch; the replacement task, targeted rejection fixture, real XML query, and doctor all pass. |
 
 ### V4 completion evidence
 
