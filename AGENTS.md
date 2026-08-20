@@ -333,12 +333,13 @@ Commit and integration rules:
 - Keep history linear. Do not merge an unreviewed divergent source tree merely
   to unblock the scheduler.
 
-GitHub-side recommendation, not an authorization to enable it: protect `main`
-with linear history required, force pushes disabled, deletions disabled, and no
-administrator bypass. Leave required pull requests, required status checks,
-signed commits, and required deployments off while the current unattended job
-must push direct unsigned generated commits; enabling any of those first
-requires redesigning and testing the automation path.
+GitHub `main` is protected with linear history required, force pushes disabled,
+deletions disabled, and administrators included. Required pull requests,
+reviews, status checks, signed commits, deployments, and repository restrictions
+remain off so the current unattended job can push direct unsigned
+fast-forwards. Tightening any of those settings first requires redesigning and
+testing the automation path. Do not remove or weaken the active protection to
+bypass a local guard failure.
 
 ### Automation inventory and exact removal
 

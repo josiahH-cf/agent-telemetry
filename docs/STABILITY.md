@@ -132,8 +132,29 @@ Explicit surface decisions:
   one-hour staleness, malformed/out-of-range cache fields, missing CLI, timeout,
   oversized output, any future model routing, last-good preservation, private
   sentinels, file permissions, exact command arguments, wrapper ordering, and
-  doctor health. A live capture and finished scheduled collection are required
-  before release.
+  doctor health. A minimal-`PATH` live capture, the natural 18:30 UTC cron tick,
+  and the finished protected publish all recorded `automatic_success`; both
+  local state files are mode 0600, and the publish finished zero.
+
+### ST-44 — Remote main allowed force, delete, and merge-history mistakes
+
+- **Observation:** local hooks required main-only fast-forwards, but GitHub
+  reported no classic branch protection and no ruleset. A credential or machine
+  bypassing the local hooks therefore retained broader remote authority.
+- **Evidence:** the pre-change protection endpoint returned not found, effective
+  rules were empty, Pages published from `main:/`, and the authenticated owner
+  had repository-administration scope.
+- **Action:** **hardened / direct-publish compatible** — classic protection now
+  requires linear history, blocks force pushes and deletion, and applies to
+  administrators. Required pull requests, reviews, status checks, signatures,
+  deployments, and actor restrictions remain off, preserving the existing
+  direct unsigned scheduler design.
+- **Verifying check:** the protection readback reports administrator enforcement
+  and linear history on, force/deletion off, and every intentionally loose gate
+  null or false. A source commit and a generated-only production commit both
+  pushed as ordinary guarded fast-forwards after protection was enabled; the
+  latter passed Pages verification. Policy fields follow GitHub's documented
+  branch-protection API: <https://docs.github.com/en/rest/branches/branch-protection>.
 
 ## V4 global rebaseline register
 
