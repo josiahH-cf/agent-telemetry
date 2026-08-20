@@ -171,7 +171,7 @@ window.TELEMETRY = {
     "sources_available": 6,
     "sources_enabled": 6
   },
-  "generated_at": "2026-08-20T11:56:22+00:00",
+  "generated_at": "2026-08-20T12:00:01+00:00",
   "history": [
     {
       "accept_commits": 7,
@@ -672,7 +672,7 @@ window.TELEMETRY = {
       "builder_models": {
         "claude-fable-5": 14
       },
-      "collected_at": "2026-08-20T11:56:22+00:00",
+      "collected_at": "2026-08-20T12:00:01+00:00",
       "coverage_corrections": [
         {
           "date": "2026-08-02",
@@ -4599,7 +4599,7 @@ window.TELEMETRY = {
               "unattributed": 0
             }
           },
-          "collected_at": "2026-08-20T11:56:22+00:00",
+          "collected_at": "2026-08-20T12:00:01+00:00",
           "date": "2026-08-20",
           "schema_version": 2,
           "vendors": {
@@ -4619,15 +4619,15 @@ window.TELEMETRY = {
                 "claude-fable-5": {
                   "best_effort_estimate": null,
                   "classes": {
-                    "cache_read_tokens": 237402431,
-                    "cache_write_1h_tokens": 2311102,
+                    "cache_read_tokens": 239020343,
+                    "cache_write_1h_tokens": 2356509,
                     "cache_write_5m_tokens": 0,
-                    "input_tokens": 996,
-                    "output_tokens": 798299
+                    "input_tokens": 1024,
+                    "output_tokens": 814069
                   },
-                  "tokens": 240512828,
+                  "tokens": 242191945,
                   "unpriced_tokens": 0,
-                  "usd": 323.549381
+                  "usd": 326.864213
                 },
                 "claude-opus-5": {
                   "best_effort_estimate": null,
@@ -4660,15 +4660,15 @@ window.TELEMETRY = {
                     "claude-fable-5": {
                       "best_effort_estimate": null,
                       "classes": {
-                        "cache_read_tokens": 237402431,
-                        "cache_write_1h_tokens": 2311102,
+                        "cache_read_tokens": 239020343,
+                        "cache_write_1h_tokens": 2356509,
                         "cache_write_5m_tokens": 0,
-                        "input_tokens": 996,
-                        "output_tokens": 798299
+                        "input_tokens": 1024,
+                        "output_tokens": 814069
                       },
-                      "tokens": 240512828,
+                      "tokens": 242191945,
                       "unpriced_tokens": 0,
-                      "usd": 323.549381
+                      "usd": 326.864213
                     },
                     "claude-opus-5": {
                       "best_effort_estimate": null,
@@ -4685,15 +4685,15 @@ window.TELEMETRY = {
                     }
                   },
                   "classes": {
-                    "cache_read_tokens": 237566247,
-                    "cache_write_1h_tokens": 2482812,
+                    "cache_read_tokens": 239184159,
+                    "cache_write_1h_tokens": 2528219,
                     "cache_write_5m_tokens": 0,
-                    "input_tokens": 1020,
-                    "output_tokens": 799991
+                    "input_tokens": 1048,
+                    "output_tokens": 815761
                   },
-                  "tokens": 240850070,
+                  "tokens": 242529187,
                   "unpriced_tokens": 0,
-                  "usd": 325.390809
+                  "usd": 328.705641
                 },
                 "other": {
                   "best_effort_estimate": {
@@ -4720,9 +4720,9 @@ window.TELEMETRY = {
                   "usd": 0.0
                 }
               },
-              "tokens": 240850070,
+              "tokens": 242529187,
               "unpriced_tokens": 0,
-              "usd": 325.390809
+              "usd": 328.705641
             },
             "openai": {
               "best_effort_estimate": {
@@ -4898,7 +4898,7 @@ window.TELEMETRY = {
       },
       "usage_left": {
         "anthropic": {
-          "age_hours": 686.7,
+          "age_hours": 686.8,
           "capture_status": "ready_awaiting_slash_usage_snapshot",
           "observed_at": "2026-07-22T21:13:06+00:00",
           "provider": "claude",
@@ -4909,7 +4909,7 @@ window.TELEMETRY = {
           "source": "provider_usage_snapshot"
         },
         "openai": {
-          "age_hours": 0.0,
+          "age_hours": 0.1,
           "observed_at": "2026-08-20T11:55:17+00:00",
           "provider": "openai",
           "quota_status": "available",
@@ -4944,15 +4944,15 @@ window.TELEMETRY = {
             "claude-fable-5": {
               "best_effort_estimate": null,
               "classes": {
-                "cache_read_tokens": 4530294252,
-                "cache_write_1h_tokens": 18357623,
+                "cache_read_tokens": 4531912164,
+                "cache_write_1h_tokens": 18403030,
                 "cache_write_5m_tokens": 3625246,
-                "input_tokens": 40916,
-                "output_tokens": 9225463
+                "input_tokens": 40944,
+                "output_tokens": 9241233
               },
-              "tokens": 4561543500,
+              "tokens": 4563222617,
               "unpriced_tokens": 0,
-              "usd": 5404.444597
+              "usd": 5407.759429
             },
             "claude-haiku-4-5-20251001": {
               "best_effort_estimate": null,
@@ -5037,15 +5037,15 @@ window.TELEMETRY = {
                 "claude-fable-5": {
                   "best_effort_estimate": null,
                   "classes": {
-                    "cache_read_tokens": 4530276269,
-                    "cache_write_1h_tokens": 18319723,
+                    "cache_read_tokens": 4531894181,
+                    "cache_write_1h_tokens": 18365130,
                     "cache_write_5m_tokens": 3625246,
-                    "input_tokens": 40912,
-                    "output_tokens": 9225426
+                    "input_tokens": 40940,
+                    "output_tokens": 9241196
                   },
-                  "tokens": 4561487576,
+                  "tokens": 4563166693,
                   "unpriced_tokens": 0,
-                  "usd": 5403.666724
+                  "usd": 5406.981556
                 },
                 "claude-haiku-4-5-20251001": {
                   "best_effort_estimate": null,
@@ -5114,15 +5114,15 @@ window.TELEMETRY = {
                 }
               },
               "classes": {
-                "cache_read_tokens": 11718612436,
-                "cache_write_1h_tokens": 102335355,
+                "cache_read_tokens": 11720230348,
+                "cache_write_1h_tokens": 102380762,
                 "cache_write_5m_tokens": 31648573,
-                "input_tokens": 309141,
-                "output_tokens": 42071143
+                "input_tokens": 309169,
+                "output_tokens": 42086913
               },
-              "tokens": 11894976648,
+              "tokens": 11896655765,
               "unpriced_tokens": 0,
-              "usd": 10834.750777
+              "usd": 10838.065609
             },
             "other": {
               "best_effort_estimate": {
@@ -5217,9 +5217,9 @@ window.TELEMETRY = {
           },
           "loop_share": 0.9957,
           "sessions": 6220,
-          "tokens": 11945849789,
+          "tokens": 11947528906,
           "unpriced_tokens": 0,
-          "usd": 10883.60715
+          "usd": 10886.921982
         },
         "openai": {
           "best_effort_estimate": {
@@ -103133,12 +103133,12 @@ window.TELEMETRY = {
       "current": {
         "date": "2026-08-20",
         "first_observed_at": "2026-08-20T10:37:08+00:00",
-        "last_observed_at": "2026-08-20T11:56:22+00:00",
+        "last_observed_at": "2026-08-20T12:00:01+00:00",
         "latest": {
           "accepted_features": 48,
-          "observed_at": "2026-08-20T11:56:22+00:00",
+          "observed_at": "2026-08-20T12:00:01+00:00",
           "publish": {
-            "last_success_at": "2026-08-20T11:54:02+00:00",
+            "last_success_at": "2026-08-20T11:56:38+00:00",
             "reason": "pushed",
             "status": "success"
           },
@@ -103147,7 +103147,7 @@ window.TELEMETRY = {
             "clock_status": "ok",
             "disk_headline": "conservative_mtime_upper_bound",
             "doctor_status": "ok",
-            "last_start_at": "2026-08-20T11:56:22+00:00",
+            "last_start_at": "2026-08-20T12:00:01+00:00",
             "missed_intervals": 0
           },
           "rounds": 539
@@ -103160,12 +103160,12 @@ window.TELEMETRY = {
           "source_spec_corpus_partial",
           "source_suite_state_partial"
         ],
-        "observations": 18,
+        "observations": 19,
         "publish_status_counts": {
-          "success": 18
+          "success": 19
         },
         "reliability_status_counts": {
-          "ok": 2,
+          "ok": 3,
           "warn": 7
         },
         "schema_version": 2,
@@ -103179,22 +103179,22 @@ window.TELEMETRY = {
             "latest_status": "ok",
             "skip_counts": {},
             "status_counts": {
-              "ok": 18
+              "ok": 19
             }
           },
           "anthropic_usage": {
             "latest_available": true,
             "latest_coverage": {
               "from": "2026-07-22T07:23:27+00:00",
-              "to": "2026-08-20T11:55:46+00:00"
+              "to": "2026-08-20T12:00:02+00:00"
             },
             "latest_status": "partial",
             "skip_counts": {
               "cursor_fingerprint_missing": 2,
-              "partial_trailing_line": 18
+              "partial_trailing_line": 19
             },
             "status_counts": {
-              "partial": 18
+              "partial": 19
             }
           },
           "openai_usage": {
@@ -103206,11 +103206,11 @@ window.TELEMETRY = {
             "latest_status": "partial",
             "skip_counts": {
               "cursor_fingerprint_missing": 2,
-              "source_timeout_cached_last_good": 4
+              "source_timeout_cached_last_good": 5
             },
             "status_counts": {
               "ok": 13,
-              "partial": 5
+              "partial": 6
             }
           },
           "provider_usage": {
@@ -103221,10 +103221,10 @@ window.TELEMETRY = {
             },
             "latest_status": "partial",
             "skip_counts": {
-              "provider_snapshot_stale": 18
+              "provider_snapshot_stale": 19
             },
             "status_counts": {
-              "partial": 18
+              "partial": 19
             }
           },
           "spec_corpus": {
@@ -103235,10 +103235,10 @@ window.TELEMETRY = {
             },
             "latest_status": "partial",
             "skip_counts": {
-              "frontmatter_missing_feature_id": 72
+              "frontmatter_missing_feature_id": 76
             },
             "status_counts": {
-              "partial": 18
+              "partial": 19
             }
           },
           "suite_state": {
@@ -103249,48 +103249,48 @@ window.TELEMETRY = {
             },
             "latest_status": "partial",
             "skip_counts": {
-              "debt_register_absent": 18,
-              "round_in_flight": 1208
+              "debt_register_absent": 19,
+              "round_in_flight": 1275
             },
             "status_counts": {
-              "partial": 18
+              "partial": 19
             }
           }
         },
         "vendors": {
           "anthropic": {
             "capture_status_counts": {
-              "ready_awaiting_slash_usage_snapshot": 16
+              "ready_awaiting_slash_usage_snapshot": 17
             },
             "latest": {
               "capture_status": "ready_awaiting_slash_usage_snapshot",
               "estimate_status": "not_needed",
-              "quota_age_hours": 686.7,
+              "quota_age_hours": 686.8,
               "quota_observed_at": "2026-07-22T21:13:06+00:00",
               "quota_source": "provider_usage_snapshot",
               "quota_status": "unavailable",
               "remaining_percent": null,
               "remaining_status": "unknown",
               "sessions": 6220,
-              "tokens": 11945849789,
+              "tokens": 11947528906,
               "unpriced_tokens": 0,
-              "usd": 10883.607
+              "usd": 10886.922
             },
             "quota_status_counts": {
-              "unavailable": 18
+              "unavailable": 19
             },
             "remaining_status_counts": {
-              "unknown": 18
+              "unknown": 19
             }
           },
           "openai": {
             "capture_status_counts": {
-              "not_applicable": 16
+              "not_applicable": 17
             },
             "latest": {
               "capture_status": "not_applicable",
               "estimate_status": "available",
-              "quota_age_hours": 0.0,
+              "quota_age_hours": 0.1,
               "quota_observed_at": "2026-08-20T11:55:17+00:00",
               "quota_source": "rollout_token_count",
               "quota_status": "available",
@@ -103302,10 +103302,10 @@ window.TELEMETRY = {
               "usd": 9510.548
             },
             "quota_status_counts": {
-              "available": 18
+              "available": 19
             },
             "remaining_status_counts": {
-              "available": 18
+              "available": 19
             }
           }
         }
@@ -103314,12 +103314,12 @@ window.TELEMETRY = {
         {
           "date": "2026-08-20",
           "first_observed_at": "2026-08-20T10:37:08+00:00",
-          "last_observed_at": "2026-08-20T11:56:22+00:00",
+          "last_observed_at": "2026-08-20T12:00:01+00:00",
           "latest": {
             "accepted_features": 48,
-            "observed_at": "2026-08-20T11:56:22+00:00",
+            "observed_at": "2026-08-20T12:00:01+00:00",
             "publish": {
-              "last_success_at": "2026-08-20T11:54:02+00:00",
+              "last_success_at": "2026-08-20T11:56:38+00:00",
               "reason": "pushed",
               "status": "success"
             },
@@ -103328,7 +103328,7 @@ window.TELEMETRY = {
               "clock_status": "ok",
               "disk_headline": "conservative_mtime_upper_bound",
               "doctor_status": "ok",
-              "last_start_at": "2026-08-20T11:56:22+00:00",
+              "last_start_at": "2026-08-20T12:00:01+00:00",
               "missed_intervals": 0
             },
             "rounds": 539
@@ -103341,12 +103341,12 @@ window.TELEMETRY = {
             "source_spec_corpus_partial",
             "source_suite_state_partial"
           ],
-          "observations": 18,
+          "observations": 19,
           "publish_status_counts": {
-            "success": 18
+            "success": 19
           },
           "reliability_status_counts": {
-            "ok": 2,
+            "ok": 3,
             "warn": 7
           },
           "schema_version": 2,
@@ -103360,22 +103360,22 @@ window.TELEMETRY = {
               "latest_status": "ok",
               "skip_counts": {},
               "status_counts": {
-                "ok": 18
+                "ok": 19
               }
             },
             "anthropic_usage": {
               "latest_available": true,
               "latest_coverage": {
                 "from": "2026-07-22T07:23:27+00:00",
-                "to": "2026-08-20T11:55:46+00:00"
+                "to": "2026-08-20T12:00:02+00:00"
               },
               "latest_status": "partial",
               "skip_counts": {
                 "cursor_fingerprint_missing": 2,
-                "partial_trailing_line": 18
+                "partial_trailing_line": 19
               },
               "status_counts": {
-                "partial": 18
+                "partial": 19
               }
             },
             "openai_usage": {
@@ -103387,11 +103387,11 @@ window.TELEMETRY = {
               "latest_status": "partial",
               "skip_counts": {
                 "cursor_fingerprint_missing": 2,
-                "source_timeout_cached_last_good": 4
+                "source_timeout_cached_last_good": 5
               },
               "status_counts": {
                 "ok": 13,
-                "partial": 5
+                "partial": 6
               }
             },
             "provider_usage": {
@@ -103402,10 +103402,10 @@ window.TELEMETRY = {
               },
               "latest_status": "partial",
               "skip_counts": {
-                "provider_snapshot_stale": 18
+                "provider_snapshot_stale": 19
               },
               "status_counts": {
-                "partial": 18
+                "partial": 19
               }
             },
             "spec_corpus": {
@@ -103416,10 +103416,10 @@ window.TELEMETRY = {
               },
               "latest_status": "partial",
               "skip_counts": {
-                "frontmatter_missing_feature_id": 72
+                "frontmatter_missing_feature_id": 76
               },
               "status_counts": {
-                "partial": 18
+                "partial": 19
               }
             },
             "suite_state": {
@@ -103430,48 +103430,48 @@ window.TELEMETRY = {
               },
               "latest_status": "partial",
               "skip_counts": {
-                "debt_register_absent": 18,
-                "round_in_flight": 1208
+                "debt_register_absent": 19,
+                "round_in_flight": 1275
               },
               "status_counts": {
-                "partial": 18
+                "partial": 19
               }
             }
           },
           "vendors": {
             "anthropic": {
               "capture_status_counts": {
-                "ready_awaiting_slash_usage_snapshot": 16
+                "ready_awaiting_slash_usage_snapshot": 17
               },
               "latest": {
                 "capture_status": "ready_awaiting_slash_usage_snapshot",
                 "estimate_status": "not_needed",
-                "quota_age_hours": 686.7,
+                "quota_age_hours": 686.8,
                 "quota_observed_at": "2026-07-22T21:13:06+00:00",
                 "quota_source": "provider_usage_snapshot",
                 "quota_status": "unavailable",
                 "remaining_percent": null,
                 "remaining_status": "unknown",
                 "sessions": 6220,
-                "tokens": 11945849789,
+                "tokens": 11947528906,
                 "unpriced_tokens": 0,
-                "usd": 10883.607
+                "usd": 10886.922
               },
               "quota_status_counts": {
-                "unavailable": 18
+                "unavailable": 19
               },
               "remaining_status_counts": {
-                "unknown": 18
+                "unknown": 19
               }
             },
             "openai": {
               "capture_status_counts": {
-                "not_applicable": 16
+                "not_applicable": 17
               },
               "latest": {
                 "capture_status": "not_applicable",
                 "estimate_status": "available",
-                "quota_age_hours": 0.0,
+                "quota_age_hours": 0.1,
                 "quota_observed_at": "2026-08-20T11:55:17+00:00",
                 "quota_source": "rollout_token_count",
                 "quota_status": "available",
@@ -103483,10 +103483,10 @@ window.TELEMETRY = {
                 "usd": 9510.548
               },
               "quota_status_counts": {
-                "available": 18
+                "available": 19
               },
               "remaining_status_counts": {
-                "available": 18
+                "available": 19
               }
             }
           }
@@ -103673,12 +103673,12 @@ window.TELEMETRY = {
     "now": {
       "current_row": null,
       "current_state": "idle",
-      "last_collect_at": "2026-08-20T11:56:22+00:00",
+      "last_collect_at": "2026-08-20T12:00:01+00:00",
       "last_driver_event_at": "2026-08-20T11:51:44+00:00",
-      "last_publish_at": "2026-08-20T11:54:02+00:00",
-      "last_publish_attempt_at": "2026-08-20T11:54:02+00:00",
-      "minutes_since_driver": 4.6,
-      "publish_age_hours": 0.0,
+      "last_publish_at": "2026-08-20T11:56:38+00:00",
+      "last_publish_attempt_at": "2026-08-20T11:56:38+00:00",
+      "minutes_since_driver": 8.3,
+      "publish_age_hours": 0.1,
       "publish_reason": "pushed",
       "publish_stale": false,
       "publish_status": "success",
@@ -103764,7 +103764,7 @@ window.TELEMETRY = {
         }
       ],
       "snapshot": {
-        "age_hours": 686.7,
+        "age_hours": 686.8,
         "freshness": "stale",
         "generated_at": "2026-07-22T21:13:06+00:00",
         "window_days": 7
@@ -103778,13 +103778,13 @@ window.TELEMETRY = {
         "first_start_at": "2026-08-20T10:03:49+00:00",
         "gap_threshold_minutes": 45,
         "gaps": [],
-        "last_finish_at": "2026-08-20T11:55:37+00:00",
-        "last_start_at": "2026-08-20T11:56:22+00:00",
+        "last_finish_at": "2026-08-20T11:56:38+00:00",
+        "last_start_at": "2026-08-20T12:00:01+00:00",
         "longest_gap_minutes": 0.0,
         "malformed_log_records": 0,
         "missed_intervals": 0,
-        "observed_finishes": 8,
-        "observed_starts": 9,
+        "observed_finishes": 9,
+        "observed_starts": 10,
         "status": "ok"
       },
       "checks": [
@@ -103804,7 +103804,7 @@ window.TELEMETRY = {
           "status": "ok"
         },
         {
-          "detail": "last_success_age_hours_0.0",
+          "detail": "last_success_age_hours_0.1",
           "name": "publish",
           "status": "ok"
         },
@@ -103851,20 +103851,20 @@ window.TELEMETRY = {
       ],
       "clock": {
         "last_anomaly_at": null,
-        "last_success_at": "2026-08-20T11:56:05+00:00",
+        "last_success_at": "2026-08-20T11:56:22+00:00",
         "schema_version": 2,
         "skew_seconds": 0.0,
         "status": "ok"
       },
       "disk": {
-        "free_bytes": 984276520960,
+        "free_bytes": 984276238336,
         "free_percent": 0.9104,
         "headline": "conservative_mtime_upper_bound",
         "measured_at": "2026-08-20T11:43:45+00:00",
         "projected_annual_growth_bytes": 146553852171,
         "runway_years": 6.714
       },
-      "observed_at": "2026-08-20T11:56:22+00:00",
+      "observed_at": "2026-08-20T12:00:01+00:00",
       "price_age_days": 0,
       "schema_version": 2,
       "status": "ok",
@@ -109807,17 +109807,17 @@ window.TELEMETRY = {
       "available": true,
       "coverage": {
         "from": "2026-07-22T07:23:27+00:00",
-        "to": "2026-08-20T11:55:46+00:00"
+        "to": "2026-08-20T12:00:02+00:00"
       },
       "high_water": {
-        "bytes": 659224899,
-        "cache_hits": 6220,
+        "bytes": 659421266,
+        "cache_hits": 6219,
         "files": 6220
       },
       "ingested": {
-        "cache_hits": 6220,
+        "cache_hits": 6219,
         "files": 6220,
-        "rescanned": 0
+        "rescanned": 1
       },
       "skips": [
         {
