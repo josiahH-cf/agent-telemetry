@@ -87,7 +87,10 @@ Explicit surface decisions:
   exposed an over-broad scan of unchanged remote-baseline fixture blobs; the
   guard now scans every blob changed by each outbound commit while the final
   tree still receives a full scrub. A regression proves inherited baseline
-  blobs do not block and an introduced-then-deleted leak still does.
+  blobs do not block and an introduced-then-deleted leak still does. The same
+  release exposed that the publisher's symbolic `HEAD` source conflicted with
+  main-only enforcement; it now pushes the explicit local and remote main refs,
+  with an actual pre-push-ref fixture preventing regression.
 
 ### ST-42 — Consumer and maintainer guidance had no single authority
 

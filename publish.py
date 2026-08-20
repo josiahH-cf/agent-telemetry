@@ -186,7 +186,8 @@ def publish(
         remote_head = rev_parse(repo, remote_ref)
         if local_head == remote_head:
             return {"status": "success", "reason": "already_published", "attempts": attempts, "reconciliation": reconciliation, "commit": local_head}
-        result = git(repo, ["push", remote, f"HEAD:refs/heads/{branch}"], check=False, timeout=60)
+        ref = f"refs/heads/{branch}"
+        result = git(repo, ["push", remote, f"{ref}:{ref}"], check=False, timeout=60)
         if result.returncode == 0:
             return {"status": "success", "reason": "pushed", "attempts": attempts, "reconciliation": reconciliation, "commit": local_head}
     raise PublishFailure("push_retries_exhausted")

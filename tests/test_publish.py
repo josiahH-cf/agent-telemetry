@@ -96,6 +96,23 @@ class PublishTests(unittest.TestCase):
         self.assertEqual(result["attempts"], 3)
         self.assertEqual(result["reason"], "pushed")
 
+    def test_publisher_pushes_from_the_named_main_ref_for_main_only_hook(self) -> None:
+        with tempfile.TemporaryDirectory(dir="/tmp") as temporary:
+            fixture = PublishFixture(Path(temporary))
+            hook = fixture.local / ".git" / "hooks" / "pre-push"
+            hook.write_text(
+                "#!/bin/sh\n"
+                "read local_ref local_oid remote_ref remote_oid\n"
+                "test \"$local_ref\" = refs/heads/main\n"
+                "test \"$remote_ref\" = refs/heads/main\n",
+                encoding="utf-8",
+            )
+            hook.chmod(0o755)
+            commit_file(fixture.local, "data/telemetry.json", "{\"main_ref\":true}\n", "collect: main ref")
+            result = publish.publish(fixture.local, retry_delays=(0,))
+        self.assertEqual(result["status"], "success")
+        self.assertEqual(result["reason"], "pushed")
+
 
 if __name__ == "__main__":
     unittest.main()
