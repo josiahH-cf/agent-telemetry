@@ -122,12 +122,12 @@ second real task run returned `lock_busy_noop`; Task Scheduler recorded result
 zero and no collector stacked. The Windows-launched child inherits nice level
 10 and idle I/O priority.
 
-The first natural post-change Linux tick began at 13:00 UTC and finished zero in
-69 seconds. Cadence gaps remain public data, not inferred coverage. Collection
-still cannot run while Windows itself is powered off; on the next Windows logon
-the logon task supplies catch-up. The README contains exact, reversible creation
-and deletion commands. This follows Microsoft's distinction between WSL startup
-and Windows Task Scheduler triggers:
+Two consecutive natural post-change Linux ticks began at 13:00:01 and 13:30:01
+UTC and each finished zero in 69 seconds. Cadence gaps remain public data, not
+inferred coverage. Collection still cannot run while Windows itself is powered
+off; on the next Windows logon the logon task supplies catch-up. The README
+contains exact, reversible creation and deletion commands. This follows
+Microsoft's distinction between WSL startup and Windows Task Scheduler triggers:
 
 - <https://learn.microsoft.com/windows/wsl/wsl-config>
 - <https://learn.microsoft.com/powershell/module/scheduledtasks/new-scheduledtasktrigger>
