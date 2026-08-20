@@ -171,7 +171,7 @@ window.TELEMETRY = {
     "sources_available": 6,
     "sources_enabled": 6
   },
-  "generated_at": "2026-08-20T13:08:16+00:00",
+  "generated_at": "2026-08-20T13:30:02+00:00",
   "history": [
     {
       "accept_commits": 7,
@@ -670,9 +670,9 @@ window.TELEMETRY = {
       "accept_commits": 2,
       "accepted_steps": 2,
       "builder_models": {
-        "claude-fable-5": 15
+        "claude-fable-5": 16
       },
-      "collected_at": "2026-08-20T13:08:16+00:00",
+      "collected_at": "2026-08-20T13:30:02+00:00",
       "coverage_corrections": [
         {
           "date": "2026-08-02",
@@ -842,20 +842,20 @@ window.TELEMETRY = {
       ],
       "date": "2026-08-20",
       "deploys": 2,
-      "events": 97,
-      "floor_evaluated": 15,
-      "floor_met": 14,
+      "events": 99,
+      "floor_evaluated": 16,
+      "floor_met": 15,
       "judge_models": {
-        "gpt-5.5": 15
+        "gpt-5.5": 16
       },
-      "judge_rounds": 15,
+      "judge_rounds": 16,
       "latest_test_seconds": 128.637,
       "latest_tests": 4324,
       "merged_events": 2,
       "proof_failures": 0,
       "proofs": 30,
       "publications": 2,
-      "rejected_steps": 10,
+      "rejected_steps": 11,
       "rows_touched": 4,
       "schema_version": 2,
       "test_runs": 15
@@ -4590,16 +4590,16 @@ window.TELEMETRY = {
           "attribution": {
             "anthropic": {
               "correlated": 0,
-              "exact": 15,
+              "exact": 16,
               "unattributed": 0
             },
             "openai": {
               "correlated": 1,
-              "exact": 14,
+              "exact": 15,
               "unattributed": 0
             }
           },
-          "collected_at": "2026-08-20T13:08:16+00:00",
+          "collected_at": "2026-08-20T13:30:02+00:00",
           "date": "2026-08-20",
           "schema_version": 2,
           "vendors": {
@@ -4619,15 +4619,15 @@ window.TELEMETRY = {
                 "claude-fable-5": {
                   "best_effort_estimate": null,
                   "classes": {
-                    "cache_read_tokens": 259881107,
-                    "cache_write_1h_tokens": 2524570,
+                    "cache_read_tokens": 271976401,
+                    "cache_write_1h_tokens": 2957786,
                     "cache_write_5m_tokens": 0,
-                    "input_tokens": 1216,
-                    "output_tokens": 929576
+                    "input_tokens": 1288,
+                    "output_tokens": 996066
                   },
-                  "tokens": 263336469,
+                  "tokens": 275931541,
                   "unpriced_tokens": 0,
-                  "usd": 356.863467
+                  "usd": 380.948301
                 },
                 "claude-opus-5": {
                   "best_effort_estimate": null,
@@ -4660,15 +4660,15 @@ window.TELEMETRY = {
                     "claude-fable-5": {
                       "best_effort_estimate": null,
                       "classes": {
-                        "cache_read_tokens": 259881107,
-                        "cache_write_1h_tokens": 2524570,
+                        "cache_read_tokens": 271976401,
+                        "cache_write_1h_tokens": 2957786,
                         "cache_write_5m_tokens": 0,
-                        "input_tokens": 1216,
-                        "output_tokens": 929576
+                        "input_tokens": 1288,
+                        "output_tokens": 996066
                       },
-                      "tokens": 263336469,
+                      "tokens": 275931541,
                       "unpriced_tokens": 0,
-                      "usd": 356.863467
+                      "usd": 380.948301
                     },
                     "claude-opus-5": {
                       "best_effort_estimate": null,
@@ -4685,15 +4685,15 @@ window.TELEMETRY = {
                     }
                   },
                   "classes": {
-                    "cache_read_tokens": 260063334,
-                    "cache_write_1h_tokens": 2734008,
+                    "cache_read_tokens": 272158628,
+                    "cache_write_1h_tokens": 3167224,
                     "cache_write_5m_tokens": 0,
-                    "input_tokens": 1244,
-                    "output_tokens": 931550
+                    "input_tokens": 1316,
+                    "output_tokens": 998040
                   },
-                  "tokens": 263730136,
+                  "tokens": 276325208,
                   "unpriced_tokens": 0,
-                  "usd": 359.09845
+                  "usd": 383.183284
                 },
                 "other": {
                   "best_effort_estimate": {
@@ -4720,9 +4720,9 @@ window.TELEMETRY = {
                   "usd": 0.0
                 }
               },
-              "tokens": 263730136,
+              "tokens": 276325208,
               "unpriced_tokens": 0,
-              "usd": 359.09845
+              "usd": 383.183284
             },
             "openai": {
               "best_effort_estimate": {
@@ -4741,14 +4741,14 @@ window.TELEMETRY = {
                   "best_effort_estimate": null,
                   "classes": {
                     "cache_write_tokens": 0,
-                    "cached_input_tokens": 279884160,
-                    "input_tokens": 290615375,
-                    "output_tokens": 1791437,
-                    "reasoning_output_tokens": 785408
+                    "cached_input_tokens": 296742400,
+                    "input_tokens": 307906610,
+                    "output_tokens": 1876448,
+                    "reasoning_output_tokens": 831062
                   },
-                  "tokens": 292406812,
+                  "tokens": 309783058,
                   "unpriced_tokens": 0,
-                  "usd": 247.341265
+                  "usd": 260.48569
                 }
               },
               "by_scope": {
@@ -4769,26 +4769,26 @@ window.TELEMETRY = {
                       "best_effort_estimate": null,
                       "classes": {
                         "cache_write_tokens": 0,
-                        "cached_input_tokens": 89788160,
-                        "input_tokens": 96003891,
-                        "output_tokens": 809986,
-                        "reasoning_output_tokens": 465280
+                        "cached_input_tokens": 93954560,
+                        "input_tokens": 100426534,
+                        "output_tokens": 861204,
+                        "reasoning_output_tokens": 498762
                       },
-                      "tokens": 96813877,
+                      "tokens": 101287738,
                       "unpriced_tokens": 0,
-                      "usd": 100.272315
+                      "usd": 105.17327
                     }
                   },
                   "classes": {
                     "cache_write_tokens": 0,
-                    "cached_input_tokens": 89788160,
-                    "input_tokens": 96003891,
-                    "output_tokens": 809986,
-                    "reasoning_output_tokens": 465280
+                    "cached_input_tokens": 93954560,
+                    "input_tokens": 100426534,
+                    "output_tokens": 861204,
+                    "reasoning_output_tokens": 498762
                   },
-                  "tokens": 96813877,
+                  "tokens": 101287738,
                   "unpriced_tokens": 0,
-                  "usd": 100.272315
+                  "usd": 105.17327
                 },
                 "other": {
                   "best_effort_estimate": {
@@ -4807,31 +4807,31 @@ window.TELEMETRY = {
                       "best_effort_estimate": null,
                       "classes": {
                         "cache_write_tokens": 0,
-                        "cached_input_tokens": 190096000,
-                        "input_tokens": 194611484,
-                        "output_tokens": 981451,
-                        "reasoning_output_tokens": 320128
+                        "cached_input_tokens": 202787840,
+                        "input_tokens": 207480076,
+                        "output_tokens": 1015244,
+                        "reasoning_output_tokens": 332300
                       },
-                      "tokens": 195592935,
+                      "tokens": 208495320,
                       "unpriced_tokens": 0,
-                      "usd": 147.06895
+                      "usd": 155.31242
                     }
                   },
                   "classes": {
                     "cache_write_tokens": 0,
-                    "cached_input_tokens": 190096000,
-                    "input_tokens": 194611484,
-                    "output_tokens": 981451,
-                    "reasoning_output_tokens": 320128
+                    "cached_input_tokens": 202787840,
+                    "input_tokens": 207480076,
+                    "output_tokens": 1015244,
+                    "reasoning_output_tokens": 332300
                   },
-                  "tokens": 195592935,
+                  "tokens": 208495320,
                   "unpriced_tokens": 0,
-                  "usd": 147.06895
+                  "usd": 155.31242
                 }
               },
-              "tokens": 292406812,
+              "tokens": 309783058,
               "unpriced_tokens": 0,
-              "usd": 247.341265
+              "usd": 260.48569
             }
           }
         }
@@ -4840,10 +4840,10 @@ window.TELEMETRY = {
         "anthropic": {
           "build_rounds": {
             "correlated": 0,
-            "exact": 499,
+            "exact": 500,
             "unattributed": 0
           },
-          "build_tokens": 6783824390,
+          "build_tokens": 6793921393,
           "judge_rounds": {
             "correlated": 80,
             "exact": 2,
@@ -4852,7 +4852,7 @@ window.TELEMETRY = {
           "judge_tokens": 717258427,
           "sessions_found": 6222,
           "unpriced_tokens": 0,
-          "usd_computed": 7261.477031
+          "usd_computed": 7275.361388
         },
         "openai": {
           "build_rounds": {
@@ -4863,13 +4863,13 @@ window.TELEMETRY = {
           "build_tokens": 781006998,
           "judge_rounds": {
             "correlated": 4,
-            "exact": 450,
+            "exact": 451,
             "unattributed": 0
           },
-          "judge_tokens": 2553162137,
+          "judge_tokens": 2558158595,
           "sessions_found": 2611,
           "unpriced_tokens": 0,
-          "usd_computed": 3108.865669
+          "usd_computed": 3114.822191
         },
         "unknown": {
           "build_rounds": 39,
@@ -4898,7 +4898,7 @@ window.TELEMETRY = {
       },
       "usage_left": {
         "anthropic": {
-          "age_hours": 687.9,
+          "age_hours": 688.3,
           "capture_status": "ready_awaiting_slash_usage_snapshot",
           "observed_at": "2026-07-22T21:13:06+00:00",
           "provider": "claude",
@@ -4910,19 +4910,19 @@ window.TELEMETRY = {
         },
         "openai": {
           "age_hours": 0.0,
-          "observed_at": "2026-08-20T13:08:16+00:00",
+          "observed_at": "2026-08-20T13:29:55+00:00",
           "provider": "openai",
           "quota_status": "available",
           "quota_windows": [
             {
-              "remaining_percent": 87.0,
+              "remaining_percent": 85.0,
               "resets_at": "2026-08-27T06:42:37+00:00",
-              "used_percent": 13.0,
+              "used_percent": 15.0,
               "window": "primary",
               "window_minutes": 10080
             }
           ],
-          "remaining_percent": 87.0,
+          "remaining_percent": 85.0,
           "remaining_status": "available",
           "source": "rollout_token_count"
         }
@@ -4944,15 +4944,15 @@ window.TELEMETRY = {
             "claude-fable-5": {
               "best_effort_estimate": null,
               "classes": {
-                "cache_read_tokens": 4552772928,
-                "cache_write_1h_tokens": 18571091,
+                "cache_read_tokens": 4564868222,
+                "cache_write_1h_tokens": 19004307,
                 "cache_write_5m_tokens": 3625246,
-                "input_tokens": 41136,
-                "output_tokens": 9356740
+                "input_tokens": 41208,
+                "output_tokens": 9423230
               },
-              "tokens": 4584367141,
+              "tokens": 4596962213,
               "unpriced_tokens": 0,
-              "usd": 5437.758683
+              "usd": 5461.843517
             },
             "claude-haiku-4-5-20251001": {
               "best_effort_estimate": null,
@@ -5037,15 +5037,15 @@ window.TELEMETRY = {
                 "claude-fable-5": {
                   "best_effort_estimate": null,
                   "classes": {
-                    "cache_read_tokens": 4552754945,
-                    "cache_write_1h_tokens": 18533191,
+                    "cache_read_tokens": 4564850239,
+                    "cache_write_1h_tokens": 18966407,
                     "cache_write_5m_tokens": 3625246,
-                    "input_tokens": 41132,
-                    "output_tokens": 9356703
+                    "input_tokens": 41204,
+                    "output_tokens": 9423193
                   },
-                  "tokens": 4584311217,
+                  "tokens": 4596906289,
                   "unpriced_tokens": 0,
-                  "usd": 5436.98081
+                  "usd": 5461.065644
                 },
                 "claude-haiku-4-5-20251001": {
                   "best_effort_estimate": null,
@@ -5114,15 +5114,15 @@ window.TELEMETRY = {
                 }
               },
               "classes": {
-                "cache_read_tokens": 11741109523,
-                "cache_write_1h_tokens": 102586551,
+                "cache_read_tokens": 11753204817,
+                "cache_write_1h_tokens": 103019767,
                 "cache_write_5m_tokens": 31648573,
-                "input_tokens": 309365,
-                "output_tokens": 42202702
+                "input_tokens": 309437,
+                "output_tokens": 42269192
               },
-              "tokens": 11917856714,
+              "tokens": 11930451786,
               "unpriced_tokens": 0,
-              "usd": 10868.458419
+              "usd": 10892.543253
             },
             "other": {
               "best_effort_estimate": {
@@ -5215,11 +5215,11 @@ window.TELEMETRY = {
               "usd": 48.856373
             }
           },
-          "loop_share": 0.9957,
+          "loop_share": 0.9958,
           "sessions": 6222,
-          "tokens": 11968729855,
+          "tokens": 11981324927,
           "unpriced_tokens": 0,
-          "usd": 10917.314792
+          "usd": 10941.399626
         },
         "openai": {
           "best_effort_estimate": {
@@ -5334,14 +5334,14 @@ window.TELEMETRY = {
               "best_effort_estimate": null,
               "classes": {
                 "cache_write_tokens": 0,
-                "cached_input_tokens": 10394719488,
-                "input_tokens": 10678607173,
-                "output_tokens": 38207427,
-                "reasoning_output_tokens": 15990422
+                "cached_input_tokens": 10411577728,
+                "input_tokens": 10695898408,
+                "output_tokens": 38292438,
+                "reasoning_output_tokens": 16036076
               },
-              "tokens": 10716814600,
+              "tokens": 10734190846,
               "unpriced_tokens": 0,
-              "usd": 7768.717051
+              "usd": 7781.861476
             },
             "gpt-5.6-terra": {
               "best_effort_estimate": null,
@@ -5419,26 +5419,26 @@ window.TELEMETRY = {
                   "best_effort_estimate": null,
                   "classes": {
                     "cache_write_tokens": 0,
-                    "cached_input_tokens": 2808405248,
-                    "input_tokens": 2926888399,
-                    "output_tokens": 15842553,
-                    "reasoning_output_tokens": 8856315
+                    "cached_input_tokens": 2812571648,
+                    "input_tokens": 2931311042,
+                    "output_tokens": 15893771,
+                    "reasoning_output_tokens": 8889797
                   },
-                  "tokens": 2942730952,
+                  "tokens": 2947204813,
                   "unpriced_tokens": 0,
-                  "usd": 2471.894969
+                  "usd": 2476.795924
                 }
               },
               "classes": {
                 "cache_write_tokens": 0,
-                "cached_input_tokens": 3729651456,
-                "input_tokens": 3937231689,
-                "output_tokens": 25625355,
-                "reasoning_output_tokens": 13060426
+                "cached_input_tokens": 3733817856,
+                "input_tokens": 3941654332,
+                "output_tokens": 25676573,
+                "reasoning_output_tokens": 13093908
               },
-              "tokens": 3962857044,
+              "tokens": 3967330905,
               "unpriced_tokens": 0,
-              "usd": 3671.487543
+              "usd": 3676.388498
             },
             "other": {
               "best_effort_estimate": {
@@ -5553,14 +5553,14 @@ window.TELEMETRY = {
                   "best_effort_estimate": null,
                   "classes": {
                     "cache_write_tokens": 0,
-                    "cached_input_tokens": 7586314240,
-                    "input_tokens": 7751718774,
-                    "output_tokens": 22364874,
-                    "reasoning_output_tokens": 7134107
+                    "cached_input_tokens": 7599006080,
+                    "input_tokens": 7764587366,
+                    "output_tokens": 22398667,
+                    "reasoning_output_tokens": 7146279
                   },
-                  "tokens": 7774083648,
+                  "tokens": 7786986033,
                   "unpriced_tokens": 0,
-                  "usd": 5296.822082
+                  "usd": 5305.065552
                 },
                 "gpt-5.6-terra": {
                   "best_effort_estimate": null,
@@ -5609,21 +5609,21 @@ window.TELEMETRY = {
               },
               "classes": {
                 "cache_write_tokens": 0,
-                "cached_input_tokens": 18367635584,
-                "input_tokens": 18755460335,
-                "output_tokens": 51597470,
-                "reasoning_output_tokens": 17165196
+                "cached_input_tokens": 18380327424,
+                "input_tokens": 18768328927,
+                "output_tokens": 51631263,
+                "reasoning_output_tokens": 17177368
               },
-              "tokens": 18807057805,
+              "tokens": 18819960190,
               "unpriced_tokens": 10267797999,
-              "usd": 5881.380038
+              "usd": 5889.623508
             }
           },
-          "loop_share": 0.174,
+          "loop_share": 0.1741,
           "sessions": 2611,
-          "tokens": 22769914849,
+          "tokens": 22787291095,
           "unpriced_tokens": 10267797999,
-          "usd": 9552.867581
+          "usd": 9566.012006
         }
       }
     },
@@ -5759,30 +5759,30 @@ window.TELEMETRY = {
             "p95": 10.035
           },
           "2026-08-20": {
-            "count": 15,
+            "count": 16,
             "max": 12.317,
-            "median": 7.533,
+            "median": 7.583,
             "min": 6.183,
-            "p25": 7.075,
-            "p75": 8.075,
-            "p95": 10.66
+            "p25": 7.087,
+            "p75": 8.392,
+            "p95": 10.542
           }
         },
-        "coverage_rate": 0.9982,
+        "coverage_rate": 1.0,
         "dispatches": 541,
-        "matched": 540,
+        "matched": 541,
         "minutes": {
-          "count": 540,
+          "count": 541,
           "max": 21.167,
           "median": 7.3,
           "min": 0.05,
-          "p25": 5.379,
-          "p75": 9.042,
-          "p95": 14.323
+          "p25": 5.383,
+          "p75": 9.033,
+          "p95": 14.317
         },
-        "unmatched_dispatches": 1,
+        "unmatched_dispatches": 0,
         "unmatched_verdicts": 0,
-        "verdicts": 540
+        "verdicts": 541
       },
       "labels": {
         "judge_rounds": "wall_time_including_queue_idle",
@@ -6185,7 +6185,7 @@ window.TELEMETRY = {
       ]
     },
     "judges": {
-      "acceptance_rate": 0.1192,
+      "acceptance_rate": 0.1189,
       "accepted_at_round": {
         "1": 4,
         "10": 1,
@@ -6236,12 +6236,12 @@ window.TELEMETRY = {
         "3": 97,
         "4": 53,
         "5": 36,
-        "6": 21,
+        "6": 22,
         "7": 24,
         "8": 8,
         "9": 11
       },
-      "complete_rounds": 540,
+      "complete_rounds": 541,
       "defect_curves": {
         "21d": [
           10.0
@@ -6294,7 +6294,7 @@ window.TELEMETRY = {
       },
       "escalation_clear_events": 57,
       "escalation_events": 70,
-      "rejected_steps": 340,
+      "rejected_steps": 341,
       "rejected_steps_by_day": {
         "2026-08-02": 9,
         "2026-08-03": 32,
@@ -6310,7 +6310,7 @@ window.TELEMETRY = {
         "2026-08-17": 42,
         "2026-08-18": 24,
         "2026-08-19": 19,
-        "2026-08-20": 10
+        "2026-08-20": 11
       },
       "round_directories": 608,
       "rounds_by_spec": [
@@ -7263,7 +7263,7 @@ window.TELEMETRY = {
         "BLOCKED": 30,
         "BUILD": 82,
         "DISPATCHED_ACCEPT": 46,
-        "DISPATCHED_REJECT": 340,
+        "DISPATCHED_REJECT": 341,
         "DONE": 1,
         "ESCALATED": 70,
         "HOLD": 65,
@@ -7272,7 +7272,7 @@ window.TELEMETRY = {
       "verdict_counts": {
         "ACCEPT": 50,
         "HOLD": 65,
-        "NOT_ACCEPTED": 425
+        "NOT_ACCEPTED": 426
       }
     },
     "ledger": {
@@ -45993,6 +45993,93 @@ window.TELEMETRY = {
           "started_at": "2026-08-20T12:31:17+00:00",
           "total_tokens": 19924977,
           "total_usd": 27.444362,
+          "unpriced_tokens": 0,
+          "verdict": "NOT_ACCEPTED"
+        },
+        {
+          "accepted": false,
+          "builder": {
+            "attribution": "exact",
+            "classes": {
+              "cache_read_tokens": 9977357,
+              "cache_write_1h_tokens": 69078,
+              "cache_write_5m_tokens": 0,
+              "input_tokens": 74,
+              "output_tokens": 50494
+            },
+            "cost_status": "complete",
+            "flags": [],
+            "model_declared": "claude-fable-5",
+            "model_observed": "claude-fable-5",
+            "models": {
+              "claude-fable-5": {
+                "best_effort_estimate": null,
+                "classes": {
+                  "cache_read_tokens": 9977357,
+                  "cache_write_1h_tokens": 69078,
+                  "cache_write_5m_tokens": 0,
+                  "input_tokens": 74,
+                  "output_tokens": 50494
+                },
+                "tokens": 10097003,
+                "unpriced_tokens": 0,
+                "usd": 13.884357
+              }
+            },
+            "sessions_expected": 1,
+            "sessions_found": 1,
+            "tokens": 10097003,
+            "unpriced_tokens": 0,
+            "usd": 13.884357,
+            "vendor": "anthropic"
+          },
+          "cost_status": "complete",
+          "debt_at_accept": null,
+          "duration_minutes": 8.85,
+          "ended_at": "2026-08-20T13:16:04+00:00",
+          "findings": 6,
+          "flags": [],
+          "judge": {
+            "attribution": "exact",
+            "classes": {
+              "cache_write_tokens": 0,
+              "cached_input_tokens": 4546304,
+              "input_tokens": 4939154,
+              "output_tokens": 57304,
+              "reasoning_output_tokens": 34649
+            },
+            "cost_status": "complete",
+            "flags": [],
+            "model_declared": "gpt-5.5",
+            "model_observed": "gpt-5.6-sol",
+            "models": {
+              "gpt-5.6-sol": {
+                "best_effort_estimate": null,
+                "classes": {
+                  "cache_write_tokens": 0,
+                  "cached_input_tokens": 4546304,
+                  "input_tokens": 4939154,
+                  "output_tokens": 57304,
+                  "reasoning_output_tokens": 34649
+                },
+                "tokens": 4996458,
+                "unpriced_tokens": 0,
+                "usd": 5.956522
+              }
+            },
+            "sessions_expected": 3,
+            "sessions_found": 3,
+            "tokens": 4996458,
+            "unpriced_tokens": 0,
+            "usd": 5.956522,
+            "vendor": "openai"
+          },
+          "round": 3,
+          "row": "g04c",
+          "spec": "triage-projection-over-time",
+          "started_at": "2026-08-20T13:07:13+00:00",
+          "total_tokens": 15093461,
+          "total_usd": 19.840879,
           "unpriced_tokens": 0,
           "verdict": "NOT_ACCEPTED"
         },
@@ -94594,16 +94681,16 @@ window.TELEMETRY = {
         {
           "accepted": false,
           "build": {
-            "tokens": 30892222,
-            "usd": 41.896
+            "tokens": 40989225,
+            "usd": 55.78
           },
           "debt_at_accept": null,
-          "findings_total": 13,
+          "findings_total": 19,
           "judge": {
-            "tokens": 15816488,
-            "usd": 16.005,
+            "tokens": 20812946,
+            "usd": 21.962,
             "usd_by_vendor": {
-              "openai": 16.005
+              "openai": 21.962
             }
           },
           "lead_hours": null,
@@ -94611,7 +94698,7 @@ window.TELEMETRY = {
           "outcome": "not_accepted",
           "phase_hours": {
             "build": 0.581,
-            "judge": 0.304,
+            "judge": 0.451,
             "residual_idle": 1.12
           },
           "rounds": [
@@ -94788,15 +94875,102 @@ window.TELEMETRY = {
               "total_usd": 27.444362,
               "unpriced_tokens": 0,
               "verdict": "NOT_ACCEPTED"
+            },
+            {
+              "accepted": false,
+              "builder": {
+                "attribution": "exact",
+                "classes": {
+                  "cache_read_tokens": 9977357,
+                  "cache_write_1h_tokens": 69078,
+                  "cache_write_5m_tokens": 0,
+                  "input_tokens": 74,
+                  "output_tokens": 50494
+                },
+                "cost_status": "complete",
+                "flags": [],
+                "model_declared": "claude-fable-5",
+                "model_observed": "claude-fable-5",
+                "models": {
+                  "claude-fable-5": {
+                    "best_effort_estimate": null,
+                    "classes": {
+                      "cache_read_tokens": 9977357,
+                      "cache_write_1h_tokens": 69078,
+                      "cache_write_5m_tokens": 0,
+                      "input_tokens": 74,
+                      "output_tokens": 50494
+                    },
+                    "tokens": 10097003,
+                    "unpriced_tokens": 0,
+                    "usd": 13.884357
+                  }
+                },
+                "sessions_expected": 1,
+                "sessions_found": 1,
+                "tokens": 10097003,
+                "unpriced_tokens": 0,
+                "usd": 13.884357,
+                "vendor": "anthropic"
+              },
+              "cost_status": "complete",
+              "debt_at_accept": null,
+              "duration_minutes": 8.85,
+              "ended_at": "2026-08-20T13:16:04+00:00",
+              "findings": 6,
+              "flags": [],
+              "judge": {
+                "attribution": "exact",
+                "classes": {
+                  "cache_write_tokens": 0,
+                  "cached_input_tokens": 4546304,
+                  "input_tokens": 4939154,
+                  "output_tokens": 57304,
+                  "reasoning_output_tokens": 34649
+                },
+                "cost_status": "complete",
+                "flags": [],
+                "model_declared": "gpt-5.5",
+                "model_observed": "gpt-5.6-sol",
+                "models": {
+                  "gpt-5.6-sol": {
+                    "best_effort_estimate": null,
+                    "classes": {
+                      "cache_write_tokens": 0,
+                      "cached_input_tokens": 4546304,
+                      "input_tokens": 4939154,
+                      "output_tokens": 57304,
+                      "reasoning_output_tokens": 34649
+                    },
+                    "tokens": 4996458,
+                    "unpriced_tokens": 0,
+                    "usd": 5.956522
+                  }
+                },
+                "sessions_expected": 3,
+                "sessions_found": 3,
+                "tokens": 4996458,
+                "unpriced_tokens": 0,
+                "usd": 5.956522,
+                "vendor": "openai"
+              },
+              "round": 3,
+              "row": "g04c",
+              "spec": "triage-projection-over-time",
+              "started_at": "2026-08-20T13:07:13+00:00",
+              "total_tokens": 15093461,
+              "total_usd": 19.840879,
+              "unpriced_tokens": 0,
+              "verdict": "NOT_ACCEPTED"
             }
           ],
-          "rounds_count": 2,
+          "rounds_count": 3,
           "row": "g04c",
           "spec": "triage-projection-over-time",
-          "tokens": 46708710,
+          "tokens": 61802171,
           "unpriced_tokens": 0,
-          "usd": 57.901,
-          "wall_hours": 2.005
+          "usd": 77.742,
+          "wall_hours": 2.152
         },
         {
           "accepted": true,
@@ -103309,12 +103483,12 @@ window.TELEMETRY = {
       "current": {
         "date": "2026-08-20",
         "first_observed_at": "2026-08-20T10:37:08+00:00",
-        "last_observed_at": "2026-08-20T13:08:16+00:00",
+        "last_observed_at": "2026-08-20T13:30:02+00:00",
         "latest": {
           "accepted_features": 48,
-          "observed_at": "2026-08-20T13:08:16+00:00",
+          "observed_at": "2026-08-20T13:30:02+00:00",
           "publish": {
-            "last_success_at": "2026-08-20T11:56:38+00:00",
+            "last_success_at": "2026-08-20T13:12:07+00:00",
             "reason": "pushed",
             "status": "success"
           },
@@ -103323,10 +103497,10 @@ window.TELEMETRY = {
             "clock_status": "ok",
             "disk_headline": "windows_drive_shorter_runway_12_5_years_upper_bound",
             "doctor_status": "ok",
-            "last_start_at": "2026-08-20T13:08:16+00:00",
+            "last_start_at": "2026-08-20T13:30:01+00:00",
             "missed_intervals": 0
           },
-          "rounds": 540
+          "rounds": 541
         },
         "latest_gaps": [
           "quota_anthropic_unavailable",
@@ -103335,12 +103509,12 @@ window.TELEMETRY = {
           "source_spec_corpus_partial",
           "source_suite_state_partial"
         ],
-        "observations": 25,
+        "observations": 26,
         "publish_status_counts": {
-          "success": 25
+          "success": 26
         },
         "reliability_status_counts": {
-          "ok": 9,
+          "ok": 10,
           "warn": 7
         },
         "schema_version": 2,
@@ -103354,29 +103528,29 @@ window.TELEMETRY = {
             "latest_status": "ok",
             "skip_counts": {},
             "status_counts": {
-              "ok": 25
+              "ok": 26
             }
           },
           "anthropic_usage": {
             "latest_available": true,
             "latest_coverage": {
               "from": "2026-07-22T07:23:27+00:00",
-              "to": "2026-08-20T13:07:17+00:00"
+              "to": "2026-08-20T13:29:39+00:00"
             },
             "latest_status": "partial",
             "skip_counts": {
               "cursor_fingerprint_missing": 2,
-              "partial_trailing_line": 25
+              "partial_trailing_line": 26
             },
             "status_counts": {
-              "partial": 25
+              "partial": 26
             }
           },
           "openai_usage": {
             "latest_available": true,
             "latest_coverage": {
               "from": "2026-02-28T12:19:02+00:00",
-              "to": "2026-08-20T13:08:16+00:00"
+              "to": "2026-08-20T13:29:55+00:00"
             },
             "latest_status": "ok",
             "skip_counts": {
@@ -103384,7 +103558,7 @@ window.TELEMETRY = {
               "source_timeout_cached_last_good": 7
             },
             "status_counts": {
-              "ok": 17,
+              "ok": 18,
               "partial": 8
             }
           },
@@ -103396,10 +103570,10 @@ window.TELEMETRY = {
             },
             "latest_status": "partial",
             "skip_counts": {
-              "provider_snapshot_stale": 25
+              "provider_snapshot_stale": 26
             },
             "status_counts": {
-              "partial": 25
+              "partial": 26
             }
           },
           "spec_corpus": {
@@ -103410,77 +103584,77 @@ window.TELEMETRY = {
             },
             "latest_status": "partial",
             "skip_counts": {
-              "frontmatter_missing_feature_id": 100
+              "frontmatter_missing_feature_id": 104
             },
             "status_counts": {
-              "partial": 25
+              "partial": 26
             }
           },
           "suite_state": {
             "latest_available": true,
             "latest_coverage": {
               "from": "2026-08-02T09:13:15-05:00",
-              "to": "2026-08-20T08:07:13-05:00"
+              "to": "2026-08-20T08:16:04-05:00"
             },
             "latest_status": "partial",
             "skip_counts": {
-              "debt_register_absent": 25,
-              "round_in_flight": 1678
+              "debt_register_absent": 26,
+              "round_in_flight": 1745
             },
             "status_counts": {
-              "partial": 25
+              "partial": 26
             }
           }
         },
         "vendors": {
           "anthropic": {
             "capture_status_counts": {
-              "ready_awaiting_slash_usage_snapshot": 23
+              "ready_awaiting_slash_usage_snapshot": 24
             },
             "latest": {
               "capture_status": "ready_awaiting_slash_usage_snapshot",
               "estimate_status": "not_needed",
-              "quota_age_hours": 687.9,
+              "quota_age_hours": 688.3,
               "quota_observed_at": "2026-07-22T21:13:06+00:00",
               "quota_source": "provider_usage_snapshot",
               "quota_status": "unavailable",
               "remaining_percent": null,
               "remaining_status": "unknown",
               "sessions": 6222,
-              "tokens": 11968729855,
+              "tokens": 11981324927,
               "unpriced_tokens": 0,
-              "usd": 10917.315
+              "usd": 10941.4
             },
             "quota_status_counts": {
-              "unavailable": 25
+              "unavailable": 26
             },
             "remaining_status_counts": {
-              "unknown": 25
+              "unknown": 26
             }
           },
           "openai": {
             "capture_status_counts": {
-              "not_applicable": 23
+              "not_applicable": 24
             },
             "latest": {
               "capture_status": "not_applicable",
               "estimate_status": "available",
               "quota_age_hours": 0.0,
-              "quota_observed_at": "2026-08-20T13:08:16+00:00",
+              "quota_observed_at": "2026-08-20T13:29:55+00:00",
               "quota_source": "rollout_token_count",
               "quota_status": "available",
-              "remaining_percent": 87.0,
+              "remaining_percent": 85.0,
               "remaining_status": "available",
               "sessions": 2611,
-              "tokens": 22769914849,
+              "tokens": 22787291095,
               "unpriced_tokens": 10267797999,
-              "usd": 9552.868
+              "usd": 9566.012
             },
             "quota_status_counts": {
-              "available": 25
+              "available": 26
             },
             "remaining_status_counts": {
-              "available": 25
+              "available": 26
             }
           }
         }
@@ -103489,12 +103663,12 @@ window.TELEMETRY = {
         {
           "date": "2026-08-20",
           "first_observed_at": "2026-08-20T10:37:08+00:00",
-          "last_observed_at": "2026-08-20T13:08:16+00:00",
+          "last_observed_at": "2026-08-20T13:30:02+00:00",
           "latest": {
             "accepted_features": 48,
-            "observed_at": "2026-08-20T13:08:16+00:00",
+            "observed_at": "2026-08-20T13:30:02+00:00",
             "publish": {
-              "last_success_at": "2026-08-20T11:56:38+00:00",
+              "last_success_at": "2026-08-20T13:12:07+00:00",
               "reason": "pushed",
               "status": "success"
             },
@@ -103503,10 +103677,10 @@ window.TELEMETRY = {
               "clock_status": "ok",
               "disk_headline": "windows_drive_shorter_runway_12_5_years_upper_bound",
               "doctor_status": "ok",
-              "last_start_at": "2026-08-20T13:08:16+00:00",
+              "last_start_at": "2026-08-20T13:30:01+00:00",
               "missed_intervals": 0
             },
-            "rounds": 540
+            "rounds": 541
           },
           "latest_gaps": [
             "quota_anthropic_unavailable",
@@ -103515,12 +103689,12 @@ window.TELEMETRY = {
             "source_spec_corpus_partial",
             "source_suite_state_partial"
           ],
-          "observations": 25,
+          "observations": 26,
           "publish_status_counts": {
-            "success": 25
+            "success": 26
           },
           "reliability_status_counts": {
-            "ok": 9,
+            "ok": 10,
             "warn": 7
           },
           "schema_version": 2,
@@ -103534,29 +103708,29 @@ window.TELEMETRY = {
               "latest_status": "ok",
               "skip_counts": {},
               "status_counts": {
-                "ok": 25
+                "ok": 26
               }
             },
             "anthropic_usage": {
               "latest_available": true,
               "latest_coverage": {
                 "from": "2026-07-22T07:23:27+00:00",
-                "to": "2026-08-20T13:07:17+00:00"
+                "to": "2026-08-20T13:29:39+00:00"
               },
               "latest_status": "partial",
               "skip_counts": {
                 "cursor_fingerprint_missing": 2,
-                "partial_trailing_line": 25
+                "partial_trailing_line": 26
               },
               "status_counts": {
-                "partial": 25
+                "partial": 26
               }
             },
             "openai_usage": {
               "latest_available": true,
               "latest_coverage": {
                 "from": "2026-02-28T12:19:02+00:00",
-                "to": "2026-08-20T13:08:16+00:00"
+                "to": "2026-08-20T13:29:55+00:00"
               },
               "latest_status": "ok",
               "skip_counts": {
@@ -103564,7 +103738,7 @@ window.TELEMETRY = {
                 "source_timeout_cached_last_good": 7
               },
               "status_counts": {
-                "ok": 17,
+                "ok": 18,
                 "partial": 8
               }
             },
@@ -103576,10 +103750,10 @@ window.TELEMETRY = {
               },
               "latest_status": "partial",
               "skip_counts": {
-                "provider_snapshot_stale": 25
+                "provider_snapshot_stale": 26
               },
               "status_counts": {
-                "partial": 25
+                "partial": 26
               }
             },
             "spec_corpus": {
@@ -103590,77 +103764,77 @@ window.TELEMETRY = {
               },
               "latest_status": "partial",
               "skip_counts": {
-                "frontmatter_missing_feature_id": 100
+                "frontmatter_missing_feature_id": 104
               },
               "status_counts": {
-                "partial": 25
+                "partial": 26
               }
             },
             "suite_state": {
               "latest_available": true,
               "latest_coverage": {
                 "from": "2026-08-02T09:13:15-05:00",
-                "to": "2026-08-20T08:07:13-05:00"
+                "to": "2026-08-20T08:16:04-05:00"
               },
               "latest_status": "partial",
               "skip_counts": {
-                "debt_register_absent": 25,
-                "round_in_flight": 1678
+                "debt_register_absent": 26,
+                "round_in_flight": 1745
               },
               "status_counts": {
-                "partial": 25
+                "partial": 26
               }
             }
           },
           "vendors": {
             "anthropic": {
               "capture_status_counts": {
-                "ready_awaiting_slash_usage_snapshot": 23
+                "ready_awaiting_slash_usage_snapshot": 24
               },
               "latest": {
                 "capture_status": "ready_awaiting_slash_usage_snapshot",
                 "estimate_status": "not_needed",
-                "quota_age_hours": 687.9,
+                "quota_age_hours": 688.3,
                 "quota_observed_at": "2026-07-22T21:13:06+00:00",
                 "quota_source": "provider_usage_snapshot",
                 "quota_status": "unavailable",
                 "remaining_percent": null,
                 "remaining_status": "unknown",
                 "sessions": 6222,
-                "tokens": 11968729855,
+                "tokens": 11981324927,
                 "unpriced_tokens": 0,
-                "usd": 10917.315
+                "usd": 10941.4
               },
               "quota_status_counts": {
-                "unavailable": 25
+                "unavailable": 26
               },
               "remaining_status_counts": {
-                "unknown": 25
+                "unknown": 26
               }
             },
             "openai": {
               "capture_status_counts": {
-                "not_applicable": 23
+                "not_applicable": 24
               },
               "latest": {
                 "capture_status": "not_applicable",
                 "estimate_status": "available",
                 "quota_age_hours": 0.0,
-                "quota_observed_at": "2026-08-20T13:08:16+00:00",
+                "quota_observed_at": "2026-08-20T13:29:55+00:00",
                 "quota_source": "rollout_token_count",
                 "quota_status": "available",
-                "remaining_percent": 87.0,
+                "remaining_percent": 85.0,
                 "remaining_status": "available",
                 "sessions": 2611,
-                "tokens": 22769914849,
+                "tokens": 22787291095,
                 "unpriced_tokens": 10267797999,
-                "usd": 9552.868
+                "usd": 9566.012
               },
               "quota_status_counts": {
-                "available": 25
+                "available": 26
               },
               "remaining_status_counts": {
-                "available": 25
+                "available": 26
               }
             }
           }
@@ -103671,21 +103845,21 @@ window.TELEMETRY = {
     },
     "models": {
       "adherence": {
-        "evaluated_rounds": 540,
+        "evaluated_rounds": 541,
         "floor": "distinct_vendor",
-        "met_rounds": 452,
-        "rate": 0.837,
+        "met_rounds": 453,
+        "rate": 0.8373,
         "unverified_rounds": 43
       },
       "builder_by_model": {
-        "claude-fable-5": 319,
+        "claude-fable-5": 320,
         "claude-opus-4-8": 70,
         "claude-opus-5": 110,
         "gpt-5.6-sol": 2,
         "unknown": 39
       },
       "builder_by_vendor": {
-        "anthropic": 499,
+        "anthropic": 500,
         "openai": 2,
         "unknown": 39
       },
@@ -103742,22 +103916,22 @@ window.TELEMETRY = {
           "claude-opus-5": 39
         },
         "2026-08-20": {
-          "claude-fable-5": 15
+          "claude-fable-5": 16
         }
       },
       "independence_levels": {
-        "distinct_vendor": 1405,
+        "distinct_vendor": 1408,
         "same_vendor": 148,
         "unverified": 128
       },
       "judge_by_model": {
         "claude-fable-5": 28,
         "claude-opus-5": 58,
-        "gpt-5.5": 454
+        "gpt-5.5": 455
       },
       "judge_by_vendor": {
         "anthropic": 86,
-        "openai": 454
+        "openai": 455
       },
       "judges_by_day": {
         "2026-08-02": {
@@ -103804,7 +103978,7 @@ window.TELEMETRY = {
           "gpt-5.5": 39
         },
         "2026-08-20": {
-          "gpt-5.5": 15
+          "gpt-5.5": 16
         }
       },
       "policy": {
@@ -103847,21 +104021,21 @@ window.TELEMETRY = {
     "now": {
       "current_row": null,
       "current_state": "idle",
-      "last_collect_at": "2026-08-20T13:08:16+00:00",
-      "last_driver_event_at": "2026-08-20T13:07:13+00:00",
-      "last_publish_at": "2026-08-20T11:56:38+00:00",
-      "last_publish_attempt_at": "2026-08-20T11:56:38+00:00",
-      "minutes_since_driver": 1.1,
-      "publish_age_hours": 1.2,
+      "last_collect_at": "2026-08-20T13:30:02+00:00",
+      "last_driver_event_at": "2026-08-20T13:16:04+00:00",
+      "last_publish_at": "2026-08-20T13:12:07+00:00",
+      "last_publish_attempt_at": "2026-08-20T13:12:07+00:00",
+      "minutes_since_driver": 14.0,
+      "publish_age_hours": 0.3,
       "publish_reason": "pushed",
       "publish_stale": false,
       "publish_status": "success",
       "stall_threshold_minutes": 90,
       "stalled": false,
       "today": {
-        "events": 97,
+        "events": 99,
         "merges": 2,
-        "rounds": 15
+        "rounds": 16
       }
     },
     "observatory": {
@@ -115228,7 +115402,7 @@ window.TELEMETRY = {
         },
         {
           "date": "2026-08-20",
-          "events": 4,
+          "events": 40,
           "host_os": "wsl",
           "hour_utc": 13,
           "vendor": "anthropic",
@@ -115292,7 +115466,7 @@ window.TELEMETRY = {
         },
         {
           "date": "2026-08-20",
-          "events": 50,
+          "events": 152,
           "host_os": "windows",
           "hour_utc": 13,
           "vendor": "openai",
@@ -115356,7 +115530,7 @@ window.TELEMETRY = {
         },
         {
           "date": "2026-08-20",
-          "events": 18,
+          "events": 58,
           "host_os": "wsl",
           "hour_utc": 13,
           "vendor": "openai",
@@ -115367,9 +115541,9 @@ window.TELEMETRY = {
         "ad-hoc": {
           "by_host_os": {
             "windows": {
-              "cost_usd": 363.203575,
+              "cost_usd": 371.258484,
               "sessions": 26,
-              "tokens": 467376017
+              "tokens": 479935607
             },
             "wsl": {
               "cost_usd": 161.306818,
@@ -115385,20 +115559,20 @@ window.TELEMETRY = {
               "unpriced_tokens": 0
             },
             "openai": {
-              "cost_usd": 521.365368,
+              "cost_usd": 529.420277,
               "sessions": 80,
-              "tokens": 626713314,
+              "tokens": 639272904,
               "unpriced_tokens": 2194279
             }
           },
           "category": "ad-hoc",
-          "cost_usd": 524.510393,
+          "cost_usd": 532.565302,
           "first_seen_at": "2026-03-09T18:51:13+00:00",
-          "last_seen_at": "2026-08-20T13:08:30+00:00",
+          "last_seen_at": "2026-08-20T13:30:17+00:00",
           "per_os": {
             "windows": {
               "first_seen_at": "2026-05-19T14:15:14+00:00",
-              "last_seen_at": "2026-08-20T13:08:30+00:00"
+              "last_seen_at": "2026-08-20T13:30:17+00:00"
             },
             "wsl": {
               "first_seen_at": "2026-03-09T18:51:13+00:00",
@@ -115409,7 +115583,7 @@ window.TELEMETRY = {
           "project_id": "ad-hoc",
           "public_label": "ad-hoc",
           "sessions": 98,
-          "tokens": 629051402,
+          "tokens": 641610992,
           "unpriced_tokens": 2194279
         },
         "remote": {
@@ -115463,33 +115637,33 @@ window.TELEMETRY = {
       },
       "by_host_os": {
         "windows": {
-          "cost_usd": 60852.966111,
+          "cost_usd": 60861.02102,
           "sessions": 1323,
-          "tokens": 102635139460
+          "tokens": 102647699050
         },
         "wsl": {
-          "cost_usd": 11384.03117,
+          "cost_usd": 11412.924383,
           "sessions": 8450,
-          "tokens": 10712007182
+          "tokens": 10729017100
         }
       },
       "by_vendor": {
         "anthropic": {
-          "cost_usd": 16865.507598,
+          "cost_usd": 16889.592432,
           "sessions": 7183,
-          "tokens": 18272306386,
+          "tokens": 18284901458,
           "unpriced_tokens": 0
         },
         "openai": {
-          "cost_usd": 55371.489683,
+          "cost_usd": 55384.352971,
           "sessions": 2590,
-          "tokens": 95074840256,
+          "tokens": 95091814692,
           "unpriced_tokens": 12743283910
         }
       },
       "coverage": {
         "from": "2026-02-28T12:19:02+00:00",
-        "to": "2026-08-20T13:08:30+00:00"
+        "to": "2026-08-20T13:30:17+00:00"
       },
       "daily": [
         {
@@ -117463,22 +117637,22 @@ window.TELEMETRY = {
           "vendor": "anthropic"
         },
         {
-          "cost_usd": 127.921204,
+          "cost_usd": 135.976113,
           "date": "2026-08-20",
           "host_os": "windows",
           "project_id": "ad-hoc",
           "sessions": 2,
-          "tokens": 171109757,
+          "tokens": 183669347,
           "unpriced_tokens": 0,
           "vendor": "openai"
         },
         {
-          "cost_usd": 349.377991,
+          "cost_usd": 373.462825,
           "date": "2026-08-20",
           "host_os": "wsl",
           "project_id": "obsidian-agent",
           "sessions": 16,
-          "tokens": 260816739,
+          "tokens": 273411811,
           "unpriced_tokens": 0,
           "vendor": "anthropic"
         },
@@ -117493,12 +117667,12 @@ window.TELEMETRY = {
           "vendor": "openai"
         },
         {
-          "cost_usd": 99.929583,
+          "cost_usd": 104.737962,
           "date": "2026-08-20",
           "host_os": "wsl",
           "project_id": "obsidian-system",
           "sessions": 51,
-          "tokens": 96665352,
+          "tokens": 101080198,
           "unpriced_tokens": 0,
           "vendor": "openai"
         },
@@ -117526,8 +117700,8 @@ window.TELEMETRY = {
       "loop_headline": {
         "accepted_features": 48,
         "accepted_rows": 59,
-        "judge_acceptance_rate": 0.1192,
-        "judge_rounds": 540,
+        "judge_acceptance_rate": 0.1189,
+        "judge_rounds": 541,
         "latest_test": {
           "errors": 0,
           "failures": 0,
@@ -117539,9 +117713,9 @@ window.TELEMETRY = {
         }
       },
       "observations": {
-        "deduplicated": 22985,
-        "raw": 805545,
-        "unique": 782560
+        "deduplicated": 23015,
+        "raw": 805753,
+        "unique": 782738
       },
       "projects": [
         {
@@ -117600,16 +117774,16 @@ window.TELEMETRY = {
               "tokens": 14795101322
             },
             "wsl": {
-              "cost_usd": 7253.198495,
+              "cost_usd": 7277.283329,
               "sessions": 4643,
-              "tokens": 6929204469
+              "tokens": 6941799541
             }
           },
           "by_vendor": {
             "anthropic": {
-              "cost_usd": 7226.905887,
+              "cost_usd": 7250.990721,
               "sessions": 4367,
-              "tokens": 6914062102,
+              "tokens": 6926657174,
               "unpriced_tokens": 0
             },
             "openai": {
@@ -117620,9 +117794,9 @@ window.TELEMETRY = {
             }
           },
           "category": "governed",
-          "cost_usd": 17054.737213,
+          "cost_usd": 17078.822047,
           "first_seen_at": "2026-07-22T23:01:00+00:00",
-          "last_seen_at": "2026-08-20T13:07:23+00:00",
+          "last_seen_at": "2026-08-20T13:29:39+00:00",
           "per_os": {
             "windows": {
               "first_seen_at": "2026-07-27T20:08:39+00:00",
@@ -117630,14 +117804,14 @@ window.TELEMETRY = {
             },
             "wsl": {
               "first_seen_at": "2026-07-22T23:01:00+00:00",
-              "last_seen_at": "2026-08-20T13:07:23+00:00"
+              "last_seen_at": "2026-08-20T13:29:39+00:00"
             }
           },
           "project_code": "obsidian-agent",
           "project_id": "obsidian-agent",
           "public_label": "obsidian-agent",
           "sessions": 4701,
-          "tokens": 21724305791,
+          "tokens": 21736900863,
           "unpriced_tokens": 249848074
         },
         {
@@ -117648,9 +117822,9 @@ window.TELEMETRY = {
               "tokens": 10226760557
             },
             "wsl": {
-              "cost_usd": 3943.401572,
+              "cost_usd": 3948.209951,
               "sessions": 3726,
-              "tokens": 3545496249
+              "tokens": 3549911095
             }
           },
           "by_vendor": {
@@ -117661,16 +117835,16 @@ window.TELEMETRY = {
               "unpriced_tokens": 0
             },
             "openai": {
-              "cost_usd": 7756.364912,
+              "cost_usd": 7761.173291,
               "sessions": 1993,
-              "tokens": 11374874075,
+              "tokens": 11379288921,
               "unpriced_tokens": 1672500597
             }
           },
           "category": "governed",
-          "cost_usd": 10326.817523,
+          "cost_usd": 10331.625902,
           "first_seen_at": "2026-07-14T06:41:54+00:00",
-          "last_seen_at": "2026-08-20T13:08:24+00:00",
+          "last_seen_at": "2026-08-20T13:16:00+00:00",
           "per_os": {
             "windows": {
               "first_seen_at": "2026-07-14T06:53:45+00:00",
@@ -117678,14 +117852,14 @@ window.TELEMETRY = {
             },
             "wsl": {
               "first_seen_at": "2026-07-14T06:41:54+00:00",
-              "last_seen_at": "2026-08-20T13:08:24+00:00"
+              "last_seen_at": "2026-08-20T13:16:00+00:00"
             }
           },
           "project_code": "obsidian-system",
           "project_id": "obsidian-system",
           "public_label": "obsidian-system",
           "sessions": 4049,
-          "tokens": 13772256806,
+          "tokens": 13776671652,
           "unpriced_tokens": 1672500597
         },
         {
@@ -117739,9 +117913,9 @@ window.TELEMETRY = {
         {
           "by_host_os": {
             "windows": {
-              "cost_usd": 363.203575,
+              "cost_usd": 371.258484,
               "sessions": 26,
-              "tokens": 467376017
+              "tokens": 479935607
             },
             "wsl": {
               "cost_usd": 161.306818,
@@ -117757,20 +117931,20 @@ window.TELEMETRY = {
               "unpriced_tokens": 0
             },
             "openai": {
-              "cost_usd": 521.365368,
+              "cost_usd": 529.420277,
               "sessions": 80,
-              "tokens": 626713314,
+              "tokens": 639272904,
               "unpriced_tokens": 2194279
             }
           },
           "category": "ad-hoc",
-          "cost_usd": 524.510393,
+          "cost_usd": 532.565302,
           "first_seen_at": "2026-03-09T18:51:13+00:00",
-          "last_seen_at": "2026-08-20T13:08:30+00:00",
+          "last_seen_at": "2026-08-20T13:30:17+00:00",
           "per_os": {
             "windows": {
               "first_seen_at": "2026-05-19T14:15:14+00:00",
-              "last_seen_at": "2026-08-20T13:08:30+00:00"
+              "last_seen_at": "2026-08-20T13:30:17+00:00"
             },
             "wsl": {
               "first_seen_at": "2026-03-09T18:51:13+00:00",
@@ -117781,7 +117955,7 @@ window.TELEMETRY = {
           "project_id": "ad-hoc",
           "public_label": "ad-hoc",
           "sessions": 98,
-          "tokens": 629051402,
+          "tokens": 641610992,
           "unpriced_tokens": 2194279
         },
         {
@@ -118123,9 +118297,9 @@ window.TELEMETRY = {
       ],
       "reconciliation": {
         "machine_totals": {
-          "cost_usd": 72236.997281,
+          "cost_usd": 72273.945403,
           "sessions": 9773,
-          "tokens": 113347146642,
+          "tokens": 113376716150,
           "unpriced_tokens": 12743283910
         },
         "status": "ok",
@@ -118142,15 +118316,15 @@ window.TELEMETRY = {
           "detail": "ok",
           "error_files": 0,
           "files": 1105,
-          "files_changed": 1,
-          "files_reused": 1104,
+          "files_changed": 2,
+          "files_reused": 1103,
           "host_os": "windows",
-          "last_scan_at": "2026-08-20T13:08:16+00:00",
-          "last_success_at": "2026-08-20T13:08:16+00:00",
+          "last_scan_at": "2026-08-20T13:30:02+00:00",
+          "last_success_at": "2026-08-20T13:30:02+00:00",
           "missing_cached": 0,
           "partial_files": 1,
           "root_id": "windows_claude",
-          "scan_seconds": 11.385134,
+          "scan_seconds": 10.753443,
           "status": "partial",
           "strategy": "full_tree",
           "vendor": "anthropic"
@@ -118162,12 +118336,12 @@ window.TELEMETRY = {
           "files_changed": 1,
           "files_reused": 650,
           "host_os": "windows",
-          "last_scan_at": "2026-08-20T13:08:16+00:00",
-          "last_success_at": "2026-08-20T13:08:16+00:00",
+          "last_scan_at": "2026-08-20T13:30:02+00:00",
+          "last_success_at": "2026-08-20T13:30:02+00:00",
           "missing_cached": 0,
           "partial_files": 0,
           "root_id": "windows_codex",
-          "scan_seconds": 3.567912,
+          "scan_seconds": 3.475872,
           "status": "ok",
           "strategy": "known_plus_four_day_partitions",
           "vendor": "openai"
@@ -118179,12 +118353,12 @@ window.TELEMETRY = {
           "files_changed": 2,
           "files_reused": 6220,
           "host_os": "wsl",
-          "last_scan_at": "2026-08-20T13:08:16+00:00",
-          "last_success_at": "2026-08-20T13:08:16+00:00",
+          "last_scan_at": "2026-08-20T13:30:02+00:00",
+          "last_success_at": "2026-08-20T13:30:02+00:00",
           "missing_cached": 0,
           "partial_files": 1,
           "root_id": "wsl_claude",
-          "scan_seconds": 0.401219,
+          "scan_seconds": 0.375701,
           "status": "partial",
           "strategy": "full_tree",
           "vendor": "anthropic"
@@ -118193,15 +118367,15 @@ window.TELEMETRY = {
           "detail": "ok",
           "error_files": 0,
           "files": 2346,
-          "files_changed": 4,
-          "files_reused": 2342,
+          "files_changed": 3,
+          "files_reused": 2343,
           "host_os": "wsl",
-          "last_scan_at": "2026-08-20T13:08:16+00:00",
-          "last_success_at": "2026-08-20T13:08:16+00:00",
+          "last_scan_at": "2026-08-20T13:30:02+00:00",
+          "last_success_at": "2026-08-20T13:30:02+00:00",
           "missing_cached": 0,
           "partial_files": 0,
           "root_id": "wsl_codex",
-          "scan_seconds": 0.22508,
+          "scan_seconds": 0.1837,
           "status": "ok",
           "strategy": "known_plus_four_day_partitions",
           "vendor": "openai"
@@ -118209,13 +118383,13 @@ window.TELEMETRY = {
       ],
       "store": {
         "integrity": "ok",
-        "semantic_digest": "c8b526c09d4bb424e07464229e32d2457a7f16c208113a9029a2fc3df1c0c63b"
+        "semantic_digest": "9e9833ef4e9072701c374c8a5b60bc6a691ef70c7bd7daa55be12d3c4f19d644"
       },
       "store_schema_version": 1,
       "totals": {
-        "cost_usd": 72236.997281,
+        "cost_usd": 72273.945403,
         "sessions": 9773,
-        "tokens": 113347146642,
+        "tokens": 113376716150,
         "unpriced_tokens": 12743283910
       },
       "unregistered_candidates": {
@@ -118271,13 +118445,13 @@ window.TELEMETRY = {
     "overview": {
       "accepted_rows": 59,
       "builds_by_vendor": {
-        "anthropic": 499,
+        "anthropic": 500,
         "openai": 2,
         "unknown": 39
       },
-      "distinct_vendor_rate": 0.837,
-      "judge_acceptance_rate": 0.1192,
-      "judge_rounds": 540,
+      "distinct_vendor_rate": 0.8373,
+      "judge_acceptance_rate": 0.1189,
+      "judge_rounds": 541,
       "latest_test_seconds": 128.637,
       "latest_tests": 4324,
       "median_judge_round_minutes": 7.3,
@@ -118342,7 +118516,7 @@ window.TELEMETRY = {
         }
       ],
       "snapshot": {
-        "age_hours": 687.9,
+        "age_hours": 688.3,
         "freshness": "stale",
         "generated_at": "2026-07-22T21:13:06+00:00",
         "window_days": 7
@@ -118356,13 +118530,13 @@ window.TELEMETRY = {
         "first_start_at": "2026-08-20T10:03:49+00:00",
         "gap_threshold_minutes": 45,
         "gaps": [],
-        "last_finish_at": "2026-08-20T13:07:01+00:00",
-        "last_start_at": "2026-08-20T13:08:16+00:00",
+        "last_finish_at": "2026-08-20T13:21:30+00:00",
+        "last_start_at": "2026-08-20T13:30:01+00:00",
         "longest_gap_minutes": 0.0,
         "malformed_log_records": 0,
         "missed_intervals": 0,
-        "observed_finishes": 15,
-        "observed_starts": 16,
+        "observed_finishes": 17,
+        "observed_starts": 18,
         "status": "ok"
       },
       "checks": [
@@ -118382,7 +118556,7 @@ window.TELEMETRY = {
           "status": "ok"
         },
         {
-          "detail": "last_success_age_hours_1.2",
+          "detail": "last_success_age_hours_0.3",
           "name": "publish",
           "status": "ok"
         },
@@ -118397,7 +118571,7 @@ window.TELEMETRY = {
           "status": "ok"
         },
         {
-          "detail": "two_agent_telemetry_tasks_present",
+          "detail": "two_tasks_action_schedule_and_power_policy_ok",
           "name": "windows_tasks",
           "status": "ok"
         },
@@ -118447,7 +118621,7 @@ window.TELEMETRY = {
           "status": "ok"
         },
         {
-          "detail": "status_fresh_minutes_28.2",
+          "detail": "status_fresh_minutes_21.8",
           "name": "collection_age",
           "status": "ok"
         },
@@ -118459,20 +118633,20 @@ window.TELEMETRY = {
       ],
       "clock": {
         "last_anomaly_at": null,
-        "last_success_at": "2026-08-20T12:40:01+00:00",
+        "last_success_at": "2026-08-20T13:08:16+00:00",
         "schema_version": 2,
         "skew_seconds": 0.0,
         "status": "ok"
       },
       "disk": {
-        "free_bytes": 983747571712,
-        "free_percent": 0.9099,
+        "free_bytes": 984072151040,
+        "free_percent": 0.9102,
         "headline": "windows_drive_shorter_runway_12_5_years_upper_bound",
         "measured_at": "2026-08-20T12:59:05+00:00",
         "projected_annual_growth_bytes": 79400738504,
         "runway_years": 12.489
       },
-      "observed_at": "2026-08-20T13:08:16+00:00",
+      "observed_at": "2026-08-20T13:30:02+00:00",
       "price_age_days": 0,
       "schema_version": 2,
       "status": "ok",
@@ -121930,7 +122104,7 @@ window.TELEMETRY = {
         },
         {
           "date": "2026-08-20",
-          "events": 97,
+          "events": 99,
           "hours": [
             3,
             2,
@@ -121945,7 +122119,7 @@ window.TELEMETRY = {
             14,
             10,
             5,
-            3,
+            5,
             0,
             0,
             0,
@@ -122386,7 +122560,7 @@ window.TELEMETRY = {
           "weekday": 3
         },
         {
-          "events": 5,
+          "events": 7,
           "hour": 13,
           "weekday": 3
         },
@@ -122803,12 +122977,12 @@ window.TELEMETRY = {
       ],
       "anomalies": 0,
       "derivation": "derived_driver_sequence",
-      "last_event_at": "2026-08-20T13:07:13+00:00",
+      "last_event_at": "2026-08-20T13:16:04+00:00",
       "last_step_row": "g04c",
       "last_step_state": "DISPATCHED_REJECT",
       "phase_hours": {
         "build": 83.346,
-        "judge": 69.271,
+        "judge": 69.418,
         "repair": 17.02,
         "residual_idle": 438.696
       },
@@ -122826,9 +123000,9 @@ window.TELEMETRY = {
           "round": 2
         },
         {
-          "count": 44,
-          "median": 7.583,
-          "p95": 15.025,
+          "count": 45,
+          "median": 7.633,
+          "p95": 15.017,
           "round": 3
         },
         {
@@ -123104,9 +123278,9 @@ window.TELEMETRY = {
           "week": "2026-W33"
         },
         {
-          "count": 145,
+          "count": 146,
           "median": 8.283,
-          "p95": 11.807,
+          "p95": 11.779,
           "week": "2026-W34"
         }
       ],
@@ -123712,12 +123886,12 @@ window.TELEMETRY = {
           "merged_at": null,
           "phases_hours": {
             "build": 0.581,
-            "judge": 0.304,
+            "judge": 0.451,
             "residual_idle": 1.12
           },
           "row": "g04c",
-          "terminal_at": "2026-08-20T13:07:13+00:00",
-          "wall_hours": 2.005
+          "terminal_at": "2026-08-20T13:16:04+00:00",
+          "wall_hours": 2.152
         },
         {
           "first_at": "2026-08-18T00:20:01+00:00",
@@ -123932,9 +124106,9 @@ window.TELEMETRY = {
         }
       ],
       "today": {
-        "events": 97,
+        "events": 99,
         "merges": 2,
-        "rounds": 15
+        "rounds": 16
       }
     },
     "usage": {
@@ -124278,8 +124452,8 @@ window.TELEMETRY = {
         "publication-history-reconciled": 1,
         "queue-empty": 12,
         "static-gate-failed": 41,
-        "step": 742,
-        "verdict": 540,
+        "step": 743,
+        "verdict": 541,
         "worktree-cut": 65
       },
       "events_by_day": {
@@ -124298,9 +124472,9 @@ window.TELEMETRY = {
         "2026-08-17": 306,
         "2026-08-18": 247,
         "2026-08-19": 276,
-        "2026-08-20": 97
+        "2026-08-20": 99
       },
-      "events_total": 3326,
+      "events_total": 3328,
       "merged_events_by_day": {
         "2026-08-02": 4,
         "2026-08-03": 4,
@@ -124316,7 +124490,7 @@ window.TELEMETRY = {
         "2026-08-20": 2
       },
       "merged_events_total": 48,
-      "physical_lines": 3326,
+      "physical_lines": 3328,
       "rows_touched_by_day": {
         "2026-08-02": 7,
         "2026-08-03": 7,
@@ -124433,10 +124607,10 @@ window.TELEMETRY = {
       "available": true,
       "coverage": {
         "from": "2026-07-22T07:23:27+00:00",
-        "to": "2026-08-20T13:07:17+00:00"
+        "to": "2026-08-20T13:29:39+00:00"
       },
       "high_water": {
-        "bytes": 660714146,
+        "bytes": 661341411,
         "cache_hits": 6220,
         "files": 6222
       },
@@ -124458,17 +124632,17 @@ window.TELEMETRY = {
       "available": true,
       "coverage": {
         "from": "2026-02-28T12:19:02+00:00",
-        "to": "2026-08-20T13:08:16+00:00"
+        "to": "2026-08-20T13:29:55+00:00"
       },
       "high_water": {
-        "bytes": 5435742097,
-        "cache_hits": 2992,
+        "bytes": 5437808519,
+        "cache_hits": 2993,
         "files": 2997
       },
       "ingested": {
-        "cache_hits": 2992,
+        "cache_hits": 2993,
         "files": 2997,
-        "rescanned": 5
+        "rescanned": 4
       },
       "skips": [],
       "status": "ok",
@@ -124522,20 +124696,20 @@ window.TELEMETRY = {
       "available": true,
       "coverage": {
         "from": "2026-08-02T09:13:15-05:00",
-        "to": "2026-08-20T08:07:13-05:00"
+        "to": "2026-08-20T08:16:04-05:00"
       },
       "high_water": {
-        "driver_last_ts": "2026-08-20T08:07:13-05:00",
-        "driver_lines": 3326,
+        "driver_last_ts": "2026-08-20T08:16:04-05:00",
+        "driver_lines": 3328,
         "junit_files": 249,
         "junit_signature": "0f17a00cc9004888",
         "round_directories": 608,
         "round_signature": "74cac9c1de14210a"
       },
       "ingested": {
-        "complete_rounds": 540,
+        "complete_rounds": 541,
         "deploys": 50,
-        "events": 3326,
+        "events": 3328,
         "junit_files": 249,
         "publications": 20,
         "round_directories": 608
@@ -124546,7 +124720,7 @@ window.TELEMETRY = {
           "reason": "debt_register_absent"
         },
         {
-          "count": 68,
+          "count": 67,
           "reason": "round_in_flight"
         }
       ],
