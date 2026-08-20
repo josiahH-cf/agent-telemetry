@@ -370,6 +370,7 @@ class HistoryAndPrivacyTests(unittest.TestCase):
             self.assertIn(f'data-window="{window}"', text)
         self.assertNotIn("fetch(" , text)
         self.assertNotIn("XMLHttpRequest", text)
+        self.assertIn('<link rel="icon" href="data:,">', text)
         for section in ("overview", "activity", "mix", "outcomes", "reliability", "evidence"):
             self.assertIn(f'id="{section}"', text)
         self.assertEqual(text.count("<section "), 6)
