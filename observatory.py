@@ -575,7 +575,7 @@ def observation_rows(file_id: str, root: dict[str, Any], record: dict[str, Any])
 
 
 OBSERVATION_INSERT = """
-INSERT INTO usage_observations(
+INSERT OR IGNORE INTO usage_observations(
  file_id,event_id,session_id,vendor,host_os,day_utc,timestamp_utc,model,
  input_tokens,cached_input_tokens,cache_write_5m_tokens,cache_write_1h_tokens,
  cache_read_tokens,cache_write_tokens,output_tokens,reasoning_output_tokens,total_snapshot_tokens

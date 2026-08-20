@@ -177,6 +177,18 @@ class StoreTests(unittest.TestCase):
         self.assertEqual(summary["totals"]["sessions"], 1)
         self.assertEqual(summary["by_vendor"]["anthropic"]["tokens"], 25)
 
+    def test_repeated_cumulative_snapshot_inside_one_rollout_is_idempotent(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            config = fixture_config(root)
+            roots = {row["root_id"]: Path(str(row["path"])) for row in config["observatory"]["roots"]}  # type: ignore[index]
+            rows = codex_rows("repeated-session", "/fixture")
+            rows.append(dict(rows[-1]))
+            write_lines(roots["wsl_codex"] / "2026" / "08" / "20" / "repeat.jsonl", rows)
+            summary, _ = observatory.collect_observatory(config, PROJECT_ROOT, loop_snapshot(), dt.datetime(2026, 8, 20, 3, tzinfo=UTC), rebuild=True)
+        self.assertEqual(summary["observations"], {"raw": 1, "unique": 1, "deduplicated": 0})
+        self.assertEqual(summary["by_vendor"]["openai"]["tokens"], 26)
+
     def test_interrupted_root_transaction_rolls_back(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary)
