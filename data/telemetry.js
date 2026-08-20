@@ -11,7 +11,7 @@ window.TELEMETRY = {
     "sources_available": 6,
     "sources_enabled": 6
   },
-  "generated_at": "2026-08-20T10:00:35+00:00",
+  "generated_at": "2026-08-20T10:04:02+00:00",
   "history": [
     {
       "accept_commits": 7,
@@ -512,7 +512,7 @@ window.TELEMETRY = {
       "builder_models": {
         "claude-fable-5": 3
       },
-      "collected_at": "2026-08-20T10:00:35+00:00",
+      "collected_at": "2026-08-20T10:04:02+00:00",
       "coverage_corrections": [
         {
           "date": "2026-08-19",
@@ -3807,7 +3807,7 @@ window.TELEMETRY = {
               "unattributed": 0
             }
           },
-          "collected_at": "2026-08-20T10:00:35+00:00",
+          "collected_at": "2026-08-20T10:04:02+00:00",
           "date": "2026-08-20",
           "schema_version": 2,
           "vendors": {
@@ -3815,15 +3815,15 @@ window.TELEMETRY = {
               "by_model": {
                 "claude-fable-5": {
                   "classes": {
-                    "cache_read_tokens": 180878199,
-                    "cache_write_1h_tokens": 1823191,
+                    "cache_read_tokens": 186600492,
+                    "cache_write_1h_tokens": 1845833,
                     "cache_write_5m_tokens": 0,
-                    "input_tokens": 792,
-                    "output_tokens": 611882
+                    "input_tokens": 806,
+                    "output_tokens": 628629
                   },
-                  "tokens": 183314064,
+                  "tokens": 189075760,
                   "unpriced_tokens": 0,
-                  "usd": 247.944039
+                  "usd": 254.956662
                 },
                 "claude-opus-5": {
                   "classes": {
@@ -3843,15 +3843,15 @@ window.TELEMETRY = {
                   "by_model": {
                     "claude-fable-5": {
                       "classes": {
-                        "cache_read_tokens": 180878199,
-                        "cache_write_1h_tokens": 1823191,
+                        "cache_read_tokens": 186600492,
+                        "cache_write_1h_tokens": 1845833,
                         "cache_write_5m_tokens": 0,
-                        "input_tokens": 792,
-                        "output_tokens": 611882
+                        "input_tokens": 806,
+                        "output_tokens": 628629
                       },
-                      "tokens": 183314064,
+                      "tokens": 189075760,
                       "unpriced_tokens": 0,
-                      "usd": 247.944039
+                      "usd": 254.956662
                     },
                     "claude-opus-5": {
                       "classes": {
@@ -3867,15 +3867,15 @@ window.TELEMETRY = {
                     }
                   },
                   "classes": {
-                    "cache_read_tokens": 180987589,
-                    "cache_write_1h_tokens": 1965572,
+                    "cache_read_tokens": 186709882,
+                    "cache_write_1h_tokens": 1988214,
                     "cache_write_5m_tokens": 0,
-                    "input_tokens": 810,
-                    "output_tokens": 613151
+                    "input_tokens": 824,
+                    "output_tokens": 629898
                   },
-                  "tokens": 183567122,
+                  "tokens": 189328818,
                   "unpriced_tokens": 0,
-                  "usd": 249.454359
+                  "usd": 256.466982
                 },
                 "other": {
                   "by_model": {},
@@ -3891,23 +3891,23 @@ window.TELEMETRY = {
                   "usd": 0.0
                 }
               },
-              "tokens": 183567122,
+              "tokens": 189328818,
               "unpriced_tokens": 0,
-              "usd": 249.454359
+              "usd": 256.466982
             },
             "openai": {
               "by_model": {
                 "gpt-5.6-sol": {
                   "classes": {
                     "cache_write_tokens": 0,
-                    "cached_input_tokens": 120664192,
-                    "input_tokens": 127054918,
-                    "output_tokens": 948403,
-                    "reasoning_output_tokens": 445993
+                    "cached_input_tokens": 125944576,
+                    "input_tokens": 132380355,
+                    "output_tokens": 964100,
+                    "reasoning_output_tokens": 450441
                   },
-                  "tokens": 128003321,
+                  "tokens": 133344455,
                   "unpriced_tokens": 0,
-                  "usd": 120.737816
+                  "usd": 124.074183
                 }
               },
               "by_scope": {
@@ -3942,31 +3942,31 @@ window.TELEMETRY = {
                     "gpt-5.6-sol": {
                       "classes": {
                         "cache_write_tokens": 0,
-                        "cached_input_tokens": 57281408,
-                        "input_tokens": 59246290,
-                        "output_tokens": 375649,
-                        "reasoning_output_tokens": 110878
+                        "cached_input_tokens": 62561792,
+                        "input_tokens": 64571727,
+                        "output_tokens": 391346,
+                        "reasoning_output_tokens": 115326
                       },
-                      "tokens": 59621939,
+                      "tokens": 64963073,
                       "unpriced_tokens": 0,
-                      "usd": 49.734584
+                      "usd": 53.070951
                     }
                   },
                   "classes": {
                     "cache_write_tokens": 0,
-                    "cached_input_tokens": 57281408,
-                    "input_tokens": 59246290,
-                    "output_tokens": 375649,
-                    "reasoning_output_tokens": 110878
+                    "cached_input_tokens": 62561792,
+                    "input_tokens": 64571727,
+                    "output_tokens": 391346,
+                    "reasoning_output_tokens": 115326
                   },
-                  "tokens": 59621939,
+                  "tokens": 64963073,
                   "unpriced_tokens": 0,
-                  "usd": 49.734584
+                  "usd": 53.070951
                 }
               },
-              "tokens": 128003321,
+              "tokens": 133344455,
               "unpriced_tokens": 0,
-              "usd": 120.737816
+              "usd": 124.074183
             }
           }
         }
@@ -4039,7 +4039,7 @@ window.TELEMETRY = {
         },
         "openai": {
           "age_hours": 0.0,
-          "observed_at": "2026-08-20T10:00:28+00:00",
+          "observed_at": "2026-08-20T10:03:45+00:00",
           "provider": "openai",
           "quota_status": "available",
           "quota_windows": [
@@ -4061,15 +4061,15 @@ window.TELEMETRY = {
           "by_model": {
             "claude-fable-5": {
               "classes": {
-                "cache_read_tokens": 4473770020,
-                "cache_write_1h_tokens": 17869712,
+                "cache_read_tokens": 4479492313,
+                "cache_write_1h_tokens": 17892354,
                 "cache_write_5m_tokens": 3625246,
-                "input_tokens": 40712,
-                "output_tokens": 9039046
+                "input_tokens": 40726,
+                "output_tokens": 9055793
               },
-              "tokens": 4504344736,
+              "tokens": 4510106432,
               "unpriced_tokens": 0,
-              "usd": 5328.839255
+              "usd": 5335.851878
             },
             "claude-haiku-4-5-20251001": {
               "classes": {
@@ -4137,15 +4137,15 @@ window.TELEMETRY = {
               "by_model": {
                 "claude-fable-5": {
                   "classes": {
-                    "cache_read_tokens": 4473752037,
-                    "cache_write_1h_tokens": 17831812,
+                    "cache_read_tokens": 4479474330,
+                    "cache_write_1h_tokens": 17854454,
                     "cache_write_5m_tokens": 3625246,
-                    "input_tokens": 40708,
-                    "output_tokens": 9039009
+                    "input_tokens": 40722,
+                    "output_tokens": 9055756
                   },
-                  "tokens": 4504288812,
+                  "tokens": 4510050508,
                   "unpriced_tokens": 0,
-                  "usd": 5328.061382
+                  "usd": 5335.074005
                 },
                 "claude-haiku-4-5-20251001": {
                   "classes": {
@@ -4209,15 +4209,15 @@ window.TELEMETRY = {
                 }
               },
               "classes": {
-                "cache_read_tokens": 11662033778,
-                "cache_write_1h_tokens": 101818115,
+                "cache_read_tokens": 11667756071,
+                "cache_write_1h_tokens": 101840757,
                 "cache_write_5m_tokens": 31648573,
-                "input_tokens": 308931,
-                "output_tokens": 41884303
+                "input_tokens": 308945,
+                "output_tokens": 41901050
               },
-              "tokens": 11837693700,
+              "tokens": 11843455396,
               "unpriced_tokens": 0,
-              "usd": 10758.814327
+              "usd": 10765.82695
             },
             "other": {
               "by_model": {
@@ -4296,9 +4296,9 @@ window.TELEMETRY = {
           },
           "loop_share": 0.9957,
           "sessions": 6217,
-          "tokens": 11888566841,
+          "tokens": 11894328537,
           "unpriced_tokens": 0,
-          "usd": 10807.6707
+          "usd": 10814.683323
         },
         "openai": {
           "by_model": {
@@ -4377,14 +4377,14 @@ window.TELEMETRY = {
             "gpt-5.6-sol": {
               "classes": {
                 "cache_write_tokens": 0,
-                "cached_input_tokens": 10235499520,
-                "input_tokens": 10515046716,
-                "output_tokens": 37364393,
-                "reasoning_output_tokens": 15651007
+                "cached_input_tokens": 10240779904,
+                "input_tokens": 10520372153,
+                "output_tokens": 37380090,
+                "reasoning_output_tokens": 15655455
               },
-              "tokens": 10552411109,
+              "tokens": 10557752243,
               "unpriced_tokens": 0,
-              "usd": 7642.113602
+              "usd": 7645.449969
             },
             "gpt-5.6-terra": {
               "classes": {
@@ -4527,14 +4527,14 @@ window.TELEMETRY = {
                 "gpt-5.6-sol": {
                   "classes": {
                     "cache_write_tokens": 0,
-                    "cached_input_tokens": 7453499648,
-                    "input_tokens": 7616353580,
-                    "output_tokens": 21759072,
-                    "reasoning_output_tokens": 6924857
+                    "cached_input_tokens": 7458780032,
+                    "input_tokens": 7621679017,
+                    "output_tokens": 21774769,
+                    "reasoning_output_tokens": 6929305
                   },
-                  "tokens": 7638112652,
+                  "tokens": 7643453786,
                   "unpriced_tokens": 0,
-                  "usd": 5199.487716
+                  "usd": 5202.824083
                 },
                 "gpt-5.6-terra": {
                   "classes": {
@@ -4563,21 +4563,21 @@ window.TELEMETRY = {
               },
               "classes": {
                 "cache_write_tokens": 0,
-                "cached_input_tokens": 18234820992,
-                "input_tokens": 18620095141,
-                "output_tokens": 50991668,
-                "reasoning_output_tokens": 16955946
+                "cached_input_tokens": 18240101376,
+                "input_tokens": 18625420578,
+                "output_tokens": 51007365,
+                "reasoning_output_tokens": 16960394
               },
-              "tokens": 18671086809,
+              "tokens": 18676427943,
               "unpriced_tokens": 10268285044,
-              "usd": 5783.75544
+              "usd": 5787.091807
             }
           },
           "loop_share": 0.174,
           "sessions": 2589,
-          "tokens": 22605511358,
+          "tokens": 22610852492,
           "unpriced_tokens": 10268285044,
-          "usd": 9425.9739
+          "usd": 9429.310267
         }
       }
     },
@@ -99589,15 +99589,15 @@ window.TELEMETRY = {
     "now": {
       "current_row": null,
       "current_state": "idle",
-      "last_collect_at": "2026-08-20T10:00:35+00:00",
+      "last_collect_at": "2026-08-20T10:04:02+00:00",
       "last_driver_event_at": "2026-08-20T09:59:07+00:00",
-      "last_publish_at": null,
-      "last_publish_attempt_at": null,
-      "minutes_since_driver": 1.5,
-      "publish_age_hours": null,
-      "publish_reason": "no_publish_record",
-      "publish_stale": true,
-      "publish_status": "never",
+      "last_publish_at": "2026-08-20T10:04:02+00:00",
+      "last_publish_attempt_at": "2026-08-20T10:04:02+00:00",
+      "minutes_since_driver": 4.9,
+      "publish_age_hours": 0.0,
+      "publish_reason": "scheduled_push",
+      "publish_stale": false,
+      "publish_status": "success",
       "stall_threshold_minutes": 90,
       "stalled": false,
       "today": {
@@ -104264,10 +104264,10 @@ window.TELEMETRY = {
       "available": true,
       "coverage": {
         "from": "2026-07-22T07:23:27+00:00",
-        "to": "2026-08-20T09:59:47+00:00"
+        "to": "2026-08-20T10:03:39+00:00"
       },
       "high_water": {
-        "bytes": 657596745,
+        "bytes": 657734342,
         "cache_hits": 6217,
         "files": 6217
       },
@@ -104289,17 +104289,17 @@ window.TELEMETRY = {
       "available": true,
       "coverage": {
         "from": "2026-02-28T12:19:02+00:00",
-        "to": "2026-08-20T10:00:28+00:00"
+        "to": "2026-08-20T10:03:45+00:00"
       },
       "high_water": {
-        "bytes": 5404193569,
-        "cache_hits": 2974,
+        "bytes": 5404994163,
+        "cache_hits": 2975,
         "files": 2975
       },
       "ingested": {
-        "cache_hits": 2974,
+        "cache_hits": 2975,
         "files": 2975,
-        "rescanned": 1
+        "rescanned": 0
       },
       "skips": [],
       "status": "ok",
