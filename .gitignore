@@ -8,9 +8,14 @@
 # Runtime output, recovery copies, editor state, and local telemetry state.
 *.log
 *.bak
+*.tmp
+*.partial
 *~
 *.swp
 *.lock
+*.sqlite
+*.sqlite3
+*.sqlite3-*
 *-cache-v*.json
 scan-cache*.json
 .vscode/
@@ -28,3 +33,7 @@ core
 core.*
 *.core
 NUL
+.DS_Store
+Thumbs.db
+desktop.ini
+$RECYCLE.BIN/

@@ -256,6 +256,17 @@ class OtherAdapterTests(unittest.TestCase):
 
 
 class HistoryAndPrivacyTests(unittest.TestCase):
+    def test_privacy_scanner_blocks_windows_account_path_and_slug_forms(self) -> None:
+        samples = (
+            b"C:" + b"\\" + b"Users" + b"\\private-account\\project",
+            b"/" + b"mnt/c/" + b"Users/private-account/project",
+            b"Users" + b"-private-account-project",
+            b"--wsl-" + b"localhost-distro-home-private-account-project",
+        )
+        for sample in samples:
+            with self.subTest(sample=sample[:12]):
+                self.assertIn("username_path", collect.sensitive_content_reasons(sample))
+
     def minimal_snapshot(self, date: str, rollups: dict[str, dict[str, object]]) -> dict[str, object]:
         generated = f"{date}T12:00:00+00:00"
         return {

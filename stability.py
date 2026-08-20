@@ -30,18 +30,31 @@ DISK_FILE = "disk-snapshot.json"
 PAGES_FILE = "pages-status.json"
 
 STATIC_TRACKED_PATHS = {
+    "AGENTS.md",
     ".gitignore",
     "README.md",
     "collect.py",
     "dashboard.js",
+    "data/schema/days.schema.json",
+    "data/schema/incidents.schema.json",
+    "data/schema/projects.schema.json",
+    "data/schema/publications.schema.json",
+    "data/schema/rounds.schema.json",
+    "data/schema/sessions.schema.json",
+    "data/schema/specs.schema.json",
+    "data/schema/tests.schema.json",
+    "docs/OUTCOME_ADAPTER.md",
     "docs/STABILITY.md",
     "index.html",
+    "observatory.py",
     "prices.json",
+    "projects.json",
     "publish.py",
     "run-telemetry.sh",
     "sources.example.json",
     "stability.py",
     "tests/test_collect.py",
+    "tests/test_observatory.py",
     "tests/test_publish.py",
     "tests/test_retention.py",
     "tests/test_stability.py",
@@ -50,7 +63,9 @@ STATIC_TRACKED_PATHS = {
     "usage.py",
 }
 GENERATED_TRACKED_RE = re.compile(
-    r"^data/(?:telemetry\.(?:json|js)|rounds\.json|history/(?:cost|daily|measurement)-\d{4}-\d{2}-\d{2}\.json)$"
+    r"^data/(?:telemetry\.(?:json|js)|rounds\.json|"
+    r"history/(?:cost|daily|measurement|global)-\d{4}-\d{2}-\d{2}\.json|"
+    r"machine/(?:MANIFEST\.json|(?:days|incidents|projects|publications|rounds|sessions|specs|tests)\.jsonl))$"
 )
 LOG_RE = re.compile(
     r"^(?P<timestamp>\S+)\s+mode=(?P<mode>refresh|publish|catchup|lock-probe)"

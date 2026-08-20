@@ -1,5 +1,20 @@
 # Stability pass findings and retention report
 
+## V4 global rebaseline register
+
+This section is the phase-ordered findings register for the machine-wide,
+dual-environment observatory rebaseline. Evidence is added only after the
+corresponding check runs; the earlier stability report remains below as the
+pre-rework baseline.
+
+| ID | Risk | Severity | Action | Verifying check |
+|---|---|---|---|---|
+| ST-31 | Provider activity outside the original loop scope was not represented as a canonical dataset. | high | in progress | Four-root store reconciliation and three independent usage oracles. |
+| ST-32 | Equivalent working-directory forms could split one project or publish a private mapping. | high | in progress | Canonicalization, registry-order, ad-hoc, remote, and scrub fixtures. |
+| ST-33 | A stopped Linux VM could prevent its own cron scheduler from reviving collection. | high | in progress | Named Windows-task query, triggered-run evidence, and double-fire lock drill. |
+| ST-34 | Machine consumers lacked a stable global contract and local full-fidelity query surface. | medium | in progress | Schema, manifest, worked-join, and three-way reconciliation battery. |
+| ST-35 | Dual-drive growth and retention consequences were not measured together. | medium | in progress | Per-store inventory, drive runway, dry-run, and fixture-only apply proof. |
+
 Measured 2026-08-20 UTC. This is the public, sanitized evidence register for the
 Round 3 stability pass. Raw machine paths, host identity, transcript content,
 and credential-shaped values are deliberately absent.

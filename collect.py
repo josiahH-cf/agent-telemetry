@@ -1922,6 +1922,18 @@ def sensitive_content_reasons(content: bytes, denylist: list[str] | None = None)
         reasons.add("username_path")
     if user and (b"\\Users\\" + user + b"\\").lower() in content.lower():
         reasons.add("username_path")
+    # WSL and Windows account names are not necessarily identical.  Match the
+    # structural path/slug forms without banning those character sequences in
+    # public GitHub identifiers or ordinary prose.
+    private_account_patterns = (
+        rb"/home/[A-Za-z0-9._-]+/",
+        rb"/mnt/[A-Za-z]/[Uu]sers/[A-Za-z0-9._-]+/",
+        rb"[A-Za-z]:[\\/]+[Uu]sers[\\/]+[A-Za-z0-9._-]+[\\/]",
+        rb"[Uu]sers-[A-Za-z0-9._-]+-",
+        rb"--wsl(?:-localhost|-dollar)?-[A-Za-z0-9._-]+-home-[A-Za-z0-9._-]+-",
+    )
+    if any(re.search(pattern, content) for pattern in private_account_patterns):
+        reasons.add("username_path")
     for term in denylist or []:
         if term.encode("utf-8") in content:
             reasons.add("local_denylist")
