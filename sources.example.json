@@ -2,6 +2,12 @@
   "schema_version": 2,
   "default_timeout_seconds": 300,
   "cache_root": "<MACHINE_LOCAL_CACHE_ROOT>",
+  "claude_usage_capture": {
+    "enabled": false,
+    "command": "~/.local/opt/node/bin/claude",
+    "timeout_seconds": 30,
+    "max_cache_age_seconds": 3600
+  },
   "observatory": {
     "enabled": false,
     "roots": [

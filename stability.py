@@ -31,6 +31,7 @@ PRICE_WARNING_DAYS = 90
 CLOCK_FILE = "clock-watermark.json"
 DISK_FILE = "disk-snapshot.json"
 PAGES_FILE = "pages-status.json"
+CLAUDE_USAGE_CAPTURE_FILE = "claude-usage-capture.json"
 OBSERVATORY_STORE = "observatory.sqlite3"
 OBSERVATORY_STORE_SCHEMA_VERSION = 1
 WINDOWS_TASK_NAMES = ("agent-telemetry-logon", "agent-telemetry-continuity")
@@ -43,6 +44,7 @@ STATIC_TRACKED_PATHS = {
     ".githooks/pre-push",
     ".gitignore",
     "README.md",
+    "claude_usage_capture.py",
     "collect.py",
     "metric_catalog.py",
     "dashboard.js",
@@ -67,6 +69,7 @@ STATIC_TRACKED_PATHS = {
     "sources.example.json",
     "stability.py",
     "tests/test_collect.py",
+    "tests/test_claude_usage_capture.py",
     "tests/test_dashboard.py",
     "tests/test_git_guard.py",
     "tests/test_observatory.py",
@@ -458,6 +461,44 @@ def _pages_status(state_root: Path) -> tuple[str, str]:
     return "warn", "no_pages_outcome_recorded"
 
 
+def _claude_usage_capture_status(
+    config: dict[str, Any],
+    state_root: Path,
+    now: dt.datetime,
+) -> tuple[str, str]:
+    capture = config.get("claude_usage_capture") if isinstance(config.get("claude_usage_capture"), dict) else {}
+    if not capture.get("enabled"):
+        return "ok", "disabled"
+    value = _read_json_object(state_root / CLAUDE_USAGE_CAPTURE_FILE)
+    allowed = {
+        "automatic_success",
+        "automatic_cli_absent",
+        "automatic_command_failed",
+        "automatic_timeout",
+        "automatic_output_limit",
+        "automatic_inference_guard",
+        "automatic_cache_unavailable",
+        "automatic_cached_fallback",
+        "automatic_config_invalid",
+        "manual_recorded",
+    }
+    status = str(value.get("status") or "never_attempted")
+    if status not in allowed:
+        status = "unknown"
+    attempted = parse_timestamp(value.get("last_attempt_at"))
+    succeeded = parse_timestamp(value.get("last_success_at"))
+    attempt_age = max(0.0, (now - attempted).total_seconds()) if attempted else math.inf
+    success_age = max(0.0, (now - succeeded).total_seconds()) if succeeded else math.inf
+    max_age = capture.get("max_cache_age_seconds", 3600)
+    try:
+        max_age_seconds = min(3600.0, max(60.0, float(max_age)))
+    except (TypeError, ValueError, OverflowError):
+        max_age_seconds = 3600.0
+    healthy = status in {"automatic_success", "manual_recorded"} and attempt_age <= GAP_THRESHOLD_MINUTES * 60 and success_age <= max_age_seconds
+    detail = f"status_{status}_attempt_age_minutes_{rounded(attempt_age / 60, 1)}_success_age_minutes_{rounded(success_age / 60, 1)}"
+    return ("ok" if healthy else "warn"), detail
+
+
 def _disk_status(project_root: Path, state_root: Path) -> tuple[str, str, dict[str, Any]]:
     usage = shutil.disk_usage(project_root)
     snapshot = _read_json_object(state_root / DISK_FILE)
@@ -600,6 +641,7 @@ def run_doctor(
     add("publish", publish_status, publish_detail)
     pages_status, pages_detail = _pages_status(state_root)
     add("pages", pages_status, pages_detail)
+    add("claude_usage_capture", *_claude_usage_capture_status(config, state_root, now))
     cron_status, cron_detail = _cron_status()
     add("scheduler", cron_status, cron_detail)
     task_status, task_detail = _windows_task_status()

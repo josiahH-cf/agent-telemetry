@@ -36,6 +36,7 @@ import usage as vendor_usage
 import stability as telemetry_stability
 import observatory as global_observatory
 import metric_catalog
+import claude_usage_capture
 
 
 SCHEMA_VERSION = 2
@@ -71,6 +72,7 @@ MODEL_VALUE_KEYS = {"model", "model_id", "assistant_model"}
 MAX_ROUND_SECONDS = 48 * 60 * 60
 MAX_ROW_SECONDS = 30 * 24 * 60 * 60
 PAGES_URL = "https://josiahh-cf.github.io/agent-telemetry/"
+CLAUDE_USAGE_CAPTURE_FILE = "claude-usage-capture.json"
 
 
 class SourceTimeout(RuntimeError):
@@ -1422,8 +1424,83 @@ def provider_snapshot_for(provider: dict[str, Any], names: set[str]) -> dict[str
     return None
 
 
+def read_claude_usage_capture_state(cache_root: Path) -> dict[str, Any]:
+    """Read the safe machine-local status of the latest capture attempt."""
+    try:
+        value = json.loads((cache_root / CLAUDE_USAGE_CAPTURE_FILE).read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        return {}
+    if not isinstance(value, dict):
+        return {}
+    requested_status = safe_identifier(value.get("status"), "automatic_unknown")
+    status = requested_status if requested_status in claude_usage_capture.CAPTURE_STATUSES else "automatic_unknown"
+    return {
+        "status": status,
+        "last_attempt_at": iso(parse_timestamp(value.get("last_attempt_at"))),
+        "last_success_at": iso(parse_timestamp(value.get("last_success_at"))),
+        "consecutive_failures": safe_int(value.get("consecutive_failures")),
+    }
+
+
+def record_claude_usage_capture_state(
+    cache_root: Path,
+    result: dict[str, Any],
+) -> dict[str, Any]:
+    """Persist only an allowlisted capture status; never command output or paths."""
+    previous = read_claude_usage_capture_state(cache_root)
+    requested_status = safe_identifier(result.get("status"), "automatic_unknown")
+    status = requested_status if requested_status in claude_usage_capture.CAPTURE_STATUSES else "automatic_unknown"
+    attempted = iso(parse_timestamp(result.get("attempted_at")))
+    succeeded = status in {"automatic_success", "manual_recorded"}
+    last_success = iso(parse_timestamp(result.get("observed_at"))) if succeeded else previous.get("last_success_at")
+    value = {
+        "schema_version": 1,
+        "status": status,
+        "last_attempt_at": attempted,
+        "last_success_at": last_success,
+        "consecutive_failures": 0 if succeeded else safe_int(previous.get("consecutive_failures")) + int(status != "automatic_disabled"),
+    }
+    atomic_write(cache_root / CLAUDE_USAGE_CAPTURE_FILE, json_text(value))
+    return value
+
+
+def capture_local_claude_usage(
+    config: dict[str, Any],
+    cache_root: Path,
+    project_root: Path,
+    now: dt.datetime | None = None,
+) -> dict[str, Any]:
+    """Refresh `/usage`, store normalized windows, and retain the last good value on failure."""
+    now = now or utc_now()
+    capture_config = config.get("claude_usage_capture") if isinstance(config.get("claude_usage_capture"), dict) else {}
+    result = claude_usage_capture.capture(capture_config, cwd=project_root, now=now)
+    if result.get("status") == "automatic_success":
+        observed = parse_timestamp(result.get("observed_at"))
+        windows = {
+            str(item.get("window")): item
+            for item in result.get("quota_windows", [])
+            if isinstance(item, dict)
+        }
+        five = windows.get("five_hour", {})
+        seven = windows.get("seven_day", {})
+        if not observed or not five or not seven:
+            result = {"status": "automatic_cache_unavailable", "attempted_at": iso(now)}
+        else:
+            record_local_claude_usage(
+                cache_root,
+                five_hour_used=safe_float(five.get("used_percent")),
+                five_hour_resets_at=five.get("resets_at"),
+                seven_day_used=safe_float(seven.get("used_percent")),
+                seven_day_resets_at=seven.get("resets_at"),
+                now=observed,
+                source="claude_slash_usage_automated_capture",
+            )
+    record_claude_usage_capture_state(cache_root, result)
+    return result
+
+
 def read_local_claude_usage(cache_root: Path, now: dt.datetime | None = None) -> dict[str, Any] | None:
-    """Read a normalized, machine-local snapshot transcribed from Claude `/usage`."""
+    """Read a normalized, machine-local snapshot captured from Claude `/usage`."""
     now = now or utc_now()
     path = cache_root / "claude-usage.json"
     try:
@@ -1457,6 +1534,8 @@ def read_local_claude_usage(cache_root: Path, now: dt.datetime | None = None) ->
     resets = [parse_timestamp(item.get("resets_at")) for item in windows if item.get("resets_at")]
     stale = bool(resets and all(item and item <= now for item in resets)) or age_hours > 168
     remaining = min(float(item["remaining_percent"]) for item in windows)
+    capture = read_claude_usage_capture_state(cache_root)
+    default_capture = "manual_recorded" if value.get("source") == "claude_slash_usage_manual_capture" else "automatic_success"
     return {
         "source": "claude_slash_usage_local_snapshot",
         "provider": "anthropic",
@@ -1466,7 +1545,7 @@ def read_local_claude_usage(cache_root: Path, now: dt.datetime | None = None) ->
         "quota_windows": windows,
         "observed_at": iso(observed),
         "age_hours": rounded(age_hours, 1),
-        "capture_status": "recorded",
+        "capture_status": capture.get("status") or default_capture,
     }
 
 
@@ -1478,6 +1557,7 @@ def record_local_claude_usage(
     seven_day_used: float | None,
     seven_day_resets_at: str | None,
     now: dt.datetime | None = None,
+    source: str = "claude_slash_usage_manual_capture",
 ) -> dict[str, Any]:
     """Persist percentage-only `/usage` values without retaining terminal text."""
     now = now or utc_now()
@@ -1504,9 +1584,12 @@ def record_local_claude_usage(
         )
     if not windows:
         raise ValueError("at_least_one_claude_usage_window_is_required")
+    allowed_sources = {"claude_slash_usage_manual_capture", "claude_slash_usage_automated_capture"}
+    if source not in allowed_sources:
+        raise ValueError("claude_usage_source_invalid")
     value = {
         "schema_version": 1,
-        "source": "claude_slash_usage_manual_capture",
+        "source": source,
         "observed_at": iso(now),
         "quota_windows": windows,
     }
@@ -2808,6 +2891,7 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--record-publish", choices=("pending", "success", "failure", "blocked"), help="record machine-local publish state and exit")
     parser.add_argument("--publish-reason", default="scheduled", help="allowlisted reason used with --record-publish")
     parser.add_argument("--record-claude-usage", action="store_true", help="record percentage-only values transcribed from Claude /usage")
+    parser.add_argument("--capture-claude-usage", action="store_true", help="refresh normalized Claude /usage through the zero-turn CLI command")
     parser.add_argument("--claude-five-hour-used", type=float, help="Claude five-hour window used percentage")
     parser.add_argument("--claude-five-hour-resets-at", help="optional ISO timestamp for the five-hour reset")
     parser.add_argument("--claude-seven-day-used", type=float, help="Claude seven-day window used percentage")
@@ -2828,6 +2912,11 @@ def main(argv: list[str] | None = None) -> int:
         config = load_config(config_path)
         cache_text = str(config.get("cache_root") or "").strip()
         cache_root = Path(cache_text).expanduser() if cache_text else Path.home() / ".local" / "state" / "agent-telemetry"
+        if args.capture_claude_usage:
+            result = capture_local_claude_usage(config, cache_root, project_root)
+            status = safe_identifier(result.get("status"), "automatic_unknown")
+            print(f"[claude-usage] status={status}")
+            return 0 if status in {"automatic_success", "automatic_disabled"} else 2
         if args.record_claude_usage:
             value = record_local_claude_usage(
                 cache_root,
@@ -2835,6 +2924,10 @@ def main(argv: list[str] | None = None) -> int:
                 five_hour_resets_at=args.claude_five_hour_resets_at,
                 seven_day_used=args.claude_seven_day_used,
                 seven_day_resets_at=args.claude_seven_day_resets_at,
+            )
+            record_claude_usage_capture_state(
+                cache_root,
+                {"status": "manual_recorded", "attempted_at": value["observed_at"], "observed_at": value["observed_at"]},
             )
             windows = ", ".join(item["window"] for item in value["quota_windows"])
             print(f"[claude-usage] recorded local snapshot for {windows}")

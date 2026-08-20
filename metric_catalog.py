@@ -395,10 +395,10 @@ CATALOG: tuple[dict[str, Any], ...] = (
     _metric(
         "claude_quota_remaining_percent",
         "Claude usage-window remaining",
-        "Latest manually recorded percentage-only Claude /usage snapshot.",
-        "Use the newest local normalized snapshot; mark stale after its configured age and never infer a missing value.",
+        "Latest normalized percentage-only Claude /usage snapshot.",
+        "Run the built-in /usage command in zero-turn print mode, require zero inference tokens/cost, then read only five-hour and seven-day utilization from Claude's structured local cache; use its fetched timestamp, retain last-good on failure, and never infer a missing value.",
         ["data/telemetry.json"],
-        "Machine-only because the interactive provider command has no documented unattended quota interface.",
+        "Machine-only because this is an account-wide point-in-time subscription limit, not billing; raw command output and account identifiers are never stored.",
         "percent",
         "machine-only",
     ),

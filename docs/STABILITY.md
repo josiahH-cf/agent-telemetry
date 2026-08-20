@@ -111,6 +111,30 @@ Explicit surface decisions:
   checks reject duplicated Claude rules, a missing AGENTS link, or a README that
   reintroduces a second operating contract.
 
+### ST-43 — Claude subscription quota required manual transcription
+
+- **Observation:** the collector could age and publish a normalized local Claude
+  `/usage` snapshot, but every new observation required a person to copy two
+  percentages. That made the measurement path correct but not continuous.
+- **Evidence:** Claude Code 2.1.209 accepts its built-in `/usage` command through
+  print mode. Two controlled probes exited in under three seconds with zero
+  turns, zero API-model duration, zero tokens, zero cost, no permission denial,
+  and no transcript creation. The command refreshed Claude's authenticated
+  structured usage cache; its write timestamp correctly remained unchanged
+  during the five-minute cache-throttle interval.
+- **Action:** **fixed / guarded** — each non-noop scheduled run now executes the
+  built-in command once inside the existing lock. It bounds and discards command
+  output after verifying the zero-inference sentinels, then reads only the
+  allowlisted five-hour and seven-day percentages, reset timestamps, and cache
+  timestamp. Failures preserve last-good data and record a safe status. Manual
+  percentage entry remains available as a fallback.
+- **Verifying check:** fixtures cover zero and null values, exact timestamp use,
+  one-hour staleness, malformed/out-of-range cache fields, missing CLI, timeout,
+  oversized output, any future model routing, last-good preservation, private
+  sentinels, file permissions, exact command arguments, wrapper ordering, and
+  doctor health. A live capture and finished scheduled collection are required
+  before release.
+
 ## V4 global rebaseline register
 
 This section is the phase-ordered findings register for the machine-wide,

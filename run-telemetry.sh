@@ -77,6 +77,12 @@ case "$MODE" in
         ;;
 esac
 
+# Refresh Claude's normalized quota cache once inside the collection lock.  A
+# failed quota check is observable but never blocks the underlying collection.
+if ! python3 "$PROJECT_ROOT/collect.py" --capture-claude-usage; then
+    printf '%s claude_usage_capture=degraded\n' "$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+fi
+
 RESULT=0
 if [ "$PUBLISH" -eq 1 ]; then
     if ! python3 "$PROJECT_ROOT/collect.py"; then

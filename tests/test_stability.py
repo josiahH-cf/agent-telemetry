@@ -152,8 +152,40 @@ class StabilityTests(unittest.TestCase):
                 {"suite_state": {"status": "ok", "available": True}},
             )
         names = {item["name"] for item in result["checks"]}
-        self.assertTrue({"sources", "scan_caches", "collection_cadence", "publish", "pages", "scheduler", "windows_tasks", "lock", "prices", "schemas", "observatory_store", "provider_roots", "machine_manifest", "reconciliation", "git_hooks", "tracked_manifest", "clock", "collection_age", "disk"} <= names)
+        self.assertTrue({"sources", "scan_caches", "collection_cadence", "publish", "pages", "claude_usage_capture", "scheduler", "windows_tasks", "lock", "prices", "schemas", "observatory_store", "provider_roots", "machine_manifest", "reconciliation", "git_hooks", "tracked_manifest", "clock", "collection_age", "disk"} <= names)
         self.assertIn("[doctor] status=", stability.doctor_text(result))
+
+    def test_claude_usage_capture_doctor_tracks_attempt_and_cache_age(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            now = dt.datetime(2026, 8, 20, 17, 30, tzinfo=UTC)
+            config = {"claude_usage_capture": {"enabled": True, "max_cache_age_seconds": 3600}}
+            (root / stability.CLAUDE_USAGE_CAPTURE_FILE).write_text(
+                json.dumps(
+                    {
+                        "status": "automatic_success",
+                        "last_attempt_at": "2026-08-20T17:29:58+00:00",
+                        "last_success_at": "2026-08-20T17:25:00+00:00",
+                    }
+                ),
+                encoding="utf-8",
+            )
+            healthy = stability._claude_usage_capture_status(config, root, now)
+            (root / stability.CLAUDE_USAGE_CAPTURE_FILE).write_text(
+                json.dumps(
+                    {
+                        "status": "automatic_timeout",
+                        "last_attempt_at": "2026-08-20T17:29:58+00:00",
+                        "last_success_at": "2026-08-20T17:25:00+00:00",
+                    }
+                ),
+                encoding="utf-8",
+            )
+            failed = stability._claude_usage_capture_status(config, root, now)
+        self.assertEqual(healthy[0], "ok")
+        self.assertIn("automatic_success", healthy[1])
+        self.assertEqual(failed[0], "warn")
+        self.assertIn("automatic_timeout", failed[1])
 
     def test_git_hook_doctor_requires_local_path_and_executable_hooks(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
@@ -213,7 +245,12 @@ class StabilityTests(unittest.TestCase):
         script = (PROJECT_ROOT / "run-telemetry.sh").read_text(encoding="utf-8")
         supervisor = script.index('python3 "$PROJECT_ROOT/stability.py" --lock-run')
         pages = script.index('python3 "$PROJECT_ROOT/collect.py" --check-pages')
+        fresh_gate = script.index('--fresh-within-minutes 20')
+        capture = script.index('python3 "$PROJECT_ROOT/collect.py" --capture-claude-usage')
+        collection = script.index('python3 "$PROJECT_ROOT/collect.py";', capture)
         self.assertLess(supervisor, pages)
+        self.assertLess(fresh_gate, capture)
+        self.assertLess(capture, collection)
         self.assertNotIn('exec python3 "$PROJECT_ROOT/stability.py"', script)
         self.assertNotIn('--check-pages\n    )', script)
         self.assertIn('--fresh-within-minutes 20', script)

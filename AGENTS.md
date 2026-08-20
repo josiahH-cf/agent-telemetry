@@ -127,14 +127,21 @@ PY
 
 ### Non-negotiable invariants
 
-1. All provider records, both governed repositories, loop state, specifications,
-   backups, and operating-system configuration are read-only sources. The only
+1. Provider transcripts and rollouts, both governed repositories, loop state,
+   specifications, backups, and operating-system configuration are read-only
+   sources. The collector never writes a provider-owned file directly. The sole
+   provider-state exception is invoking Claude's authenticated built-in
+   `/usage`, which may refresh the CLI-owned local quota cache. Otherwise the
    writable scope is this repository, its local telemetry state, the three
    tagged cron entries, and the two existing named Windows tasks.
 2. Collection retains usage metadata only. Raw session ids and working
    directories may exist in the restricted local tier solely for attribution.
-   Never ingest message content, prompts, code, or tool/command output, and
-   never commit or publish real paths, host identity, account names, personal
+   Never ingest message content, prompts, or code. The sole command-output
+   exception is Claude's built-in `/usage`: bounded JSON may exist transiently
+   in process memory only to prove zero turns, zero inference tokens, and zero
+   cost; it is then discarded. Only allowlisted percentages, reset timestamps,
+   cache observation time, and safe capture status may be retained. Never
+   commit or publish real paths, host identity, account names, personal
    email, credentials, private project names, the mapping salt, or the anonymous
    mapping.
 3. Publication is default-deny: every tracked path must be allowlisted, every
@@ -178,7 +185,7 @@ python3 -m unittest discover -s tests -v
 
 - `--check` probes configured sources without writing.
 - `--doctor` checks source availability, all four provider roots and cursors,
-  cadence, publication and Pages state, both schedulers, the lock, prices,
+  cadence, publication and Pages state, Claude usage-capture health, both schedulers, the lock, prices,
   schemas, store integrity, machine reconciliation, hooks, the tracked manifest,
   clock watermark, collection age, and disk state.
 - A normal collection transactionally updates the canonical store, full
@@ -233,8 +240,15 @@ both vendor cost fixtures and confirm the unpriced bucket before collecting.
 
 **Subscriptions and Claude quota.** `subscriptions.local.json` may hold local
 monthly provider amounts; it must remain ignored and is never an API-price
-input. Claude `/usage` is interactive, so record only the displayed percentages
-and optional reset timestamps after viewing it in an authenticated session:
+input. When `claude_usage_capture.enabled` is true, the locked scheduler runs
+Claude's built-in `/usage` in zero-turn print mode before collection. It rejects
+any result with an inference turn, tokens, cost, permission denial, stale cache,
+or malformed fields. Raw output is bounded in memory and discarded; only the
+allowlisted five-hour and seven-day percentages, optional reset timestamps, and
+Claude cache timestamp enter the local snapshot. A failure retains last-good
+data and records a named doctor/measurement status. Manual entry remains the
+fallback. Configure `command` as a user-relative or absolute executable path;
+cron's minimal `PATH` must not be assumed:
 
 ```bash
 python3 collect.py --record-claude-usage \
@@ -242,8 +256,9 @@ python3 collect.py --record-claude-usage \
   --claude-seven-day-used "$SEVEN_DAY_USED"
 ```
 
-The scheduled collector consumes that local percentage-only snapshot and names
-its age; it never scrapes terminal text or calls a private quota endpoint.
+The collector never calls the quota endpoint directly or handles Claude
+credentials; the installed authenticated CLI owns that request. Do not replace
+this with terminal scraping or direct access to undocumented endpoints.
 
 **Tracked manifest.** Do not hand-edit generated `data/machine/MANIFEST.json`.
 Classify a new source, test, document, hook, or schema in
