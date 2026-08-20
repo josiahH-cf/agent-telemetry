@@ -171,7 +171,7 @@ window.TELEMETRY = {
     "sources_available": 6,
     "sources_enabled": 6
   },
-  "generated_at": "2026-08-20T11:53:47+00:00",
+  "generated_at": "2026-08-20T11:56:05+00:00",
   "history": [
     {
       "accept_commits": 7,
@@ -672,7 +672,7 @@ window.TELEMETRY = {
       "builder_models": {
         "claude-fable-5": 14
       },
-      "collected_at": "2026-08-20T11:53:47+00:00",
+      "collected_at": "2026-08-20T11:56:05+00:00",
       "coverage_corrections": [
         {
           "date": "2026-08-02",
@@ -4599,7 +4599,7 @@ window.TELEMETRY = {
               "unattributed": 0
             }
           },
-          "collected_at": "2026-08-20T11:53:47+00:00",
+          "collected_at": "2026-08-20T11:56:05+00:00",
           "date": "2026-08-20",
           "schema_version": 2,
           "vendors": {
@@ -4619,15 +4619,15 @@ window.TELEMETRY = {
                 "claude-fable-5": {
                   "best_effort_estimate": null,
                   "classes": {
-                    "cache_read_tokens": 237322941,
-                    "cache_write_1h_tokens": 2305687,
+                    "cache_read_tokens": 237402431,
+                    "cache_write_1h_tokens": 2311102,
                     "cache_write_5m_tokens": 0,
-                    "input_tokens": 994,
-                    "output_tokens": 785073
+                    "input_tokens": 996,
+                    "output_tokens": 798299
                   },
-                  "tokens": 240414695,
+                  "tokens": 240512828,
                   "unpriced_tokens": 0,
-                  "usd": 322.700271
+                  "usd": 323.549381
                 },
                 "claude-opus-5": {
                   "best_effort_estimate": null,
@@ -4660,15 +4660,15 @@ window.TELEMETRY = {
                     "claude-fable-5": {
                       "best_effort_estimate": null,
                       "classes": {
-                        "cache_read_tokens": 237322941,
-                        "cache_write_1h_tokens": 2305687,
+                        "cache_read_tokens": 237402431,
+                        "cache_write_1h_tokens": 2311102,
                         "cache_write_5m_tokens": 0,
-                        "input_tokens": 994,
-                        "output_tokens": 785073
+                        "input_tokens": 996,
+                        "output_tokens": 798299
                       },
-                      "tokens": 240414695,
+                      "tokens": 240512828,
                       "unpriced_tokens": 0,
-                      "usd": 322.700271
+                      "usd": 323.549381
                     },
                     "claude-opus-5": {
                       "best_effort_estimate": null,
@@ -4685,15 +4685,15 @@ window.TELEMETRY = {
                     }
                   },
                   "classes": {
-                    "cache_read_tokens": 237486757,
-                    "cache_write_1h_tokens": 2477397,
+                    "cache_read_tokens": 237566247,
+                    "cache_write_1h_tokens": 2482812,
                     "cache_write_5m_tokens": 0,
-                    "input_tokens": 1018,
-                    "output_tokens": 786765
+                    "input_tokens": 1020,
+                    "output_tokens": 799991
                   },
-                  "tokens": 240751937,
+                  "tokens": 240850070,
                   "unpriced_tokens": 0,
-                  "usd": 324.541699
+                  "usd": 325.390809
                 },
                 "other": {
                   "best_effort_estimate": {
@@ -4720,9 +4720,9 @@ window.TELEMETRY = {
                   "usd": 0.0
                 }
               },
-              "tokens": 240751937,
+              "tokens": 240850070,
               "unpriced_tokens": 0,
-              "usd": 324.541699
+              "usd": 325.390809
             },
             "openai": {
               "best_effort_estimate": {
@@ -4741,14 +4741,14 @@ window.TELEMETRY = {
                   "best_effort_estimate": null,
                   "classes": {
                     "cache_write_tokens": 0,
-                    "cached_input_tokens": 223517440,
-                    "input_tokens": 232967835,
-                    "output_tokens": 1513453,
-                    "reasoning_output_tokens": 681025
+                    "cached_input_tokens": 224467968,
+                    "input_tokens": 233926736,
+                    "output_tokens": 1516447,
+                    "reasoning_output_tokens": 682151
                   },
-                  "tokens": 234481288,
+                  "tokens": 235443183,
                   "unpriced_tokens": 0,
-                  "usd": 204.414285
+                  "usd": 205.021234
                 }
               },
               "by_scope": {
@@ -4807,31 +4807,31 @@ window.TELEMETRY = {
                       "best_effort_estimate": null,
                       "classes": {
                         "cache_write_tokens": 0,
-                        "cached_input_tokens": 140421888,
-                        "input_tokens": 144163701,
-                        "output_tokens": 763579,
-                        "reasoning_output_tokens": 251592
+                        "cached_input_tokens": 141372416,
+                        "input_tokens": 145122602,
+                        "output_tokens": 766573,
+                        "reasoning_output_tokens": 252718
                       },
-                      "tokens": 144927280,
+                      "tokens": 145889175,
                       "unpriced_tokens": 0,
-                      "usd": 111.827379
+                      "usd": 112.434328
                     }
                   },
                   "classes": {
                     "cache_write_tokens": 0,
-                    "cached_input_tokens": 140421888,
-                    "input_tokens": 144163701,
-                    "output_tokens": 763579,
-                    "reasoning_output_tokens": 251592
+                    "cached_input_tokens": 141372416,
+                    "input_tokens": 145122602,
+                    "output_tokens": 766573,
+                    "reasoning_output_tokens": 252718
                   },
-                  "tokens": 144927280,
+                  "tokens": 145889175,
                   "unpriced_tokens": 0,
-                  "usd": 111.827379
+                  "usd": 112.434328
                 }
               },
-              "tokens": 234481288,
+              "tokens": 235443183,
               "unpriced_tokens": 0,
-              "usd": 204.414285
+              "usd": 205.021234
             }
           }
         }
@@ -4910,7 +4910,7 @@ window.TELEMETRY = {
         },
         "openai": {
           "age_hours": 0.0,
-          "observed_at": "2026-08-20T11:53:39+00:00",
+          "observed_at": "2026-08-20T11:55:17+00:00",
           "provider": "openai",
           "quota_status": "available",
           "quota_windows": [
@@ -4944,15 +4944,15 @@ window.TELEMETRY = {
             "claude-fable-5": {
               "best_effort_estimate": null,
               "classes": {
-                "cache_read_tokens": 4530214762,
-                "cache_write_1h_tokens": 18352208,
+                "cache_read_tokens": 4530294252,
+                "cache_write_1h_tokens": 18357623,
                 "cache_write_5m_tokens": 3625246,
-                "input_tokens": 40914,
-                "output_tokens": 9212237
+                "input_tokens": 40916,
+                "output_tokens": 9225463
               },
-              "tokens": 4561445367,
+              "tokens": 4561543500,
               "unpriced_tokens": 0,
-              "usd": 5403.595487
+              "usd": 5404.444597
             },
             "claude-haiku-4-5-20251001": {
               "best_effort_estimate": null,
@@ -5037,15 +5037,15 @@ window.TELEMETRY = {
                 "claude-fable-5": {
                   "best_effort_estimate": null,
                   "classes": {
-                    "cache_read_tokens": 4530196779,
-                    "cache_write_1h_tokens": 18314308,
+                    "cache_read_tokens": 4530276269,
+                    "cache_write_1h_tokens": 18319723,
                     "cache_write_5m_tokens": 3625246,
-                    "input_tokens": 40910,
-                    "output_tokens": 9212200
+                    "input_tokens": 40912,
+                    "output_tokens": 9225426
                   },
-                  "tokens": 4561389443,
+                  "tokens": 4561487576,
                   "unpriced_tokens": 0,
-                  "usd": 5402.817614
+                  "usd": 5403.666724
                 },
                 "claude-haiku-4-5-20251001": {
                   "best_effort_estimate": null,
@@ -5114,15 +5114,15 @@ window.TELEMETRY = {
                 }
               },
               "classes": {
-                "cache_read_tokens": 11718532946,
-                "cache_write_1h_tokens": 102329940,
+                "cache_read_tokens": 11718612436,
+                "cache_write_1h_tokens": 102335355,
                 "cache_write_5m_tokens": 31648573,
-                "input_tokens": 309139,
-                "output_tokens": 42057917
+                "input_tokens": 309141,
+                "output_tokens": 42071143
               },
-              "tokens": 11894878515,
+              "tokens": 11894976648,
               "unpriced_tokens": 0,
-              "usd": 10833.901667
+              "usd": 10834.750777
             },
             "other": {
               "best_effort_estimate": {
@@ -5217,9 +5217,9 @@ window.TELEMETRY = {
           },
           "loop_share": 0.9957,
           "sessions": 6220,
-          "tokens": 11945751656,
+          "tokens": 11945849789,
           "unpriced_tokens": 0,
-          "usd": 10882.75804
+          "usd": 10883.60715
         },
         "openai": {
           "best_effort_estimate": {
@@ -5334,14 +5334,14 @@ window.TELEMETRY = {
               "best_effort_estimate": null,
               "classes": {
                 "cache_write_tokens": 0,
-                "cached_input_tokens": 10338352768,
-                "input_tokens": 10620959633,
-                "output_tokens": 37929443,
-                "reasoning_output_tokens": 15886039
+                "cached_input_tokens": 10339303296,
+                "input_tokens": 10621918534,
+                "output_tokens": 37932437,
+                "reasoning_output_tokens": 15887165
               },
-              "tokens": 10658889076,
+              "tokens": 10659850971,
               "unpriced_tokens": 0,
-              "usd": 7725.790071
+              "usd": 7726.39702
             },
             "gpt-5.6-terra": {
               "best_effort_estimate": null,
@@ -5553,14 +5553,14 @@ window.TELEMETRY = {
                   "best_effort_estimate": null,
                   "classes": {
                     "cache_write_tokens": 0,
-                    "cached_input_tokens": 7536640128,
-                    "input_tokens": 7701270991,
-                    "output_tokens": 22147002,
-                    "reasoning_output_tokens": 7065571
+                    "cached_input_tokens": 7537590656,
+                    "input_tokens": 7702229892,
+                    "output_tokens": 22149996,
+                    "reasoning_output_tokens": 7066697
                   },
-                  "tokens": 7723417993,
+                  "tokens": 7724379888,
                   "unpriced_tokens": 0,
-                  "usd": 5261.580511
+                  "usd": 5262.18746
                 },
                 "gpt-5.6-terra": {
                   "best_effort_estimate": null,
@@ -5609,21 +5609,21 @@ window.TELEMETRY = {
               },
               "classes": {
                 "cache_write_tokens": 0,
-                "cached_input_tokens": 18317961472,
-                "input_tokens": 18705012552,
-                "output_tokens": 51379598,
-                "reasoning_output_tokens": 17096660
+                "cached_input_tokens": 18318912000,
+                "input_tokens": 18705971453,
+                "output_tokens": 51382592,
+                "reasoning_output_tokens": 17097786
               },
-              "tokens": 18756392150,
+              "tokens": 18757354045,
               "unpriced_tokens": 10267797999,
-              "usd": 5846.138467
+              "usd": 5846.745416
             }
           },
           "loop_share": 0.1742,
           "sessions": 2603,
-          "tokens": 22711989325,
+          "tokens": 22712951220,
           "unpriced_tokens": 10267797999,
-          "usd": 9509.940601
+          "usd": 9510.54755
         }
       }
     },
@@ -103133,12 +103133,12 @@ window.TELEMETRY = {
       "current": {
         "date": "2026-08-20",
         "first_observed_at": "2026-08-20T10:37:08+00:00",
-        "last_observed_at": "2026-08-20T11:53:47+00:00",
+        "last_observed_at": "2026-08-20T11:56:05+00:00",
         "latest": {
           "accepted_features": 48,
-          "observed_at": "2026-08-20T11:53:47+00:00",
+          "observed_at": "2026-08-20T11:56:05+00:00",
           "publish": {
-            "last_success_at": "2026-08-20T10:52:26+00:00",
+            "last_success_at": "2026-08-20T11:54:02+00:00",
             "reason": "pushed",
             "status": "success"
           },
@@ -103146,8 +103146,8 @@ window.TELEMETRY = {
             "cadence_status": "ok",
             "clock_status": "ok",
             "disk_headline": "conservative_mtime_upper_bound",
-            "doctor_status": "warn",
-            "last_start_at": "2026-08-20T11:53:47+00:00",
+            "doctor_status": "ok",
+            "last_start_at": "2026-08-20T11:55:28+00:00",
             "missed_intervals": 0
           },
           "rounds": 539
@@ -103155,16 +103155,18 @@ window.TELEMETRY = {
         "latest_gaps": [
           "quota_anthropic_unavailable",
           "source_anthropic_usage_partial",
+          "source_openai_usage_partial",
           "source_provider_usage_partial",
           "source_spec_corpus_partial",
           "source_suite_state_partial"
         ],
-        "observations": 15,
+        "observations": 17,
         "publish_status_counts": {
-          "success": 15
+          "success": 17
         },
         "reliability_status_counts": {
-          "warn": 6
+          "ok": 1,
+          "warn": 7
         },
         "schema_version": 2,
         "sources": {
@@ -103177,38 +103179,38 @@ window.TELEMETRY = {
             "latest_status": "ok",
             "skip_counts": {},
             "status_counts": {
-              "ok": 15
+              "ok": 17
             }
           },
           "anthropic_usage": {
             "latest_available": true,
             "latest_coverage": {
               "from": "2026-07-22T07:23:27+00:00",
-              "to": "2026-08-20T11:52:22+00:00"
+              "to": "2026-08-20T11:55:46+00:00"
             },
             "latest_status": "partial",
             "skip_counts": {
               "cursor_fingerprint_missing": 2,
-              "partial_trailing_line": 15
+              "partial_trailing_line": 17
             },
             "status_counts": {
-              "partial": 15
+              "partial": 17
             }
           },
           "openai_usage": {
             "latest_available": true,
             "latest_coverage": {
               "from": "2026-02-28T12:19:02+00:00",
-              "to": "2026-08-20T11:53:39+00:00"
+              "to": "2026-08-20T11:51:32+00:00"
             },
-            "latest_status": "ok",
+            "latest_status": "partial",
             "skip_counts": {
               "cursor_fingerprint_missing": 2,
-              "source_timeout_cached_last_good": 2
+              "source_timeout_cached_last_good": 3
             },
             "status_counts": {
-              "ok": 12,
-              "partial": 3
+              "ok": 13,
+              "partial": 4
             }
           },
           "provider_usage": {
@@ -103219,10 +103221,10 @@ window.TELEMETRY = {
             },
             "latest_status": "partial",
             "skip_counts": {
-              "provider_snapshot_stale": 15
+              "provider_snapshot_stale": 17
             },
             "status_counts": {
-              "partial": 15
+              "partial": 17
             }
           },
           "spec_corpus": {
@@ -103233,10 +103235,10 @@ window.TELEMETRY = {
             },
             "latest_status": "partial",
             "skip_counts": {
-              "frontmatter_missing_feature_id": 60
+              "frontmatter_missing_feature_id": 68
             },
             "status_counts": {
-              "partial": 15
+              "partial": 17
             }
           },
           "suite_state": {
@@ -103247,18 +103249,18 @@ window.TELEMETRY = {
             },
             "latest_status": "partial",
             "skip_counts": {
-              "debt_register_absent": 15,
-              "round_in_flight": 1007
+              "debt_register_absent": 17,
+              "round_in_flight": 1141
             },
             "status_counts": {
-              "partial": 15
+              "partial": 17
             }
           }
         },
         "vendors": {
           "anthropic": {
             "capture_status_counts": {
-              "ready_awaiting_slash_usage_snapshot": 13
+              "ready_awaiting_slash_usage_snapshot": 15
             },
             "latest": {
               "capture_status": "ready_awaiting_slash_usage_snapshot",
@@ -103270,40 +103272,40 @@ window.TELEMETRY = {
               "remaining_percent": null,
               "remaining_status": "unknown",
               "sessions": 6220,
-              "tokens": 11945751656,
+              "tokens": 11945849789,
               "unpriced_tokens": 0,
-              "usd": 10882.758
+              "usd": 10883.607
             },
             "quota_status_counts": {
-              "unavailable": 15
+              "unavailable": 17
             },
             "remaining_status_counts": {
-              "unknown": 15
+              "unknown": 17
             }
           },
           "openai": {
             "capture_status_counts": {
-              "not_applicable": 13
+              "not_applicable": 15
             },
             "latest": {
               "capture_status": "not_applicable",
               "estimate_status": "available",
               "quota_age_hours": 0.0,
-              "quota_observed_at": "2026-08-20T11:53:39+00:00",
+              "quota_observed_at": "2026-08-20T11:55:17+00:00",
               "quota_source": "rollout_token_count",
               "quota_status": "available",
               "remaining_percent": 90.0,
               "remaining_status": "available",
               "sessions": 2603,
-              "tokens": 22711989325,
+              "tokens": 22712951220,
               "unpriced_tokens": 10267797999,
-              "usd": 9509.941
+              "usd": 9510.548
             },
             "quota_status_counts": {
-              "available": 15
+              "available": 17
             },
             "remaining_status_counts": {
-              "available": 15
+              "available": 17
             }
           }
         }
@@ -103312,12 +103314,12 @@ window.TELEMETRY = {
         {
           "date": "2026-08-20",
           "first_observed_at": "2026-08-20T10:37:08+00:00",
-          "last_observed_at": "2026-08-20T11:53:47+00:00",
+          "last_observed_at": "2026-08-20T11:56:05+00:00",
           "latest": {
             "accepted_features": 48,
-            "observed_at": "2026-08-20T11:53:47+00:00",
+            "observed_at": "2026-08-20T11:56:05+00:00",
             "publish": {
-              "last_success_at": "2026-08-20T10:52:26+00:00",
+              "last_success_at": "2026-08-20T11:54:02+00:00",
               "reason": "pushed",
               "status": "success"
             },
@@ -103325,8 +103327,8 @@ window.TELEMETRY = {
               "cadence_status": "ok",
               "clock_status": "ok",
               "disk_headline": "conservative_mtime_upper_bound",
-              "doctor_status": "warn",
-              "last_start_at": "2026-08-20T11:53:47+00:00",
+              "doctor_status": "ok",
+              "last_start_at": "2026-08-20T11:55:28+00:00",
               "missed_intervals": 0
             },
             "rounds": 539
@@ -103334,16 +103336,18 @@ window.TELEMETRY = {
           "latest_gaps": [
             "quota_anthropic_unavailable",
             "source_anthropic_usage_partial",
+            "source_openai_usage_partial",
             "source_provider_usage_partial",
             "source_spec_corpus_partial",
             "source_suite_state_partial"
           ],
-          "observations": 15,
+          "observations": 17,
           "publish_status_counts": {
-            "success": 15
+            "success": 17
           },
           "reliability_status_counts": {
-            "warn": 6
+            "ok": 1,
+            "warn": 7
           },
           "schema_version": 2,
           "sources": {
@@ -103356,38 +103360,38 @@ window.TELEMETRY = {
               "latest_status": "ok",
               "skip_counts": {},
               "status_counts": {
-                "ok": 15
+                "ok": 17
               }
             },
             "anthropic_usage": {
               "latest_available": true,
               "latest_coverage": {
                 "from": "2026-07-22T07:23:27+00:00",
-                "to": "2026-08-20T11:52:22+00:00"
+                "to": "2026-08-20T11:55:46+00:00"
               },
               "latest_status": "partial",
               "skip_counts": {
                 "cursor_fingerprint_missing": 2,
-                "partial_trailing_line": 15
+                "partial_trailing_line": 17
               },
               "status_counts": {
-                "partial": 15
+                "partial": 17
               }
             },
             "openai_usage": {
               "latest_available": true,
               "latest_coverage": {
                 "from": "2026-02-28T12:19:02+00:00",
-                "to": "2026-08-20T11:53:39+00:00"
+                "to": "2026-08-20T11:51:32+00:00"
               },
-              "latest_status": "ok",
+              "latest_status": "partial",
               "skip_counts": {
                 "cursor_fingerprint_missing": 2,
-                "source_timeout_cached_last_good": 2
+                "source_timeout_cached_last_good": 3
               },
               "status_counts": {
-                "ok": 12,
-                "partial": 3
+                "ok": 13,
+                "partial": 4
               }
             },
             "provider_usage": {
@@ -103398,10 +103402,10 @@ window.TELEMETRY = {
               },
               "latest_status": "partial",
               "skip_counts": {
-                "provider_snapshot_stale": 15
+                "provider_snapshot_stale": 17
               },
               "status_counts": {
-                "partial": 15
+                "partial": 17
               }
             },
             "spec_corpus": {
@@ -103412,10 +103416,10 @@ window.TELEMETRY = {
               },
               "latest_status": "partial",
               "skip_counts": {
-                "frontmatter_missing_feature_id": 60
+                "frontmatter_missing_feature_id": 68
               },
               "status_counts": {
-                "partial": 15
+                "partial": 17
               }
             },
             "suite_state": {
@@ -103426,18 +103430,18 @@ window.TELEMETRY = {
               },
               "latest_status": "partial",
               "skip_counts": {
-                "debt_register_absent": 15,
-                "round_in_flight": 1007
+                "debt_register_absent": 17,
+                "round_in_flight": 1141
               },
               "status_counts": {
-                "partial": 15
+                "partial": 17
               }
             }
           },
           "vendors": {
             "anthropic": {
               "capture_status_counts": {
-                "ready_awaiting_slash_usage_snapshot": 13
+                "ready_awaiting_slash_usage_snapshot": 15
               },
               "latest": {
                 "capture_status": "ready_awaiting_slash_usage_snapshot",
@@ -103449,40 +103453,40 @@ window.TELEMETRY = {
                 "remaining_percent": null,
                 "remaining_status": "unknown",
                 "sessions": 6220,
-                "tokens": 11945751656,
+                "tokens": 11945849789,
                 "unpriced_tokens": 0,
-                "usd": 10882.758
+                "usd": 10883.607
               },
               "quota_status_counts": {
-                "unavailable": 15
+                "unavailable": 17
               },
               "remaining_status_counts": {
-                "unknown": 15
+                "unknown": 17
               }
             },
             "openai": {
               "capture_status_counts": {
-                "not_applicable": 13
+                "not_applicable": 15
               },
               "latest": {
                 "capture_status": "not_applicable",
                 "estimate_status": "available",
                 "quota_age_hours": 0.0,
-                "quota_observed_at": "2026-08-20T11:53:39+00:00",
+                "quota_observed_at": "2026-08-20T11:55:17+00:00",
                 "quota_source": "rollout_token_count",
                 "quota_status": "available",
                 "remaining_percent": 90.0,
                 "remaining_status": "available",
                 "sessions": 2603,
-                "tokens": 22711989325,
+                "tokens": 22712951220,
                 "unpriced_tokens": 10267797999,
-                "usd": 9509.941
+                "usd": 9510.548
               },
               "quota_status_counts": {
-                "available": 15
+                "available": 17
               },
               "remaining_status_counts": {
-                "available": 15
+                "available": 17
               }
             }
           }
@@ -103669,12 +103673,12 @@ window.TELEMETRY = {
     "now": {
       "current_row": null,
       "current_state": "idle",
-      "last_collect_at": "2026-08-20T11:53:47+00:00",
+      "last_collect_at": "2026-08-20T11:56:05+00:00",
       "last_driver_event_at": "2026-08-20T11:51:44+00:00",
-      "last_publish_at": "2026-08-20T10:52:26+00:00",
-      "last_publish_attempt_at": "2026-08-20T10:52:26+00:00",
-      "minutes_since_driver": 2.0,
-      "publish_age_hours": 1.0,
+      "last_publish_at": "2026-08-20T11:54:02+00:00",
+      "last_publish_attempt_at": "2026-08-20T11:54:02+00:00",
+      "minutes_since_driver": 4.3,
+      "publish_age_hours": 0.0,
       "publish_reason": "pushed",
       "publish_stale": false,
       "publish_status": "success",
@@ -103768,19 +103772,19 @@ window.TELEMETRY = {
     },
     "reliability": {
       "cadence": {
-        "current_age_minutes": 0.0,
+        "current_age_minutes": 0.6,
         "expected_interval_minutes": 30,
         "failed_finishes": 0,
         "first_start_at": "2026-08-20T10:03:49+00:00",
         "gap_threshold_minutes": 45,
         "gaps": [],
-        "last_finish_at": "2026-08-20T11:45:48+00:00",
-        "last_start_at": "2026-08-20T11:53:47+00:00",
+        "last_finish_at": "2026-08-20T11:55:37+00:00",
+        "last_start_at": "2026-08-20T11:55:28+00:00",
         "longest_gap_minutes": 0.0,
         "malformed_log_records": 0,
         "missed_intervals": 0,
-        "observed_finishes": 6,
-        "observed_starts": 7,
+        "observed_finishes": 8,
+        "observed_starts": 8,
         "status": "ok"
       },
       "checks": [
@@ -103800,14 +103804,14 @@ window.TELEMETRY = {
           "status": "ok"
         },
         {
-          "detail": "last_success_age_hours_1.0",
+          "detail": "last_success_age_hours_0.0",
           "name": "publish",
           "status": "ok"
         },
         {
-          "detail": "no_pages_outcome_recorded",
+          "detail": "latest_check_http_200_title_match",
           "name": "pages",
-          "status": "warn"
+          "status": "ok"
         },
         {
           "detail": "three_entries_present_and_reduced_priority",
@@ -103815,7 +103819,7 @@ window.TELEMETRY = {
           "status": "ok"
         },
         {
-          "detail": "held_by_current_collection",
+          "detail": "free",
           "name": "lock",
           "status": "ok"
         },
@@ -103847,23 +103851,23 @@ window.TELEMETRY = {
       ],
       "clock": {
         "last_anomaly_at": null,
-        "last_success_at": "2026-08-20T11:49:28+00:00",
+        "last_success_at": "2026-08-20T11:55:28+00:00",
         "schema_version": 2,
         "skew_seconds": 0.0,
         "status": "ok"
       },
       "disk": {
-        "free_bytes": 984278528000,
+        "free_bytes": 984277352448,
         "free_percent": 0.9104,
         "headline": "conservative_mtime_upper_bound",
         "measured_at": "2026-08-20T11:43:45+00:00",
         "projected_annual_growth_bytes": 146553852171,
         "runway_years": 6.714
       },
-      "observed_at": "2026-08-20T11:53:47+00:00",
+      "observed_at": "2026-08-20T11:56:05+00:00",
       "price_age_days": 0,
       "schema_version": 2,
-      "status": "warn",
+      "status": "ok",
       "tracked_manifest_violations": 0
     },
     "specs": {
@@ -109803,10 +109807,10 @@ window.TELEMETRY = {
       "available": true,
       "coverage": {
         "from": "2026-07-22T07:23:27+00:00",
-        "to": "2026-08-20T11:52:22+00:00"
+        "to": "2026-08-20T11:55:46+00:00"
       },
       "high_water": {
-        "bytes": 659100126,
+        "bytes": 659224899,
         "cache_hits": 6219,
         "files": 6220
       },
@@ -109828,20 +109832,25 @@ window.TELEMETRY = {
       "available": true,
       "coverage": {
         "from": "2026-02-28T12:19:02+00:00",
-        "to": "2026-08-20T11:53:39+00:00"
+        "to": "2026-08-20T11:51:32+00:00"
       },
       "high_water": {
-        "bytes": 5422701318,
-        "cache_hits": 2984,
+        "bytes": 5422755743,
+        "cache_hits": 2989,
         "files": 2989
       },
       "ingested": {
-        "cache_hits": 2984,
+        "cache_hits": 2989,
         "files": 2989,
-        "rescanned": 5
+        "rescanned": 0
       },
-      "skips": [],
-      "status": "ok",
+      "skips": [
+        {
+          "count": 1,
+          "reason": "source_timeout_cached_last_good"
+        }
+      ],
+      "status": "partial",
       "stores": 2
     },
     "provider_usage": {
