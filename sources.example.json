@@ -1,6 +1,7 @@
 {
-  "schema_version": 1,
-  "default_timeout_seconds": 120,
+  "schema_version": 2,
+  "default_timeout_seconds": 300,
+  "cache_root": "<MACHINE_LOCAL_CACHE_ROOT>",
   "sources": {
     "suite_state": {
       "enabled": false,
@@ -17,6 +18,17 @@
     "provider_usage": {
       "enabled": false,
       "root": "<PROVIDER_STATE_DIR>"
+    },
+    "anthropic_usage": {
+      "enabled": false,
+      "root": "<CLAUDE_PROJECTS_DIR>"
+    },
+    "openai_usage": {
+      "enabled": false,
+      "roots": [
+        "<CODEX_WSL_SESSIONS_DIR>",
+        "<CODEX_WINDOWS_SESSIONS_DIR>"
+      ]
     }
   }
 }

@@ -21,14 +21,19 @@ import statistics
 import subprocess
 import sys
 import tempfile
+import time
 import traceback
 import xml.etree.ElementTree as ET
 from pathlib import Path
 from typing import Any, Callable, Iterable
 
+import usage as vendor_usage
 
-SCHEMA_VERSION = 1
-SOURCE_NAMES = ("suite_state", "agent_repo", "spec_corpus", "provider_usage")
+
+SCHEMA_VERSION = 2
+BASE_SOURCE_NAMES = ("suite_state", "agent_repo", "spec_corpus", "provider_usage")
+USAGE_SOURCE_NAMES = ("anthropic_usage", "openai_usage")
+SOURCE_NAMES = BASE_SOURCE_NAMES + USAGE_SOURCE_NAMES
 AVAILABLE_STATUSES = {"ok", "partial"}
 KNOWN_EVENT_KINDS = {
     "before-preview",
@@ -1344,7 +1349,224 @@ def build_daily_rollups(
     return dict(sorted(daily.items()))
 
 
-def combine_results(results: dict[str, dict[str, Any]], now: dt.datetime) -> dict[str, Any]:
+def provider_snapshot_for(provider: dict[str, Any], names: set[str]) -> dict[str, Any] | None:
+    for item in provider.get("providers", []):
+        if not isinstance(item, dict) or str(item.get("provider")) not in names:
+            continue
+        windows = item.get("quota_windows") if isinstance(item.get("quota_windows"), list) else []
+        return {
+            "source": "provider_usage_snapshot",
+            "provider": safe_identifier(item.get("provider")),
+            "remaining_status": safe_identifier(item.get("remaining_status")),
+            "remaining_percent": rounded(safe_float(item.get("remaining_percent"))),
+            "quota_status": safe_identifier(item.get("quota_status")),
+            "quota_windows": windows,
+        }
+    return None
+
+
+def build_usage_left(provider: dict[str, Any], usage_result: dict[str, Any]) -> dict[str, Any]:
+    snapshot = provider.get("snapshot") if isinstance(provider.get("snapshot"), dict) else {}
+    age_hours = snapshot.get("age_hours")
+    anthropic = provider_snapshot_for(provider, {"anthropic", "claude"})
+    if anthropic:
+        anthropic.update({"observed_at": snapshot.get("generated_at"), "age_hours": age_hours})
+    else:
+        anthropic = {
+            "source": "provider_usage_snapshot",
+            "provider": "anthropic",
+            "remaining_status": "unavailable",
+            "remaining_percent": None,
+            "quota_status": "unavailable",
+            "quota_windows": [],
+            "observed_at": snapshot.get("generated_at"),
+            "age_hours": age_hours,
+        }
+    limits = usage_result.get("rate_limits") if isinstance(usage_result.get("rate_limits"), dict) else None
+    if limits:
+        observed = parse_timestamp(limits.get("observed_at"))
+        openai_age = max(0.0, (utc_now() - observed).total_seconds() / 3600) if observed else None
+        openai = {
+            "source": "rollout_token_count",
+            "provider": "openai",
+            "remaining_status": "available",
+            "remaining_percent": limits.get("primary", {}).get("remaining_percent") if isinstance(limits.get("primary"), dict) else None,
+            "quota_status": "available",
+            "quota_windows": [
+                {"window": name, **value}
+                for name in ("primary", "secondary")
+                if isinstance((value := limits.get(name)), dict)
+            ],
+            "observed_at": limits.get("observed_at"),
+            "age_hours": rounded(openai_age, 1),
+        }
+    else:
+        openai = provider_snapshot_for(provider, {"openai", "codex"}) or {
+            "source": "provider_usage_snapshot",
+            "provider": "openai",
+            "remaining_status": "unavailable",
+            "remaining_percent": None,
+            "quota_status": "unavailable",
+            "quota_windows": [],
+        }
+        openai.update({"observed_at": snapshot.get("generated_at"), "age_hours": age_hours})
+    return {"anthropic": anthropic, "openai": openai}
+
+
+def build_spec_ledger(
+    rounds: list[dict[str, Any]],
+    row_time: dict[str, Any],
+    corpus: dict[str, Any],
+    repo: dict[str, Any],
+) -> tuple[list[dict[str, Any]], dict[str, Any]]:
+    created = {
+        item.get("feature_id"): item.get("created")
+        for item in corpus.get("records", [])
+        if isinstance(item, dict) and item.get("feature_id")
+    }
+    accepts = {
+        item.get("row"): item.get("timestamp")
+        for item in repo.get("accept_commits", [])
+        if isinstance(item, dict) and item.get("row")
+    }
+    grouped: dict[str, list[dict[str, Any]]] = collections.defaultdict(list)
+    for item in rounds:
+        if isinstance(item, dict):
+            grouped[safe_identifier(item.get("spec"))].append(item)
+    ledger: list[dict[str, Any]] = []
+    for spec, values in sorted(grouped.items()):
+        values.sort(key=lambda item: safe_int(item.get("round")))
+        accepted_round = next((item for item in values if item.get("accepted")), None)
+        row = safe_identifier(values[0].get("row"), spec)
+        timing = row_time.get(row) if isinstance(row_time.get(row), dict) else {}
+        created_at = parse_timestamp(f"{created[spec]}T00:00:00+00:00") if created.get(spec) else None
+        accepted_at = parse_timestamp(accepts.get(row))
+        lead_hours = None
+        if created_at and accepted_at:
+            lead_hours = rounded(max(0.0, (accepted_at - created_at).total_seconds() / 3600), 3)
+        builder_tokens = sum(safe_int(item.get("builder", {}).get("tokens")) for item in values)
+        judge_tokens = sum(safe_int(item.get("judge", {}).get("tokens")) for item in values)
+        builder_usd = sum(float(item.get("builder", {}).get("usd") or 0) for item in values)
+        judge_usd = sum(float(item.get("judge", {}).get("usd") or 0) for item in values)
+        judge_by_vendor: dict[str, float] = collections.defaultdict(float)
+        for item in values:
+            vendor = safe_identifier(item.get("judge", {}).get("vendor"))
+            judge_by_vendor[vendor] += float(item.get("judge", {}).get("usd") or 0)
+        ledger.append(
+            {
+                "spec": spec,
+                "row": row,
+                "outcome": "accepted" if accepted_round else safe_identifier(values[-1].get("verdict")).lower(),
+                "accepted": bool(accepted_round),
+                "rounds_count": len(values),
+                "wall_hours": timing.get("wall_hours"),
+                "lead_hours": lead_hours,
+                "lead_time_status": "available" if lead_hours is not None else "created_or_accept_timestamp_missing",
+                "phase_hours": timing.get("phases_hours", {}),
+                "tokens": builder_tokens + judge_tokens,
+                "usd": rounded(builder_usd + judge_usd) or 0.0,
+                "unpriced_tokens": sum(safe_int(item.get("unpriced_tokens")) for item in values),
+                "build": {"tokens": builder_tokens, "usd": rounded(builder_usd) or 0.0},
+                "judge": {
+                    "tokens": judge_tokens,
+                    "usd": rounded(judge_usd) or 0.0,
+                    "usd_by_vendor": {key: rounded(value) or 0.0 for key, value in sorted(judge_by_vendor.items())},
+                },
+                "debt_at_accept": accepted_round.get("debt_at_accept") if accepted_round else None,
+                "findings_total": sum(safe_int(item.get("findings")) for item in values),
+                "rounds": values,
+            }
+        )
+    accepted = [item for item in ledger if item["accepted"]]
+    total_usd = sum(item["usd"] for item in accepted)
+    total_tokens = sum(item["tokens"] for item in accepted)
+    total_rounds = sum(item["rounds_count"] for item in accepted)
+    timed = [item for item in accepted if isinstance(item.get("wall_hours"), (int, float))]
+    total_hours = sum(float(item["wall_hours"]) for item in timed)
+    denominator = len(accepted)
+    current_week = week_key(utc_now())
+    prior_week = week_key(utc_now() - dt.timedelta(days=7))
+    weekly_accepted: dict[str, list[dict[str, Any]]] = collections.defaultdict(list)
+    weekly_terminal: dict[str, list[dict[str, Any]]] = collections.defaultdict(list)
+    for item in ledger:
+        terminal_round = next((row for row in item["rounds"] if row.get("accepted")), item["rounds"][-1] if item["rounds"] else None)
+        key = week_key(parse_timestamp(terminal_round.get("ended_at"))) if terminal_round else None
+        if key:
+            weekly_terminal[key].append(item)
+    for item in accepted:
+        accepted_round = next((row for row in item["rounds"] if row.get("accepted")), None)
+        key = week_key(parse_timestamp(accepted_round.get("ended_at"))) if accepted_round else None
+        if key:
+            weekly_accepted[key].append(item)
+
+    def weekly_value(key: str | None, field: str) -> float | None:
+        values = weekly_accepted.get(key or "", [])
+        if not values:
+            return None
+        if field == "usd":
+            return sum(item["usd"] for item in values) / len(values)
+        if field == "tokens":
+            return sum(item["tokens"] for item in values) / len(values)
+        if field == "rounds":
+            return sum(item["rounds_count"] for item in values) / len(values)
+        timed_values = [item for item in values if isinstance(item.get("wall_hours"), (int, float))]
+        return sum(item["wall_hours"] for item in timed_values) / len(timed_values) if timed_values else None
+
+    deltas = {}
+    for field in ("usd", "hours", "rounds", "tokens"):
+        current = weekly_value(current_week, field)
+        previous = weekly_value(prior_week, field)
+        deltas[field] = {
+            "current": rounded(current, 3),
+            "previous": rounded(previous, 3),
+            "delta": rounded(current - previous, 3) if current is not None and previous is not None else None,
+            "reason": None if current is not None and previous is not None else "current_or_previous_week_has_no_accepted_features",
+        }
+    current_terminal = weekly_terminal.get(current_week or "", [])
+    previous_terminal = weekly_terminal.get(prior_week or "", [])
+    efficiency_current = rate(len(weekly_accepted.get(current_week or "", [])), len(current_terminal))
+    efficiency_previous = rate(len(weekly_accepted.get(prior_week or "", [])), len(previous_terminal))
+    deltas["acceptance_efficiency"] = {
+        "current": efficiency_current,
+        "previous": efficiency_previous,
+        "delta": rounded(efficiency_current - efficiency_previous, 4) if efficiency_current is not None and efficiency_previous is not None else None,
+        "reason": None if efficiency_current is not None and efficiency_previous is not None else "current_or_previous_week_has_no_terminal_specs",
+    }
+    headline = {
+        "accepted_features": denominator,
+        "accepted_with_wall_time": len(timed),
+        "per_accepted": {
+            "usd": rounded(total_usd / denominator) if denominator else None,
+            "hours": rounded(total_hours / len(timed), 3) if timed else None,
+            "rounds": rounded(total_rounds / denominator, 3) if denominator else None,
+            "tokens": rounded(total_tokens / denominator, 1) if denominator else None,
+        },
+        "totals": {
+            "usd": rounded(total_usd) or 0.0,
+            "hours": rounded(total_hours, 3) or 0.0,
+            "rounds": total_rounds,
+            "tokens": total_tokens,
+        },
+        "medians": {
+            "usd": rounded(statistics.median([item["usd"] for item in accepted])) if accepted else None,
+            "hours": rounded(statistics.median([item["wall_hours"] for item in timed]), 3) if timed else None,
+            "rounds": rounded(statistics.median([item["rounds_count"] for item in accepted]), 3) if accepted else None,
+            "tokens": rounded(statistics.median([item["tokens"] for item in accepted]), 1) if accepted else None,
+        },
+        "acceptance_efficiency": rate(denominator, len(ledger)),
+        "week_over_week": deltas,
+    }
+    return ledger, headline
+
+
+def combine_results(
+    results: dict[str, dict[str, Any]],
+    now: dt.datetime,
+    usage_result: dict[str, Any] | None = None,
+    publish_state: dict[str, Any] | None = None,
+) -> dict[str, Any]:
+    usage_result = usage_result or {}
+    publish_state = publish_state or {}
     suite = results.get("suite_state", {})
     repo = results.get("agent_repo", {})
     corpus = results.get("spec_corpus", {})
@@ -1397,6 +1619,19 @@ def combine_results(results: dict[str, dict[str, Any]], now: dt.datetime) -> dic
     models["policy"] = policy
     generated_at = iso(now)
     collection_date = now.astimezone().date().isoformat()
+    ledger, worth = build_spec_ledger(
+        usage_result.get("rounds", []),
+        usage_result.get("row_time", {}),
+        corpus,
+        repo,
+    )
+    last_event = parse_timestamp(usage_result.get("time", {}).get("last_event_at"))
+    minutes_since = rounded(max(0.0, (now - last_event).total_seconds() / 60), 1) if last_event else None
+    current_row = suite.get("usage", {}).get("state_current")
+    current_state = usage_result.get("time", {}).get("last_step_state") if current_row else "idle"
+    stalled = bool(current_row and minutes_since is not None and minutes_since > 90)
+    published_at = parse_timestamp(publish_state.get("last_success_at"))
+    publish_age = rounded(max(0.0, (now - published_at).total_seconds() / 3600), 1) if published_at else None
     snapshot = {
         "schema_version": SCHEMA_VERSION,
         "generated_at": generated_at,
@@ -1423,9 +1658,37 @@ def combine_results(results: dict[str, dict[str, Any]], now: dt.datetime) -> dic
             "efficacy": suite.get("efficacy", {}),
             "specs": {"counts": corpus.get("counts", {}), "records": corpus.get("records", [])},
             "provider_usage": {"snapshot": provider.get("snapshot"), "providers": provider.get("providers", [])},
+            "cost": {
+                **usage_result.get("machine", {}),
+                "parity": usage_result.get("parity", {}),
+                "prices": usage_result.get("prices", {}),
+                "usage_left": build_usage_left(provider, usage_result),
+                "daily": [],
+            },
+            "time_v2": usage_result.get("time", {}),
+            "worth": worth,
+            "ledger": {"specs": ledger, "rounds": usage_result.get("rounds", [])},
+            "now": {
+                "current_row": current_row,
+                "current_state": current_state,
+                "last_driver_event_at": usage_result.get("time", {}).get("last_event_at"),
+                "minutes_since_driver": minutes_since,
+                "stall_threshold_minutes": 90,
+                "stalled": stalled,
+                "today": usage_result.get("time", {}).get("today", {}),
+                "last_collect_at": generated_at,
+                "last_publish_at": publish_state.get("last_success_at"),
+                "last_publish_attempt_at": publish_state.get("last_attempt_at"),
+                "publish_status": safe_identifier(publish_state.get("status"), "never"),
+                "publish_reason": safe_identifier(publish_state.get("reason"), "no_publish_record"),
+                "publish_age_hours": publish_age,
+                "publish_stale": publish_age is None or publish_age > 28,
+            },
         },
         "history": [],
         "_daily_rollups": build_daily_rollups(suite, repo, floor, generated_at or "", collection_date),
+        "_cost_rollups": usage_result.get("daily", {}),
+        "_round_records": usage_result.get("rounds", []),
     }
     snapshot["metrics"]["judges"].pop("accepted_round_values", None)
     snapshot["metrics"]["tests"].pop("signature", None)
@@ -1442,6 +1705,7 @@ def forbidden_value_violations(value: Any) -> list[str]:
         "gh" + "o_",
         "gh" + "p_",
         "sk-" + "ant",
+        "sk-" + "proj",
         "A" + "KIA",
         "ssh" + "-",
     ]
@@ -1462,6 +1726,51 @@ def forbidden_value_violations(value: Any) -> list[str]:
 
     walk(value)
     return sorted(set(violations))
+
+
+def load_sensitive_terms(path: Path) -> list[str]:
+    try:
+        lines = path.read_text(encoding="utf-8").splitlines()
+    except OSError:
+        return []
+    return [line.strip() for line in lines if line.strip() and not line.lstrip().startswith("#")]
+
+
+def repository_scrub_violations(project_root: Path, denylist_path: Path | None = None) -> list[dict[str, str]]:
+    """Inspect publishable files without echoing any matched sensitive value."""
+    command = ["git", "-C", str(project_root), "ls-files", "-z", "--cached", "--others", "--exclude-standard"]
+    try:
+        listed = subprocess.run(command, check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE).stdout
+    except (OSError, subprocess.CalledProcessError) as exc:
+        raise RuntimeError("scrub_git_inventory_failed") from exc
+    literal_patterns = {
+        "private_path": ["/home/" + "josiah", "/mnt/" + "c"],
+        "credential_pattern": [
+            "gh" + "o_", "gh" + "p_", "sk-" + "ant", "sk-" + "proj", "A" + "KIA", "ssh" + "-",
+        ],
+        "local_denylist": load_sensitive_terms(denylist_path or project_root / "sensitive-terms.local.txt"),
+    }
+    email_re = re.compile(rb"(?<![A-Za-z0-9._%+-])[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}(?![A-Za-z0-9.-])")
+    phone_re = re.compile(rb"(?<!\d)(?:\+?1[ .-])?(?:\(\d{3}\)|\d{3})[ .-]\d{3}[ .-]\d{4}(?!\d)")
+    violations: list[dict[str, str]] = []
+    for raw_name in listed.split(b"\0"):
+        if not raw_name:
+            continue
+        relative = os.fsdecode(raw_name)
+        path = project_root / relative
+        try:
+            content = path.read_bytes()
+        except OSError:
+            violations.append({"path": relative, "reason": "unreadable_file"})
+            continue
+        for reason, values in literal_patterns.items():
+            if any(value.encode("utf-8") in content for value in values):
+                violations.append({"path": relative, "reason": reason})
+        if email_re.search(content):
+            violations.append({"path": relative, "reason": "email_pattern"})
+        if phone_re.search(content):
+            violations.append({"path": relative, "reason": "phone_pattern"})
+    return sorted(violations, key=lambda item: (item["path"], item["reason"]))
 
 
 def atomic_write(path: Path, text: str) -> None:
@@ -1485,9 +1794,63 @@ def json_text(value: Any) -> str:
 
 def comparable_rollup(value: dict[str, Any]) -> dict[str, Any]:
     copy = dict(value)
+    copy.pop("schema_version", None)
     copy.pop("collected_at", None)
     copy.pop("coverage_corrections", None)
     return copy
+
+
+def merge_round_records(path: Path, records: list[dict[str, Any]], generated_at: str) -> dict[str, Any]:
+    existing: list[dict[str, Any]] = []
+    existing_payload: dict[str, Any] | None = None
+    if path.is_file():
+        try:
+            value = json.loads(path.read_text(encoding="utf-8"))
+            if isinstance(value, dict) and isinstance(value.get("rounds"), list):
+                existing_payload = value
+                existing = [item for item in value["rounds"] if isinstance(item, dict)]
+        except (OSError, json.JSONDecodeError):
+            existing = []
+    merged = {
+        (safe_identifier(item.get("spec")), safe_int(item.get("round"))): item
+        for item in existing
+    }
+    for item in records:
+        if isinstance(item, dict):
+            merged[(safe_identifier(item.get("spec")), safe_int(item.get("round")))] = item
+    ordered = [merged[key] for key in sorted(merged, key=lambda item: (item[0], item[1]))]
+    if existing_payload is not None and existing_payload.get("rounds") == ordered:
+        return existing_payload
+    return {
+        "schema_version": SCHEMA_VERSION,
+        "generated_at": generated_at,
+        "rounds": ordered,
+    }
+
+
+def default_cost_day(day: str, collected_at: str) -> dict[str, Any]:
+    return {
+        "schema_version": SCHEMA_VERSION,
+        "date": day,
+        "collected_at": collected_at,
+        "vendors": {
+            vendor: {
+                "tokens": 0,
+                "usd": 0.0,
+                "unpriced_tokens": 0,
+                "by_model": {},
+                "by_scope": {
+                    scope: {"tokens": 0, "classes": {}, "usd": 0.0, "unpriced_tokens": 0, "by_model": {}}
+                    for scope in ("loop", "other")
+                },
+            }
+            for vendor in ("anthropic", "openai")
+        },
+        "attribution": {
+            vendor: {tier: 0 for tier in ("exact", "correlated", "unattributed")}
+            for vendor in ("anthropic", "openai")
+        },
+    }
 
 
 def write_outputs(snapshot: dict[str, Any], project_root: Path) -> list[Path]:
@@ -1495,6 +1858,8 @@ def write_outputs(snapshot: dict[str, Any], project_root: Path) -> list[Path]:
     history_root = data_root / "history"
     history_root.mkdir(parents=True, exist_ok=True)
     rollups = snapshot.pop("_daily_rollups", {})
+    cost_rollups = snapshot.pop("_cost_rollups", {})
+    round_records = snapshot.pop("_round_records", [])
     today = snapshot["collection"]["date"]
     corrections: list[dict[str, str]] = []
     written: list[Path] = []
@@ -1508,6 +1873,20 @@ def write_outputs(snapshot: dict[str, Any], project_root: Path) -> list[Path]:
                 raise RuntimeError("history_read_error") from exc
             if comparable_rollup(existing) != comparable_rollup(candidate):
                 corrections.append({"kind": "coverage_correction", "source": "aggregate", "date": day})
+            continue
+        atomic_write(path, json_text(candidate))
+        written.append(path)
+
+    cost_rollups.setdefault(today, default_cost_day(today, snapshot["generated_at"]))
+    for day, candidate in sorted(cost_rollups.items()):
+        path = history_root / f"cost-{day}.json"
+        if path.is_file() and day != today:
+            try:
+                existing = json.loads(path.read_text(encoding="utf-8"))
+            except (OSError, json.JSONDecodeError) as exc:
+                raise RuntimeError("cost_history_read_error") from exc
+            if comparable_rollup(existing) != comparable_rollup(candidate):
+                corrections.append({"kind": "coverage_correction", "source": "cost", "date": day})
             continue
         atomic_write(path, json_text(candidate))
         written.append(path)
@@ -1531,6 +1910,20 @@ def write_outputs(snapshot: dict[str, Any], project_root: Path) -> list[Path]:
             history.append(item)
     history.sort(key=lambda item: item.get("date", ""))
     snapshot["history"] = history
+    cost_history = []
+    for path in sorted(history_root.glob("cost-*.json")):
+        try:
+            item = json.loads(path.read_text(encoding="utf-8"))
+        except (OSError, json.JSONDecodeError) as exc:
+            raise RuntimeError("cost_history_read_error") from exc
+        if isinstance(item, dict):
+            cost_history.append(item)
+    cost_history.sort(key=lambda item: item.get("date", ""))
+    snapshot.setdefault("metrics", {}).setdefault("cost", {})["daily"] = cost_history
+    rounds_path = data_root / "rounds.json"
+    rounds_payload = merge_round_records(rounds_path, round_records, snapshot["generated_at"])
+    atomic_write(rounds_path, json_text(rounds_payload))
+    written.append(rounds_path)
     violations = forbidden_value_violations(snapshot)
     if violations:
         raise RuntimeError("privacy_allowlist_violation")
@@ -1551,15 +1944,155 @@ def load_config(path: Path) -> dict[str, Any]:
     return value
 
 
-def collect_snapshot(config: dict[str, Any], now: dt.datetime | None = None) -> tuple[dict[str, Any], dict[str, dict[str, Any]]]:
+def configured_root(source_configs: dict[str, Any], name: str) -> Path | None:
+    value = source_configs.get(name) if isinstance(source_configs.get(name), dict) else {}
+    text = str(value.get("root") or "").strip()
+    if not value.get("enabled") or not text or (text.startswith("<") and text.endswith(">")):
+        return None
+    return Path(text).expanduser()
+
+
+def configured_roots(source_configs: dict[str, Any], name: str) -> list[Path]:
+    value = source_configs.get(name) if isinstance(source_configs.get(name), dict) else {}
+    if not value.get("enabled"):
+        return []
+    candidates = value.get("roots") if isinstance(value.get("roots"), list) else [value.get("root")]
+    roots: list[Path] = []
+    for candidate in candidates:
+        text = str(candidate or "").strip()
+        if text and not (text.startswith("<") and text.endswith(">")):
+            roots.append(Path(text).expanduser())
+    return roots
+
+
+def read_publish_state(cache_root: Path) -> dict[str, Any]:
+    path = cache_root / "publish-status.json"
+    try:
+        value = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        return {}
+    if not isinstance(value, dict):
+        return {}
+    return {
+        "status": safe_identifier(value.get("status"), "unknown"),
+        "reason": safe_identifier(value.get("reason"), "unknown"),
+        "last_attempt_at": iso(parse_timestamp(value.get("last_attempt_at"))),
+        "last_success_at": iso(parse_timestamp(value.get("last_success_at"))),
+    }
+
+
+def read_subscription_amortization(path: Path, accepted_features: int) -> dict[str, Any]:
+    if not path.is_file():
+        return {"status": "unavailable", "usd_per_accepted": None, "reason": "subscriptions_local_absent"}
+    try:
+        value = json.loads(path.read_text(encoding="utf-8"))
+        monthly = value.get("monthly_usd") if isinstance(value, dict) else None
+        amounts = monthly.values() if isinstance(monthly, dict) else []
+        total = sum(float(item) for item in amounts if isinstance(item, (int, float)) and float(item) >= 0)
+    except (OSError, ValueError, TypeError, json.JSONDecodeError):
+        return {"status": "unavailable", "usd_per_accepted": None, "reason": "subscriptions_local_invalid"}
+    if not accepted_features:
+        return {"status": "unavailable", "usd_per_accepted": None, "reason": "no_accepted_features"}
+    return {
+        "status": "available",
+        "usd_per_accepted": rounded(total / accepted_features),
+        "reason": "monthly_subscription_total_divided_by_observed_accepted_features",
+    }
+
+
+def record_publish_state(cache_root: Path, status: str, reason: str, now: dt.datetime | None = None) -> dict[str, Any]:
     now = now or utc_now()
+    previous = read_publish_state(cache_root)
+    raw_previous: dict[str, Any] = {}
+    try:
+        candidate = json.loads((cache_root / "publish-status.json").read_text(encoding="utf-8"))
+        raw_previous = candidate if isinstance(candidate, dict) else {}
+    except (OSError, json.JSONDecodeError):
+        pass
+    last_success = previous.get("last_success_at")
+    if status == "success":
+        last_success = iso(now)
+    elif raw_previous.get("reason") == "scheduled_push":
+        last_success = iso(parse_timestamp(raw_previous.get("previous_success_at")))
+    value = {
+        "schema_version": SCHEMA_VERSION,
+        "status": safe_identifier(status),
+        "reason": safe_identifier(reason),
+        "last_attempt_at": iso(now),
+        "last_success_at": last_success,
+    }
+    if status == "success" and reason == "scheduled_push":
+        value["previous_success_at"] = previous.get("last_success_at")
+    atomic_write(cache_root / "publish-status.json", json_text(value))
+    return value
+
+
+def publish_due(cache_root: Path, now: dt.datetime | None = None, guard_hours: float = 20.0) -> bool:
+    now = now or utc_now()
+    state = read_publish_state(cache_root)
+    if state.get("reason") == "scheduled_push":
+        return True
+    last = parse_timestamp(state.get("last_success_at"))
+    return last is None or (now - last).total_seconds() >= guard_hours * 3600
+
+
+def collect_snapshot(
+    config: dict[str, Any],
+    now: dt.datetime | None = None,
+    project_root: Path | None = None,
+) -> tuple[dict[str, Any], dict[str, dict[str, Any]]]:
+    now = now or utc_now()
+    project_root = (project_root or Path(__file__).resolve().parent).resolve()
     default_timeout = safe_float(config.get("default_timeout_seconds")) or 120.0
     source_configs = config.get("sources", {})
     results: dict[str, dict[str, Any]] = {}
-    for name in SOURCE_NAMES:
+    for name in BASE_SOURCE_NAMES:
         value = source_configs.get(name) if isinstance(source_configs.get(name), dict) else {}
         results[name] = run_source(name, value, now, default_timeout)
-    snapshot = combine_results(results, now)
+    cache_text = str(config.get("cache_root") or "").strip()
+    cache_root = Path(cache_text).expanduser() if cache_text else Path.home() / ".local" / "state" / "agent-telemetry"
+    usage_result: dict[str, Any] = {}
+    usage_enabled = {
+        name: bool(isinstance(source_configs.get(name), dict) and source_configs[name].get("enabled"))
+        for name in USAGE_SOURCE_NAMES
+    }
+    for name in USAGE_SOURCE_NAMES:
+        if not usage_enabled[name]:
+            results[name] = unavailable_result("disabled", "source_disabled")
+    suite_root = configured_root(source_configs, "suite_state")
+    agent_root = configured_root(source_configs, "agent_repo")
+    anthropic_roots = configured_roots(source_configs, "anthropic_usage")
+    openai_roots = configured_roots(source_configs, "openai_usage")
+    if any(usage_enabled.values()) and suite_root and agent_root:
+        try:
+            usage_result = vendor_usage.collect_usage(
+                suite_root=suite_root,
+                anthropic_roots=anthropic_roots,
+                openai_roots=openai_roots,
+                agent_root=agent_root,
+                cache_root=cache_root,
+                prices_path=project_root / "prices.json",
+                now=now,
+            )
+            for name in USAGE_SOURCE_NAMES:
+                if usage_enabled[name]:
+                    results[name] = {"meta": usage_result.get("sources", {}).get(name, meta(status="error"))}
+        except Exception:
+            if os.environ.get("AGENT_TELEMETRY_DEBUG"):
+                traceback.print_exc()
+            for name in USAGE_SOURCE_NAMES:
+                if usage_enabled[name]:
+                    results[name] = unavailable_result("error", "usage_adapter_error")
+            usage_result = {}
+    elif any(usage_enabled.values()):
+        for name in USAGE_SOURCE_NAMES:
+            if usage_enabled[name]:
+                results[name] = unavailable_result("absent", "scope_root_unconfigured")
+    snapshot = combine_results(results, now, usage_result, read_publish_state(cache_root))
+    accepted_features = safe_int(snapshot.get("metrics", {}).get("worth", {}).get("accepted_features"))
+    snapshot.setdefault("metrics", {}).setdefault("worth", {})["subscription_amortization"] = read_subscription_amortization(
+        project_root / "subscriptions.local.json", accepted_features
+    )
     return snapshot, results
 
 
@@ -1587,20 +2120,29 @@ def check_sources(config: dict[str, Any]) -> int:
         "agent_repo": (".git", "tools/suite/models.json", "tools/suite/roster.json"),
         "spec_corpus": ("review/feature-specs", "archive/features"),
         "provider_usage": ("usage/provider-usage.json",),
+        "anthropic_usage": tuple(),
+        "openai_usage": tuple(),
     }
     for name in SOURCE_NAMES:
         value = sources.get(name) if isinstance(sources.get(name), dict) else {}
         if not value.get("enabled"):
             print(f"[{name}] disabled: source_disabled")
             continue
-        root_text = str(value.get("root") or "")
-        if not root_text or (root_text.startswith("<") and root_text.endswith(">")):
+        root_values = value.get("roots") if isinstance(value.get("roots"), list) else [value.get("root")]
+        root_texts = [str(item or "") for item in root_values]
+        root_texts = [item for item in root_texts if item and not (item.startswith("<") and item.endswith(">"))]
+        if not root_texts:
             print(f"[{name}] absent: root_unconfigured")
             continue
-        root = Path(root_text).expanduser()
         timeout = safe_float(value.get("timeout_seconds")) or default_timeout
         try:
             with source_time_budget(timeout):
+                if name in USAGE_SOURCE_NAMES:
+                    present = sum(Path(item).expanduser().is_dir() for item in root_texts)
+                    status = "available" if present == len(root_texts) else "partial" if present else "absent"
+                    print(f"[{name}] {status}: roots={present}/{len(root_texts)}")
+                    continue
+                root = Path(root_texts[0]).expanduser()
                 if not root.is_dir():
                     print(f"[{name}] absent: root_missing")
                     continue
@@ -1637,6 +2179,10 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--commit", action="store_true", help="commit only generated data after collection")
     parser.add_argument("--config", type=Path, help="configuration file (default: sources.local.json, then example)")
     parser.add_argument("--project-root", type=Path, help="output project root (primarily for fixture verification)")
+    parser.add_argument("--scrub", action="store_true", help="scan the publishable repository tree and exit")
+    parser.add_argument("--publish-due", action="store_true", help="exit 0 when the 20-hour publish guard is due")
+    parser.add_argument("--record-publish", choices=("success", "failure", "blocked"), help="record machine-local publish state and exit")
+    parser.add_argument("--publish-reason", default="scheduled", help="allowlisted reason used with --record-publish")
     return parser.parse_args(argv)
 
 
@@ -1647,9 +2193,27 @@ def main(argv: list[str] | None = None) -> int:
     config_path = args.config or (script_root / "sources.local.json" if (script_root / "sources.local.json").is_file() else script_root / "sources.example.json")
     try:
         config = load_config(config_path)
+        cache_text = str(config.get("cache_root") or "").strip()
+        cache_root = Path(cache_text).expanduser() if cache_text else Path.home() / ".local" / "state" / "agent-telemetry"
+        if args.scrub:
+            violations = repository_scrub_violations(project_root)
+            if violations:
+                for item in violations:
+                    print(f"[scrub] blocked: {item['path']} ({item['reason']})", file=sys.stderr)
+                return 3
+            print("[scrub] ok: publishable tree contains no blocked patterns")
+            return 0
+        if args.publish_due:
+            due = publish_due(cache_root)
+            print(f"[publish] {'due' if due else 'not_due'}")
+            return 0 if due else 1
+        if args.record_publish:
+            value = record_publish_state(cache_root, args.record_publish, args.publish_reason)
+            print(f"[publish] recorded {value['status']} ({value['reason']})")
+            return 0
         if args.check:
             return check_sources(config)
-        snapshot, results = collect_snapshot(config)
+        snapshot, results = collect_snapshot(config, project_root=project_root)
         for name in SOURCE_NAMES:
             print(source_summary(name, results[name]))
         if snapshot["collection"]["sources_enabled"] == 0:

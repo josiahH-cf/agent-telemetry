@@ -3,462 +3,140 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="color-scheme" content="light">
-  <title>Agent Build Telemetry</title>
+  <meta name="color-scheme" content="dark">
+  <title>Agent telemetry · Continuous loop economics</title>
   <style>
-    :root {
-      --accent: #316c64;
-      --accent-soft: #e3efec;
-      --ink: #17201f;
-      --muted: #63706e;
-      --line: #d8dfdd;
-      --surface: #ffffff;
-      --canvas: #f5f7f6;
-      --warning: #8a5b20;
-      --warning-soft: #f7ecdc;
-      --radius: 14px;
-    }
-    * { box-sizing: border-box; }
-    html { scroll-behavior: smooth; }
-    body {
-      margin: 0;
-      color: var(--ink);
-      background: var(--canvas);
-      overflow-x: clip;
-      font-family: ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      font-size: 15px;
-      line-height: 1.5;
-    }
-    main { width: min(1180px, calc(100% - 32px)); margin: 0 auto 64px; }
-    header { padding: 46px 0 24px; display: grid; gap: 12px; }
-    .eyebrow { color: var(--accent); font-weight: 750; letter-spacing: .08em; text-transform: uppercase; font-size: 12px; }
-    h1 { margin: 0; font-size: clamp(30px, 5vw, 50px); line-height: 1.05; letter-spacing: -.035em; }
-    h2 { margin: 0; font-size: clamp(22px, 3vw, 30px); letter-spacing: -.025em; }
-    h3 { margin: 0 0 12px; font-size: 16px; }
-    p { margin: 0; }
-    .lede { max-width: 760px; color: var(--muted); font-size: 17px; }
-    .topline { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 6px; }
-    .chip { display: inline-flex; align-items: center; gap: 7px; border: 1px solid var(--line); background: var(--surface); border-radius: 999px; padding: 6px 10px; color: var(--muted); font-size: 12px; }
-    .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--accent); }
-    .dot.partial { background: var(--warning); }
-    .dot.absent { background: #9ca6a4; }
-    nav { position: sticky; top: 0; z-index: 5; margin: 0 -16px; padding: 10px 16px; background: color-mix(in srgb, var(--canvas) 93%, transparent); backdrop-filter: blur(10px); overflow-x: auto; border-bottom: 1px solid var(--line); }
-    nav .links { display: flex; gap: 6px; min-width: max-content; }
-    nav a { color: var(--muted); text-decoration: none; padding: 7px 10px; border-radius: 8px; font-size: 13px; }
-    nav a:hover { color: var(--ink); background: var(--surface); }
-    section { padding-top: 52px; }
-    .section-head { display: flex; justify-content: space-between; gap: 20px; align-items: end; margin-bottom: 18px; }
-    .section-copy { color: var(--muted); max-width: 610px; }
-    .tiles { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
-    .tile, .card { border: 1px solid var(--line); background: var(--surface); border-radius: var(--radius); }
-    .tile { min-height: 128px; padding: 18px; display: flex; flex-direction: column; justify-content: space-between; gap: 12px; }
-    .tile-label { color: var(--muted); font-size: 13px; }
-    .tile-value { font-size: clamp(25px, 4vw, 37px); line-height: 1; letter-spacing: -.035em; font-variant-numeric: tabular-nums; }
-    .tile-value.compact { font-size: 18px; line-height: 1.35; letter-spacing: -.01em; }
-    .tile-note { color: var(--muted); font-size: 11px; }
-    .grid-2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
-    .grid-3 { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
-    .card { padding: 18px; min-width: 0; }
-    .card + .card { margin-top: 0; }
-    .stack { display: grid; gap: 12px; }
-    .chart-scroll, .table-scroll { width: 100%; min-width: 0; max-width: 100%; overflow-x: auto; overscroll-behavior-inline: contain; contain: inline-size; }
-    .chart-scroll svg { display: block; min-width: 520px; width: 100%; height: auto; }
-    svg text { font-family: inherit; fill: var(--muted); font-size: 11px; }
-    .legend { display: flex; flex-wrap: wrap; gap: 12px; margin: 0 0 12px; color: var(--muted); font-size: 12px; }
-    .legend span { display: inline-flex; align-items: center; gap: 6px; }
-    .legend i { width: 9px; height: 9px; border-radius: 3px; display: inline-block; }
-    .source-note { border: 1px solid var(--line); border-left: 3px solid #9ca6a4; background: var(--surface); border-radius: 10px; padding: 11px 13px; color: var(--muted); margin-bottom: 12px; font-size: 13px; }
-    .source-note.partial { border-left-color: var(--warning); background: var(--warning-soft); color: #68461d; }
-    .source-note.ok { border-left-color: var(--accent); background: var(--accent-soft); color: #285a53; }
-    .metric-row { display: flex; justify-content: space-between; gap: 16px; padding: 9px 0; border-bottom: 1px solid var(--line); }
-    .metric-row:last-child { border-bottom: 0; }
-    .metric-row span:first-child { color: var(--muted); }
-    .metric-row strong { text-align: right; font-variant-numeric: tabular-nums; }
-    table { width: 100%; border-collapse: collapse; font-size: 13px; }
-    th, td { padding: 9px 10px; text-align: left; border-bottom: 1px solid var(--line); white-space: nowrap; }
-    th { color: var(--muted); font-weight: 650; background: #fafbfb; position: sticky; top: 0; }
-    td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
-    .empty { min-height: 130px; display: grid; place-items: center; color: var(--muted); border: 1px dashed var(--line); border-radius: 10px; text-align: center; padding: 20px; }
-    .policy-list { display: flex; flex-wrap: wrap; gap: 7px; margin-top: 14px; }
-    .policy-list code { border: 1px solid var(--line); border-radius: 7px; padding: 4px 7px; color: var(--ink); background: #fafbfb; font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size: 11px; }
-    .provider-card .provider-name { font-size: 18px; font-weight: 720; margin-bottom: 12px; }
-    .provider-card .big { font-size: 27px; line-height: 1; font-variant-numeric: tabular-nums; margin-bottom: 6px; }
-    .provider-card .subtle { color: var(--muted); font-size: 12px; }
-    footer { margin-top: 54px; padding-top: 28px; border-top: 1px solid var(--line); }
-    .footer-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; margin-top: 18px; }
-    .source-card { padding: 14px; border: 1px solid var(--line); border-radius: 11px; background: var(--surface); font-size: 12px; }
-    .source-card-head { display: flex; justify-content: space-between; gap: 12px; margin-bottom: 8px; }
-    .source-card-head strong { font-size: 13px; }
-    .source-card dl { display: grid; grid-template-columns: 82px 1fr; gap: 5px 8px; margin: 0; }
-    .source-card dt { color: var(--muted); }
-    .source-card dd { margin: 0; overflow-wrap: anywhere; font-family: ui-monospace, SFMono-Regular, Consolas, monospace; }
-    .fatal { margin-top: 40px; border: 1px solid #d8a6a6; background: #fff4f4; padding: 18px; border-radius: 12px; color: #6f2424; }
-    @media (max-width: 820px) {
-      .tiles { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-      .grid-2, .grid-3 { grid-template-columns: 1fr; }
-      .section-head { display: grid; }
-      .footer-grid { grid-template-columns: 1fr; }
-    }
-    @media (max-width: 520px) {
-      main { width: min(calc(100% - 20px), 1180px); }
-      nav { margin-inline: 0; }
-      header { padding-top: 28px; }
-      .tiles { grid-template-columns: 1fr; }
-      .tile { min-height: 112px; }
-      section { padding-top: 40px; }
-      .card { padding: 14px; }
-    }
+    :root { --bg:#080b10; --panel:#10151d; --panel2:#151c26; --line:#293443; --text:#f2f5f8; --muted:#aab4c0; --cyan:#7bdcff; --blue:#8ba9ff; --green:#75e6ad; --amber:#ffd166; --red:#ff8c9b; --radius:14px; --shadow:0 16px 48px rgba(0,0,0,.24); }
+    * { box-sizing:border-box; }
+    html { scroll-behavior:smooth; }
+    body { margin:0; color:var(--text); background:radial-gradient(circle at 12% -10%,rgba(71,127,255,.14),transparent 30rem),var(--bg); font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif; line-height:1.45; }
+    a { color:var(--cyan); }
+    button,summary,a { -webkit-tap-highlight-color:transparent; }
+    :focus-visible { outline:3px solid var(--amber); outline-offset:3px; border-radius:5px; }
+    .skip { position:fixed; left:1rem; top:-5rem; z-index:20; padding:.7rem 1rem; background:var(--amber); color:#171000; }
+    .skip:focus { top:1rem; }
+    .shell { width:min(100% - 32px,1400px); margin:0 auto; }
+    header { padding:28px 0 14px; }
+    .mast { display:flex; align-items:end; justify-content:space-between; gap:20px; }
+    .eyebrow { margin:0 0 4px; color:var(--cyan); font:700 .72rem/1.2 ui-monospace,SFMono-Regular,Menlo,monospace; letter-spacing:.13em; text-transform:uppercase; }
+    h1 { margin:0; font-size:clamp(1.75rem,4vw,3.1rem); line-height:1; letter-spacing:-.05em; }
+    .mast-meta { color:var(--muted); font-size:.82rem; text-align:right; }
+    nav { margin-top:20px; display:flex; gap:8px; overflow-x:auto; padding:2px 2px 8px; scrollbar-width:thin; }
+    nav a { flex:0 0 auto; padding:7px 11px; border:1px solid var(--line); border-radius:999px; color:var(--muted); text-decoration:none; font-size:.78rem; }
+    nav a:hover { color:var(--text); border-color:var(--cyan); }
+    main { padding:6px 0 40px; }
+    section { margin-top:18px; padding:clamp(17px,3vw,28px); border:1px solid var(--line); border-radius:var(--radius); background:linear-gradient(145deg,rgba(21,28,38,.95),rgba(13,18,25,.96)); box-shadow:var(--shadow); }
+    .section-head { display:flex; align-items:end; justify-content:space-between; gap:18px; margin-bottom:18px; }
+    h2 { margin:0; font-size:clamp(1.25rem,2vw,1.65rem); letter-spacing:-.03em; }
+    h3 { margin:0 0 12px; font-size:.86rem; color:var(--muted); letter-spacing:.04em; text-transform:uppercase; }
+    .section-note { color:var(--muted); font-size:.78rem; text-align:right; }
+    .grid { display:grid; gap:12px; }
+    .cards-5 { grid-template-columns:repeat(5,minmax(0,1fr)); }
+    .cards-4 { grid-template-columns:repeat(4,minmax(0,1fr)); }
+    .cards-3 { grid-template-columns:repeat(3,minmax(0,1fr)); }
+    .cards-2 { grid-template-columns:repeat(2,minmax(0,1fr)); }
+    .card { min-width:0; padding:15px; border:1px solid var(--line); border-radius:11px; background:rgba(8,11,16,.5); }
+    .label { display:block; color:var(--muted); font-size:.72rem; text-transform:uppercase; letter-spacing:.08em; }
+    .value { display:block; margin-top:6px; font-size:clamp(1.25rem,2.2vw,2rem); font-weight:730; letter-spacing:-.035em; font-variant-numeric:tabular-nums; overflow-wrap:anywhere; }
+    .detail { display:block; margin-top:5px; color:var(--muted); font-size:.74rem; }
+    .delta { margin-top:9px; color:var(--text); font:650 .7rem/1.25 ui-monospace,SFMono-Regular,Menlo,monospace; }
+    .status { display:inline-flex; align-items:center; gap:6px; padding:4px 8px; border:1px solid currentColor; border-radius:999px; font:700 .68rem/1 ui-monospace,SFMono-Regular,Menlo,monospace; text-transform:uppercase; }
+    .status::before { content:"●"; font-size:.72em; }
+    .good { color:var(--green); } .warn { color:var(--amber); } .bad { color:var(--red); } .neutral { color:var(--blue); }
+    .banner { margin-bottom:12px; padding:11px 13px; border:1px solid currentColor; border-radius:10px; background:rgba(255,209,102,.07); font-size:.82rem; }
+    .split { display:grid; grid-template-columns:minmax(0,1.15fr) minmax(0,.85fr); gap:18px; margin-top:18px; }
+    .split>* { min-width:0; }
+    .stack { display:grid; gap:9px; }
+    .bar-row { display:grid; grid-template-columns:minmax(92px,.8fr) minmax(90px,2fr) auto; gap:10px; align-items:center; font-size:.74rem; }
+    .bar-label { min-width:0; color:var(--muted); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+    .track { height:9px; overflow:hidden; border-radius:99px; background:#202937; display:flex; }
+    .fill-a { height:100%; background:var(--cyan); } .fill-o { height:100%; background:var(--blue); }
+    .bar-number { font-variant-numeric:tabular-nums; text-align:right; white-space:nowrap; }
+    .table-wrap { width:100%; overflow-x:auto; border:1px solid var(--line); border-radius:10px; scrollbar-width:thin; }
+    table { width:100%; min-width:760px; border-collapse:collapse; font-size:.76rem; font-variant-numeric:tabular-nums; }
+    th,td { padding:10px 12px; text-align:left; border-bottom:1px solid var(--line); vertical-align:top; }
+    th { position:sticky; top:0; z-index:1; color:var(--muted); background:#131a23; font-size:.67rem; text-transform:uppercase; letter-spacing:.07em; white-space:nowrap; }
+    tbody tr:last-child td { border-bottom:0; } td.num,th.num { text-align:right; }
+    th button { all:unset; cursor:pointer; display:inline-flex; align-items:center; gap:5px; color:inherit; }
+    th button::after { content:"↕"; color:var(--blue); } th[aria-sort="ascending"] button::after { content:"↑"; color:var(--amber); } th[aria-sort="descending"] button::after { content:"↓"; color:var(--amber); }
+    details>summary { cursor:pointer; color:var(--cyan); font-weight:700; } details[open]>summary { margin-bottom:10px; }
+    .round-grid { display:grid; gap:7px; }
+    .round-row { display:grid; grid-template-columns:54px minmax(170px,1.4fr) repeat(5,minmax(75px,.55fr)); gap:9px; align-items:center; padding:8px; border:1px solid var(--line); border-radius:8px; background:var(--panel2); font-size:.7rem; }
+    .round-row strong { color:var(--text); } .round-row span { min-width:0; overflow-wrap:anywhere; }
+    .proxy { color:var(--amber); }
+    .heat-wrap { overflow-x:auto; padding-bottom:5px; }
+    .heat { min-width:700px; display:grid; grid-template-columns:35px repeat(24,1fr); gap:3px; font:650 .57rem/1 ui-monospace,SFMono-Regular,Menlo,monospace; }
+    .heat .day { align-self:center; color:var(--muted); } .heat .hour { color:var(--muted); text-align:center; }
+    .heat .cell { min-height:21px; display:grid; place-items:center; border:1px solid #314052; border-radius:3px; color:var(--text); background:rgba(123,220,255,calc(.04 + var(--intensity) * .21)); }
+    .mini-grid { display:grid; grid-template-columns:repeat(9,minmax(105px,1fr)); gap:8px; }
+    .mini { padding:10px; border-left:2px solid var(--blue); background:rgba(8,11,16,.42); }
+    .mini b { display:block; margin-top:4px; font-size:1rem; }
+    .model-pair { font-family:ui-monospace,SFMono-Regular,Menlo,monospace; font-size:.68rem; } .model-pair em { color:var(--muted); font-style:normal; }
+    .coverage-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:14px; }
+    footer { padding:20px 0 40px; color:var(--muted); font-size:.75rem; }
+    footer .panel { padding:18px; border:1px solid var(--line); border-radius:var(--radius); background:#0c1118; }
+    .source-list { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:7px; margin-top:12px; }
+    .source { padding:9px; border:1px solid var(--line); border-radius:8px; overflow-wrap:anywhere; } .source strong { display:block; color:var(--text); margin-bottom:3px; }
+    .footline { display:flex; justify-content:space-between; gap:12px; margin-top:14px; padding-top:12px; border-top:1px solid var(--line); }
+    .empty { color:var(--muted); font-style:italic; }
+    @media (max-width:1050px) { .cards-5 { grid-template-columns:repeat(3,minmax(0,1fr)); } .cards-4,.mini-grid { grid-template-columns:repeat(3,minmax(0,1fr)); } .source-list { grid-template-columns:repeat(2,minmax(0,1fr)); } }
+    @media (max-width:720px) { .shell { width:min(100% - 20px,1400px); } header { padding-top:20px; } .mast { align-items:start; flex-direction:column; } .mast-meta { text-align:left; } .section-head { align-items:start; flex-direction:column; } .section-note { text-align:left; } .cards-5,.cards-4,.cards-3,.cards-2,.split,.coverage-grid { grid-template-columns:1fr 1fr; } .bar-row { grid-template-columns:80px minmax(70px,1fr) auto; } .source-list { grid-template-columns:1fr; } .footline { flex-direction:column; } }
+    @media (max-width:460px) { section { padding:15px; } .cards-5,.cards-4,.cards-3,.cards-2,.split,.coverage-grid,.mini-grid { grid-template-columns:1fr; } .round-row { grid-template-columns:44px 1fr; } .round-row span:nth-child(n+3) { grid-column:2; } }
   </style>
-  <script src="data/telemetry.js"></script>
 </head>
 <body>
-  <main>
-    <header>
-      <div class="eyebrow">Build harness · metrics only</div>
-      <h1>Agent Build Telemetry</h1>
-      <p class="lede">A read-only view of usage, model mix, judge efficiency, command failures, test growth, and durable output from the governed build loop.</p>
-      <div class="topline" id="topline"></div>
-    </header>
-
-    <nav aria-label="Dashboard sections">
-      <div class="links">
-        <a href="#overview">Overview</a>
-        <a href="#models">Model mix</a>
-        <a href="#throughput">Throughput</a>
-        <a href="#judges">Judge rounds</a>
-        <a href="#errors">Command errors</a>
-        <a href="#tests">Test trend</a>
-        <a href="#providers">Provider usage</a>
-        <a href="#coverage">Coverage</a>
-      </div>
-    </nav>
-
-    <div id="fatal"></div>
-
-    <section id="overview">
-      <div class="section-head">
-        <div><div class="eyebrow">At a glance</div><h2>Overview</h2></div>
-        <p class="section-copy">Headline results from completed harness evidence. Missing sources remain explicitly unavailable.</p>
-      </div>
-      <div id="overview-source"></div>
-      <div class="tiles" id="overview-tiles"></div>
-    </section>
-
-    <section id="models">
-      <div class="section-head">
-        <div><div class="eyebrow">Who did the work</div><h2>Model mix</h2></div>
-        <p class="section-copy">Builder identities come from sealed rounds; judge identities and independence come from the declared judge surfaces.</p>
-      </div>
-      <div id="models-source"></div>
-      <div class="grid-2">
-        <div class="card"><h3>Build rounds by model</h3><div id="builder-model-chart"></div></div>
-        <div class="card"><h3>Judge rounds by model</h3><div id="judge-model-chart"></div></div>
-        <div class="card"><h3>Builds by vendor</h3><div id="builder-vendor-chart"></div></div>
-        <div class="card"><h3>Distinct-vendor floor</h3><div id="adherence-details"></div></div>
-      </div>
-      <div class="card" style="margin-top:12px">
-        <h3>Current model policy snapshot</h3>
-        <div id="policy-source"></div>
-        <div id="policy-details"></div>
-      </div>
-    </section>
-
-    <section id="throughput">
-      <div class="section-head">
-        <div><div class="eyebrow">Work over time</div><h2>Throughput timeline</h2></div>
-        <p class="section-copy">Trends come from committed daily rollups, so they remain visible if live sources later disappear.</p>
-      </div>
-      <div class="grid-2">
-        <div class="card"><h3>Driver activity</h3><div id="events-timeline"></div></div>
-        <div class="card"><h3>Accepted output</h3><div id="output-timeline"></div></div>
-      </div>
-      <div class="grid-3" style="margin-top:12px" id="output-cards"></div>
-      <div class="card" style="margin-top:12px">
-        <h3>Spec corpus</h3>
-        <div id="spec-source"></div>
-        <div id="spec-details"></div>
-      </div>
-    </section>
-
-    <section id="judges">
-      <div class="section-head">
-        <div><div class="eyebrow">Acceptance efficiency</div><h2>Judge rounds &amp; verdicts</h2></div>
-        <p class="section-copy">Round wall time includes queue idle. Incomplete seal directories are counted as in flight and excluded from verdict metrics.</p>
-      </div>
-      <div id="judges-source"></div>
-      <div class="grid-2">
-        <div class="card"><h3>Verdict outcomes</h3><div id="verdict-chart"></div></div>
-        <div class="card"><h3>Accepted at round N</h3><div id="accepted-round-chart"></div></div>
-        <div class="card"><h3>Judge-round minutes</h3><div id="duration-details"></div></div>
-        <div class="card"><h3>Dispatch outcomes &amp; escalation</h3><div id="judge-details"></div></div>
-      </div>
-      <div class="card" style="margin-top:12px">
-        <h3>Highest-round specs — numeric order (top 20)</h3>
-        <div class="table-scroll"><table><thead><tr><th>Spec</th><th class="num">Rounds</th><th>Observed round numbers</th></tr></thead><tbody id="round-table"></tbody></table></div>
-      </div>
-    </section>
-
-    <section id="errors">
-      <div class="section-head">
-        <div><div class="eyebrow">Failure signal</div><h2>Command errors</h2></div>
-        <p class="section-copy">Proof failures use exit codes only; command output is deliberately excluded.</p>
-      </div>
-      <div id="errors-source"></div>
-      <div class="grid-2">
-        <div class="card"><h3>Proof failures by gate</h3><div id="proof-chart"></div></div>
-        <div class="card"><h3>Harness incidents</h3><div id="incident-details"></div></div>
-        <div class="card" style="grid-column:1/-1"><h3>Weekly proof error rate</h3><div id="error-timeline"></div></div>
-      </div>
-    </section>
-
-    <section id="tests">
-      <div class="section-head">
-        <div><div class="eyebrow">Broad suite</div><h2>Test-suite trend</h2></div>
-        <p class="section-copy">Durations and test counts are read only from JUnit testsuite attributes.</p>
-      </div>
-      <div id="tests-source"></div>
-      <div class="grid-2">
-        <div class="card"><h3>Suite duration</h3><div id="test-seconds-chart"></div></div>
-        <div class="card"><h3>Test count</h3><div id="test-count-chart"></div></div>
-      </div>
-    </section>
-
-    <section id="providers">
-      <div class="section-head">
-        <div><div class="eyebrow">Optional snapshot</div><h2>Provider usage</h2></div>
-        <p class="section-copy">Existing local snapshots only. This collector never refreshes provider usage or spends quota.</p>
-      </div>
-      <div id="provider-source"></div>
-      <div class="grid-3" id="provider-cards"></div>
-    </section>
-
-    <footer id="coverage">
-      <div class="eyebrow">Honest boundaries</div>
-      <h2>Coverage &amp; freshness</h2>
-      <p class="section-copy" style="margin-top:8px" id="generated-copy"></p>
-      <div class="footer-grid" id="source-cards"></div>
-    </footer>
+  <a class="skip" href="#main">Skip to telemetry</a>
+  <header class="shell"><div class="mast"><div><p class="eyebrow">Decision loop / schema v2</p><h1>Agent telemetry</h1></div><div class="mast-meta" id="mast-meta">Loading local telemetry…</div></div>
+    <nav aria-label="Dashboard sections"><a href="#now">Now</a><a href="#worth">Worth it?</a><a href="#cost">Cost &amp; usage</a><a href="#time">Time</a><a href="#quality">Quality &amp; errors</a><a href="#ledger">Per-spec ledger</a></nav>
+  </header>
+  <main class="shell" id="main">
+    <section id="now" aria-labelledby="now-title"><div class="section-head"><div><p class="eyebrow">01 / Driver</p><h2 id="now-title">Now</h2></div><span class="status neutral" id="now-status">Loading</span></div><div id="now-banners" aria-live="polite"></div><div class="grid cards-5" id="now-cards"></div></section>
+    <section id="worth" aria-labelledby="worth-title"><div class="section-head"><div><p class="eyebrow">02 / Outcome economics</p><h2 id="worth-title">Worth it?</h2></div><div class="section-note">API-equivalent cost · accepted specs only</div></div><div class="grid cards-5" id="worth-cards"></div></section>
+    <section id="cost" aria-labelledby="cost-title"><div class="section-head"><div><p class="eyebrow">03 / Tokens → dollars</p><h2 id="cost-title">Cost &amp; usage</h2></div><div class="section-note" id="price-note"></div></div><div class="grid cards-2" id="vendor-cards"></div><div class="split"><div><h3>Daily API-equivalent spend</h3><div class="stack" id="daily-cost"></div></div><div><h3>Build vs judge</h3><div class="stack" id="role-cost"></div><h3 style="margin-top:18px">Observed models</h3><div class="table-wrap"><table><thead><tr><th>Vendor / model</th><th class="num">Tokens</th><th class="num">USD</th><th class="num">Unpriced</th></tr></thead><tbody id="model-cost"></tbody></table></div></div></div></section>
+    <section id="time" aria-labelledby="time-title"><div class="section-head"><div><p class="eyebrow">04 / Wall clock</p><h2 id="time-title">Time</h2></div><div class="section-note">Driver-sequence derivation · queue/idle remains in wall time</div></div><div class="grid cards-4" id="time-cards"></div><div class="split"><div><h3>Round duration by week · median / p95 minutes</h3><div class="stack" id="round-trend"></div></div><div><h3>Time in phase</h3><div class="stack" id="phase-time"></div></div></div><h3 style="margin-top:18px">Driver activity by UTC hour · event count</h3><div class="heat-wrap"><div class="heat" id="heatmap" role="img" aria-label="Driver event activity heatmap by weekday and UTC hour"></div></div></section>
+    <section id="quality" aria-labelledby="quality-title"><div class="section-head"><div><p class="eyebrow">05 / Quality proxies</p><h2 id="quality-title">Quality &amp; errors</h2></div><div class="section-note"><span class="proxy">Proxy</span> = verdict, finding, debt, proof, or incident signal</div></div><div class="mini-grid" id="legacy-health"></div><div class="split"><div><h3>Findings vs spend by spec</h3><div class="stack" id="quality-spend"></div></div><div><h3>Failure locations</h3><div class="stack" id="failure-groups"></div><div class="grid cards-3" id="quality-cards" style="margin-top:14px"></div></div></div></section>
+    <section id="ledger" aria-labelledby="ledger-title"><div class="section-head"><div><p class="eyebrow">06 / Specs and rounds</p><h2 id="ledger-title">Per-spec ledger</h2></div><div class="section-note" id="ledger-count"></div></div><div class="table-wrap"><table id="ledger-table"><thead><tr><th data-key="spec" aria-sort="ascending"><button type="button">Spec / rounds</button></th><th data-key="outcome"><button type="button">Outcome</button></th><th class="num" data-key="rounds_count"><button type="button">Rounds</button></th><th class="num" data-key="wall_hours"><button type="button">Wall h</button></th><th class="num" data-key="lead_hours"><button type="button">Lead h</button></th><th class="num" data-key="tokens"><button type="button">Tokens</button></th><th class="num" data-key="usd"><button type="button">USD</button></th><th class="num" data-key="findings_total"><button type="button">Findings</button></th><th class="num" data-key="debt_at_accept"><button type="button">Debt</button></th></tr></thead><tbody id="ledger-body"></tbody></table></div></section>
   </main>
-
+  <footer class="shell" id="coverage"><div class="panel"><div class="section-head"><div><p class="eyebrow">Coverage / honesty</p><h2>Vendor parity &amp; sources</h2></div><div class="section-note">Exact · correlated · unattributed are mutually exclusive</div></div><div class="coverage-grid" id="parity-grid"></div><div class="source-list" id="source-list"></div><div class="footline"><span id="generated-foot"></span><span>Static dashboard · no external data requests · dark theme only</span></div></div></footer>
+  <script src="data/telemetry.js"></script>
   <script>
-    (() => {
-      "use strict";
-      const data = window.TELEMETRY;
-      const byId = (id) => document.getElementById(id);
-      const colors = ["#316c64", "#6f9993", "#a9bfbb", "#687270"];
-      const esc = (value) => String(value ?? "").replace(/[&<>"']/g, (char) => ({"&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":"&#39;"}[char]));
-      const integer = (value) => value === null || value === undefined ? "n/a" : Number(value).toLocaleString();
-      const decimal = (value, digits = 1) => value === null || value === undefined ? "n/a" : Number(value).toLocaleString(undefined, {maximumFractionDigits: digits});
-      const percent = (value) => value === null || value === undefined ? "n/a" : `${decimal(Number(value) * 100, 1)}%`;
-      const seconds = (value) => value === null || value === undefined ? "n/a" : `${decimal(value, 1)} sec`;
-      const minutes = (value) => value === null || value === undefined ? "n/a" : `${decimal(value, 1)} min`;
-      const timestamp = (value) => {
-        if (!value) return "n/a";
-        const parsed = new Date(value);
-        return Number.isNaN(parsed.getTime()) ? String(value) : parsed.toLocaleString();
-      };
-      const source = (name) => data?.sources?.[name] || {status:"absent", available:false, skips:[{reason:"source_missing", count:1}]};
-      const reasons = (item) => (item.skips || []).map((skip) => `${skip.reason} (${skip.count})`).join(", ") || "none";
-      const sourceMessage = (name, includeOk = false) => {
-        const item = source(name);
-        if (item.available && !includeOk && item.status === "ok") return "";
-        if (item.available) return `<div class="source-note ${esc(item.status)}"><strong>${esc(name)}</strong> is ${esc(item.status)}. Named skips: ${esc(reasons(item))}.</div>`;
-        return `<div class="source-note"><strong>${esc(name)}</strong> source absent since ${esc(timestamp(data?.generated_at))} — ${esc(reasons(item))}.</div>`;
-      };
-      const set = (id, html) => { const node = byId(id); if (node) node.innerHTML = html; };
-      const empty = (message = "No metric samples available") => `<div class="empty">${esc(message)}</div>`;
-      const entries = (mapping) => Object.entries(mapping || {}).sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]));
-
-      function barChart(mapping, options = {}) {
-        const values = Array.isArray(mapping) ? mapping : entries(mapping);
-        if (!values.length) return empty(options.empty || "No observations available");
-        const width = 720;
-        const left = 190;
-        const right = 56;
-        const rowHeight = 32;
-        const height = values.length * rowHeight + 24;
-        const max = Math.max(...values.map((item) => Number(item[1]) || 0), 1);
-        const scale = (width - left - right) / max;
-        const rows = values.map(([label, raw], index) => {
-          const value = Number(raw) || 0;
-          const y = 8 + index * rowHeight;
-          const bar = Math.max(1, value * scale);
-          const shown = options.format ? options.format(value) : integer(value);
-          const short = String(label).length > 27 ? `${String(label).slice(0, 26)}…` : String(label);
-          return `<text x="0" y="${y + 17}">${esc(short)}</text><rect x="${left}" y="${y}" width="${bar}" height="20" rx="4" fill="${colors[index % colors.length]}"></rect><text x="${Math.min(left + bar + 7, width - 44)}" y="${y + 15}">${esc(shown)}</text>`;
-        }).join("");
-        return `<div class="chart-scroll"><svg viewBox="0 0 ${width} ${height}" role="img" aria-label="${esc(options.label || "Bar chart")}">${rows}</svg></div>`;
-      }
-
-      function lineChart(points, series, options = {}) {
-        if (!points.length || !series.length) return empty(options.empty || "No history samples available");
-        const width = 720;
-        const height = 240;
-        const left = 52;
-        const right = 20;
-        const top = 16;
-        const bottom = 38;
-        const all = [];
-        series.forEach((item) => points.forEach((point) => {
-          const value = Number(item.value(point));
-          if (Number.isFinite(value)) all.push(value);
-        }));
-        if (!all.length) return empty(options.empty || "No history samples available");
-        const min = options.zeroFloor === false ? Math.min(...all) : Math.min(0, ...all);
-        const max = Math.max(...all, min + 1);
-        const x = (index) => left + (points.length === 1 ? (width - left - right) / 2 : index * (width - left - right) / (points.length - 1));
-        const y = (value) => top + (max - value) * (height - top - bottom) / (max - min);
-        const grid = [0, .5, 1].map((ratio) => {
-          const value = min + (max - min) * ratio;
-          const py = y(value);
-          return `<line x1="${left}" y1="${py}" x2="${width-right}" y2="${py}" stroke="#d8dfdd" stroke-width="1"></line><text x="${left-7}" y="${py+4}" text-anchor="end">${esc(options.axisFormat ? options.axisFormat(value) : decimal(value, 0))}</text>`;
-        }).join("");
-        const paths = series.map((item, sIndex) => {
-          const coords = points.map((point, index) => {
-            const value = Number(item.value(point));
-            return Number.isFinite(value) ? `${x(index)},${y(value)}` : null;
-          }).filter(Boolean).join(" ");
-          return coords ? `<polyline points="${coords}" fill="none" stroke="${colors[sIndex % colors.length]}" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"></polyline>` : "";
-        }).join("");
-        const first = points[0]?.date || "";
-        const last = points[points.length - 1]?.date || "";
-        const legend = `<div class="legend">${series.map((item, index) => `<span><i style="background:${colors[index % colors.length]}"></i>${esc(item.label)}</span>`).join("")}</div>`;
-        const svg = `<div class="chart-scroll"><svg viewBox="0 0 ${width} ${height}" role="img" aria-label="${esc(options.label || "Trend chart")}">${grid}${paths}<text x="${left}" y="${height-9}">${esc(first)}</text><text x="${width-right}" y="${height-9}" text-anchor="end">${esc(last)}</text></svg></div>`;
-        return legend + svg;
-      }
-
-      function metricRows(rows) {
-        return rows.map(([label, value]) => `<div class="metric-row"><span>${esc(label)}</span><strong>${esc(value)}</strong></div>`).join("");
-      }
-
-      function tile(label, value, note = "", compact = false) {
-        return `<article class="tile"><div class="tile-label">${esc(label)}</div><div class="tile-value${compact ? " compact" : ""}">${esc(value)}</div><div class="tile-note">${esc(note)}</div></article>`;
-      }
-
-      if (!data || !data.metrics) {
-        set("fatal", '<div class="fatal"><strong>Telemetry data is unavailable.</strong><br>Run the collector to generate data/telemetry.js, then reopen this page.</div>');
-        return;
-      }
-
-      const metrics = data.metrics;
-      const overview = metrics.overview || {};
-      const history = data.history || [];
-      const suiteAvailable = source("suite_state").available;
-      const sourceChips = Object.entries(data.sources || {}).map(([name, item]) => `<span class="chip"><i class="dot ${item.status === "partial" ? "partial" : item.available ? "" : "absent"}"></i>${esc(name)} · ${esc(item.status)}</span>`).join("");
-      set("topline", `<span class="chip"><i class="dot"></i>Generated ${esc(timestamp(data.generated_at))}</span>${sourceChips}`);
-
-      set("overview-source", sourceMessage("suite_state"));
-      const buildMix = entries(overview.builds_by_vendor).map(([name, count]) => `${name} ${integer(count)}`).join(" · ") || "n/a";
-      set("overview-tiles", [
-        tile("Accepted rows", integer(overview.accepted_rows), "driver state: done"),
-        tile("Completed judge rounds", integer(overview.judge_rounds), "complete sealed verdicts"),
-        tile("Median rounds to accept", decimal(overview.median_rounds_per_accepted_spec, 1), "accepted sealed specs"),
-        tile("Per-round acceptance", percent(overview.judge_acceptance_rate), "accepted ÷ accepted + rejected steps"),
-        tile("Median judge wall time", minutes(overview.median_judge_round_minutes), "includes queue idle"),
-        tile("Latest broad suite", overview.latest_tests === null || overview.latest_tests === undefined ? "n/a" : `${integer(overview.latest_tests)} tests`, seconds(overview.latest_test_seconds)),
-        tile("Proof error rate", percent(overview.proof_error_rate), "non-zero proof exits"),
-        tile("Distinct-vendor adherence", percent(overview.distinct_vendor_rate), "all declared surfaces meet floor"),
-        tile("Builds by vendor", buildMix, "sealed complete rounds", true),
-      ].join(""));
-
-      set("models-source", sourceMessage("suite_state"));
-      const models = metrics.models || {};
-      set("builder-model-chart", suiteAvailable ? barChart(models.builder_by_model, {label:"Build rounds by model"}) : empty("suite_state source absent"));
-      set("judge-model-chart", suiteAvailable ? barChart(models.judge_by_model, {label:"Judge rounds by model"}) : empty("suite_state source absent"));
-      set("builder-vendor-chart", suiteAvailable ? barChart(models.builder_by_vendor, {label:"Build rounds by vendor"}) : empty("suite_state source absent"));
-      const adherence = models.adherence || {};
-      set("adherence-details", metricRows([
-        ["Current floor", adherence.floor || "n/a"],
-        ["Rounds evaluated", integer(adherence.evaluated_rounds)],
-        ["Rounds meeting floor", integer(adherence.met_rounds)],
-        ["Unverified rounds", integer(adherence.unverified_rounds)],
-        ["Adherence rate", percent(adherence.rate)],
-      ]));
-      set("policy-source", sourceMessage("agent_repo"));
-      const policy = models.policy || {};
-      const roster = policy.roster || {};
-      const candidates = policy.candidates || [];
-      set("policy-details", metricRows([["Roster tier", roster.tier || "n/a"], ["Independence floor", roster.floor || "n/a"]]) + `<div class="policy-list">${candidates.map((item) => `<code>${esc(item.id)} · ${esc(item.vendor)} · ${esc(item.model)}</code>`).join("")}</div>`);
-
-      set("events-timeline", lineChart(history, [
-        {label:"events", value:(item) => item.events},
-        {label:"rows touched", value:(item) => item.rows_touched},
-      ], {label:"Daily driver activity"}));
-      set("output-timeline", lineChart(history, [
-        {label:"merged events", value:(item) => item.merged_events},
-        {label:"accept commits", value:(item) => item.accept_commits},
-        {label:"publications", value:(item) => item.publications},
-      ], {label:"Daily accepted output"}));
-      const efficacy = metrics.efficacy || {};
-      set("output-cards", [
-        `<div class="card"><h3>Publications</h3>${metricRows(entries(efficacy.publications?.by_provenance).map(([key, value]) => [key, integer(value)])) || empty()}</div>`,
-        `<div class="card"><h3>Deploy records</h3>${metricRows([["total", integer(efficacy.deploys?.total)]])}</div>`,
-        `<div class="card"><h3>Durable registers</h3>${metricRows([["debt entries", integer(efficacy.debt_register_entries)], ["escalation headings · derived", integer(efficacy.escalation_entries_derived)], ["ledger harness-defect headings · derived", integer(efficacy.ledger_harness_defect_headings_derived)]])}</div>`,
-      ].join(""));
-      set("spec-source", sourceMessage("spec_corpus"));
-      const specCounts = metrics.specs?.counts || {};
-      set("spec-details", source("spec_corpus").available ? `<div class="grid-2"><div>${metricRows([["Files", integer(specCounts.files)], ["Metric records", integer(specCounts.records)], ["Active files", integer(specCounts.active_files)], ["Archived files", integer(specCounts.archived_files)]])}</div><div>${barChart(specCounts.by_status, {label:"Specs by status"})}</div></div>` : empty("spec_corpus source absent"));
-
-      set("judges-source", sourceMessage("suite_state"));
-      const judges = metrics.judges || {};
-      set("verdict-chart", suiteAvailable ? barChart(judges.verdict_counts, {label:"Verdict outcomes"}) : empty("suite_state source absent"));
-      const acceptedRoundEntries = Object.entries(judges.accepted_at_round || {}).sort((a, b) => Number(a[0]) - Number(b[0])).map(([key, value]) => [`round ${key}`, value]);
-      set("accepted-round-chart", suiteAvailable ? barChart(acceptedRoundEntries, {label:"Accepted at round N"}) : empty("suite_state source absent"));
-      const duration = metrics.durations?.judge_rounds || {};
-      const durationStats = duration.minutes || {};
-      set("duration-details", metricRows([
-        ["Matched dispatch/verdict", `${integer(duration.matched)} / ${integer(Math.max(duration.dispatches || 0, duration.verdicts || 0))}`],
-        ["Pairing coverage", percent(duration.coverage_rate)],
-        ["Median", minutes(durationStats.median)],
-        ["25th–75th percentile", durationStats.p25 === null || durationStats.p25 === undefined ? "n/a" : `${minutes(durationStats.p25)} – ${minutes(durationStats.p75)}`],
-        ["95th percentile", minutes(durationStats.p95)],
-        ["Clamped anomalies", integer(duration.anomalies)],
-      ]));
-      set("judge-details", metricRows([
-        ["Accepted steps", integer(judges.accepted_steps)],
-        ["Rejected steps", integer(judges.rejected_steps)],
-        ["Per-round acceptance", percent(judges.acceptance_rate)],
-        ["Escalation events", integer(judges.escalation_events)],
-        ["Escalations cleared", integer(judges.escalation_clear_events)],
-        ["Discovered round directories", integer(judges.round_directories)],
-        ["Complete sealed rounds", integer(judges.complete_rounds)],
-      ]));
-      const roundRows = (judges.rounds_by_spec || []).slice().sort((a, b) => b.rounds.length - a.rounds.length || a.spec.localeCompare(b.spec)).slice(0, 20);
-      set("round-table", roundRows.length ? roundRows.map((item) => `<tr><td>${esc(item.spec)}</td><td class="num">${integer(item.rounds.length)}</td><td>${esc(item.rounds.join(", "))}</td></tr>`).join("") : '<tr><td colspan="3">n/a — no sealed rounds</td></tr>');
-
-      set("errors-source", sourceMessage("suite_state"));
-      const errors = metrics.errors || {};
-      const proofCombined = Object.keys(errors.proofs_by_group || {}).sort().map((name) => [`${name}: ${integer(errors.failures_by_group?.[name] || 0)} / ${integer(errors.proofs_by_group?.[name] || 0)}`, errors.failures_by_group?.[name] || 0]);
-      set("proof-chart", suiteAvailable ? barChart(proofCombined, {label:"Proof failures by gate"}) : empty("suite_state source absent"));
-      set("incident-details", metricRows(entries(errors.incidents).map(([key, value]) => [key, integer(value)])) || empty());
-      const weekly = (errors.weekly || []).map((item) => ({date:item.week, error_rate:item.error_rate === null ? null : item.error_rate * 100}));
-      set("error-timeline", suiteAvailable ? lineChart(weekly, [{label:"failure rate %", value:(item) => item.error_rate}], {label:"Weekly proof error rate", axisFormat:(value) => `${decimal(value, 1)}%`}) : empty("suite_state source absent"));
-
-      set("tests-source", sourceMessage("suite_state"));
-      const testSeries = metrics.tests?.series || [];
-      const testPoints = testSeries.map((item) => ({date:item.timestamp.slice(0, 10), seconds:item.seconds, tests:item.tests}));
-      set("test-seconds-chart", suiteAvailable ? lineChart(testPoints, [{label:"seconds", value:(item) => item.seconds}], {label:"Broad suite duration"}) : empty("suite_state source absent"));
-      set("test-count-chart", suiteAvailable ? lineChart(testPoints, [{label:"tests", value:(item) => item.tests}], {label:"Broad suite test count", zeroFloor:false}) : empty("suite_state source absent"));
-
-      set("provider-source", sourceMessage("provider_usage", true));
-      const providerMetrics = metrics.provider_usage || {};
-      const providerSnapshot = providerMetrics.snapshot;
-      const providers = providerMetrics.providers || [];
-      if (source("provider_usage").available && providers.length) {
-        const snapshotLine = providerSnapshot ? `<div class="source-note ${providerSnapshot.freshness === "stale" ? "partial" : "ok"}">Snapshot ${esc(providerSnapshot.freshness)} · generated ${esc(timestamp(providerSnapshot.generated_at))} · age ${esc(decimal(providerSnapshot.age_hours, 1))} hours · ${esc(integer(providerSnapshot.window_days))}-day usage window.</div>` : "";
-        set("provider-source", sourceMessage("provider_usage", true) + snapshotLine);
-        set("provider-cards", providers.map((item) => `<article class="card provider-card"><div class="provider-name">${esc(item.provider)}</div><div class="big">${esc(integer(item.total_tokens))}</div><div class="subtle">tokens observed · ${esc(integer(item.sessions))} sessions</div>${metricRows([["Input tokens", integer(item.input_tokens)], ["Output tokens", integer(item.output_tokens)], ["Requests", integer(item.requests)], ["Remaining", item.remaining_percent === null || item.remaining_percent === undefined ? item.remaining_status : `${decimal(item.remaining_percent, 1)}%`], ["Quota status", item.quota_status]])}</article>`).join(""));
-      } else {
-        set("provider-cards", `<div class="card" style="grid-column:1/-1">${empty("provider_usage source absent — no values fabricated")}</div>`);
-      }
-
-      set("generated-copy", `Generated ${timestamp(data.generated_at)}. Coverage windows and high-water marks identify exactly what each adapter observed; skips are generated reason codes, never source prose.`);
-      set("source-cards", Object.entries(data.sources || {}).map(([name, item]) => {
-        const coverage = item.coverage || {};
-        const highWater = Object.entries(item.high_water || {}).map(([key, value]) => `${key}=${value === null ? "n/a" : typeof value === "object" ? JSON.stringify(value) : value}`).join(" · ") || "n/a";
-        return `<article class="source-card"><div class="source-card-head"><strong>${esc(name)}</strong><span>${esc(item.status)}</span></div><dl><dt>from</dt><dd>${esc(coverage.from || "n/a")}</dd><dt>to</dt><dd>${esc(coverage.to || "n/a")}</dd><dt>high water</dt><dd>${esc(highWater)}</dd><dt>skips</dt><dd>${esc(reasons(item))}</dd></dl></article>`;
-      }).join(""));
-    })();
+  (() => {
+    "use strict";
+    const data=window.TELEMETRY||{}, metrics=data.metrics||{}, now=metrics.now||{}, worth=metrics.worth||{}, cost=metrics.cost||{}, time=metrics.time_v2||{}, ledger=(metrics.ledger&&metrics.ledger.specs)||[], rounds=(metrics.ledger&&metrics.ledger.rounds)||[], overview=metrics.overview||{};
+    const nf=new Intl.NumberFormat("en-US",{maximumFractionDigits:1,notation:"compact"}), full=new Intl.NumberFormat("en-US",{maximumFractionDigits:2}), money=new Intl.NumberFormat("en-US",{style:"currency",currency:"USD",maximumFractionDigits:2});
+    const esc=value=>String(value??"").replace(/[&<>'"]/g,char=>({"&":"&amp;","<":"&lt;",">":"&gt;","'":"&#39;",'"':"&quot;"})[char]);
+    const finite=value=>typeof value==="number"&&Number.isFinite(value);
+    const fmt=(value,kind="number",reason="source did not provide this value")=>{ if(!finite(value))return `<span class="empty">n/a · ${esc(reason)}</span>`; if(kind==="money")return money.format(value); if(kind==="percent")return `${full.format(value*100)}%`; if(kind==="tokens")return nf.format(value); if(kind==="hours")return `${full.format(value)}h`; if(kind==="minutes")return `${full.format(value)}m`; return full.format(value); };
+    const when=value=>value?new Date(value).toLocaleString([],{year:"numeric",month:"short",day:"numeric",hour:"2-digit",minute:"2-digit",timeZoneName:"short"}):"n/a · timestamp unavailable";
+    const sum=values=>values.reduce((total,value)=>total+(finite(value)?value:0),0);
+    const median=values=>{const clean=values.filter(finite).sort((a,b)=>a-b);if(!clean.length)return null;const mid=Math.floor(clean.length/2);return clean.length%2?clean[mid]:(clean[mid-1]+clean[mid])/2;};
+    const card=(label,value,detail="",delta="")=>`<div class="card"><span class="label">${esc(label)}</span><span class="value">${value}</span>${detail?`<span class="detail">${detail}</span>`:""}${delta?`<div class="delta">${delta}</div>`:""}</div>`;
+    const deltaText=(key,kind)=>{const item=(worth.week_over_week||{})[key]||{};if(!finite(item.delta))return `↔ n/a WoW · ${esc(item.reason||"prior-week comparison unavailable")}`;const sign=item.delta>0?"+":"";const value=kind==="money"?money.format(Math.abs(item.delta)):kind==="percent"?`${full.format(Math.abs(item.delta)*100)} pp`:kind==="tokens"?nf.format(Math.abs(item.delta)):kind==="hours"?`${full.format(Math.abs(item.delta))}h`:full.format(Math.abs(item.delta));return `${item.delta>0?"↑":item.delta<0?"↓":"↔"} ${sign}${value} WoW`;};
+    const bars=(rows,labelKey,aKey,oKey,formatter=value=>fmt(value,"money"))=>{const max=Math.max(1,...rows.map(row=>(row[aKey]||0)+(row[oKey]||0)));return rows.map(row=>{const a=row[aKey]||0,o=row[oKey]||0,total=a+o;return `<div class="bar-row"><span class="bar-label" title="${esc(row[labelKey])}">${esc(row[labelKey])}</span><span class="track" aria-hidden="true"><span class="fill-a" style="width:${a/max*100}%"></span><span class="fill-o" style="width:${o/max*100}%"></span></span><span class="bar-number">${formatter(total)}</span></div>`;}).join("");};
+    document.getElementById("mast-meta").innerHTML=`Collected ${esc(when(data.generated_at))}<br>${esc(data.collection&&data.collection.sources_available)} of ${esc(data.collection&&data.collection.sources_enabled)} sources available`;
+    const state=now.current_state||"unknown", stateClass=now.stalled?"bad":state==="idle"?"neutral":"good", status=document.getElementById("now-status");status.className=`status ${stateClass}`;status.textContent=now.stalled?"Stalled":state;
+    const banners=[];if(now.stalled)banners.push(`<div class="banner bad"><strong>Driver stalled.</strong> Active row ${esc(now.current_row||"unknown")} has been silent for ${fmt(now.minutes_since_driver)} minutes; threshold ${fmt(now.stall_threshold_minutes)}.</div>`);if(now.publish_stale)banners.push(`<div class="banner warn"><strong>Publish stale.</strong> ${now.last_publish_at?`Last success ${esc(when(now.last_publish_at))}.`:"No successful scheduled publish has been recorded."} State: ${esc(now.publish_status||"unknown")} / ${esc(now.publish_reason||"reason unavailable")}.</div>`);document.getElementById("now-banners").innerHTML=banners.join("");
+    const today=now.today||{};document.getElementById("now-cards").innerHTML=[card("Current row",now.current_row?esc(now.current_row):"Idle",`State · ${esc(state)}`),card("Driver freshness",fmt(now.minutes_since_driver),"minutes since last event"),card("Today",fmt(today.rounds),`${fmt(today.events)} events · ${fmt(today.merges)} merges`),card("Last collection",esc(when(now.last_collect_at)),"local snapshot"),card("Last publish",esc(when(now.last_publish_at)),now.publish_status?`${esc(now.publish_status)} · ${esc(now.publish_reason||"reason unavailable")}`:"publish state unavailable")].join("");
+    const per=worth.per_accepted||{},med=worth.medians||{},subscription=worth.subscription_amortization||{};document.getElementById("worth-cards").innerHTML=[card("Mean cost / accepted",fmt(per.usd,"money"),`median ${fmt(med.usd,"money")} · subscription ${fmt(subscription.usd_per_accepted,"money",subscription.reason||"local config absent")}`,deltaText("usd","money")),card("Mean wall time / accepted",fmt(per.hours,"hours"),`median ${fmt(med.hours,"hours")}`,deltaText("hours","hours")),card("Mean rounds / accepted",fmt(per.rounds),`median ${fmt(med.rounds)}`,deltaText("rounds","number")),card("Mean tokens / accepted",fmt(per.tokens,"tokens"),`median ${fmt(med.tokens,"tokens")}`,deltaText("tokens","tokens")),card("Acceptance efficiency",fmt(worth.acceptance_efficiency,"percent"),`${fmt(worth.accepted_features)} accepted specs`,deltaText("acceptance_efficiency","percent"))].join("");
+    document.getElementById("price-note").textContent=`API-equivalent · exact model match · prices verified ${cost.prices&&cost.prices.verified_at||"n/a"}`;
+    const vendorNames={anthropic:"Anthropic / Claude",openai:"OpenAI / GPT"},vendors=cost.vendors||{},usageLeft=cost.usage_left||{};
+    document.getElementById("vendor-cards").innerHTML=["anthropic","openai"].map(vendor=>{const item=vendors[vendor]||{},quota=usageLeft[vendor]||{},quotaText=finite(quota.remaining_percent)?`${fmt(quota.remaining_percent/100,"percent")} remaining`:`n/a · ${esc(quota.remaining_status||"quota unavailable")}`;return `<div class="card"><div style="display:flex;justify-content:space-between;gap:12px"><div><span class="label">${vendorNames[vendor]}</span><span class="value">${fmt(item.usd,"money")}</span></div><span class="status ${finite(quota.remaining_percent)?"good":"warn"}">${quotaText}</span></div><span class="detail">${fmt(item.tokens,"tokens")} tokens · ${fmt(item.sessions)} sessions · ${fmt(item.loop_share,"percent")} loop share</span><span class="detail">Other projects ${fmt(item.by_scope&&item.by_scope.other&&item.by_scope.other.tokens,"tokens")} · unpriced ${fmt(item.unpriced_tokens,"tokens")}</span><span class="detail">Quota source ${esc(quota.source||"unavailable")} · age ${finite(quota.age_hours)?`${full.format(quota.age_hours)}h`:"n/a"}</span></div>`;}).join("");
+    const dailyRows=(cost.daily||[]).slice(-14).map(day=>({date:day.date.slice(5),anthropic:day.vendors&&day.vendors.anthropic?day.vendors.anthropic.usd:0,openai:day.vendors&&day.vendors.openai?day.vendors.openai.usd:0}));document.getElementById("daily-cost").innerHTML=dailyRows.length?bars(dailyRows,"date","anthropic","openai")+`<span class="detail"><span class="good">■ Anthropic</span> · <span class="neutral">■ OpenAI</span></span>`:`<span class="empty">n/a · no cost history</span>`;
+    const roleRows=[{role:"Build",anthropic:sum(rounds.map(row=>row.builder&&row.builder.vendor==="anthropic"?row.builder.usd:0)),openai:sum(rounds.map(row=>row.builder&&row.builder.vendor==="openai"?row.builder.usd:0))},{role:"Judge",anthropic:sum(rounds.map(row=>row.judge&&row.judge.vendor==="anthropic"?row.judge.usd:0)),openai:sum(rounds.map(row=>row.judge&&row.judge.vendor==="openai"?row.judge.usd:0))}];document.getElementById("role-cost").innerHTML=bars(roleRows,"role","anthropic","openai");
+    document.getElementById("model-cost").innerHTML=["anthropic","openai"].flatMap(vendor=>Object.entries((vendors[vendor]&&vendors[vendor].by_model)||{}).map(([model,item])=>`<tr><td><span class="label">${esc(vendor)}</span>${esc(model)}</td><td class="num">${fmt(item.tokens,"tokens")}</td><td class="num">${fmt(item.usd,"money")}</td><td class="num">${fmt(item.unpriced_tokens,"tokens")}</td></tr>`)).join("")||`<tr><td colspan="4" class="empty">n/a · no observed model usage</td></tr>`;
+    const acceptedLead=ledger.filter(item=>item.accepted).map(item=>item.lead_hours),acceptedWall=ledger.filter(item=>item.accepted).map(item=>item.wall_hours),weekTrend=time.round_by_week||[],latestWeek=weekTrend[weekTrend.length-1]||{};document.getElementById("time-cards").innerHTML=[card("Median lead time",fmt(median(acceptedLead),"hours","created or accept timestamp missing"),`${acceptedLead.filter(finite).length} accepted specs measured`),card("Median spec wall time",fmt(median(acceptedWall),"hours","driver events unavailable"),"first event → terminal"),card("Latest weekly round",fmt(latestWeek.median,"minutes","no completed rounds"),`p95 ${fmt(latestWeek.p95,"minutes")} · ${esc(latestWeek.week||"week unavailable")}`),card("Timing anomalies",fmt(time.anomalies),"counted · never dropped")].join("");
+    const trendRows=weekTrend.map(row=>({week:row.week,median:row.median||0,p95:Math.max(0,(row.p95||0)-(row.median||0))}));document.getElementById("round-trend").innerHTML=trendRows.length?bars(trendRows,"week","median","p95",value=>`${full.format(value)}m`)+`<span class="detail"><span class="good">■ median</span> · <span class="neutral">■ p95 tail</span></span>`:`<span class="empty">n/a · no completed round windows</span>`;
+    const phaseRows=Object.entries(time.phase_hours||{}).map(([phase,hours])=>({phase:phase.replaceAll("_"," "),hours,none:0}));document.getElementById("phase-time").innerHTML=phaseRows.length?bars(phaseRows,"phase","hours","none",value=>`${full.format(value)}h`):`<span class="empty">n/a · driver phase transitions unavailable</span>`;
+    const heat=time.activity_heatmap||[],maxHeat=Math.max(1,...heat.map(cell=>cell.events||0)),weekdays=["Mon","Tue","Wed","Thu","Fri","Sat","Sun"];let heatHtml=`<span></span>${Array.from({length:24},(_,hour)=>`<span class="hour">${hour}</span>`).join("")}`;weekdays.forEach((day,weekday)=>{heatHtml+=`<span class="day">${day}</span>`;for(let hour=0;hour<24;hour++){const item=heat.find(cell=>cell.weekday===weekday&&cell.hour===hour)||{events:0};heatHtml+=`<span class="cell" style="--intensity:${item.events/maxHeat}" title="${day} ${hour}:00 UTC · ${item.events} events">${item.events}</span>`;}});document.getElementById("heatmap").innerHTML=heatHtml;
+    const legacy=[["Accepted rows",overview.accepted_rows],["Judge rounds",overview.judge_rounds],["Judge acceptance",fmt(overview.judge_acceptance_rate,"percent")],["Distinct-vendor",fmt(overview.distinct_vendor_rate,"percent")],["Median judge round",fmt(overview.median_judge_round_minutes,"minutes")],["Median rounds / accepted",overview.median_rounds_per_accepted_spec],["Proof error rate",fmt(overview.proof_error_rate,"percent")],["Latest tests",overview.latest_tests],["Latest test duration",`${fmt(overview.latest_test_seconds)}s`]];document.getElementById("legacy-health").innerHTML=legacy.map(([label,value])=>`<div class="mini"><span class="label">${esc(label)}</span><b>${finite(value)?fmt(value):value}</b></div>`).join("");
+    const qualityRows=[...ledger].sort((a,b)=>(b.usd||0)-(a.usd||0)).slice(0,10),maxSpend=Math.max(1,...qualityRows.map(row=>row.usd||0));document.getElementById("quality-spend").innerHTML=qualityRows.map(row=>`<div class="bar-row"><span class="bar-label" title="${esc(row.spec)}">${esc(row.spec)}</span><span class="track"><span class="fill-a" style="width:${(row.usd||0)/maxSpend*100}%"></span></span><span class="bar-number">${money.format(row.usd||0)} · ${row.findings_total||0} findings</span></div>`).join("")||`<span class="empty">n/a · per-spec cost unavailable</span>`;
+    const errors=metrics.errors||{},failureRows=Object.entries(errors.failures_by_group||{}).map(([group,count])=>({group,count,none:0})).sort((a,b)=>b.count-a.count),incidentCount=sum(Object.values(errors.incidents||{}));document.getElementById("failure-groups").innerHTML=failureRows.length?bars(failureRows,"group","count","none",value=>`${fmt(value)} failures`):`<span class="empty">n/a · no proof failure groups observed</span>`;document.getElementById("quality-cards").innerHTML=[card("Proof failures",fmt(errors.proof_failures),`${fmt(errors.proofs)} proofs`),card("Incidents",fmt(incidentCount),"derived incident signals"),card("Escalations",fmt(metrics.judges&&metrics.judges.escalation_events),`${fmt(metrics.judges&&metrics.judges.escalation_clear_events)} cleared`)].join("");
+    let ledgerSort={key:"spec",direction:1};const sortValue=(item,key)=>item[key]===null||item[key]===undefined?(typeof item[key]==="string"?"":-Infinity):item[key];const modelText=part=>{const observed=part&&part.model_observed||"n/a",declared=part&&part.model_declared;return declared&&declared!==observed?`${esc(observed)} <em>(declared ${esc(declared)})</em>`:esc(observed);};
+    const renderLedger=()=>{const ordered=[...ledger].sort((a,b)=>{const av=sortValue(a,ledgerSort.key),bv=sortValue(b,ledgerSort.key);return(typeof av==="string"?av.localeCompare(bv):av-bv)*ledgerSort.direction;});document.querySelectorAll("#ledger-table th[data-key]").forEach(th=>th.setAttribute("aria-sort",th.dataset.key===ledgerSort.key?(ledgerSort.direction===1?"ascending":"descending"):"none"));document.getElementById("ledger-body").innerHTML=ordered.map(item=>{const roundRows=[...(item.rounds||[])].sort((a,b)=>(a.round||0)-(b.round||0)).map(round=>`<div class="round-row"><strong>R${fmt(round.round)}</strong><span class="model-pair">${esc(round.judge&&round.judge.vendor||"vendor n/a")} · ${modelText(round.judge)}</span><span>${fmt(round.duration_minutes,"minutes","unmatched window")}</span><span>${fmt(round.total_tokens,"tokens")}</span><span>${fmt(round.total_usd,"money")}</span><span>${esc(round.verdict||"n/a")}</span><span>${fmt(round.findings)} findings · ${esc(round.judge&&round.judge.attribution||"unattributed")}</span></div>`).join("");return `<tr><td><strong>${esc(item.spec)}</strong><span class="detail">row ${esc(item.row)}</span></td><td><span class="status ${item.accepted?"good":"warn"}">${esc(item.outcome)}</span></td><td class="num">${fmt(item.rounds_count)}</td><td class="num">${fmt(item.wall_hours,"hours","terminal time missing")}</td><td class="num">${fmt(item.lead_hours,"hours",item.lead_time_status||"created or accept timestamp missing")}</td><td class="num">${fmt(item.tokens,"tokens")}</td><td class="num">${fmt(item.usd,"money")}</td><td class="num">${fmt(item.findings_total)}</td><td class="num">${fmt(item.debt_at_accept,"number","not accepted")}</td></tr><tr><td colspan="9"><details><summary>Inspect ${fmt(item.rounds_count)} rounds · build ${fmt(item.build&&item.build.usd,"money")} / judge ${fmt(item.judge&&item.judge.usd,"money")}</summary><div class="round-grid">${roundRows||`<span class="empty">n/a · round details unavailable</span>`}</div></details></td></tr>`;}).join("")||`<tr><td colspan="9" class="empty">n/a · no complete rounds</td></tr>`;};
+    document.querySelectorAll("#ledger-table th button").forEach(button=>button.addEventListener("click",()=>{const key=button.parentElement.dataset.key;ledgerSort=ledgerSort.key===key?{key,direction:-ledgerSort.direction}:{key,direction:1};renderLedger();}));document.getElementById("ledger-count").textContent=`${ledger.length} specs · ${rounds.length} complete rounds · select a header to sort`;renderLedger();
+    const parity=cost.parity||{};document.getElementById("parity-grid").innerHTML=["anthropic","openai"].map(vendor=>{const item=parity[vendor]||{},quota=usageLeft[vendor]||{},build=item.build_rounds||{},judge=item.judge_rounds||{};return `<div class="card"><span class="label">${vendorNames[vendor]}</span><span class="value">${fmt(item.sessions_found)} sessions</span><div class="table-wrap" style="margin-top:10px"><table style="min-width:480px"><thead><tr><th>Surface</th><th class="num">Exact</th><th class="num">Correlated</th><th class="num">Unattributed</th></tr></thead><tbody><tr><td>Build rounds</td><td class="num">${fmt(build.exact)}</td><td class="num">${fmt(build.correlated)}</td><td class="num">${fmt(build.unattributed)}</td></tr><tr><td>Judge rounds</td><td class="num">${fmt(judge.exact)}</td><td class="num">${fmt(judge.correlated)}</td><td class="num">${fmt(judge.unattributed)}</td></tr></tbody></table></div><span class="detail">Captured ${fmt((item.build_tokens||0)+(item.judge_tokens||0),"tokens")} · computed ${fmt(item.usd_computed,"money")} · unpriced ${fmt(item.unpriced_tokens,"tokens")}</span><span class="detail">Usage-left ${finite(quota.remaining_percent)?`${fmt(quota.remaining_percent/100,"percent")} · ${esc(quota.source)}`:`n/a · ${esc(quota.remaining_status||"no on-disk quota value")}`}</span></div>`;}).join("");
+    document.getElementById("source-list").innerHTML=Object.entries(data.sources||{}).map(([name,item])=>{const coverage=item.coverage||{},skips=(item.skips||[]).map(skip=>`${skip.reason}:${skip.count}`).join(", ")||"none";return `<div class="source"><strong>${esc(name)} · ${esc(item.status||"unknown")}</strong><span>${esc(coverage.from||"start n/a")} → ${esc(coverage.to||"end n/a")}</span><br><span>Skips: ${esc(skips)}</span></div>`;}).join("")||`<span class="empty">n/a · source metadata unavailable</span>`;document.getElementById("generated-foot").textContent=`Generated ${when(data.generated_at)} · last publish ${when(now.last_publish_at)}`;
+  })();
   </script>
 </body>
 </html>

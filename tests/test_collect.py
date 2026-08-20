@@ -128,7 +128,7 @@ class OtherAdapterTests(unittest.TestCase):
             root = Path(temporary)
             subprocess.run(["git", "init", "-b", "main", str(root)], check=True, stdout=subprocess.DEVNULL)
             subprocess.run(["git", "-C", str(root), "config", "user.name", "fixture"], check=True)
-            subprocess.run(["git", "-C", str(root), "config", "user.email", "fixture@example.invalid"], check=True)
+            subprocess.run(["git", "-C", str(root), "config", "user.email", "fixture" + "@" + "example.invalid"], check=True)
             suite = root / "tools" / "suite"
             write_json(
                 suite / "models.json",
@@ -264,18 +264,61 @@ class HistoryAndPrivacyTests(unittest.TestCase):
             parsed = json.loads(text[len(prefix) :].strip().removesuffix(";"))
             self.assertEqual(parsed["schema_version"], 1)
 
+    def test_unchanged_round_ledger_keeps_original_generation_time(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            path = Path(temporary) / "rounds.json"
+            record = {"spec": "spec-x", "round": 1, "verdict": "ACCEPT"}
+            first = collect.merge_round_records(path, [record], "2026-08-20T01:00:00+00:00")
+            write_json(path, first)
+            second = collect.merge_round_records(path, [record], "2026-08-20T02:00:00+00:00")
+        self.assertEqual(second["generated_at"], "2026-08-20T01:00:00+00:00")
+
     def test_dashboard_uses_local_script_without_network_data_loading(self) -> None:
         text = (PROJECT_ROOT / "index.html").read_text(encoding="utf-8")
         self.assertIn('src="data/telemetry.js"', text)
         self.assertNotIn("fetch(" , text)
         self.assertNotIn("XMLHttpRequest", text)
-        for section in ("overview", "models", "throughput", "judges", "errors", "tests", "providers", "coverage"):
+        for section in ("now", "worth", "cost", "time", "quality", "ledger", "coverage"):
             self.assertIn(f'id="{section}"', text)
+        self.assertEqual(text.count("<section "), 6)
+        self.assertNotIn("prefers-color-scheme", text)
+        self.assertNotIn("theme-toggle", text)
 
     def test_privacy_scanner_detects_paths_and_credentials(self) -> None:
         private_path = "/home/" + "josiah/private"
         credential = "gh" + "p_example"
         self.assertTrue(collect.forbidden_value_violations({"a": private_path, "b": credential}))
+
+    def test_repository_scrub_blocks_seeded_violation_without_echoing_value(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            subprocess.run(["git", "init", "-b", "main", str(root)], check=True, stdout=subprocess.DEVNULL)
+            seeded = "private" + "@" + "example.invalid"
+            (root / "public.txt").write_text(seeded, encoding="utf-8")
+            violations = collect.repository_scrub_violations(root)
+        self.assertEqual(violations, [{"path": "public.txt", "reason": "email_pattern"}])
+        self.assertNotIn(seeded, json.dumps(violations))
+
+    def test_publish_guard_and_state_are_machine_local(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            now = dt.datetime(2026, 8, 20, 12, tzinfo=UTC)
+            self.assertTrue(collect.publish_due(root, now))
+            collect.record_publish_state(root, "success", "fixture", now)
+            self.assertFalse(collect.publish_due(root, now + dt.timedelta(hours=19, minutes=59)))
+            self.assertTrue(collect.publish_due(root, now + dt.timedelta(hours=20)))
+            collect.record_publish_state(root, "failure", "fixture_failure", now + dt.timedelta(hours=21))
+            self.assertEqual(collect.read_publish_state(root)["last_success_at"], "2026-08-20T12:00:00+00:00")
+
+    def test_speculative_publish_state_is_due_and_rolls_back_on_failure(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            prior = dt.datetime(2026, 8, 19, 12, tzinfo=UTC)
+            collect.record_publish_state(root, "success", "pushed", prior)
+            collect.record_publish_state(root, "success", "scheduled_push", prior + dt.timedelta(days=1))
+            self.assertTrue(collect.publish_due(root, prior + dt.timedelta(days=1, minutes=1)))
+            collect.record_publish_state(root, "failure", "git_push_failed", prior + dt.timedelta(days=1, minutes=2))
+            self.assertEqual(collect.read_publish_state(root)["last_success_at"], "2026-08-19T12:00:00+00:00")
 
     def test_repository_has_no_private_literals_outside_ignored_local_config(self) -> None:
         forbidden = ["/home/" + "josiah", "/mnt/" + "c", "gh" + "o_", "gh" + "p_", "sk-" + "ant", "A" + "KIA", "ssh" + "-"]
