@@ -83,8 +83,16 @@ def json_text(value: Any) -> str:
     return json.dumps(value, sort_keys=True, separators=(",", ":"), ensure_ascii=True)
 
 
+def private_directory(path: Path) -> None:
+    path.mkdir(parents=True, exist_ok=True, mode=0o700)
+    os.chmod(path, 0o700)
+
+
 def atomic_text(path: Path, value: str, mode: int | None = None) -> None:
-    path.parent.mkdir(parents=True, exist_ok=True)
+    if mode is not None:
+        private_directory(path.parent)
+    else:
+        path.parent.mkdir(parents=True, exist_ok=True)
     descriptor, temporary = tempfile.mkstemp(prefix=f".{path.name}.", dir=path.parent)
     try:
         with os.fdopen(descriptor, "w", encoding="utf-8", newline="\n") as handle:
@@ -109,6 +117,7 @@ def read_json(path: Path) -> dict[str, Any]:
 
 
 def load_or_create_salt(state_root: Path) -> str:
+    private_directory(state_root)
     path = state_root / SALT_NAME
     try:
         value = path.read_text(encoding="ascii").strip()
@@ -480,8 +489,9 @@ CREATE TABLE IF NOT EXISTS runs (
 
 
 def connect_store(path: Path) -> sqlite3.Connection:
-    path.parent.mkdir(parents=True, exist_ok=True)
+    private_directory(path.parent)
     connection = sqlite3.connect(path, timeout=30)
+    os.chmod(path, 0o600)
     connection.row_factory = sqlite3.Row
     connection.execute("PRAGMA foreign_keys=ON")
     connection.execute("PRAGMA journal_mode=WAL")
@@ -1350,7 +1360,7 @@ def write_machine_layers(
     machine_root = project_root / "data" / "machine"
     local_root = state_root / "machine"
     machine_root.mkdir(parents=True, exist_ok=True)
-    local_root.mkdir(parents=True, exist_ok=True)
+    private_directory(local_root)
     written: list[Path] = []
     entries: list[dict[str, Any]] = []
     local_entries: list[dict[str, Any]] = []

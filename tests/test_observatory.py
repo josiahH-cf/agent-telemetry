@@ -4,6 +4,7 @@ import datetime as dt
 import hashlib
 import json
 import sqlite3
+import stat
 import tempfile
 import unittest
 from pathlib import Path
@@ -281,7 +282,9 @@ class StoreTests(unittest.TestCase):
         self.assertTrue({"source_files", "usage_observations", "sessions", "projects", "daily_rollups"} <= tables)
 
     def test_machine_layers_validate_manifest_reconcile_and_execute_join(self) -> None:
-        with tempfile.TemporaryDirectory() as temporary:
+        # The desktop process points tempfile at DrvFS, whose permission bits
+        # are synthetic; use the native Linux filesystem for this mode check.
+        with tempfile.TemporaryDirectory(dir="/tmp") as temporary:
             root = Path(temporary)
             config = fixture_config(root)
             self.populate(root, config)
@@ -308,11 +311,15 @@ class StoreTests(unittest.TestCase):
             sessions = [row for row in map(json.loads, (machine / "sessions.jsonl").read_text().splitlines()) if row["project_id"] in projects]
             public_sessions = (machine / "sessions.jsonl").read_text()
             local_sessions = (Path(str(config["cache_root"])) / "machine" / "sessions.jsonl").read_text()
+            state_mode = stat.S_IMODE(Path(str(config["cache_root"])).stat().st_mode)
+            store_mode = stat.S_IMODE((Path(str(config["cache_root"])) / observatory.STORE_NAME).stat().st_mode)
+            local_mode = stat.S_IMODE((Path(str(config["cache_root"])) / "machine" / "sessions.jsonl").stat().st_mode)
         self.assertEqual(len(sessions), sum(item["sessions"] for item in projects.values()))
         self.assertEqual(snapshot["metrics"]["observatory"]["reconciliation"]["status"], "ok")  # type: ignore[index]
         self.assertTrue(any(path.name == "MANIFEST.json" for path in written))
         self.assertNotIn("raw_cwd", public_sessions)
         self.assertIn("raw_cwd", local_sessions)
+        self.assertEqual((state_mode, store_mode, local_mode), (0o700, 0o600, 0o600))
 
 
 if __name__ == "__main__":
