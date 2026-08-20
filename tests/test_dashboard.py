@@ -161,13 +161,15 @@ class DashboardEnvelopeTests(unittest.TestCase):
         for key in ("7", "30", "90"):
             current = page["windows"][key]
             prior = current["comparison"]
+            self.assertIsNotNone(prior)
             self.assertEqual(prior["to"], metric_catalog._add_days(current["from"], -1))
             self.assertEqual(
                 (dt.date.fromisoformat(prior["to"]) - dt.date.fromisoformat(prior["from"])).days + 1,
                 current["inclusive_days"],
             )
-            expected = sum(row["tokens"] for row in raw if prior["from"] <= row["date"] <= prior["to"])
-            self.assertEqual(prior["summary"]["tokens"], expected)
+            if prior["summary"] is not None:
+                expected = sum(row["tokens"] for row in raw if prior["from"] <= row["date"] <= prior["to"])
+                self.assertEqual(prior["summary"]["tokens"], expected)
         self.assertIsNone(page["windows"]["all"]["comparison"])
 
     def test_prior_delta_is_unknown_not_zero_when_equal_window_predates_coverage(self) -> None:
@@ -177,7 +179,13 @@ class DashboardEnvelopeTests(unittest.TestCase):
         self.assertIsNotNone(page["windows"]["30"]["comparison"])
         self.assertIsNone(page["windows"]["90"]["comparison"])
         rows = {row["metric_id"]: row for row in page["catalog"]}
-        self.assertIn("falls before observed coverage", rows["window_tokens"]["caveats"])
+        self.assertIn("falls before that metric's observed source coverage", rows["window_tokens"]["caveats"])
+
+    def test_outcome_delta_uses_round_coverage_not_older_usage_coverage(self) -> None:
+        page = metric_catalog.build_page_envelope(synthetic_snapshot())
+        self.assertIsNotNone(page["windows"]["30"]["comparison"]["summary"])
+        self.assertIsNone(page["windows"]["30"]["comparison"]["outcomes"])
+        self.assertIsNotNone(page["windows"]["7"]["comparison"]["outcomes"])
 
     def test_window_timestamp_edges_are_included_once_and_adjacent_events_excluded(self) -> None:
         snapshot = synthetic_snapshot(days=20, specs=0)
@@ -279,21 +287,29 @@ class DashboardEnvelopeTests(unittest.TestCase):
             self.assertEqual(actual, {value: sum(row["tokens"] for row in sessions if row[key] == value) for value in values})
 
         def assert_slice(value: dict, selected_days: list[dict], selected_rounds: list[dict], *, comparison: bool = False) -> None:
-            summary = value["summary"]
-            self.assertEqual(summary["tokens"], sum(row["tokens"] for row in selected_days))
-            self.assertAlmostEqual(summary["cost_usd"], sum(row["api_equivalent_cost_usd"] for row in selected_days), places=5)
-            self.assertEqual(summary["session_days"], sum(row["sessions"] for row in selected_days))
-            self.assertEqual(summary["active_days"], len({row["date"] for row in selected_days if row["tokens"] or row["sessions"]}))
-            if not comparison:
-                self.assertEqual(summary["unpriced_tokens"], sum(row["unpriced_tokens"] for row in selected_days))
+            summary = value.get("summary")
+            if summary is None:
+                self.assertTrue(comparison)
+            else:
+                self.assertEqual(summary["tokens"], sum(row["tokens"] for row in selected_days))
+                self.assertAlmostEqual(summary["cost_usd"], sum(row["api_equivalent_cost_usd"] for row in selected_days), places=5)
+                self.assertEqual(summary["session_days"], sum(row["sessions"] for row in selected_days))
+                self.assertEqual(summary["active_days"], len({row["date"] for row in selected_days if row["tokens"] or row["sessions"]}))
+                if not comparison:
+                    self.assertEqual(summary["unpriced_tokens"], sum(row["unpriced_tokens"] for row in selected_days))
             active_projects = {row["project_id"] for row in selected_days if row["tokens"] or row["sessions"]}
-            self.assertEqual(value["project_count"], len(active_projects))
+            if value.get("project_count") is not None:
+                self.assertEqual(value["project_count"], len(active_projects))
             expected_buckets = {
                 bucket: sum(row["tokens"] for row in selected_days if row["project_id"] == bucket)
                 for bucket in ("ad-hoc", "remote")
             }
-            self.assertEqual(value["bucket_tokens"], expected_buckets)
-            outcomes = value["outcomes"]
+            if value.get("bucket_tokens") is not None:
+                self.assertEqual(value["bucket_tokens"], expected_buckets)
+            outcomes = value.get("outcomes")
+            if outcomes is None:
+                self.assertTrue(comparison)
+                return
             accepted_features = {row["spec_id"] for row in selected_rounds if row["accepted"]}
             represented = {row["spec_id"] for row in selected_rounds}
             round_cost = sum(row["api_equivalent_cost_usd"] for row in selected_rounds)

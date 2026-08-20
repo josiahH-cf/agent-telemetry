@@ -53,7 +53,7 @@ def _metric(
     surface: str = "page",
 ) -> dict[str, Any]:
     if metric_id in PRIOR_DELTA_METRICS:
-        caveats += " The prior delta is unavailable for all-time or when a complete preceding equal-length window falls before observed coverage."
+        caveats += " The prior delta is unavailable for all-time or when a complete preceding equal-length window falls before that metric's observed source coverage."
     return {
         "schema_version": CATALOG_SCHEMA_VERSION,
         "metric_id": metric_id,
@@ -788,16 +788,16 @@ def _window(
     }
 
 
-def _comparison_slice(window: dict[str, Any]) -> dict[str, Any]:
+def _comparison_slice(window: dict[str, Any], *, usage_covered: bool, rounds_covered: bool) -> dict[str, Any]:
     """Keep only fixed-cardinality values needed for equal-window tile deltas."""
     summary = window.get("summary") if isinstance(window.get("summary"), dict) else {}
     outcomes = window.get("outcomes") if isinstance(window.get("outcomes"), dict) else {}
     return {
         "from": window.get("from"),
         "to": window.get("to"),
-        "summary": {key: summary.get(key) for key in ("tokens", "cost_usd", "session_days", "active_days")},
-        "project_count": window.get("project_count"),
-        "bucket_tokens": dict(window.get("bucket_tokens") or {}),
+        "summary": {key: summary.get(key) for key in ("tokens", "cost_usd", "session_days", "active_days")} if usage_covered else None,
+        "project_count": window.get("project_count") if usage_covered else None,
+        "bucket_tokens": dict(window.get("bucket_tokens") or {}) if usage_covered else None,
         "outcomes": {
             key: outcomes.get(key)
             for key in (
@@ -810,7 +810,7 @@ def _comparison_slice(window: dict[str, Any]) -> dict[str, Any]:
                 "findings",
                 "cost_usd",
             )
-        },
+        } if rounds_covered else None,
     }
 
 
@@ -823,6 +823,8 @@ def build_page_envelope(snapshot: dict[str, Any]) -> dict[str, Any]:
     available_days = sorted(day for day in available_days if day and day != "None")
     available_from = available_days[0] if available_days else collection_day
     available_to = max(collection_day, available_days[-1]) if available_days else collection_day
+    usage_from = min((row["date"] for row in usage_days), default=None)
+    rounds_from = min((str(_day(row.get("ended_at"))) for row in all_rounds), default=None)
     windows: dict[str, Any] = {}
     for days in WINDOW_DAYS:
         from_day = max(available_from, _add_days(available_to, -(days - 1)))
@@ -830,9 +832,11 @@ def build_page_envelope(snapshot: dict[str, Any]) -> dict[str, Any]:
         equal_days = current["inclusive_days"]
         prior_from = _add_days(from_day, -equal_days)
         prior_to = _add_days(from_day, -1)
-        if prior_from >= available_from:
+        usage_covered = bool(usage_from and prior_from >= usage_from)
+        rounds_covered = bool(rounds_from and prior_from >= rounds_from)
+        if usage_covered or rounds_covered:
             prior = _window(snapshot, f"prior-{days}", prior_from, prior_to, usage_days, usage_raw, all_rounds)
-            current["comparison"] = _comparison_slice(prior)
+            current["comparison"] = _comparison_slice(prior, usage_covered=usage_covered, rounds_covered=rounds_covered)
         else:
             current["comparison"] = None
         windows[str(days)] = current
