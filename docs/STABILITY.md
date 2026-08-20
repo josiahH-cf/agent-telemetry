@@ -83,7 +83,11 @@ Explicit surface decisions:
   clean generated-only commits and main fast-forward pushes pass. Doctor checks
   the configured path and executable hooks; the hook tests pin local/state path
   blocking, `*.local.*`, must-ignore behavior, noreply identity, main-only
-  fast-forward policy, and historical-blob scanning.
+  fast-forward policy, and historical-blob scanning. The first real release
+  exposed an over-broad scan of unchanged remote-baseline fixture blobs; the
+  guard now scans every blob changed by each outbound commit while the final
+  tree still receives a full scrub. A regression proves inherited baseline
+  blobs do not block and an introduced-then-deleted leak still does.
 
 ### ST-42 — Consumer and maintainer guidance had no single authority
 

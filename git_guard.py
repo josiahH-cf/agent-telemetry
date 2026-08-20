@@ -195,6 +195,18 @@ def _tree_entries(root: Path, commit: str) -> list[tuple[str, str]]:
     return result
 
 
+def _changed_tree_entries(root: Path, commit: str) -> list[tuple[str, str]]:
+    """Return blobs introduced or changed by *commit*, not inherited baseline blobs."""
+    current = dict(_tree_entries(root, commit))
+    ancestry = _git(root, "rev-list", "--parents", "-n", "1", commit).decode(
+        "ascii", errors="replace"
+    ).split()
+    if len(ancestry) == 1:
+        return list(current.items())
+    parent = dict(_tree_entries(root, ancestry[1]))
+    return [(path, object_id) for path, object_id in current.items() if parent.get(path) != object_id]
+
+
 def _scan_outbound(root: Path, commits: list[str]) -> None:
     denylist = collect.load_sensitive_terms(root / "sensitive-terms.local.txt")
     seen_blobs: set[str] = set()
@@ -209,7 +221,7 @@ def _scan_outbound(root: Path, commits: list[str]) -> None:
         paths = [path for path, _object_id in entries]
         manifest_failures += len(stability.tracked_manifest_violations(root, paths))
         path_findings.extend(reason for path in paths for reason in [_blocked_path(path)] if reason)
-        for _path, object_id in entries:
+        for _path, object_id in _changed_tree_entries(root, commit):
             if object_id in seen_blobs:
                 continue
             seen_blobs.add(object_id)

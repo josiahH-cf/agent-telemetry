@@ -5,6 +5,7 @@ import subprocess
 import tempfile
 import unittest
 from pathlib import Path
+from unittest import mock
 
 import collect
 import git_guard
@@ -87,6 +88,36 @@ class GitGuardTests(unittest.TestCase):
             with self.assertRaisesRegex(git_guard.GuardFailure, "outbound_commits") as raised:
                 git_guard.pre_push(root, update)
         self.assertNotIn(seeded, str(raised.exception))
+
+    def test_pre_push_does_not_rescan_unchanged_remote_baseline_blobs(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            init_repo(root)
+            baseline_probe = "/" + "home/fixture/private"
+            (root / "README.md").write_text(baseline_probe, encoding="utf-8")
+            subprocess.run(["git", "-C", str(root), "add", "--", "README.md"], check=True)
+            subprocess.run(
+                ["git", "-C", str(root), "commit", "--no-verify", "-m", "remote baseline"],
+                check=True,
+                stdout=subprocess.DEVNULL,
+            )
+            base = subprocess.run(
+                ["git", "-C", str(root), "rev-parse", "HEAD"], check=True, text=True, stdout=subprocess.PIPE
+            ).stdout.strip()
+            (root / "safe.txt").write_text("safe outbound\n", encoding="utf-8")
+            subprocess.run(["git", "-C", str(root), "add", "--", "safe.txt"], check=True)
+            subprocess.run(
+                ["git", "-C", str(root), "commit", "--no-verify", "-m", "clean outbound"],
+                check=True,
+                stdout=subprocess.DEVNULL,
+            )
+            tip = subprocess.run(
+                ["git", "-C", str(root), "rev-parse", "HEAD"], check=True, text=True, stdout=subprocess.PIPE
+            ).stdout.strip()
+            with mock.patch.object(git_guard, "_must_ignore"):
+                with mock.patch.object(collect, "repository_scrub_violations", return_value=[]):
+                    with mock.patch.object(git_guard.stability, "tracked_manifest_violations", return_value=[]):
+                        git_guard.pre_push(root, f"refs/heads/main {tip} refs/heads/main {base}\n")
 
     def test_pre_push_blocks_deletion_non_main_source_and_non_fast_forward(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
