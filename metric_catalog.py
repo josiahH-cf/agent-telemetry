@@ -704,6 +704,8 @@ def _window(
     }
     projects: dict[str, dict[str, float]] = defaultdict(lambda: defaultdict(float))
     for row in raw_rows:
+        if not (_number(row.get("tokens")) or _number(row.get("sessions"))):
+            continue
         project_id = str(row.get("project_id") or "unknown")
         projects[project_id]["tokens"] += _number(row.get("tokens"))
         projects[project_id]["cost_usd"] += _number(row.get("cost_usd"))

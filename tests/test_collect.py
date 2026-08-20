@@ -60,6 +60,7 @@ class SuiteAdapterTests(unittest.TestCase):
             {"final": "ACCEPT", "judges_accepted": True, "row": "r1", "reason": f"2 NEW blocking {secret}", "noted": secret},
         )
         write_json(round1 / "digest.json", {"sealed_at_round_end": True, "files": [secret]})
+        (root / "seals" / "spec-x" / "round2").mkdir(parents=True)
         (root / "seals" / "spec-x" / "round10").mkdir(parents=True)
         junit = root / "test-results" / "broad-abc123.xml"
         junit.parent.mkdir(parents=True)
@@ -80,9 +81,9 @@ class SuiteAdapterTests(unittest.TestCase):
             secret = self.make_suite(root)
             result = collect.adapt_suite_state(root, dt.datetime(2026, 8, 2, tzinfo=UTC))
         self.assertEqual(result["meta"]["ingested"]["events"], 6)
-        self.assertEqual(result["meta"]["ingested"]["round_directories"], 2)
+        self.assertEqual(result["meta"]["ingested"]["round_directories"], 3)
         self.assertEqual(result["meta"]["ingested"]["complete_rounds"], 1)
-        self.assertEqual(result["judges"]["rounds_by_spec"][0]["rounds"], [1, 10])
+        self.assertEqual(result["judges"]["rounds_by_spec"][0]["rounds"], [1, 2, 10])
         self.assertEqual(result["models"]["builder_by_model"], {"claude-opus-5": 1})
         self.assertEqual(result["tests"]["latest"]["tests"], 12)
         self.assertEqual(result["durations"]["judge_rounds"]["matched"], 1)
@@ -93,6 +94,20 @@ class SuiteAdapterTests(unittest.TestCase):
         reasons = {item["reason"] for item in result["meta"]["skips"]}
         self.assertIn("partial_trailing_line", reasons)
         self.assertIn("round_in_flight", reasons)
+
+    def test_extreme_round_duration_is_clamped_and_counted_as_anomaly(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            path = Path(temporary) / "driver.jsonl"
+            rows = [
+                {"ts": "2026-08-01T00:00:00+00:00", "kind": "dispatch", "row": "r1", "round": "round1"},
+                {"ts": "2026-08-03T01:00:00+00:00", "kind": "verdict", "row": "r1", "round": "round1"},
+            ]
+            path.write_text("".join(json.dumps(row) + "\n" for row in rows), encoding="utf-8")
+            result = collect.parse_driver_log(path)
+        durations = result["round_durations"]
+        self.assertEqual(durations["matched"], 1)
+        self.assertEqual(durations["anomalies"], 1)
+        self.assertEqual(durations["minutes"]["median"], 2_880)
 
     def test_junit_parser_uses_suite_attributes_only(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:

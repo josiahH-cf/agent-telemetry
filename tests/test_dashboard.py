@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import datetime as dt
 import json
+import statistics
 import tempfile
 import unittest
 from pathlib import Path
@@ -178,6 +179,20 @@ class DashboardEnvelopeTests(unittest.TestCase):
         rows = {row["metric_id"]: row for row in page["catalog"]}
         self.assertIn("falls before observed coverage", rows["window_tokens"]["caveats"])
 
+    def test_window_timestamp_edges_are_included_once_and_adjacent_events_excluded(self) -> None:
+        snapshot = synthetic_snapshot(days=20, specs=0)
+        snapshot["metrics"]["ledger"]["rounds"] = [
+            {"spec": "before", "round": 1, "ended_at": "2026-08-13T23:59:59Z", "duration_minutes": 1, "accepted": False, "findings": 0, "total_tokens": 1, "total_usd": 0, "unpriced_tokens": 0},
+            {"spec": "first", "round": 1, "ended_at": "2026-08-14T00:00:00Z", "duration_minutes": 1, "accepted": True, "findings": 0, "total_tokens": 1, "total_usd": 0, "unpriced_tokens": 0},
+            {"spec": "last", "round": 1, "ended_at": "2026-08-20T23:59:59Z", "duration_minutes": 1, "accepted": False, "findings": 0, "total_tokens": 1, "total_usd": 0, "unpriced_tokens": 0},
+            {"spec": "after", "round": 1, "ended_at": "2026-08-21T00:00:00Z", "duration_minutes": 1, "accepted": False, "findings": 0, "total_tokens": 1, "total_usd": 0, "unpriced_tokens": 0},
+        ]
+        usage_days, usage_raw = metric_catalog._usage_days(snapshot)
+        window = metric_catalog._window(snapshot, "edge", "2026-08-14", "2026-08-20", usage_days, usage_raw, metric_catalog._rounds(snapshot))
+        self.assertEqual(window["outcomes"]["rounds"], 2)
+        self.assertEqual(window["outcomes"]["accepted_rounds"], 1)
+        self.assertEqual(window["outcomes"]["accepted_features"], 1)
+
     def test_bucket_totals_survive_top_n_and_utc_boundaries_are_exact(self) -> None:
         snapshot = synthetic_snapshot()
         latest = snapshot["collection"]["date"]
@@ -254,14 +269,68 @@ class DashboardEnvelopeTests(unittest.TestCase):
         self.assertEqual(page["point_in_time"]["totals"]["sessions"], len(sessions))
         self.assertEqual(page["point_in_time"]["totals"]["tokens"], sum(row["tokens"] for row in sessions))
         self.assertEqual(page["point_in_time"]["totals"]["unpriced_tokens"], sum(row["unpriced_tokens"] for row in sessions))
+        self.assertAlmostEqual(page["point_in_time"]["totals"]["cost_usd"], sum(row["api_equivalent_cost_usd"] for row in sessions), places=5)
+        for field, values in (
+            ("by_vendor", ("anthropic", "openai")),
+            ("by_host_os", ("wsl", "windows")),
+        ):
+            key = "vendor" if field == "by_vendor" else "host_os"
+            actual = {row["label"]: row["tokens"] for row in page["point_in_time"][field]}
+            self.assertEqual(actual, {value: sum(row["tokens"] for row in sessions if row[key] == value) for value in values})
+
+        def assert_slice(value: dict, selected_days: list[dict], selected_rounds: list[dict], *, comparison: bool = False) -> None:
+            summary = value["summary"]
+            self.assertEqual(summary["tokens"], sum(row["tokens"] for row in selected_days))
+            self.assertAlmostEqual(summary["cost_usd"], sum(row["api_equivalent_cost_usd"] for row in selected_days), places=5)
+            self.assertEqual(summary["session_days"], sum(row["sessions"] for row in selected_days))
+            self.assertEqual(summary["active_days"], len({row["date"] for row in selected_days if row["tokens"] or row["sessions"]}))
+            if not comparison:
+                self.assertEqual(summary["unpriced_tokens"], sum(row["unpriced_tokens"] for row in selected_days))
+            active_projects = {row["project_id"] for row in selected_days if row["tokens"] or row["sessions"]}
+            self.assertEqual(value["project_count"], len(active_projects))
+            expected_buckets = {
+                bucket: sum(row["tokens"] for row in selected_days if row["project_id"] == bucket)
+                for bucket in ("ad-hoc", "remote")
+            }
+            self.assertEqual(value["bucket_tokens"], expected_buckets)
+            outcomes = value["outcomes"]
+            accepted_features = {row["spec_id"] for row in selected_rounds if row["accepted"]}
+            represented = {row["spec_id"] for row in selected_rounds}
+            round_cost = sum(row["api_equivalent_cost_usd"] for row in selected_rounds)
+            durations = [row["duration_minutes"] for row in selected_rounds if row.get("duration_minutes") is not None]
+            self.assertEqual(outcomes["accepted_features"], len(accepted_features))
+            self.assertEqual(outcomes["rounds"], len(selected_rounds))
+            self.assertEqual(outcomes["accepted_rounds"], sum(bool(row["accepted"]) for row in selected_rounds))
+            self.assertEqual(outcomes["findings"], sum(row["findings"] for row in selected_rounds))
+            expected_efficiency = len(accepted_features) / len(represented) if represented else None
+            expected_mean = round_cost / len(accepted_features) if accepted_features else None
+            expected_median = statistics.median(durations) if durations else None
+            if expected_efficiency is None:
+                self.assertIsNone(outcomes["acceptance_efficiency"])
+            else:
+                self.assertAlmostEqual(outcomes["acceptance_efficiency"], expected_efficiency, places=5)
+            if expected_mean is None:
+                self.assertIsNone(outcomes["mean_cost_per_accepted"])
+            else:
+                self.assertAlmostEqual(outcomes["mean_cost_per_accepted"], expected_mean, places=5)
+            if expected_median is None:
+                self.assertIsNone(outcomes["median_round_minutes"])
+            else:
+                self.assertAlmostEqual(outcomes["median_round_minutes"], expected_median, delta=0.001)
+            self.assertAlmostEqual(outcomes["cost_usd"], round_cost, places=5)
+            if not comparison:
+                self.assertEqual(outcomes["tokens"], sum(row["tokens"] for row in selected_rounds))
+                self.assertEqual(outcomes["unpriced_tokens"], sum(row["unpriced_tokens"] for row in selected_rounds))
+
         for window in page["windows"].values():
             selected_days = [row for row in days if window["from"] <= row["date"] <= window["to"]]
             selected_rounds = [row for row in rounds if window["from"] <= metric_catalog._day(row["ended_at"]) <= window["to"]]
-            self.assertEqual(window["summary"]["tokens"], sum(row["tokens"] for row in selected_days))
-            self.assertAlmostEqual(window["summary"]["cost_usd"], sum(row["api_equivalent_cost_usd"] for row in selected_days), places=5)
-            self.assertEqual(window["summary"]["session_days"], sum(row["sessions"] for row in selected_days))
-            self.assertEqual(window["outcomes"]["rounds"], len(selected_rounds))
-            self.assertAlmostEqual(window["outcomes"]["cost_usd"], sum(row["api_equivalent_cost_usd"] for row in selected_rounds), places=5)
+            assert_slice(window, selected_days, selected_rounds)
+            prior = window.get("comparison")
+            if prior:
+                prior_days = [row for row in days if prior["from"] <= row["date"] <= prior["to"]]
+                prior_rounds = [row for row in rounds if prior["from"] <= metric_catalog._day(row["ended_at"]) <= prior["to"]]
+                assert_slice(prior, prior_days, prior_rounds, comparison=True)
 
 
 if __name__ == "__main__":
