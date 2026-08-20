@@ -9,14 +9,34 @@ pre-rework baseline.
 
 | ID | Risk | Severity | Action | Verifying check |
 |---|---|---|---|---|
-| ST-31 | Provider activity outside the original loop scope was not represented as a canonical dataset. | high | in progress | Four-root store reconciliation and three independent usage oracles. |
-| ST-32 | Equivalent working-directory forms could split one project or publish a private mapping. | high | in progress | Canonicalization, registry-order, ad-hoc, remote, and scrub fixtures. |
-| ST-33 | A stopped Linux VM could prevent its own cron scheduler from reviving collection. | high | in progress | Named Windows-task query, triggered-run evidence, and double-fire lock drill. |
-| ST-34 | Machine consumers lacked a stable global contract and local full-fidelity query surface. | medium | in progress | Schema, manifest, worked-join, and three-way reconciliation battery. |
-| ST-35 | Dual-drive growth and retention consequences were not measured together. | medium | in progress | Per-store inventory, drive runway, dry-run, and fixture-only apply proof. |
+| ST-31 | Provider activity outside the original loop scope was not represented as a canonical dataset. | high | **fixed** — one transactional SQLite store ingests four global roots and the loop layer. | Real four-root backfill, three metadata-only hand oracles, `quick_check`, rebuild, and 3-way reconciliation pass. |
+| ST-32 | Equivalent working-directory forms could split one project or publish a private mapping. | high | **fixed** — canonicalization precedes longest-prefix registry matching; anonymous, ad-hoc, and remote identities are explicit. | UNC/drive/mount/case fixtures, real bucket counts, and the expanded repository scrub pass. |
+| ST-33 | A stopped Linux VM could prevent its own cron scheduler from reviving collection. | high | **fixed** — two limited Windows tasks invoke only the wrapper; freshness plus the existing lock prevent stacking. | Both exact tasks queried; a triggered logon run reached WSL and a forced overlap returned zero as `lock_busy_noop`. |
+| ST-34 | Machine consumers lacked a stable global contract and local full-fidelity query surface. | medium | **fixed** — eight public JSONL datasets plus schemas/manifest and an untracked local tier derive from the store. | Per-line validation, manifest hashes/counts, executed worked join, scrub, and store=envelope=machine totals pass. |
+| ST-35 | Dual-drive growth and retention consequences were not measured together. | medium | **hardened / Tier B proposals only** — both drives and every named store are inventoried; real plans remain dry-run. | Selected-candidate metadata is unchanged; destructive behavior passes only against a marked fixture. |
+| ST-36 | Repeated cumulative token snapshots inside one rollout collided during a real full rebuild. | high | **fixed** — same-file event insertion is idempotent, preserving one stable cumulative observation. | The first temporary rebuild failed before replacement; a regression fixture and the second 4m40s real rebuild pass. |
 
-Measured 2026-08-20 UTC. This is the public, sanitized evidence register for the
-Round 3 stability pass. Raw machine paths, host identity, transcript content,
+### V4 completion evidence
+
+The pre-rework envelope held 59 accepted rows, 539 rounds, 11.95% judge
+acceptance, 48 accepted features, and a 4,318-test latest run. The finished
+envelope held the same 59 accepted rows and 48 accepted features; the live loop
+added exactly one round and a newer 4,321-test run while this pass ran. All 539
+common round records have identical token, exact-dollar, unpriced, verdict, and
+acceptance fields. No closed pre-existing history file changed bytes.
+
+The canonical store currently represents 9,768 deduplicated sessions and more
+than 780,000 unique usage observations across both providers and both host
+environments. The real rebuild reparsed 6,221 WSL Claude files, 2,342 WSL Codex
+files, 1,105 Windows Claude files, and 651 Windows Codex files. It completed in
+4m40s at reduced CPU and idle I/O priority; the next incremental run completed
+in 1m04s, leaving about 28 times the 30-minute cadence as headroom. The global
+dashboard was exercised from `file://` at 1,440 and 390 CSS pixels with no
+runtime errors or page-level horizontal overflow, visible keyboard focus,
+numeric sorting, range recomputation, and all six section checks green.
+
+Measured 2026-08-20 UTC. This is the public, sanitized evidence register through
+the v4 global rebaseline. Raw machine paths, host identity, transcript content,
 and credential-shaped values are deliberately absent.
 
 ## Headline
@@ -33,11 +53,12 @@ distribution is running, catch up on distribution startup, make every observed
 gap visible, and publish at least daily with bounded recovery. It cannot mean
 collecting while Windows is powered off or while the WSL VM is not running.
 
-Disk is not a present concern. The filesystem was 91.0% free. Even an aggregate
-upper bound that incorrectly treats every recently touched byte as new durable
-growth projects about 146.6 GB/year and 6.7 years of runway. The credible runway
-is longer because that bound includes first-day cache imports and worktrees that
-the owning driver removes after acceptance.
+Disk is not a present concern on either drive. The shorter conservative bound is
+the Windows drive: about 415.8 GB free against a 33.3 GB/year provider-record
+mtime-cohort bound, or about 12.5 years. The WSL filesystem has about 983.9 GB
+free and more than 21 years against the comparable non-rotating bound. First-day
+database imports and worktrees are reported separately rather than mislabeled as
+durable growth.
 
 ## As-found baseline
 
@@ -88,12 +109,23 @@ the idle I/O scheduling class. The same exclusive lock covers all three, so a
 reboot catch-up and a half-hour tick may race safely: one runs and the other exits
 with the named busy status instead of stacking.
 
-At measurement time, WSL uptime began within about one minute of Windows boot and
-the observed log had no VM-stop-aligned gap. The evidence gate for installing a
-Windows task therefore did not open. The README carries an exact, reversible
-logon-task command if later cadence data demonstrates that need. This follows
-Microsoft's distinction between commands that run when a WSL instance starts and
-a Windows Task Scheduler `AtLogOn` trigger:
+The final dual-environment design also has exactly two limited, current-user
+Windows tasks with the `agent-telemetry-` prefix. The logon task calls catch-up;
+the periodic task calls refresh at an offset from the Linux half-hour ticks.
+Each action is only `wsl.exe`, the named distribution, and the documented
+wrapper. The wrapper obtains the common lock before testing its 20-minute
+freshness watermark. A manual Task Scheduler run reached the WSL wrapper and
+returned `fresh_noop` in under two seconds. With the lock deliberately held, a
+second real task run returned `lock_busy_noop`; Task Scheduler recorded result
+zero and no collector stacked. The Windows-launched child inherits nice level
+10 and idle I/O priority.
+
+The first natural post-change Linux tick began at 13:00 UTC and finished zero in
+69 seconds. Cadence gaps remain public data, not inferred coverage. Collection
+still cannot run while Windows itself is powered off; on the next Windows logon
+the logon task supplies catch-up. The README contains exact, reversible creation
+and deletion commands. This follows Microsoft's distinction between WSL startup
+and Windows Task Scheduler triggers:
 
 - <https://learn.microsoft.com/windows/wsl/wsl-config>
 - <https://learn.microsoft.com/powershell/module/scheduledtasks/new-scheduledtasktrigger>
@@ -129,40 +161,40 @@ remains schema version 2 because no documented metric semantic changed.
 
 ## Disk and retention report
 
-Method: recursive byte inventory plus an 18-day mtime cohort. “Growth/day” is
-the bytes whose mtimes fall in the observable window divided by the observable
-days; it is an upper bound, not a fitted trend. “Runway” divides measured free
-space by that store's annualized bound. Sizes use decimal units.
+Method: recursive byte inventory plus a 30-day mtime cohort. “12-month bound”
+annualizes bytes touched within the observable window; it is an upper bound, not
+a fitted growth model. A one-day-old rebuilt store or regenerated tier is marked
+as first-day activity and is not added to the credible drive runway. Sizes use
+decimal units.
 
 | Store | Current | Growth/day upper bound | 12-month bound | Runway alone | Owner / consumer and trimming effect |
 |---|---:|---:|---:|---:|---|
-| Telemetry repo, including Git | 13.5 MB | 13.50 MB | 4.93 GB | 199.6 y | Collector/Git write; dashboard and Pages read. First-day age makes this bound intentionally high. |
-| Telemetry local state | 72.3 MB | 72.26 MB | 26.39 GB | 37.3 y | Collector caches/log/status. v5 caches rebuild; clock/publish evidence should remain. |
-| Acceptance seals | 873.4 MB | 40.28 MB | 14.71 GB | 66.9 y | Build driver writes; verification, judging, and telemetry read. Permanent acceptance evidence; do not trim. |
-| Candidate worktrees | 232.3 MB | 172.39 MB | 62.97 GB | 15.6 y | Driver/builders use active trees. The acceptance finalizer runs `git worktree remove --force` then deletes the merged row branch; external pruning could destroy active work. |
-| Broad test results | 134.9 MB | 27.18 MB | 9.93 GB | 99.1 y | Proof runner writes; telemetry reads test/time series. Raw deletion reduces independent reconstruction even after ingestion. |
-| Suite temporary files | 0.25 MB | 0.023 MB | 0.009 GB | >100,000 y | Harness-owned scratch. Old residue has negligible disk impact. |
-| Driver log | 2.20 MB | 2.20 MB | 0.80 GB | 1,224.5 y | Driver appends; queue history and telemetry read. Keep append-only. |
-| Claude transcripts | 664.3 MB | 24.30 MB | 8.87 GB | 110.9 y | Provider runtime writes; builder identity and telemetry read. Deletion weakens attribution and verification. |
-| Codex rollouts | 1.075 GB | 49.11 MB | 17.94 GB | 54.9 y | Provider runtime writes; these are the only OpenAI exact-attribution evidence. Deletion weakens attribution. |
-| Recovery snapshots | 192.3 MB | 0 | 0 | n/a | Operator-created recovery point. No automated rotation was found; delete only as a whole after a verified replacement. |
+| Telemetry repository, including Git | 26.8 MB | 26.81 MB | 9.79 GB | 100.5 y | Collector/Git write; dashboard, agents, and Pages read. First-day project age makes this intentionally high. |
+| Canonical SQLite store | 490.5 MB | 490.53 MB | 179.16 GB | 5.5 y | Collector writes; every derived layer reads. This is a first-day rebuild bound, not credible durable growth; the store is fully rebuildable. |
+| Local machine tier | 10.0 MB | 9.95 MB | 3.63 GB | 270.7 y | Regenerated in place for local agents; restricted and untracked. |
+| Acceptance seals | 876.6 MB | 40.30 MB | 14.72 GB | 66.8 y | Driver writes; independent verification and telemetry read. Permanent evidence; do not trim. |
+| Candidate worktrees | 232.4 MB | 165.99 MB | 60.63 GB | 16.2 y | Driver/builders own active trees and remove merged worktrees. Rotating, not durable accumulation. |
+| Broad test results | 135.5 MB | 27.02 MB | 9.87 GB | 99.7 y | Proof runner writes; telemetry reads. Deletion reduces reconstruction evidence. |
+| Driver log | 2.21 MB | 2.21 MB | 0.81 GB | 1,221.0 y | Driver appends; queue history and telemetry read. Keep append-only. |
+| WSL Claude transcripts | 666.0 MB | 22.20 MB | 8.11 GB | 121.4 y | Provider runtime writes; seal hashes and telemetry read. Deletion weakens verification. |
+| WSL Codex rollouts | 1.079 GB | 34.52 MB | 12.61 GB | 78.0 y | Provider runtime writes; sole exact OpenAI attribution evidence. |
+| Windows Claude transcripts | 1.000 GB | 27.36 MB | 9.99 GB | 41.6 y | Windows provider runtime writes; observatory reads over the mounted drive. |
+| Windows Codex rollouts | 4.356 GB | 63.79 MB | 23.30 GB | 17.8 y | Windows provider runtime writes; the largest and fastest-growing provider store. |
+| Recovery stores | 192.9 MB | 0.29 MB | 0.10 GB | >10,000 y | Operator recovery points. Delete only as coherent snapshots after a verified replacement. |
 
-The identity chain was verified without reading conversation content: 506 sealed
-builder records were known, 504 still referenced readable append-only transcript
-prefixes, and all 504 prefix hashes matched. Two older links were already
-unavailable. This is why transcript/rollout pruning is not a free optimization.
+The previously verified identity chain remains the governing dependency: sealed
+builder records contain prefix hashes into provider records, and rollouts are
+the only exact OpenAI attribution evidence. Transcript or rollout deletion is
+therefore not a free cache trim even though the canonical store is rebuildable.
 
-The telemetry Git directory was only 3.7 MB with 112 loose objects and no packs.
-Scheduled `git gc` or maintenance is not justified yet; ordinary Git auto-gc is
-accepted. Re-evaluate when the Git directory exceeds 250 MB or doctor reports
-meaningful free-space pressure.
+The repository remains far below the 250 MB Git-maintenance threshold; ordinary
+Git auto-maintenance remains sufficient.
 
 ### Verified retention and proposals
 
-- **Project-owned state — completed:** seven obsolete v2–v4 caches totaling
-  41,863,008 bytes were deleted after all three v5 caches validated and an
-  immediate second collection reused them. They are reconstructible, not a
-  durable evidence store.
+- **Telemetry store/tier — accepted:** rebuilding proves the SQLite store is
+  reconstructible, while the local machine tier is regenerated in place. No
+  scheduled retention is needed.
 - **Worktrees — existing mechanism verified:** the owning finalizer removes an
   accepted row's worktree and merged branch. Held or active work remains by
   design. No external policy is proposed.
@@ -174,9 +206,10 @@ meaningful free-space pressure.
 - **Suite temporary files — proposal:** the harness owner may clear files older
   than seven days after proving no active process references them. The measured
   saving is only 248,841 bytes, so urgency is effectively zero.
-- **Provider records — accepted pending upstream compaction/archive:** do not
-  delete merely by age. A safe future mechanism must preserve session identity,
-  token totals, and every sealed prefix hash before removing originals.
+- **Provider records on both drives — accepted pending upstream
+  compaction/archive:** do not delete merely by age. A safe future mechanism
+  must preserve session identity, token totals, and every sealed prefix hash
+  before removing originals. Windows Codex is the first store to revisit.
 - **Recovery snapshots — proposal:** retain the current snapshot until a newer
   full restore is verified, then retire the old top-level snapshot as one unit.
   Never prune copied members by their preserved source mtimes.
@@ -188,18 +221,20 @@ meaningful free-space pressure.
 | Explicit store/window | Candidate files or units | Bytes |
 |---|---:|---:|
 | broad test results, 7 days | 0 | 0 |
-| Claude transcripts, 90 days | 0 | 0 |
-| Codex rollouts, 90 days | 5 | 9,343,507 |
-| suite temporary files, 7 days | 857 | 248,841 |
+| WSL Claude transcripts, 90 days | 0 | 0 |
+| WSL Codex rollouts, 90 days | 5 | 9,343,507 |
+| Windows Claude transcripts, 90 days | 0 | 0 |
+| Windows Codex rollouts, 90 days | 97 | 25,314,083 |
 | whole recovery snapshots, 30 days | 0 | 0 |
 
-Before/after metadata digests were identical for every dry-run. Destructive mode
-requires a per-store selection, `--allow-tier-b`, `--apply`, and the exact
-acknowledgment `I_UNDERSTAND_THIS_DELETES_SELECTED_FILES`. It was exercised only
-against a marked fixture: one old file was removed while the young file and
-marker remained. A separate test proves a real-store apply is refused without
-the Tier B opt-in. The operator should still review every printed candidate;
-this project does not authorize deletion in another owner's store.
+Before/after digests were identical for every stable store and for all selected
+Windows Codex candidates; its full-root digest changed only because the live
+provider appended to a current, non-candidate file during measurement.
+Destructive mode requires a per-store selection, `--allow-tier-b`, `--apply`,
+and the exact acknowledgment `I_UNDERSTAND_THIS_DELETES_SELECTED_FILES`. It was
+exercised only against a marked fixture. A separate test proves a real-store
+apply is refused without Tier B opt-in. The operator should review every printed
+candidate; this project does not authorize deletion in another owner's store.
 
 ## Publication hygiene
 

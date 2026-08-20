@@ -66,21 +66,6 @@ def iso(value: dt.datetime | None) -> str | None:
     return value.astimezone(dt.timezone.utc).replace(microsecond=0).isoformat()
 
 
-def parse_timestamp(value: Any) -> dt.datetime | None:
-    if not isinstance(value, str) or not value.strip():
-        return None
-    text = value.strip()
-    if text.endswith("Z"):
-        text = text[:-1] + "+00:00"
-    try:
-        parsed = dt.datetime.fromisoformat(text)
-    except ValueError:
-        return None
-    if parsed.tzinfo is None:
-        parsed = parsed.replace(tzinfo=dt.timezone.utc)
-    return parsed.astimezone(dt.timezone.utc)
-
-
 def safe_int(value: Any, default: int = 0) -> int:
     if isinstance(value, bool):
         return int(value)
