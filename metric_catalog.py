@@ -23,6 +23,23 @@ PAGE_HARD_LIMIT_BYTES = 1_000_000
 TOP_N = 6
 MAX_TREND_POINTS = 48
 WINDOW_DAYS = (7, 30, 90)
+PRIOR_DELTA_METRICS = {
+    "window_tokens",
+    "window_cost_usd",
+    "window_session_days",
+    "window_active_days",
+    "window_project_identities",
+    "window_ad_hoc_tokens",
+    "window_remote_tokens",
+    "accepted_features",
+    "acceptance_efficiency",
+    "mean_cost_per_accepted",
+    "median_round_minutes",
+    "window_rounds",
+    "window_accepted_rounds",
+    "window_findings",
+    "window_loop_cost_usd",
+}
 
 
 def _metric(
@@ -35,6 +52,8 @@ def _metric(
     unit: str,
     surface: str = "page",
 ) -> dict[str, Any]:
+    if metric_id in PRIOR_DELTA_METRICS:
+        caveats += " The prior delta is unavailable for all-time or when a complete preceding equal-length window falls before observed coverage."
     return {
         "schema_version": CATALOG_SCHEMA_VERSION,
         "metric_id": metric_id,
@@ -807,16 +826,13 @@ def build_page_envelope(snapshot: dict[str, Any]) -> dict[str, Any]:
         from_day = max(available_from, _add_days(available_to, -(days - 1)))
         current = _window(snapshot, str(days), from_day, available_to, usage_days, usage_raw, all_rounds)
         equal_days = current["inclusive_days"]
-        prior = _window(
-            snapshot,
-            f"prior-{days}",
-            _add_days(from_day, -equal_days),
-            _add_days(from_day, -1),
-            usage_days,
-            usage_raw,
-            all_rounds,
-        )
-        current["comparison"] = _comparison_slice(prior)
+        prior_from = _add_days(from_day, -equal_days)
+        prior_to = _add_days(from_day, -1)
+        if prior_from >= available_from:
+            prior = _window(snapshot, f"prior-{days}", prior_from, prior_to, usage_days, usage_raw, all_rounds)
+            current["comparison"] = _comparison_slice(prior)
+        else:
+            current["comparison"] = None
         windows[str(days)] = current
     windows["all"] = _window(snapshot, "all", available_from, available_to, usage_days, usage_raw, all_rounds)
     windows["all"]["comparison"] = None

@@ -169,6 +169,15 @@ class DashboardEnvelopeTests(unittest.TestCase):
             self.assertEqual(prior["summary"]["tokens"], expected)
         self.assertIsNone(page["windows"]["all"]["comparison"])
 
+    def test_prior_delta_is_unknown_not_zero_when_equal_window_predates_coverage(self) -> None:
+        snapshot = synthetic_snapshot(days=100)
+        page = metric_catalog.build_page_envelope(snapshot)
+        self.assertIsNotNone(page["windows"]["7"]["comparison"])
+        self.assertIsNotNone(page["windows"]["30"]["comparison"])
+        self.assertIsNone(page["windows"]["90"]["comparison"])
+        rows = {row["metric_id"]: row for row in page["catalog"]}
+        self.assertIn("falls before observed coverage", rows["window_tokens"]["caveats"])
+
     def test_bucket_totals_survive_top_n_and_utc_boundaries_are_exact(self) -> None:
         snapshot = synthetic_snapshot()
         latest = snapshot["collection"]["date"]
