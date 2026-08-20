@@ -1,5 +1,30 @@
-sources.local.json
-sensitive-terms.local.txt
-subscriptions.local.json
+# Machine-local configuration convention; public examples use *.example.*.
+*.local.*
+
+# Environment and secret-bearing runtime configuration.
+.env
+.env.*
+
+# Runtime output, recovery copies, editor state, and local telemetry state.
+*.log
+*.bak
+*~
+*.swp
+*.lock
+*-cache-v*.json
+scan-cache*.json
+.vscode/
+.idea/
+.claude/
+
+# Python interpreter and test artifacts.
 __pycache__/
 *.pyc
+.pytest_cache/
+.coverage
+
+# Crash dumps and a known Windows-interop artifact.
+core
+core.*
+*.core
+NUL

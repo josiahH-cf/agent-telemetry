@@ -11,6 +11,7 @@ The ignored `sources.local.json` contains this machine's source roots. `sources.
 ```bash
 cd "$HOME/agent-telemetry"
 python3 collect.py --check
+python3 collect.py --doctor
 python3 collect.py
 python3 collect.py --scrub
 ```
@@ -31,15 +32,28 @@ The `From` and `Through` controls apply one inclusive UTC date range to worth, d
 
 Current driver state, current provider quota, current source probes, lifetime session counts, and source totals that are not day-attributed stay explicitly labeled as point-in-time or all-time. They are never presented as if the range recomputed them. Subscription cost is prorated by inclusive calendar days in the selected range.
 
-### Continuous schedule
+`--doctor` checks source reachability, scan-cache headers, collection cadence,
+last publish and Pages outcome, the installed scheduler, lock state, price age,
+schema versions, the tracked-file manifest, clock watermark, disk free space,
+and the latest runway snapshot. Its sanitized result also lands in
+`metrics.reliability`.
 
-`run-telemetry.sh` is the installed scheduler entrypoint. It holds one exclusive lock, caps `collect.log` at 1 MiB with one rotation, refreshes local data, and commits/pushes when the daily slot arrives or the last successful push is at least 20 hours old. A scrub or push failure is caught and recorded in machine-local `publish-status.json`; a push failure leaves the generated commit local for the next catch-up.
+### Continuous schedule and recovery
 
-The installed crontab uses absolute paths and has exactly these two tagged jobs:
+`run-telemetry.sh` is the installed scheduler entrypoint. A Python supervisor
+holds one non-inheritable exclusive lock, caps `collect.log` at 1 MiB with one
+rotation, refreshes local data, and commits/pushes when the daily slot arrives
+or the last successful push is at least 20 hours old. A scrub or push failure is
+caught and recorded in machine-local `publish-status.json`; a push failure
+leaves the generated commit local for the next catch-up.
+
+The installed crontab uses an expanded absolute project path and has exactly
+these three tagged jobs; `$HOME` below is the portable rendering of that path:
 
 ```cron
-*/30 * * * * $HOME/agent-telemetry/run-telemetry.sh refresh # agent-telemetry-refresh
-17 3 * * * $HOME/agent-telemetry/run-telemetry.sh publish # agent-telemetry-publish
+*/30 * * * * /usr/bin/nice -n 10 /usr/bin/ionice -c 3 $HOME/agent-telemetry/run-telemetry.sh refresh cron # agent-telemetry-refresh
+17 3 * * * /usr/bin/nice -n 10 /usr/bin/ionice -c 3 $HOME/agent-telemetry/run-telemetry.sh publish cron # agent-telemetry-publish
+@reboot /usr/bin/nice -n 10 /usr/bin/ionice -c 3 $HOME/agent-telemetry/run-telemetry.sh catchup reboot # agent-telemetry-reboot
 ```
 
 Logs are at `$HOME/.local/state/agent-telemetry/collect.log`. Remove only these entries with:
@@ -47,6 +61,40 @@ Logs are at `$HOME/.local/state/agent-telemetry/collect.log`. Remove only these 
 ```bash
 crontab -l | sed '/# agent-telemetry-/d' | crontab -
 ```
+
+The `@reboot` job runs when this Linux environment starts; it cannot start WSL
+while Windows or the WSL VM is stopped. Current uptime and cadence evidence did
+not show a VM-stop gap, so the evidence-gated Windows backstop was documented
+but not installed. If later `metrics.reliability.cadence.gaps` demonstrates that
+need, run the following in Windows PowerShell. It creates one limited, current-
+user task that invokes only the collector catch-up at logon:
+
+```powershell
+$TaskName = 'Agent Telemetry WSL Catch-up'
+$Distro = (wsl.exe -l -q | Where-Object { $_.Trim() } | Select-Object -First 1).Trim()
+$LinuxUser = (wsl.exe -d $Distro --exec /usr/bin/id -un).Trim()
+$Arguments = '-d "{0}" -u "{1}" --exec /bin/sh -lc "/usr/bin/nice -n 10 /usr/bin/ionice -c 3 $HOME/agent-telemetry/run-telemetry.sh catchup windows-task"' -f $Distro, $LinuxUser
+$Action = New-ScheduledTaskAction -Execute "$env:WINDIR\System32\wsl.exe" -Argument $Arguments
+$Trigger = New-ScheduledTaskTrigger -AtLogOn -User "$env:USERDOMAIN\$env:USERNAME"
+$Principal = New-ScheduledTaskPrincipal -UserId "$env:USERDOMAIN\$env:USERNAME" -LogonType Interactive -RunLevel Limited
+$Settings = New-ScheduledTaskSettingsSet -StartWhenAvailable
+Register-ScheduledTask -TaskName $TaskName -Action $Action -Trigger $Trigger -Principal $Principal -Settings $Settings -Description 'Start agent-telemetry catch-up when WSL is available.' -Force
+```
+
+Remove it, if installed, with:
+
+```powershell
+Unregister-ScheduledTask -TaskName 'Agent Telemetry WSL Catch-up' -Confirm:$false
+```
+
+Microsoft documents that WSL boot commands run when the WSL instance starts,
+while `AtLogOn` is a Windows Task Scheduler trigger:
+[WSL advanced settings](https://learn.microsoft.com/windows/wsl/wsl-config) and
+[`New-ScheduledTaskTrigger`](https://learn.microsoft.com/powershell/module/scheduledtasks/new-scheduledtasktrigger).
+
+The dashboard's Now strip computes age from `Date.now()` every minute, including
+under `file://`, and shows observed 30-minute cadence gaps rather than implying
+coverage while WSL was unavailable.
 
 The public site is [josiahh-cf.github.io/agent-telemetry](https://josiahh-cf.github.io/agent-telemetry/). GitHub Pages serves `main` from the repository root.
 
@@ -151,6 +199,7 @@ All ratios are stored from 0 to 1. Distribution objects use `count`, `min`, `p25
 | `metrics.cost.parity.<vendor>` | Sessions found; exact/correlated/unattributed build and judge counts; attributed tokens, USD, and unpriced volume. |
 | `metrics.cost.prices` | Price verification date, unit, currency, and exact model vocabulary. |
 | `metrics.measurement` | Non-reconstructed daily collection-observation history, latest gaps, source status/skip counts, quota availability counts, and publish state. |
+| `metrics.reliability` | Current doctor checks, observed schedule cadence and gaps, clock watermark status, tracked-manifest count, price age, and conservative disk/free-space runway snapshot. |
 
 ### Time, ledger, and quality
 
@@ -187,17 +236,70 @@ All ratios are stored from 0 to 1. Distribution objects use `count`, `min`, `p25
 
 Published values are limited to timestamps, numbers, booleans, generated statuses/reasons, row/spec/feature identifiers, suite/wave/model/vendor/tier identifiers, and Git digests. Driver output, verdict prose, prompt/surface content, finding paths, command strings, source roots, hostnames, and secrets are excluded.
 
-`python3 collect.py --scrub` inventories tracked and publishable untracked files. It blocks private path markers, credential prefixes, email/phone patterns, and terms from the optional ignored `sensitive-terms.local.txt`. Reports contain only file and reason, never the matched value. The scheduled publish runs this gate after the local commit and before push. Unit fixtures plant distinctive content in both vendor formats and assert that output is free of it; both vendors also have anonymous non-loop coverage.
+`python3 collect.py --scrub` inventories tracked and publishable untracked files.
+It blocks private path markers, credential prefixes, email/phone patterns,
+hostname metadata, current-machine identifiers, and terms from the optional
+ignored `sensitive-terms.local.txt`. Reports contain only file and reason, never
+the matched value. The scheduled publish runs this gate before commit and again
+inside the publisher. Unit fixtures plant distinctive content in both vendor
+formats and assert that output is free of it; both vendors also have anonymous
+non-loop coverage.
+
+Machine-only configuration follows the `*.local.*` naming convention. Defensive
+ignore classes also cover environment files, logs/backups/editor residue, IDE
+state, provider-local state, Python/test artifacts, locks/caches, core dumps,
+and Windows interop residue. A default-deny tracked manifest means a new file
+must be explicitly classified before it can pass scrub or doctor.
 
 The published identifier vocabulary is intentionally reviewable: spec slugs, row ids, model ids, vendor ids, suite labels, wave labels, feature ids, tier/candidate ids, enum states, and Git SHAs/digests. No other free-form source vocabulary is allowed.
+
+Routine publishing fetches first. Remote fast-forwards are adopted; local
+fast-forwards push normally; generated-only divergence is recreated on top of
+the fetched remote tree. Any divergent non-generated path blocks with a named
+state. Pushes use bounded 0/2/5-second retries, and Pages HTTP/title checks run
+after the collector lock is released. Routine publication never force-pushes.
+
+## Storage inventory and retention planning
+
+The measured findings, producer/consumer map, growth bounds, and proposals are
+in [`docs/STABILITY.md`](docs/STABILITY.md). Inventory is read-only:
+
+```bash
+python3 tools/retention.py inventory --store-root telemetry=. --window-days 30
+```
+
+Plans are also read-only by default and print exact paths, ages, sizes, and
+counts. For example:
+
+```bash
+python3 tools/retention.py plan --store rollouts --root <EXPLICIT_STORE_ROOT> --older-than-days 90
+```
+
+Destructive mode requires `--apply`, a per-store selection, the exact
+acknowledgment shown by `--help`, and `--allow-tier-b` for non-fixture stores.
+The project never schedules this tool. Backup plans treat each top-level
+snapshot as one coherent unit so preserved member mtimes cannot hollow a newer
+recovery point.
 
 ## Verification
 
 ```bash
 python3 -m unittest discover -s tests -v
 python3 collect.py --check
+python3 collect.py --doctor
 python3 collect.py
 python3 collect.py --scrub
 ```
 
-The suite covers v1 adapters, partial lines, incomplete seals, numeric ordering, immutable daily and measurement history, both vendor content sentinels, incremental snapshot/cumulative semantics, both price formulas, cached-input and reasoning subsets, exact-model refusal, GPT-5.4 mini exact pricing, best-effort estimate separation, local Claude quota normalization, subscription proration, non-loop anonymity, publish guard state, six-section local rendering with date controls, and a seeded scrub violation. Provider usage is never privately refreshed; stale or missing data stays visibly named.
+The suite covers v1 adapters, partial lines, mid-line offsets, cache corruption
+and schema drift, incomplete seals, UTC/DST bucketing, clock skew, corpus
+fallback, permission trouble, structured findings, unknown vendor/model states,
+numeric ordering, immutable daily and measurement history, both vendor content
+sentinels, incremental snapshot/cumulative semantics, both price formulas,
+cached-input and reasoning subsets, exact-model refusal, GPT-5.4 mini exact
+pricing, best-effort estimate separation, local Claude quota normalization,
+subscription proration, non-loop anonymity, publish divergence/retries, hard-
+kill lock release, retention safety, exact data-dictionary coverage, tracked-
+manifest default-deny, six-section local rendering with date controls and the
+reliability strip, and a seeded scrub violation. Provider usage is never
+privately refreshed; stale or missing data stays visibly named.
