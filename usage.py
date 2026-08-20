@@ -599,7 +599,10 @@ def scan_claude_file(path: Path, prior: dict[str, Any], requested: set[int]) -> 
                             add_tokens(totals.setdefault(old_model, zero_tokens("anthropic")), old_tokens, -1)
                         timestamp = obj.get("timestamp")
                         day = event_day(timestamp) or "unknown"
-                        record["messages"][message_id] = [day, model, *[tokens[key] for key in ANTHROPIC_KEYS]]
+                        # The exact timestamp is metadata, not message content.  Older v5
+                        # cache rows have seven fields and remain readable; fresh scans add
+                        # this eighth field for global time-pattern derivation.
+                        record["messages"][message_id] = [day, model, *[tokens[key] for key in ANTHROPIC_KEYS], iso(parse_timestamp(timestamp))]
                         add_tokens(totals.setdefault(model, zero_tokens("anthropic")), tokens)
                         parsed = parse_timestamp(timestamp)
                         if parsed:

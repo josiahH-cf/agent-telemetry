@@ -34,6 +34,7 @@ from typing import Any, Callable, Iterable
 
 import usage as vendor_usage
 import stability as telemetry_stability
+import observatory as global_observatory
 
 
 SCHEMA_VERSION = 2
@@ -2133,6 +2134,7 @@ def write_outputs(snapshot: dict[str, Any], project_root: Path) -> list[Path]:
     cost_rollups = snapshot.pop("_cost_rollups", {})
     round_records = snapshot.pop("_round_records", [])
     observation = snapshot.pop("_measurement_observation", None)
+    snapshot.pop("_observatory_scan_results", None)
     today = snapshot["collection"]["date"]
     corrections: list[dict[str, str]] = []
     written: list[Path] = []
@@ -2575,6 +2577,8 @@ def collect_snapshot(
     config: dict[str, Any],
     now: dt.datetime | None = None,
     project_root: Path | None = None,
+    *,
+    rebuild_observatory: bool = False,
 ) -> tuple[dict[str, Any], dict[str, dict[str, Any]]]:
     now = now or utc_now()
     project_root = (project_root or Path(__file__).resolve().parent).resolve()
@@ -2635,6 +2639,15 @@ def collect_snapshot(
     if local_claude_usage:
         usage_result["claude_usage_snapshot"] = local_claude_usage
     snapshot = combine_results(results, now, usage_result, read_publish_state(cache_root))
+    observatory_summary, observatory_roots = global_observatory.collect_observatory(
+        config,
+        project_root,
+        snapshot,
+        now,
+        rebuild=rebuild_observatory,
+    )
+    snapshot.setdefault("metrics", {})["observatory"] = observatory_summary
+    snapshot["_observatory_scan_results"] = observatory_roots
     snapshot.setdefault("metrics", {})["reliability"] = telemetry_stability.run_doctor(
         config,
         project_root,
@@ -2773,6 +2786,7 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--request-pages-check", action="store_true", help="queue a post-push Pages outcome check")
     parser.add_argument("--pages-commit", help="allowlisted commit id used with --request-pages-check")
     parser.add_argument("--check-pages", action="store_true", help="run a queued Pages outcome check")
+    parser.add_argument("--rebuild", action="store_true", help="rebuild the canonical observatory store from all configured provider roots")
     return parser.parse_args(argv)
 
 
@@ -2854,9 +2868,16 @@ def main(argv: list[str] | None = None) -> int:
         if not clock.get("allowed"):
             print(f"[clock] skipped: clock_skew seconds={clock.get('skew_seconds')}")
             return 0
-        snapshot, results = collect_snapshot(config, now=now, project_root=project_root)
+        snapshot, results = collect_snapshot(config, now=now, project_root=project_root, rebuild_observatory=args.rebuild)
         for name in SOURCE_NAMES:
             print(source_summary(name, results[name]))
+        for item in snapshot.pop("_observatory_scan_results", []):
+            print(
+                f"[{item.get('root_id', 'observatory')}] {item.get('status', 'error')}: "
+                f"files={item.get('files', 0)}, changed={item.get('changed', 0)}, "
+                f"reused={item.get('reused', 0)}, strategy={item.get('strategy', 'unknown')}, "
+                f"seconds={item.get('seconds', 0)}"
+            )
         if snapshot["collection"]["sources_enabled"] == 0:
             print("no sources enabled; existing history will be preserved")
         written = write_outputs(snapshot, project_root)

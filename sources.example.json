@@ -2,6 +2,16 @@
   "schema_version": 2,
   "default_timeout_seconds": 300,
   "cache_root": "<MACHINE_LOCAL_CACHE_ROOT>",
+  "observatory": {
+    "enabled": false,
+    "roots": [
+      {"root_id": "wsl_claude", "vendor": "anthropic", "host_os": "wsl", "path": "<WSL_CLAUDE_PROJECTS_DIR>"},
+      {"root_id": "wsl_codex", "vendor": "openai", "host_os": "wsl", "path": "<WSL_CODEX_SESSIONS_DIR>"},
+      {"root_id": "windows_claude", "vendor": "anthropic", "host_os": "windows", "path": "<WINDOWS_CLAUDE_PROJECTS_DIR>"},
+      {"root_id": "windows_codex", "vendor": "openai", "host_os": "windows", "path": "<WINDOWS_CODEX_SESSIONS_DIR>"}
+    ],
+    "registry_paths": []
+  },
   "sources": {
     "suite_state": {
       "enabled": false,
