@@ -120,6 +120,40 @@ class AnthropicUsageTests(unittest.TestCase):
 
 
 class OpenAIUsageTests(unittest.TestCase):
+    def test_full_scan_revisits_old_partition_when_session_resumes(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary) / "sessions"
+            cache = Path(temporary) / "cache.json"
+            session = "11111111-1111-1111-1111-111111111111"
+            path = root / "2026" / "07" / "01" / f"rollout-old-{session}.jsonl"
+            path.parent.mkdir(parents=True)
+            path.write_bytes(
+                line({"timestamp": "2026-07-01T01:00:00Z", "type": "session_meta", "payload": {"id": session}})
+                + line({"timestamp": "2026-07-01T01:00:01Z", "type": "event_msg", "payload": {"type": "token_count", "info": {"total_token_usage": {"input_tokens": 1, "output_tokens": 1}}}})
+            )
+            initial, _meta = usage.scan_provider("openai", root, cache, {})
+            self.assertEqual(set(initial), {str(path)})
+
+            path.write_bytes(
+                path.read_bytes()
+                + line({"timestamp": "2026-08-21T12:59:01Z", "type": "event_msg", "payload": {"type": "token_count", "info": {"total_token_usage": {"input_tokens": 3, "output_tokens": 2}, "last_token_usage": {"input_tokens": 2, "output_tokens": 1}}, "rate_limits": {"primary": {"used_percent": 25, "window_minutes": 300}}}})
+            )
+            records, metadata = usage.scan_provider("openai", root, cache, {})
+
+        self.assertEqual(metadata["status"], "ok")
+        self.assertEqual(metadata["ingested"], {"files": 1, "rescanned": 1, "cache_hits": 0})
+        self.assertEqual(records[str(path)]["total"]["input_tokens"], 3)
+        self.assertEqual(records[str(path)]["rate_limits"]["primary"]["remaining_percent"], 75.0)
+
+    def test_windows_mount_budget_has_headroom_but_remains_hard_bounded(self) -> None:
+        mounted = Path("/") / "mnt" / "fixture" / "sessions"
+        self.assertEqual(
+            usage.provider_scan_budget(mounted, 300.0),
+            usage.MOUNTED_PROVIDER_TIMEOUT_CAP_SECONDS,
+        )
+        self.assertEqual(usage.provider_scan_budget(mounted, 10.0), 10.0)
+        self.assertEqual(usage.provider_scan_budget(Path("/var/provider/sessions"), 300.0), 300.0)
+
     def test_all_safe_quota_windows_survive_verbose_sanitization(self) -> None:
         raw = {
             f"window_{index:02d}": {"used_percent": index, "window_minutes": index + 1}

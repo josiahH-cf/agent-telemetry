@@ -45,6 +45,7 @@ OPENAI_KEYS = (
     "output_tokens",
     "reasoning_output_tokens",
 )
+MOUNTED_PROVIDER_TIMEOUT_CAP_SECONDS = 20.0
 
 
 class ScanTimeout(RuntimeError):
@@ -879,6 +880,14 @@ def scan_provider(
     return records, metadata
 
 
+def provider_scan_budget(root: Path, timeout_seconds: float) -> float:
+    """Cap mounted-provider work while allowing realistic incremental scans."""
+    absolute = os.path.abspath(str(root))
+    if timeout_seconds > 0 and absolute.startswith(os.sep + "mnt" + os.sep):
+        return min(timeout_seconds, MOUNTED_PROVIDER_TIMEOUT_CAP_SECONDS)
+    return timeout_seconds
+
+
 def scan_provider_roots(
     vendor: str,
     roots: list[Path],
@@ -898,7 +907,7 @@ def scan_provider_roots(
     for root in roots:
         root_key = hashlib.sha256(os.path.abspath(str(root)).encode()).hexdigest()[:12]
         cache_path = cache_root / f"{vendor}-cache-v5-{root_key}.json"
-        budget = min(timeout_seconds, 5.0) if os.path.abspath(str(root)).startswith(os.sep + "mnt" + os.sep) else timeout_seconds
+        budget = provider_scan_budget(root, timeout_seconds)
         try:
             with scan_time_budget(budget):
                 records, metadata = scan_provider(vendor, root, cache_path, prefix_requests)
