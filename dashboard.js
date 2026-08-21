@@ -287,9 +287,9 @@ if (typeof module === "object" && module.exports) module.exports = AgentTelemetr
     if (!value || !Number.isFinite(Date.parse(value))) return "Reset not reported.";
     const relative = relativeDuration(value);
     if (!relative) return `Reset ${timeMarkup(value)}`;
-    const observed = parsedMillis(observedAt);
-    const reset = parsedMillis(value);
-    const observationIsNewer = observed !== null && reset !== null && observed > reset;
+    const observed = Date.parse(observedAt);
+    const reset = Date.parse(value);
+    const observationIsNewer = Number.isFinite(observed) && Number.isFinite(reset) && observed > reset;
     const status = relative.direction === "future"
       ? `Resets in ${relative.text}`
       : observationIsNewer

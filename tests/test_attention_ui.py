@@ -77,6 +77,8 @@ class AttentionStructureTests(unittest.TestCase):
             self.assertIn(text, DASHBOARD)
         self.assertIn("Reset passed", DASHBOARD)
         self.assertIn("Resets in", DASHBOARD)
+        self.assertIn("const observed = Date.parse(observedAt);", DASHBOARD)
+        self.assertNotIn("const observed = parsedMillis(observedAt);", DASHBOARD)
 
     def test_attention_section_uses_exact_payload_contract_and_evidence_classes(self) -> None:
         self.assertEqual(INDEX.count("<section "), 7)
