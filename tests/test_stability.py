@@ -88,7 +88,7 @@ class StabilityTests(unittest.TestCase):
 <Task xmlns="http://schemas.microsoft.com/windows/2004/02/mit/task">
   <Triggers>{trigger}</Triggers>
   <Principals><Principal><LogonType>InteractiveToken</LogonType><RunLevel>LeastPrivilege</RunLevel></Principal></Principals>
-  <Settings><DisallowStartIfOnBatteries>{battery}</DisallowStartIfOnBatteries><StopIfGoingOnBatteries>false</StopIfGoingOnBatteries><MultipleInstancesPolicy>IgnoreNew</MultipleInstancesPolicy></Settings>
+  <Settings><StartWhenAvailable>true</StartWhenAvailable><DisallowStartIfOnBatteries>{battery}</DisallowStartIfOnBatteries><StopIfGoingOnBatteries>false</StopIfGoingOnBatteries><MultipleInstancesPolicy>IgnoreNew</MultipleInstancesPolicy></Settings>
   <Actions><Exec><Command>wsl.exe</Command><Arguments>-d Ubuntu -- /local/agent-telemetry/run-telemetry.sh {action}</Arguments></Exec></Actions>
 </Task>"""
 
@@ -116,7 +116,7 @@ class StabilityTests(unittest.TestCase):
             executable = Path(temporary) / "schtasks.exe"
             executable.write_bytes(b"fixture")
             xml = """<Task xmlns="http://schemas.microsoft.com/windows/2004/02/mit/task">
-<Triggers>{trigger}</Triggers><Principals><Principal><LogonType>InteractiveToken</LogonType><RunLevel>LeastPrivilege</RunLevel></Principal></Principals><Settings><DisallowStartIfOnBatteries>{battery}</DisallowStartIfOnBatteries><StopIfGoingOnBatteries>false</StopIfGoingOnBatteries><MultipleInstancesPolicy>IgnoreNew</MultipleInstancesPolicy></Settings>
+<Triggers>{trigger}</Triggers><Principals><Principal><LogonType>InteractiveToken</LogonType><RunLevel>LeastPrivilege</RunLevel></Principal></Principals><Settings><StartWhenAvailable>true</StartWhenAvailable><DisallowStartIfOnBatteries>{battery}</DisallowStartIfOnBatteries><StopIfGoingOnBatteries>false</StopIfGoingOnBatteries><MultipleInstancesPolicy>IgnoreNew</MultipleInstancesPolicy></Settings>
 <Actions><Exec><Command>wsl.exe</Command><Arguments>-d Ubuntu -- /local/agent-telemetry/run-telemetry.sh {action}</Arguments></Exec></Actions></Task>"""
 
             def query(args: list[str], **_kwargs: object) -> subprocess.CompletedProcess[str]:
@@ -131,6 +131,49 @@ class StabilityTests(unittest.TestCase):
             with mock.patch.object(stability, "WINDOWS_SCHTASKS", executable), mock.patch("stability.subprocess.run", side_effect=query):
                 status, detail = stability._windows_task_status()
         self.assertEqual((status, detail), ("warn", "task_power_policy_mismatch"))
+
+    def test_windows_task_check_enforces_availability_without_requiring_schema_defaults(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            executable = Path(temporary) / "schtasks.exe"
+            executable.write_bytes(b"fixture")
+            xml = """<Task xmlns="http://schemas.microsoft.com/windows/2004/02/mit/task">
+<Triggers>{trigger}</Triggers><Principals><Principal><LogonType>InteractiveToken</LogonType><RunLevel>LeastPrivilege</RunLevel></Principal></Principals><Settings>{policy}<DisallowStartIfOnBatteries>false</DisallowStartIfOnBatteries><StopIfGoingOnBatteries>false</StopIfGoingOnBatteries><MultipleInstancesPolicy>IgnoreNew</MultipleInstancesPolicy></Settings>
+<Actions><Exec><Command>wsl.exe</Command><Arguments>-d Ubuntu -- /local/agent-telemetry/run-telemetry.sh {action}</Arguments></Exec></Actions></Task>"""
+
+            def status(policy: str, *, trigger_enabled: bool = True) -> tuple[str, str]:
+                def query(args: list[str], **_kwargs: object) -> subprocess.CompletedProcess[str]:
+                    logon = args[3] == "agent-telemetry-logon"
+                    enabled = "" if trigger_enabled else "<Enabled>false</Enabled>"
+                    body = xml.format(
+                        trigger=(
+                            f"<LogonTrigger>{enabled}</LogonTrigger>"
+                            if logon
+                            else f"<TimeTrigger>{enabled}<Repetition><Interval>PT30M</Interval></Repetition></TimeTrigger>"
+                        ),
+                        policy=policy,
+                        action="catchup windows-task-logon" if logon else "refresh windows-task-continuity",
+                    )
+                    return subprocess.CompletedProcess(args, 0, stdout=body)
+
+                with mock.patch.object(stability, "WINDOWS_SCHTASKS", executable), mock.patch("stability.subprocess.run", side_effect=query):
+                    return stability._windows_task_status()
+
+            self.assertEqual(status("<StartWhenAvailable>true</StartWhenAvailable>"), ("ok", "two_tasks_action_schedule_and_power_policy_ok"))
+            for policy in (
+                "",
+                "<StartWhenAvailable>false</StartWhenAvailable>",
+                "<StartWhenAvailable>true</StartWhenAvailable><Enabled>false</Enabled>",
+            ):
+                with self.subTest(policy=policy):
+                    self.assertEqual(status(policy), ("warn", "task_availability_policy_mismatch"))
+            self.assertEqual(
+                status("<StartWhenAvailable>true</StartWhenAvailable><WakeToRun>true</WakeToRun>"),
+                ("warn", "task_power_policy_mismatch"),
+            )
+            self.assertEqual(
+                status("<StartWhenAvailable>true</StartWhenAvailable>", trigger_enabled=False),
+                ("warn", "task_availability_policy_mismatch"),
+            )
 
     def test_doctor_emits_text_and_required_check_names(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
@@ -333,6 +376,101 @@ class StabilityTests(unittest.TestCase):
         self.assertNotIn('--check-pages\n    )', script)
         self.assertIn('--fresh-within-minutes 20', script)
         self.assertIn('windows-task-*', script)
+
+    def test_wrapper_catchup_respects_publish_due_and_due_bypasses_fresh_noop(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            state = root / "state"
+            trace = root / "trace"
+            wrapper = root / "run-telemetry.sh"
+            wrapper.write_bytes((PROJECT_ROOT / "run-telemetry.sh").read_bytes())
+            wrapper.chmod(0o755)
+            (root / "collect.py").write_text(
+                """import os,sys
+with open(os.environ['TRACE'], 'a', encoding='utf-8') as handle:
+    handle.write('collect ' + ' '.join(sys.argv[1:]) + '\\n')
+if sys.argv[1:] == ['--publish-due']:
+    raise SystemExit(0 if os.environ.get('PUBLISH_DUE') == '1' else 1)
+""",
+                encoding="utf-8",
+            )
+            (root / "stability.py").write_text(
+                """import os,sys
+with open(os.environ['TRACE'], 'a', encoding='utf-8') as handle:
+    handle.write('stability ' + ' '.join(sys.argv[1:]) + '\\n')
+if '--fresh-within-minutes' in sys.argv:
+    raise SystemExit(0 if os.environ.get('COLLECTION_FRESH') == '1' else 1)
+""",
+                encoding="utf-8",
+            )
+            (root / "publish.py").write_text(
+                """import os,sys
+with open(os.environ['TRACE'], 'a', encoding='utf-8') as handle:
+    handle.write('publish ' + ' '.join(sys.argv[1:]) + '\\n')
+""",
+                encoding="utf-8",
+            )
+            environment = {
+                **os.environ,
+                "AGENT_TELEMETRY_LOCKED": "1",
+                "AGENT_TELEMETRY_STATE_DIR": str(state),
+                "COLLECTION_FRESH": "1",
+                "PYTHONDONTWRITEBYTECODE": "1",
+                "TRACE": str(trace),
+            }
+
+            not_due = subprocess.run(
+                [str(wrapper), "catchup", "reboot"],
+                check=False,
+                env={**environment, "PUBLISH_DUE": "0"},
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                text=True,
+            )
+            self.assertEqual(not_due.returncode, 0)
+            not_due_trace = trace.read_text(encoding="utf-8")
+            self.assertIn("collect --publish-due", not_due_trace)
+            self.assertIn("collect --capture-claude-usage", not_due_trace)
+            self.assertIn("collect \n", not_due_trace)
+            self.assertNotIn("collect --scrub", not_due_trace)
+            self.assertNotIn("publish --repo", not_due_trace)
+
+            trace.unlink()
+            due = subprocess.run(
+                [str(wrapper), "catchup", "windows-task-logon"],
+                check=False,
+                env={**environment, "PUBLISH_DUE": "1"},
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                text=True,
+            )
+            self.assertEqual(due.returncode, 0)
+            due_trace = trace.read_text(encoding="utf-8")
+            self.assertNotIn("--fresh-within-minutes", due_trace)
+            self.assertIn("collect --scrub", due_trace)
+            self.assertIn("collect --commit-existing", due_trace)
+            self.assertIn("publish --repo", due_trace)
+
+    def test_wrapper_normalizes_reboot_lock_contention(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            state = root / "state"
+            wrapper = root / "run-telemetry.sh"
+            wrapper.write_bytes((PROJECT_ROOT / "run-telemetry.sh").read_bytes())
+            wrapper.chmod(0o755)
+            (root / "stability.py").write_text("raise SystemExit(75)\n", encoding="utf-8")
+            result = subprocess.run(
+                [str(wrapper), "catchup", "reboot"],
+                check=False,
+                env={**os.environ, "AGENT_TELEMETRY_STATE_DIR": str(state), "PYTHONDONTWRITEBYTECODE": "1"},
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                text=True,
+            )
+            self.assertEqual(result.returncode, 0)
+            log = (state / "collect.log").read_text(encoding="utf-8")
+            self.assertIn("mode=catchup trigger=reboot finish exit=0", log)
+            self.assertIn("trigger=reboot state=lock_busy_noop", log)
 
     def test_machine_contract_uses_available_read_only_sql_interface(self) -> None:
         contract = (PROJECT_ROOT / "AGENTS.md").read_text(encoding="utf-8")

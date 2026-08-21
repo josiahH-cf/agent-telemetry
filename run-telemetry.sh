@@ -27,7 +27,7 @@ if [ "${AGENT_TELEMETRY_LOCKED:-0}" != "1" ]; then
     RESULT=$?
     if [ "$RESULT" -eq 75 ]; then
         case "$TRIGGER" in
-            windows-task-*)
+            reboot|windows-task-*)
                 printf '%s mode=%s trigger=%s finish exit=0\n' "$(date -u +%Y-%m-%dT%H:%M:%SZ)" "$MODE" "$TRIGGER"
                 printf '%s trigger=%s state=lock_busy_noop\n' "$(date -u +%Y-%m-%dT%H:%M:%SZ)" "$TRIGGER"
                 RESULT=0
@@ -44,25 +44,15 @@ if [ "${AGENT_TELEMETRY_LOCKED:-0}" != "1" ]; then
     exit "$RESULT"
 fi
 
-case "$TRIGGER" in
-    windows-task-*)
-        if python3 "$PROJECT_ROOT/stability.py" --state-root "$STATE_ROOT" --fresh-within-minutes 20; then
-            printf '%s trigger=%s state=fresh_noop\n' "$(date -u +%Y-%m-%dT%H:%M:%SZ)" "$TRIGGER"
-            printf '%s mode=%s trigger=%s finish exit=0\n' "$(date -u +%Y-%m-%dT%H:%M:%SZ)" "$MODE" "$TRIGGER"
-            exit 0
-        fi
-        ;;
-esac
-
 case "$MODE" in
-    refresh)
+    refresh|catchup)
         if python3 "$PROJECT_ROOT/collect.py" --publish-due >/dev/null 2>&1; then
             PUBLISH=1
         else
             PUBLISH=0
         fi
         ;;
-    publish|catchup)
+    publish)
         PUBLISH=1
         ;;
     lock-probe)
@@ -74,6 +64,16 @@ case "$MODE" in
     *)
         printf '%s invalid_mode=%s\n' "$(date -u +%Y-%m-%dT%H:%M:%SZ)" "$MODE"
         exit 64
+        ;;
+esac
+
+case "$TRIGGER" in
+    windows-task-*)
+        if [ "$PUBLISH" -eq 0 ] && python3 "$PROJECT_ROOT/stability.py" --state-root "$STATE_ROOT" --fresh-within-minutes 20; then
+            printf '%s trigger=%s state=fresh_noop\n' "$(date -u +%Y-%m-%dT%H:%M:%SZ)" "$TRIGGER"
+            printf '%s mode=%s trigger=%s finish exit=0\n' "$(date -u +%Y-%m-%dT%H:%M:%SZ)" "$MODE" "$TRIGGER"
+            exit 0
+        fi
         ;;
 esac
 

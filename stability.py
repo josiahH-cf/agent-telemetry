@@ -401,6 +401,14 @@ def _windows_task_status() -> tuple[str, str]:
             return "warn", "task_contract_mismatch"
         if text_at(root, ".//t:Settings/t:MultipleInstancesPolicy") != "IgnoreNew":
             return "warn", "task_contract_mismatch"
+        enabled_values = {
+            (node.text or "").strip().lower()
+            for node in root.findall(".//t:Enabled", namespace)
+        }
+        if "false" in enabled_values:
+            return "warn", "task_availability_policy_mismatch"
+        if text_at(root, ".//t:Settings/t:StartWhenAvailable").lower() != "true":
+            return "warn", "task_availability_policy_mismatch"
         if text_at(root, ".//t:Principals/t:Principal/t:LogonType") != "InteractiveToken":
             return "warn", "task_principal_mismatch"
         if text_at(root, ".//t:Principals/t:Principal/t:RunLevel") == "HighestAvailable":
@@ -408,6 +416,8 @@ def _windows_task_status() -> tuple[str, str]:
         if text_at(root, ".//t:Settings/t:DisallowStartIfOnBatteries").lower() != "false":
             return "warn", "task_power_policy_mismatch"
         if text_at(root, ".//t:Settings/t:StopIfGoingOnBatteries").lower() != "false":
+            return "warn", "task_power_policy_mismatch"
+        if text_at(root, ".//t:Settings/t:WakeToRun").lower() == "true":
             return "warn", "task_power_policy_mismatch"
 
     logon = task_xml["agent-telemetry-logon"]
