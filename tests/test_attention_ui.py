@@ -46,9 +46,23 @@ class AttentionStructureTests(unittest.TestCase):
         for text in ("anonymized and aggregated", "prompts, messages, code, paths", "not subscription bills or invoices"):
             self.assertIn(text, body)
 
-    def test_capacity_is_near_masthead_and_outside_historical_selector(self) -> None:
-        self.assertLess(INDEX.index('id="capacity-now"'), INDEX.index('id="window-controls"'))
+    def test_overview_leads_and_capacity_is_a_secondary_bottom_disclosure(self) -> None:
+        overview_index = INDEX.index('id="overview"')
+        controls_index = INDEX.index('id="window-controls"')
+        evidence_index = INDEX.index('id="evidence"')
+        capacity_index = INDEX.index('id="capacity-now"')
+        self.assertLess(overview_index, controls_index)
+        self.assertLess(controls_index, evidence_index)
+        self.assertLess(evidence_index, capacity_index)
+        self.assertLess(capacity_index, INDEX.index("</main>"))
+        self.assertIn('<aside class="capacity" id="capacity-now"', INDEX)
+        self.assertIn('<details class="capacity-disclosure">', INDEX)
+        self.assertNotIn('<details class="capacity-disclosure" open', INDEX)
+        self.assertIn('href="#capacity-now">Provider capacity</a>', INDEX)
         self.assertIn('id="capacity-providers"', INDEX)
+        self.assertIn('aria-label="Providers"', INDEX)
+        self.assertIn('aria-hidden="true">🟠</span>Claude', INDEX)
+        self.assertIn('aria-hidden="true">🟢</span>Codex', INDEX)
         self.assertIn('href="#attention"', INDEX)
         render_body = DASHBOARD.split("function render() {", 1)[1].split("document.querySelectorAll(\"[data-window]\")", 1)[0]
         self.assertNotIn("renderCapacity()", render_body)
@@ -61,6 +75,14 @@ class AttentionStructureTests(unittest.TestCase):
         self.assertIn("detail.open ? index : -1", DASHBOARD)
         self.assertIn("focus({preventScroll:true})", DASHBOARD)
         self.assertIn("refreshCapacityPreservingInteraction()", DASHBOARD)
+        self.assertIn('return "🟠";', DASHBOARD)
+        self.assertIn('return "🟢";', DASHBOARD)
+        self.assertIn('return "⚪";', DASHBOARD)
+        self.assertIn('class="provider-heading"', DASHBOARD)
+        self.assertIn('<span>${esc(provider.display_label || provider.provider || "Provider")}</span>', DASHBOARD)
+        overview_body = DASHBOARD.split("function renderOverview() {", 1)[1].split("function renderActivity()", 1)[0]
+        self.assertLess(overview_body.index('card("lifetime_tokens"'), overview_body.index('card("lifetime_sessions"'))
+        self.assertLess(overview_body.index('card("lifetime_cost_usd"'), overview_body.index('card("lifetime_sessions"'))
 
     def test_capacity_has_all_honest_text_states_and_source_disclosure(self) -> None:
         for text in (
@@ -171,6 +193,10 @@ class AttentionStructureTests(unittest.TestCase):
         self.assertIn('.table-wrap:focus-visible', INDEX)
         self.assertIn('.mode-value { grid-column:1/-1; text-align:left; white-space:normal; overflow-wrap:anywhere; }', INDEX)
         self.assertIn('.capacity-window-head>div,.capacity-window-head h3 { min-width:0; overflow-wrap:anywhere; }', INDEX)
+        self.assertIn('align-items:start; gap:10px; margin-top:11px;', INDEX)
+        self.assertIn('.capacity-summary-copy { grid-column:1; grid-row:1; }', INDEX)
+        self.assertIn('.capacity-chevron { grid-column:2; grid-row:1; }', INDEX)
+        self.assertIn('.capacity-summary-meta { grid-column:1/-1; grid-row:2; justify-content:space-between; }', INDEX)
 
     def test_pure_helpers_are_exposed_in_the_browser_test_hook(self) -> None:
         for helper in ("capacityProviderState", "capacityWindowState", "captureStatusFailed", "calculateScenario", "relativeDuration"):

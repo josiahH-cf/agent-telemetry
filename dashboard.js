@@ -346,6 +346,13 @@ if (typeof module === "object" && module.exports) module.exports = AgentTelemetr
     return `<div class="capacity-window capacity-empty" data-capacity-state="${esc(evaluated.state)}" data-metric-id="${metricId}"><p class="empty">${esc(capacityStateText(evaluated.state, provider))}${observedTime} ${metricButton(metricId)}</p><details class="capacity-source"><summary>Source and capture</summary><p>Source: ${esc(provider.source || "not reported")} · capture: ${esc(provider.capture_status || "not reported")} · freshness at generation: ${esc(provider.freshness_status || provider.quota_status || "not reported")}. No valid quota window is available to display.</p></details></div>`;
   }
 
+  function providerEmoji(provider) {
+    const identity = `${provider.provider || ""} ${provider.display_label || ""}`.toLowerCase();
+    if (/(anthropic|claude)/.test(identity)) return "🟠";
+    if (/(openai|codex)/.test(identity)) return "🟢";
+    return "⚪";
+  }
+
   function renderCapacity() {
     const capacity = data.capacity_now && typeof data.capacity_now === "object" ? data.capacity_now : {};
     const providers = Array.isArray(capacity.providers) ? capacity.providers.slice(0, 2) : [];
@@ -360,7 +367,7 @@ if (typeof module === "object" && module.exports) module.exports = AgentTelemetr
         ? windowsForProvider.map((windowValue, index) => capacityWindowMarkup(windowValue, provider, index)).join("")
         : capacityProviderEmptyMarkup(provider);
       const additionalText = additional > 0 ? `${full.format(additional)} additional reported window${additional === 1 ? "" : "s"} omitted from this bounded page.` : "At most two windows are shown.";
-      return `<article class="capacity-provider"><div class="capacity-provider-head"><div><h3>${esc(provider.display_label || provider.provider || "Provider")}</h3><span class="detail">${esc(additionalText)}</span></div>${evidenceBadge("observed")}</div><div class="capacity-windows">${windowMarkup}</div></article>`;
+      return `<article class="capacity-provider"><div class="capacity-provider-head"><div><h3 class="provider-heading"><span class="provider-emoji" aria-hidden="true">${providerEmoji(provider)}</span><span>${esc(provider.display_label || provider.provider || "Provider")}</span></h3><span class="detail">${esc(additionalText)}</span></div></div><div class="capacity-windows">${windowMarkup}</div></article>`;
     });
     $("capacity-providers").innerHTML = rows.join("") || '<p class="empty">Provider capacity is unavailable for this generated snapshot.</p>';
     const check = $("capacity-check");
@@ -393,10 +400,10 @@ if (typeof module === "object" && module.exports) module.exports = AgentTelemetr
     const point = data.point_in_time || {};
     const totals = point.totals || {};
     $("overview-cards").innerHTML = [
-      card("lifetime_sessions", fmt(totals.sessions), "Across both providers and host operating systems"),
       card("lifetime_tokens", fmt(totals.tokens, "tokens"), "Provider-correct lifetime total"),
       card("lifetime_cost_usd", fmt(totals.cost_usd, "money"), "Exact observed models only"),
       card("lifetime_unpriced_tokens", fmt(totals.unpriced_tokens, "tokens"), "Counted, never silently priced"),
+      card("lifetime_sessions", fmt(totals.sessions), "Across both providers and host operating systems"),
     ].join("");
     donut("vendor-chart", "tokens_by_vendor", point.by_vendor || [], "tokens", "Lifetime · Anthropic vs OpenAI");
     donut("host-chart", "tokens_by_host_os", point.by_host_os || [], "tokens", "Lifetime · WSL-hosted vs Windows-hosted");
