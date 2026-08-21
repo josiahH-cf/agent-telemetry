@@ -1,0 +1,39 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://josiahh-cf.github.io/agent-telemetry/data/schema/attention_days.schema.json",
+  "title": "Recorded operator-attention daily aggregate",
+  "description": "One UTC date and anonymous public project_id aggregate from explicitly opted-in, operator-started timer intervals. Absence is not an observed zero.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "date",
+    "project_id",
+    "attention_seconds",
+    "interval_segments",
+    "mode_seconds",
+    "transitions_in",
+    "source"
+  ],
+  "properties": {
+    "schema_version": {"type": "integer", "const": 1},
+    "date": {"type": "string", "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$", "description": "UTC calendar date; no sub-day timestamp is published."},
+    "project_id": {"type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$", "description": "Stable registry project code; joins projects.project_code, retains that code's anonymous-or-explicitly-approved public status, and never copies the mutable public_label field."},
+    "attention_seconds": {"type": "integer", "minimum": 1},
+    "interval_segments": {"type": "integer", "minimum": 1},
+    "mode_seconds": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["plan", "guide", "review", "rework", "direct"],
+      "properties": {
+        "plan": {"type": "integer", "minimum": 0},
+        "guide": {"type": "integer", "minimum": 0},
+        "review": {"type": "integer", "minimum": 0},
+        "rework": {"type": "integer", "minimum": 0},
+        "direct": {"type": "integer", "minimum": 0}
+      }
+    },
+    "transitions_in": {"type": "integer", "minimum": 0},
+    "source": {"type": "string", "const": "operator_timer"}
+  }
+}

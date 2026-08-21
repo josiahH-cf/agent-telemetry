@@ -8,6 +8,7 @@
     "definition": {"type": "string"},
     "derivation": {"type": "string"},
     "display_label": {"type": "string"},
+    "evidence_class": {"enum": ["observed", "derived", "self-reported", "scenario"], "type": "string"},
     "metric_id": {"pattern": "^[a-z][a-z0-9_]{2,79}$", "type": "string"},
     "schema_version": {"type": "integer"},
     "sources": {"type": "array"},

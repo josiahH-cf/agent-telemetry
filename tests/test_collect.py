@@ -214,6 +214,14 @@ class OtherAdapterTests(unittest.TestCase):
     def test_provider_adapter_reads_snapshot_without_prose(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary)
+            extra_quota = {
+                f"window_{index:02d}": {
+                    "remaining_percent": 100 - index,
+                    "used_percent": index,
+                    "window_minutes": index + 1,
+                }
+                for index in range(20)
+            }
             write_json(
                 root / "usage" / "provider-usage.json",
                 {
@@ -225,7 +233,7 @@ class OtherAdapterTests(unittest.TestCase):
                             "provider": "codex",
                             "usage": {"status": "available", "total_tokens": 100, "input_tokens": 70, "output_tokens": 30, "sessions": 2, "source": "SENTINEL"},
                             "remaining": {"status": "available", "percent": 52, "reason": "SENTINEL"},
-                            "quota": {"status": "available", "primary": {"remaining_percent": 52, "used_percent": 48, "window_minutes": 10080, "resets_at": "2026-08-03T00:00:00+00:00"}},
+                            "quota": {"status": "available", "primary": {"remaining_percent": 52, "used_percent": 48, "window_minutes": 10080, "resets_at": "2026-08-03T00:00:00+00:00"}, "monthly": {"remaining_percent": 80, "used_percent": 20, "window_minutes": 43200}, **extra_quota},
                         }
                     ],
                 },
@@ -233,6 +241,10 @@ class OtherAdapterTests(unittest.TestCase):
             result = collect.adapt_provider_usage(root, dt.datetime(2026, 8, 2, 10, tzinfo=UTC))
         self.assertEqual(result["providers"][0]["total_tokens"], 100)
         self.assertEqual(result["providers"][0]["remaining_percent"], 52.0)
+        self.assertEqual(
+            [row["window"] for row in result["providers"][0]["quota_windows"]],
+            ["primary", "monthly", *sorted(extra_quota)],
+        )
         self.assertNotIn("SENTINEL", json.dumps(result))
 
     def test_utc_bucketing_is_environment_independent_across_dst_transition(self) -> None:
@@ -371,9 +383,9 @@ class HistoryAndPrivacyTests(unittest.TestCase):
         self.assertNotIn("fetch(" , text)
         self.assertNotIn("XMLHttpRequest", text)
         self.assertIn('<link rel="icon" href="data:,">', text)
-        for section in ("overview", "activity", "mix", "outcomes", "reliability", "evidence"):
+        for section in ("overview", "activity", "mix", "attention", "outcomes", "reliability", "evidence"):
             self.assertIn(f'id="{section}"', text)
-        self.assertEqual(text.count("<section "), 6)
+        self.assertEqual(text.count("<section "), 7)
         for check in ("overview", "reliability", "evidence"):
             self.assertIn(f'id="{check}-check"', text)
         self.assertIn('id="metric-dialog"', text)

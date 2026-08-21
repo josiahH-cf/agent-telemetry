@@ -17,6 +17,7 @@ from unittest import mock
 
 import collect
 import stability
+from tools import attention
 
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
@@ -152,7 +153,7 @@ class StabilityTests(unittest.TestCase):
                 {"suite_state": {"status": "ok", "available": True}},
             )
         names = {item["name"] for item in result["checks"]}
-        self.assertTrue({"sources", "scan_caches", "collection_cadence", "publish", "pages", "claude_usage_capture", "scheduler", "windows_tasks", "lock", "prices", "schemas", "observatory_store", "provider_roots", "machine_manifest", "reconciliation", "git_hooks", "tracked_manifest", "clock", "collection_age", "disk"} <= names)
+        self.assertTrue({"sources", "scan_caches", "collection_cadence", "publish", "pages", "claude_usage_capture", "attention", "scheduler", "windows_tasks", "lock", "prices", "schemas", "observatory_store", "provider_roots", "machine_manifest", "reconciliation", "git_hooks", "tracked_manifest", "clock", "collection_age", "disk"} <= names)
         self.assertIn("[doctor] status=", stability.doctor_text(result))
 
     def test_claude_usage_capture_doctor_tracks_attempt_and_cache_age(self) -> None:
@@ -186,6 +187,83 @@ class StabilityTests(unittest.TestCase):
         self.assertIn("automatic_success", healthy[1])
         self.assertEqual(failed[0], "warn")
         self.assertIn("automatic_timeout", failed[1])
+
+    def test_attention_doctor_is_sanitized_and_checks_ledger_permissions(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            state = Path(temporary)
+            now = dt.datetime(2026, 8, 20, 17, 30, tzinfo=UTC)
+            healthy = stability._attention_status(
+                {"attention": {"publish_attention_aggregates": False}},
+                PROJECT_ROOT,
+                state,
+                now,
+            )
+            ledger = state / "attention-intervals.jsonl"
+            ledger.write_text("", encoding="utf-8")
+            ledger.chmod(0o644)
+            invalid = stability._attention_status(
+                {"attention": {"publish_attention_aggregates": True}},
+                PROJECT_ROOT,
+                state,
+                now,
+            )
+        self.assertEqual(healthy[0], "ok")
+        self.assertIn("publication_disabled", healthy[1])
+        self.assertIn("ledger_ok", healthy[1])
+        self.assertIn("active_no", healthy[1])
+        self.assertEqual(invalid[0], "warn")
+        self.assertIn("ledger_permissions_invalid", invalid[1])
+        self.assertNotIn(str(state), invalid[1])
+
+    def test_attention_doctor_treats_acknowledged_cancel_as_normal_evidence(self) -> None:
+        with tempfile.TemporaryDirectory(dir="/tmp") as temporary:
+            state = Path(temporary) / "state"
+            started = dt.datetime(2026, 8, 20, 17, tzinfo=UTC)
+            attention.start_timer(PROJECT_ROOT, state, "obsidian-agent", "review", now=started)
+            attention.cancel_timer(state, acknowledge_cancel=True, now=started + dt.timedelta(minutes=5))
+            result = stability._attention_status(
+                {"attention": {"publish_attention_aggregates": False}},
+                PROJECT_ROOT,
+                state,
+                started + dt.timedelta(minutes=6),
+            )
+        self.assertEqual(result[0], "ok")
+        self.assertIn("excluded_0_cancelled_1", result[1])
+
+    def test_attention_doctor_uses_same_snapshot_closed_history_conflicts(self) -> None:
+        with tempfile.TemporaryDirectory(dir="/tmp") as temporary:
+            result = stability._attention_status(
+                {},
+                PROJECT_ROOT,
+                Path(temporary),
+                dt.datetime(2026, 8, 21, 12, tzinfo=UTC),
+                current_attention={"closed_history_conflicts": 2},
+            )
+        self.assertEqual(result[0], "warn")
+        self.assertIn("closed_conflicts_2", result[1])
+
+    def test_attention_doctor_fails_on_corrupt_public_closed_history(self) -> None:
+        with tempfile.TemporaryDirectory(dir="/tmp") as temporary:
+            root = Path(temporary) / "repo"
+            state = Path(temporary) / "state"
+            (root / "data" / "schema").mkdir(parents=True)
+            (root / "data" / "machine").mkdir(parents=True)
+            (root / "projects.json").write_bytes((PROJECT_ROOT / "projects.json").read_bytes())
+            (root / "data" / "schema" / "attention_days.schema.json").write_bytes(
+                (PROJECT_ROOT / "data" / "schema" / "attention_days.schema.json").read_bytes()
+            )
+            (root / "data" / "machine" / "attention_days.jsonl").write_text(
+                '{"attention_seconds":-1}\n', encoding="utf-8"
+            )
+            result = stability._attention_status(
+                {"attention": {"publish_attention_aggregates": True}},
+                root,
+                state,
+                dt.datetime(2026, 8, 20, 12, tzinfo=UTC),
+            )
+        self.assertEqual(result[0], "fail")
+        self.assertIn("public_attention", result[1])
+        self.assertNotIn(str(root), result[1])
 
     def test_git_hook_doctor_requires_local_path_and_executable_hooks(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:

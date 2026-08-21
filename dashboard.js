@@ -1,21 +1,161 @@
+const AgentTelemetryUI = (() => {
+  "use strict";
+
+  const finiteNumber = value => typeof value === "number" && Number.isFinite(value);
+  const numericValue = value => {
+    if (typeof value === "number") return Number.isFinite(value) ? value : NaN;
+    if (typeof value === "string" && value.trim() !== "") {
+      const parsed = Number(value);
+      return Number.isFinite(parsed) ? parsed : NaN;
+    }
+    return NaN;
+  };
+  const parsedMillis = value => {
+    const parsed = Date.parse(value);
+    return Number.isFinite(parsed) ? parsed : null;
+  };
+  const captureStatusFailed = value =>
+    /(fail|error|timeout|denied|malformed|invalid)/.test(String(value || "").toLowerCase());
+
+  function relativeDuration(value, nowMillis = Date.now()) {
+    const target = parsedMillis(value);
+    if (target === null || !finiteNumber(nowMillis)) return null;
+    const minutes = Math.max(0, Math.floor(Math.abs(target - nowMillis) / 60000));
+    const days = Math.floor(minutes / 1440);
+    const hours = Math.floor((minutes % 1440) / 60);
+    const remainder = minutes % 60;
+    const parts = [];
+    if (days) parts.push(`${days}d`);
+    if (hours && parts.length < 2) parts.push(`${hours}h`);
+    if ((!days || !hours) && parts.length < 2) parts.push(`${remainder}m`);
+    return {direction:target >= nowMillis ? "future" : "past", text:parts.join(" ") || "0m", minutes};
+  }
+
+  function capacityWindowState(windowValue, nowMillis = Date.now(), freshnessMaxAgeHours = null) {
+    const value = windowValue && typeof windowValue === "object" ? windowValue : {};
+    const remaining = numericValue(value.remaining_percent);
+    const hasValue = Number.isFinite(remaining) && remaining >= 0 && remaining <= 100;
+    const raw = String(value.freshness_status || "").toLowerCase().replace(/[- ]/g, "_");
+    const capture = String(value.capture_status || "").toLowerCase();
+    const captureFailed = captureStatusFailed(capture);
+    const observed = parsedMillis(value.observed_at);
+    const configuredAge = numericValue(freshnessMaxAgeHours);
+    const ageBoundary = observed !== null && Number.isFinite(configuredAge) && configuredAge >= 0
+      ? observed + configuredAge * 3600000
+      : parsedMillis(value.fresh_until);
+    const reset = parsedMillis(value.resets_at);
+    const freshnessUnknown = observed === null || ageBoundary === null;
+    const observationFuture = observed !== null && observed > nowMillis;
+    const ageExpired = ageBoundary !== null && ageBoundary <= nowMillis;
+    const resetPassed = reset !== null && reset <= nowMillis && (observed === null || observed <= reset);
+    let state = raw === "fresh" ? "available" : raw;
+    if (state === "retained" || state === "last_good") state = "retained_last_good";
+    if (state === "capture_error") state = "error";
+    if (!hasValue) {
+      state = state === "error" || captureFailed ? "error" : "unavailable";
+    } else if (state === "stale" || observationFuture || ageExpired || resetPassed || freshnessUnknown) {
+      state = "stale";
+    } else if (state === "retained_last_good" || state === "error" || captureFailed) {
+      state = "retained_last_good";
+    } else if (state === "available") {
+      state = "available";
+    } else {
+      state = "stale";
+    }
+    return {state, hasValue, remainingPercent:hasValue ? remaining : null, ageExpired, resetPassed, freshnessUnknown, observationFuture};
+  }
+
+  function capacityProviderState(providerValue, nowMillis = Date.now()) {
+    const provider = providerValue && typeof providerValue === "object" ? providerValue : {};
+    return capacityWindowState(
+      {
+        remaining_percent:null,
+        freshness_status:provider.freshness_status || provider.quota_status || provider.remaining_status,
+        capture_status:provider.capture_status,
+        observed_at:provider.observed_at,
+        age_hours:provider.age_hours,
+      },
+      nowMillis,
+      provider.freshness_max_age_hours,
+    );
+  }
+
+  function calculateScenario(input, project) {
+    const assumptions = input && typeof input === "object" ? input : {};
+    const selected = project && typeof project === "object" ? project : {};
+    const recorded = numericValue(selected.recorded_attention_hours);
+    const manual = numericValue(assumptions.counterfactual_manual_hours);
+    const valuePerHour = numericValue(assumptions.value_of_attention_usd_per_hour);
+    const actualCash = numericValue(assumptions.actual_cash_usd);
+    const displacedShare = numericValue(assumptions.displaced_share_percent);
+    const alternativeValue = numericValue(assumptions.alternative_value_usd_per_hour);
+    const apiEquivalent = numericValue(selected.api_equivalent_cost_usd);
+    const cashBasis = String(assumptions.cash_basis || "");
+    const alternativeName = String(assumptions.alternative_name || "").trim();
+    const validBasis = ["none", "api_equivalent", "actual_cash"].includes(cashBasis);
+    const valid = Number.isFinite(recorded) && recorded > 0
+      && Number.isFinite(manual) && manual >= 0
+      && Number.isFinite(valuePerHour) && valuePerHour > 0
+      && validBasis
+      && (cashBasis !== "api_equivalent" || (Number.isFinite(apiEquivalent) && apiEquivalent >= 0))
+      && (cashBasis !== "actual_cash" || (Number.isFinite(actualCash) && actualCash >= 0))
+      && alternativeName.length > 0
+      && Number.isFinite(displacedShare) && displacedShare >= 0 && displacedShare <= 100
+      && Number.isFinite(alternativeValue) && alternativeValue >= 0;
+    if (!valid) return {valid:false};
+    const cashUsd = cashBasis === "api_equivalent" ? apiEquivalent : cashBasis === "actual_cash" ? actualCash : 0;
+    const displacedAttentionHours = recorded * displacedShare / 100;
+    const attentionDeltaHours = manual - recorded;
+    const attentionEquivalentHours = recorded + cashUsd / valuePerHour;
+    const opportunityCostUsd = displacedAttentionHours * alternativeValue;
+    if (![cashUsd, displacedAttentionHours, attentionDeltaHours, attentionEquivalentHours, opportunityCostUsd].every(Number.isFinite)) {
+      return {valid:false};
+    }
+    return {
+      valid:true,
+      recordedAttentionHours:recorded,
+      attentionDeltaHours,
+      attentionEquivalentHours,
+      displacedAttentionHours,
+      opportunityCostUsd,
+      cashBasis,
+      cashUsd,
+      alternativeName,
+      displacedSharePercent:displacedShare,
+      alternativeValueUsdPerHour:alternativeValue,
+    };
+  }
+
+  return Object.freeze({capacityProviderState, capacityWindowState, captureStatusFailed, calculateScenario, relativeDuration});
+})();
+
+if (typeof window !== "undefined") window.AgentTelemetryUI = AgentTelemetryUI;
+if (typeof module === "object" && module.exports) module.exports = AgentTelemetryUI;
+
 (() => {
   "use strict";
+
+  if (typeof window === "undefined" || typeof document === "undefined") return;
 
   const data = window.TELEMETRY || {};
   const $ = id => document.getElementById(id);
   const esc = value => String(value ?? "").replace(/[&<>'"]/g, char => ({"&":"&amp;","<":"&lt;",">":"&gt;","'":"&#39;",'"':"&quot;"})[char]);
   const finite = value => typeof value === "number" && Number.isFinite(value);
+  const numeric = value => typeof value === "number" && Number.isFinite(value) ? value : typeof value === "string" && value.trim() !== "" && Number.isFinite(Number(value)) ? Number(value) : null;
   const sum = values => values.reduce((total, value) => total + (finite(value) ? value : 0), 0);
   const compact = new Intl.NumberFormat("en-US", {maximumFractionDigits:1, notation:"compact"});
   const full = new Intl.NumberFormat("en-US", {maximumFractionDigits:2});
   const money = new Intl.NumberFormat("en-US", {style:"currency", currency:"USD", maximumFractionDigits:2});
+  const percentNumber = new Intl.NumberFormat("en-US", {maximumFractionDigits:1});
   const colors = ["#7bdcff", "#8ba9ff", "#75e6ad", "#ffd166", "#c4a7ff", "#ff8c9b", "#b8c5d3"];
+  const {capacityProviderState, capacityWindowState, calculateScenario, relativeDuration} = AgentTelemetryUI;
   const catalog = new Map((data.catalog || []).map(row => [row.metric_id, row]));
   const windows = data.windows || {};
   const validWindows = data.contract && data.contract.window_keys || ["7", "30", "90", "all"];
   const params = new URLSearchParams(window.location.search);
   let activeKey = validWindows.includes(params.get("window")) ? params.get("window") : data.default_window || "30";
   let active = windows[activeKey] || Object.values(windows)[0] || {};
+  let scenarioProjects = [];
 
   function fmt(value, kind = "number", reason = "not observed") {
     if (!finite(value)) return `<span class="empty">n/a · ${esc(reason)}</span>`;
@@ -33,15 +173,27 @@
     return Number.isNaN(parsed.valueOf()) ? "n/a · timestamp invalid" : parsed.toLocaleString([], {year:"numeric", month:"short", day:"numeric", hour:"2-digit", minute:"2-digit", timeZoneName:"short"});
   }
 
+  function timeMarkup(value) {
+    if (!value || !Number.isFinite(Date.parse(value))) return '<span class="empty">timestamp unavailable</span>';
+    return `<time datetime="${esc(value)}">${esc(when(value))}</time>`;
+  }
+
+  function evidenceBadge(evidenceClass, display = "") {
+    const normalized = String(evidenceClass || "unknown").toLowerCase().replace(/[^a-z-]/g, "-");
+    const label = display || normalized.replace(/-/g, " ");
+    return `<span class="evidence-badge evidence-${esc(normalized)}">${esc(label)}</span>`;
+  }
+
   function metricButton(metricId) {
     const metric = catalog.get(metricId);
     const label = metric ? metric.display_label : metricId;
     return `<button class="metric-help" type="button" data-explain="${esc(metricId)}" aria-label="Explain ${esc(label)}">i</button>`;
   }
 
-  function card(metricId, value, detail, delta = "") {
+  function card(metricId, value, detail, delta = "", evidenceOverride = "") {
     const metric = catalog.get(metricId) || {display_label:metricId};
-    return `<article class="card" data-metric-id="${esc(metricId)}"><div class="metric-head"><span class="label">${esc(metric.display_label)}</span>${metricButton(metricId)}</div><span class="value">${value}</span><span class="detail">${detail}</span>${delta ? `<span class="delta">${delta}</span>` : ""}</article>`;
+    const evidence = evidenceOverride || metric.evidence_class;
+    return `<article class="card" data-metric-id="${esc(metricId)}"><div class="metric-head"><span class="metric-label-group"><span class="label">${esc(metric.display_label)}</span>${evidence ? evidenceBadge(evidence, evidence === "observed" && metricId === "recorded_operator_attention_hours" ? "Recorded" : "") : ""}</span>${metricButton(metricId)}</div><span class="value">${value}</span><span class="detail">${detail}</span>${delta ? `<span class="delta">${delta}</span>` : ""}</article>`;
   }
 
   function deltaText(current, previous, kind = "number") {
@@ -124,6 +276,119 @@
     $("mast-meta").innerHTML = `<span data-metric-id="data_age_minutes">${finite(age) ? `${full.format(age)}m old` : "age n/a"} ${metricButton("data_age_minutes")}</span><br>Generated ${esc(when(data.generated_at))}`;
   }
 
+  function relativeObservation(value, ageHours = null) {
+    const relative = relativeDuration(value);
+    if (relative) return `Observed ${relative.direction === "future" ? "at a future client-clock time" : `${relative.text} ago`}`;
+    const age = numeric(ageHours);
+    return age !== null && age >= 0 ? `Observed about ${full.format(age)}h ago` : "Observation time unavailable";
+  }
+
+  function resetDescription(value, observedAt = null) {
+    if (!value || !Number.isFinite(Date.parse(value))) return "Reset not reported.";
+    const relative = relativeDuration(value);
+    if (!relative) return `Reset ${timeMarkup(value)}`;
+    const observed = parsedMillis(observedAt);
+    const reset = parsedMillis(value);
+    const observationIsNewer = observed !== null && reset !== null && observed > reset;
+    const status = relative.direction === "future"
+      ? `Resets in ${relative.text}`
+      : observationIsNewer
+        ? `Reported reset passed ${relative.text} ago; observation is newer`
+        : `Reset passed ${relative.text} ago`;
+    return `${status} · ${timeMarkup(value)}`;
+  }
+
+  function capacityStateText(state, windowValue) {
+    const observed = relativeObservation(windowValue.observed_at, windowValue.age_hours);
+    const originalState = String(windowValue.freshness_status || "").toLowerCase().replace(/[- ]/g, "_");
+    const capture = String(windowValue.capture_status || "").toLowerCase();
+    const retainedAfterFailure = originalState === "retained_last_good" || AgentTelemetryUI.captureStatusFailed(capture);
+    if (state === "available") return `Fresh — ${observed.toLowerCase()}.`;
+    if (state === "stale" && retainedAfterFailure) return `Stale — last reported ${observed.replace(/^Observed /, "").toLowerCase()}; latest capture failed.`;
+    if (state === "stale") return `Stale — last ${observed.toLowerCase()}.`;
+    if (state === "retained_last_good") return `Last reported ${observed.replace(/^Observed /, "").toLowerCase()}; latest capture failed.`;
+    if (state === "error") return "Capture error — latest capture failed and no usable last-good value exists.";
+    return "Unavailable — no valid value has ever been observed.";
+  }
+
+  function capacityWindowMarkup(windowValue, provider, index) {
+    const freshnessMaxAgeHours = provider.freshness_max_age_hours;
+    const evaluated = capacityWindowState(windowValue, Date.now(), freshnessMaxAgeHours);
+    const remaining = evaluated.hasValue ? `${percentNumber.format(evaluated.remainingPercent)}% remaining` : "Remaining unavailable";
+    const usedPercent = numeric(windowValue.used_percent);
+    const minutes = numeric(windowValue.window_minutes);
+    const used = usedPercent !== null && usedPercent >= 0 && usedPercent <= 100
+      ? `${percentNumber.format(usedPercent)}% used as reported`
+      : "Used percentage not reported";
+    const windowMinutes = minutes !== null && minutes > 0
+      ? ` · ${full.format(minutes)} minute window`
+      : "";
+    const metricId = /(anthropic|claude)/.test(String(windowValue.provider || provider.provider || "").toLowerCase())
+      ? "claude_quota_remaining_percent"
+      : "openai_quota_remaining_percent";
+    const progress = evaluated.hasValue
+      ? `<progress max="100" value="${evaluated.remainingPercent}" aria-label="${esc(windowValue.display_label || windowValue.window || `window ${index + 1}`)}: ${esc(remaining)}"></progress>`
+      : "";
+    const observedTime = windowValue.observed_at && Number.isFinite(Date.parse(windowValue.observed_at))
+      ? ` · ${timeMarkup(windowValue.observed_at)}`
+      : "";
+    return `<article class="capacity-window" data-capacity-state="${esc(evaluated.state)}" data-metric-id="${metricId}"><div class="capacity-window-head"><div><h3>${esc(windowValue.display_label || windowValue.window || `Window ${index + 1}`)}</h3><span class="detail">${esc(used)}${esc(windowMinutes)}</span></div><span>${evidenceBadge("observed")} ${metricButton(metricId)}</span></div><div class="capacity-remaining">${esc(remaining)}</div>${progress}<div class="capacity-times"><span>${capacityStateText(evaluated.state, windowValue)}${observedTime}</span><span>${resetDescription(windowValue.resets_at, windowValue.observed_at)}</span></div><details class="capacity-source"><summary>Source and capture</summary><p>Source: ${esc(windowValue.source || "not reported")} · capture: ${esc(windowValue.capture_status || "not reported")} · freshness at generation: ${esc(windowValue.freshness_status || "not reported")}. This is provider-reported capacity, not billing or an estimate of messages remaining.</p></details></article>`;
+  }
+
+  function capacityProviderEmptyMarkup(provider) {
+    const evaluated = capacityProviderState(provider, Date.now());
+    const metricId = String(provider.provider || "").toLowerCase() === "anthropic"
+      ? "claude_quota_remaining_percent"
+      : "openai_quota_remaining_percent";
+    const observedTime = provider.observed_at && Number.isFinite(Date.parse(provider.observed_at))
+      ? ` · ${timeMarkup(provider.observed_at)}`
+      : "";
+    return `<div class="capacity-window capacity-empty" data-capacity-state="${esc(evaluated.state)}" data-metric-id="${metricId}"><p class="empty">${esc(capacityStateText(evaluated.state, provider))}${observedTime} ${metricButton(metricId)}</p><details class="capacity-source"><summary>Source and capture</summary><p>Source: ${esc(provider.source || "not reported")} · capture: ${esc(provider.capture_status || "not reported")} · freshness at generation: ${esc(provider.freshness_status || provider.quota_status || "not reported")}. No valid quota window is available to display.</p></details></div>`;
+  }
+
+  function renderCapacity() {
+    const capacity = data.capacity_now && typeof data.capacity_now === "object" ? data.capacity_now : {};
+    const providers = Array.isArray(capacity.providers) ? capacity.providers.slice(0, 2) : [];
+    const renderedStates = [];
+    const rows = providers.map(provider => {
+      const windowsForProvider = Array.isArray(provider.windows) ? provider.windows.slice(0, 2) : [];
+      const reported = Math.max(windowsForProvider.length, Number(provider.reported_window_count) || 0);
+      const additional = Math.max(0, Number(provider.additional_windows) || reported - windowsForProvider.length);
+      windowsForProvider.forEach(windowValue => renderedStates.push(capacityWindowState(windowValue, Date.now(), provider.freshness_max_age_hours).state));
+      if (!windowsForProvider.length) renderedStates.push(capacityProviderState(provider, Date.now()).state);
+      const windowMarkup = windowsForProvider.length
+        ? windowsForProvider.map((windowValue, index) => capacityWindowMarkup(windowValue, provider, index)).join("")
+        : capacityProviderEmptyMarkup(provider);
+      const additionalText = additional > 0 ? `${full.format(additional)} additional reported window${additional === 1 ? "" : "s"} omitted from this bounded page.` : "At most two windows are shown.";
+      return `<article class="capacity-provider"><div class="capacity-provider-head"><div><h3>${esc(provider.display_label || provider.provider || "Provider")}</h3><span class="detail">${esc(additionalText)}</span></div>${evidenceBadge("observed")}</div><div class="capacity-windows">${windowMarkup}</div></article>`;
+    });
+    $("capacity-providers").innerHTML = rows.join("") || '<p class="empty">Provider capacity is unavailable for this generated snapshot.</p>';
+    const check = $("capacity-check");
+    const bad = renderedStates.includes("error");
+    const warning = renderedStates.some(value => ["stale", "retained_last_good", "unavailable"].includes(value)) || !renderedStates.length;
+    check.className = `status ${bad ? "bad" : warning ? "warn" : "good"}`;
+    check.textContent = bad ? "Capture error" : warning ? "Capacity partial" : "Capacity fresh";
+  }
+
+  function refreshCapacityPreservingInteraction() {
+    const capacityRoot = $("capacity-now");
+    const focusableSelector = "button,summary,a[href],input,select,textarea,[tabindex]:not([tabindex='-1'])";
+    const focusables = [...capacityRoot.querySelectorAll(focusableSelector)];
+    const focusIndex = capacityRoot.contains(document.activeElement)
+      ? focusables.indexOf(document.activeElement)
+      : -1;
+    const openDetails = [...capacityRoot.querySelectorAll("details")]
+      .map((detail, index) => detail.open ? index : -1)
+      .filter(index => index >= 0);
+    renderCapacity();
+    const refreshedDetails = [...capacityRoot.querySelectorAll("details")];
+    openDetails.forEach(index => { if (refreshedDetails[index]) refreshedDetails[index].open = true; });
+    if (focusIndex >= 0) {
+      const refreshedFocusables = [...capacityRoot.querySelectorAll(focusableSelector)];
+      if (refreshedFocusables[focusIndex]) refreshedFocusables[focusIndex].focus({preventScroll:true});
+    }
+  }
+
   function renderOverview() {
     const point = data.point_in_time || {};
     const totals = point.totals || {};
@@ -166,6 +431,171 @@
     donut("project-chart", "tokens_by_project", projectRows, "tokens", `${active.from} → ${active.to} · top 6 + exact other`);
     ranked("model-chart", "tokens_by_model", point.top_models || [], "tokens", "Lifetime · observed session-model buckets", value => fmt(value, "tokens"), colors[1]);
     refreshLazy("project-detail");
+  }
+
+  function attentionHours(value, reason = "no recorded attention") {
+    return finite(value) ? `${full.format(value)}h` : `<span class="empty">n/a · ${esc(reason)}</span>`;
+  }
+
+  function setAttentionEmpty(message) {
+    $("attention-state").textContent = message;
+    const reason = message === "Attention publication is disabled." ? "publication disabled" : "attention unavailable";
+    $("attention-cards").innerHTML = [
+      card("recorded_operator_attention_hours", attentionHours(null, reason), "Completed operator-started timer intervals", "", "observed"),
+      card("recorded_stewardship_attention_hours", attentionHours(null, reason), "Guide + review + rework modes", "", "derived"),
+      card("recorded_project_transitions", fmt(null, "number", reason), "Recorded destination changes; no time penalty attached", "", "derived"),
+      card("recorded_attention_dropoff_projects", fmt(null, "number", reason), "Previously attended projects with no recorded attention.", "", "derived"),
+    ].join("");
+    $("attention-secondary").innerHTML = `<span data-metric-id="recorded_rework_attention_hours"><strong>Recorded rework:</strong> ${attentionHours(null, reason)} ${metricButton("recorded_rework_attention_hours")} ${evidenceBadge("derived")}</span><span data-metric-id="recorded_rework_share"><strong>Rework share:</strong> ${fmt(null, "percent", reason)} ${metricButton("recorded_rework_share")} ${evidenceBadge("derived")}</span><span data-metric-id="attention_top_project_share"><strong>Top-project attention share:</strong> ${fmt(null, "percent", reason)} ${metricButton("attention_top_project_share")} ${evidenceBadge("derived")}</span>`;
+    $("attention-modes").parentElement.dataset.metricId = "attention_mode_composition";
+    $("attention-modes").innerHTML = modeCompositionMarkup([]);
+    $("attention-ledger").parentElement.dataset.metricId = "attention_project_ledger";
+    $("attention-ledger").innerHTML = '<p class="empty">No project resource rows are available for this window.</p>';
+    populateScenarioProjects([]);
+  }
+
+  function modeCompositionMarkup(rows) {
+    const byMode = new Map((Array.isArray(rows) ? rows : []).filter(row => row && typeof row === "object").map(row => [String(row.mode), row]));
+    return ["plan", "guide", "review", "rework", "direct"].map(mode => {
+      const row = byMode.get(mode) || {};
+      const seconds = numeric(row.seconds);
+      const hours = numeric(row.hours);
+      const share = numeric(row.share);
+      const width = share === null ? 0 : Math.max(0, Math.min(100, share * 100));
+      const text = seconds === null
+        ? "n/a"
+        : `${full.format(seconds)}s · ${hours === null ? full.format(seconds / 3600) : full.format(hours)}h · ${share === null ? "share n/a" : `${percentNumber.format(share * 100)}%`}`;
+      return `<div class="mode-row"><span class="mode-name">${esc(mode)}</span><span class="mode-track" aria-hidden="true"><span class="mode-fill" style="width:${width}%"></span></span><span class="mode-value">${esc(text)}</span></div>`;
+    }).join("");
+  }
+
+  function attentionLedgerMarkup(rows) {
+    if (!rows.length) return '<p class="empty">No project resource rows are available for this window.</p>';
+    const body = rows.map(row => {
+      const name = row.other_count ? `other (${full.format(row.other_count)} projects)` : row.label || row.project_id || "unknown";
+      return `<tr><td>${esc(name)}</td><td class="num">${attentionHours(numeric(row.recorded_attention_hours))}</td><td class="num">${attentionHours(numeric(row.stewardship_hours))}</td><td class="num">${attentionHours(numeric(row.rework_hours))}</td><td class="num">${fmt(numeric(row.transitions_in))}</td><td class="num">${fmt(numeric(row.api_equivalent_cost_usd), "money")}</td><td class="num">${fmt(numeric(row.unpriced_tokens), "tokens")}</td></tr>`;
+    }).join("");
+    return `<div class="table-wrap" tabindex="0" role="region" aria-label="Scrollable project attention and cost resource ledger"><table><thead><tr><th>Project / tail</th><th class="num">Recorded attention (h) ${evidenceBadge("observed", "Recorded")}</th><th class="num">Stewardship (h) ${evidenceBadge("derived")}</th><th class="num">Rework (h) ${evidenceBadge("derived")}</th><th class="num">Transitions in ${evidenceBadge("derived")}</th><th class="num">API-equivalent USD ${evidenceBadge("derived")}</th><th class="num">Unpriced tokens ${evidenceBadge("observed")}</th></tr></thead><tbody>${body}</tbody></table></div>`;
+  }
+
+  function populateScenarioProjects(rows) {
+    scenarioProjects = rows.filter(row => {
+      const label = String(row.label || row.project_id || "").toLowerCase();
+      return !row.other_count && label !== "other" && finite(numeric(row.recorded_attention_hours)) && numeric(row.recorded_attention_hours) > 0;
+    });
+    const select = $("scenario-project");
+    select.innerHTML = '<option value="">Choose a displayed project</option>' + scenarioProjects.map((row, index) => `<option value="${index}">${esc(row.label || row.project_id || `Project ${index + 1}`)}</option>`).join("");
+  }
+
+  function renderAttention() {
+    const attention = active.attention_economics && typeof active.attention_economics === "object" ? active.attention_economics : null;
+    if (!attention) {
+      setAttentionEmpty("Recorded attention is unavailable for this generated snapshot.");
+      return;
+    }
+    const attentionStatus = String(attention.status || "unknown").toLowerCase();
+    if (attention.publication_enabled === false || attentionStatus === "disabled") {
+      setAttentionEmpty("Attention publication is disabled.");
+      return;
+    }
+    if (["error", "capture_error", "invalid"].includes(attentionStatus)) {
+      setAttentionEmpty("Recorded attention is unavailable because the attention source could not be read.");
+      return;
+    }
+    const totals = attention.totals && typeof attention.totals === "object" ? attention.totals : {};
+    const recordedAttention = numeric(totals.recorded_attention_hours);
+    const dropoffProjects = numeric(totals.dropoff_projects);
+    const hasRecordedAttention = attention.has_records !== false && finite(recordedAttention);
+    const hasDropoffEvidence = finite(dropoffProjects);
+    const retainedAfterSourceError = attentionStatus === "source_error_retained_last_good";
+    const coverage = attention.coverage && typeof attention.coverage === "object" ? attention.coverage : {};
+    const coverageText = coverage.from && coverage.to ? ` Recorded coverage: ${coverage.from} through ${coverage.to} UTC.` : "";
+    const finalizationText = attention.finalization_status === "current_date_pending_utc_close"
+      ? " The current UTC date is withheld until it closes."
+      : "";
+    const comparison = attention.dropoff_comparison && typeof attention.dropoff_comparison === "object" ? attention.dropoff_comparison : {};
+    const dropoffPeriod = comparison.from && comparison.to ? `Comparison: ${comparison.from} through ${comparison.to} UTC.` : "";
+    $("attention-state").textContent = retainedAfterSourceError
+      ? `Last recorded attention retained; the latest attention-source read failed.${coverageText}${finalizationText} Missing timer use is not inferred as zero attention.`
+      : hasRecordedAttention
+        ? `Only explicitly timed, completed intervals are included.${coverageText}${finalizationText} Missing timer use is not inferred as zero attention.`
+        : `No recorded attention in this window.${hasDropoffEvidence ? " The prior-window drop-off comparison remains available." : ""}${coverageText}${finalizationText} Missing timer use is not inferred as zero attention.`;
+    $("attention-cards").innerHTML = [
+      card("recorded_operator_attention_hours", attentionHours(recordedAttention), "Completed operator-started timer intervals", "", "observed"),
+      card("recorded_stewardship_attention_hours", attentionHours(numeric(totals.stewardship_attention_hours)), "Guide + review + rework modes", "", "derived"),
+      card("recorded_project_transitions", fmt(numeric(totals.recorded_project_transitions), "number", "no recorded attention"), "Recorded destination changes; no time penalty attached", "", "derived"),
+      card("recorded_attention_dropoff_projects", fmt(dropoffProjects, "number", activeKey === "all" ? "not applicable to all-time" : "prior comparison unavailable"), `Previously attended projects with no recorded attention.${dropoffPeriod ? ` ${dropoffPeriod}` : ""}`, "", "derived"),
+    ].join("");
+    $("attention-secondary").innerHTML = `<span data-metric-id="recorded_rework_attention_hours"><strong>Recorded rework:</strong> ${attentionHours(numeric(totals.rework_attention_hours))} ${metricButton("recorded_rework_attention_hours")} ${evidenceBadge("derived")}</span><span data-metric-id="recorded_rework_share"><strong>Rework share:</strong> ${fmt(numeric(totals.rework_share), "percent", "no recorded attention")} ${metricButton("recorded_rework_share")} ${evidenceBadge("derived")}</span><span data-metric-id="attention_top_project_share"><strong>Top-project attention share:</strong> ${fmt(numeric(totals.top_project_share), "percent", "no recorded attention")} ${metricButton("attention_top_project_share")} ${evidenceBadge("derived")}</span>`;
+    $("attention-modes").parentElement.dataset.metricId = "attention_mode_composition";
+    $("attention-modes").innerHTML = modeCompositionMarkup(attention.mode_composition);
+    const ledger = Array.isArray(attention.project_ledger) ? attention.project_ledger.slice(0, 7) : [];
+    $("attention-ledger").parentElement.dataset.metricId = "attention_project_ledger";
+    $("attention-ledger").innerHTML = attentionLedgerMarkup(ledger);
+    populateScenarioProjects(ledger);
+  }
+
+  function scenarioInputValue(id) {
+    const value = $(id).value;
+    return value.trim() === "" ? null : value;
+  }
+
+  function toggleActualCash() {
+    const actual = $("scenario-cash-basis").value === "actual_cash";
+    $("scenario-actual-field").hidden = !actual;
+    $("scenario-actual-cash").disabled = !actual;
+    if (!actual) $("scenario-actual-cash").value = "";
+  }
+
+  function signedHours(value) {
+    const sign = value > 0 ? "+" : value < 0 ? "−" : "";
+    return `${sign}${full.format(Math.abs(value))}h`;
+  }
+
+  function renderScenario() {
+    toggleActualCash();
+    const projectIndex = numeric($("scenario-project").value);
+    const project = projectIndex === null ? null : scenarioProjects[projectIndex];
+    const result = calculateScenario(
+      {
+        counterfactual_manual_hours:scenarioInputValue("scenario-manual-hours"),
+        value_of_attention_usd_per_hour:scenarioInputValue("scenario-value-hour"),
+        cash_basis:$("scenario-cash-basis").value,
+        actual_cash_usd:scenarioInputValue("scenario-actual-cash"),
+        alternative_name:$("scenario-alternative-name").value,
+        displaced_share_percent:scenarioInputValue("scenario-displaced-share"),
+        alternative_value_usd_per_hour:scenarioInputValue("scenario-alternative-value"),
+      },
+      project,
+    );
+    if (!result.valid) {
+      renderScenarioEmpty("Complete every required assumption with a valid value to see scenario results. Nothing is stored or sent.");
+      return;
+    }
+    const cashText = result.cashBasis === "none"
+      ? "no cash basis"
+      : result.cashBasis === "api_equivalent"
+        ? `${money.format(result.cashUsd)} exact API-list-price equivalent (not an invoice)`
+        : `${money.format(result.cashUsd)} browser-entered actual cash`;
+    const deltaMeaning = result.attentionDeltaHours > 0 ? "attention returned" : result.attentionDeltaHours < 0 ? "additional attention required" : "no attention difference";
+    $("scenario-result").innerHTML = `<div class="scenario-output"><div class="scenario-output-item" data-metric-id="recorded_operator_attention_hours"><span>Recorded attention</span><strong>${full.format(result.recordedAttentionHours)}h</strong>${evidenceBadge("observed", "Recorded")} ${metricButton("recorded_operator_attention_hours")}</div><div class="scenario-output-item" data-metric-id="scenario_attention_delta_hours"><span>Scenario attention delta</span><strong>${signedHours(result.attentionDeltaHours)}</strong>${evidenceBadge("scenario")} ${metricButton("scenario_attention_delta_hours")}</div><div class="scenario-output-item" data-metric-id="scenario_attention_equivalent_hours"><span>Attention-equivalent total</span><strong>${full.format(result.attentionEquivalentHours)}h</strong>${evidenceBadge("scenario")} ${metricButton("scenario_attention_equivalent_hours")}</div><div class="scenario-output-item" data-metric-id="scenario_opportunity_cost_usd"><span>Scenario opportunity cost</span><strong>${money.format(result.opportunityCostUsd)}</strong>${evidenceBadge("scenario")} ${metricButton("scenario_opportunity_cost_usd")}</div></div><p class="scenario-assumption">Assumes ${full.format(result.recordedAttentionHours)} recorded hours for ${esc(project.label || project.project_id)}, ${cashText}, and that ${full.format(result.displacedSharePercent)}% of recorded attention displaces “${esc(result.alternativeName)}” valued at ${money.format(result.alternativeValueUsdPerHour)}/hour; the signed delta means ${esc(deltaMeaning)}.</p>`;
+    updateTestHook();
+  }
+
+  function renderScenarioEmpty(message) {
+    const items = [
+      ["scenario_attention_delta_hours", "Scenario attention delta"],
+      ["scenario_attention_equivalent_hours", "Attention-equivalent total"],
+      ["scenario_opportunity_cost_usd", "Scenario opportunity cost"],
+    ].map(([metricId, label]) => `<div class="scenario-output-item" data-metric-id="${metricId}"><span>${label}</span><strong class="empty">n/a · assumptions incomplete</strong>${evidenceBadge("scenario")} ${metricButton(metricId)}</div>`).join("");
+    $("scenario-result").innerHTML = `<p class="scenario-assumption">${esc(message)}</p><div class="scenario-output">${items}</div>`;
+    updateTestHook();
+  }
+
+  function clearScenario() {
+    $("scenario-form").reset();
+    toggleActualCash();
+    renderScenarioEmpty("Complete every assumption to see scenario results. Nothing is stored or sent.");
   }
 
   function renderOutcomes() {
@@ -221,7 +651,7 @@
   }
 
   function table(headers, rows) {
-    return `<div class="table-wrap"><table><thead><tr>${headers.map(([label, numeric, metricId]) => `<th${numeric ? ' class="num"' : ""}>${esc(label)}${metricId ? ` ${metricButton(metricId)}` : ""}</th>`).join("")}</tr></thead><tbody>${rows.join("")}</tbody></table></div>`;
+    return `<div class="table-wrap" tabindex="0" role="region" aria-label="Scrollable data table"><table><thead><tr>${headers.map(([label, numeric, metricId]) => `<th${numeric ? ' class="num"' : ""}>${esc(label)}${metricId ? ` ${metricButton(metricId)}` : ""}</th>`).join("")}</tr></thead><tbody>${rows.join("")}</tbody></table></div>`;
   }
 
   function lazyBody(detailId) {
@@ -256,7 +686,7 @@
     const metric = catalog.get(metricId);
     if (!metric) return;
     $("metric-dialog-title").textContent = metric.display_label;
-    $("metric-dialog-body").innerHTML = `<p>${esc(metric.definition)}</p><div class="formula">${esc(metric.derivation)}</div><p class="catalog-meta"><strong>Unit:</strong> ${esc(metric.unit)}<br><strong>Source:</strong> ${metric.sources.map(esc).join(" · ")}<br><strong>Caveat:</strong> ${esc(metric.caveats)}<br><strong>Catalog id:</strong> ${esc(metric.metric_id)}</p>`;
+    $("metric-dialog-body").innerHTML = `<p>${metric.evidence_class ? evidenceBadge(metric.evidence_class) : ""}</p><p>${esc(metric.definition)}</p><div class="formula">${esc(metric.derivation)}</div><p class="catalog-meta"><strong>Unit:</strong> ${esc(metric.unit)}<br><strong>Source:</strong> ${metric.sources.map(esc).join(" · ")}<br><strong>Caveat:</strong> ${esc(metric.caveats)}<br><strong>Catalog id:</strong> ${esc(metric.metric_id)}</p>`;
     $("metric-dialog").showModal();
   }
 
@@ -274,6 +704,12 @@
         rankRows: document.querySelectorAll(".rank-row").length,
       },
       payloadBytes: data.contract && data.contract.payload_bytes,
+      capacitySignature:JSON.stringify(data.capacity_now || {}),
+      capacityProviderState,
+      capacityWindowState,
+      capacityStateText,
+      calculateScenario,
+      relativeDuration,
     };
   }
 
@@ -285,6 +721,7 @@
     renderOverview();
     renderActivity();
     renderMix();
+    renderAttention();
     renderOutcomes();
     renderReliability();
     renderEvidence();
@@ -294,6 +731,7 @@
 
   document.querySelectorAll("[data-window]").forEach(button => button.addEventListener("click", () => {
     activeKey = button.dataset.window;
+    clearScenario();
     const url = new URL(window.location.href);
     url.searchParams.delete("from");
     url.searchParams.delete("to");
@@ -303,7 +741,7 @@
   }));
   document.querySelectorAll("details.drill").forEach(detail => detail.addEventListener("toggle", () => {
     const body = detail.querySelector("[data-lazy-body]");
-    if (detail.open && body.dataset.built !== "true") lazyBody(detail.id);
+    if (body && detail.open && body.dataset.built !== "true") lazyBody(detail.id);
     updateTestHook();
   }));
   document.addEventListener("click", event => {
@@ -311,11 +749,16 @@
     if (button) showMetric(button.dataset.explain);
   });
   $("metric-dialog-close").addEventListener("click", () => $("metric-dialog").close());
-
+  $("scenario-form").addEventListener("input", renderScenario);
+  $("scenario-form").addEventListener("change", renderScenario);
+  $("scenario-form").addEventListener("submit", event => event.preventDefault());
+  $("scenario-clear").addEventListener("click", clearScenario);
   if (data.payload_kind !== "bounded_page_envelope") {
     document.body.innerHTML = '<main class="shell"><section><h1>Telemetry unavailable</h1><p class="empty">The bounded page envelope is missing or incompatible.</p></section></main>';
     return;
   }
+  renderCapacity();
   render();
-  window.setInterval(() => { renderMasthead(); const cardNode = document.querySelector('[data-metric-id="data_age_minutes"] .value'); if (cardNode) cardNode.innerHTML = fmt(ageMinutes(), "minutes"); }, 60000);
+  renderScenario();
+  window.setInterval(() => { renderMasthead(); refreshCapacityPreservingInteraction(); const cardNode = document.querySelector('[data-metric-id="data_age_minutes"] .value'); if (cardNode) cardNode.innerHTML = fmt(ageMinutes(), "minutes"); updateTestHook(); }, 60000);
 })();

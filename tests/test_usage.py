@@ -120,6 +120,28 @@ class AnthropicUsageTests(unittest.TestCase):
 
 
 class OpenAIUsageTests(unittest.TestCase):
+    def test_all_safe_quota_windows_survive_verbose_sanitization(self) -> None:
+        raw = {
+            f"window_{index:02d}": {"used_percent": index, "window_minutes": index + 1}
+            for index in range(20)
+        }
+        sanitized = usage.sanitize_rate_limits(raw, "2026-08-20T01:00:00Z")
+        self.assertIsNotNone(sanitized)
+        self.assertEqual(
+            [key for key in sanitized if key != "observed_at"],
+            sorted(raw),
+        )
+
+    def test_nonfinite_or_out_of_range_quota_percent_is_not_inverted(self) -> None:
+        for value in (float("nan"), float("inf"), -1, 101):
+            sanitized = usage.sanitize_rate_limits(
+                {"primary": {"used_percent": value, "window_minutes": 300}},
+                "2026-08-20T01:00:00Z",
+            )
+            self.assertIsNotNone(sanitized)
+            self.assertIsNone(sanitized["primary"]["used_percent"])
+            self.assertIsNone(sanitized["primary"]["remaining_percent"])
+
     def test_cumulative_totals_sum_last_turns_reasoning_is_subset_and_content_is_dropped(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
             session = "22222222-2222-2222-2222-222222222222"

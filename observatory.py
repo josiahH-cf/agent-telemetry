@@ -26,6 +26,7 @@ from pathlib import Path, PurePosixPath
 from typing import Any, Iterable, Iterator
 
 import usage
+from tools import attention as attention_ledger
 
 
 STORE_SCHEMA_VERSION = 1
@@ -1123,7 +1124,7 @@ def public_summary(connection: sqlite3.Connection) -> dict[str, Any]:
 
 
 STORE_DATASET_NAMES = ("projects", "sessions", "days", "rounds", "specs", "tests", "publications", "incidents")
-DATASET_NAMES = STORE_DATASET_NAMES + ("metrics",)
+DATASET_NAMES = STORE_DATASET_NAMES + ("attention_days", "metrics")
 
 
 def _public_project_ids(connection: sqlite3.Connection) -> dict[str, str]:
@@ -1329,9 +1330,80 @@ def validate_record(record: dict[str, Any], schema: dict[str, Any]) -> list[str]
             continue
         if isinstance(rule.get("enum"), list) and value not in rule["enum"]:
             errors.append(f"enum:{name}")
+        if "const" in rule and value != rule["const"]:
+            errors.append(f"const:{name}")
+        minimum = rule.get("minimum")
+        if isinstance(minimum, (int, float)) and isinstance(value, (int, float)) and not isinstance(value, bool) and value < minimum:
+            errors.append(f"minimum:{name}")
         if isinstance(value, str) and rule.get("pattern") and not re.fullmatch(str(rule["pattern"]), value):
             errors.append(f"pattern:{name}")
+        if isinstance(value, str) and isinstance(rule.get("minLength"), int) and len(value) < rule["minLength"]:
+            errors.append(f"minLength:{name}")
+        if isinstance(value, dict) and rule.get("type") == "object":
+            errors.extend(f"nested:{name}:{error}" for error in validate_record(value, rule))
     return sorted(errors)
+
+
+def validate_attention_row(record: dict[str, Any]) -> list[str]:
+    errors: list[str] = []
+    modes = record.get("mode_seconds") if isinstance(record.get("mode_seconds"), dict) else {}
+    if safe_int(record.get("attention_seconds"), -1) != sum(safe_int(modes.get(mode), -1) for mode in ("plan", "guide", "review", "rework", "direct")):
+        errors.append("attention_mode_sum")
+    forbidden = {"event_id", "started_at", "ended_at", "path", "note", "label", "account", "host"}
+    if forbidden.intersection(record):
+        errors.append("attention_private_field")
+    return errors
+
+
+def add_registry_only_projects(
+    project_root: Path,
+    public: dict[str, list[dict[str, Any]]],
+    local: dict[str, list[dict[str, Any]]],
+) -> None:
+    """Keep every approved projects.json id joinable before provider usage appears."""
+    registry = read_json(project_root / "projects.json")
+    rows = registry.get("projects") if isinstance(registry.get("projects"), list) else []
+    observed = {str(row.get("project_id")) for row in public["projects"]}
+    for raw in rows:
+        if not isinstance(raw, dict):
+            continue
+        project_code = str(raw.get("project_id") or "")
+        public_label = raw.get("public_label") if isinstance(raw.get("public_label"), str) else None
+        project_id = str(public_label or project_code)
+        if (
+            project_id in observed
+            or not re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9_.-]{0,127}", project_code)
+            or not project_id
+        ):
+            continue
+        item = {
+            "project_id": project_id,
+            "project_code": project_code,
+            "public_label": public_label,
+            "category": str(raw.get("category") or "registered"),
+            "registered": True,
+            "first_seen_at": None,
+            "last_seen_at": None,
+            "wsl_first_seen_at": None,
+            "wsl_last_seen_at": None,
+            "windows_first_seen_at": None,
+            "windows_last_seen_at": None,
+            "sessions": 0,
+            "tokens": 0,
+            "api_equivalent_cost_usd": 0.0,
+            "unpriced_tokens": 0,
+            "anthropic_sessions": 0,
+            "anthropic_tokens": 0,
+            "anthropic_cost_usd": 0.0,
+            "openai_sessions": 0,
+            "openai_tokens": 0,
+            "openai_cost_usd": 0.0,
+        }
+        public["projects"].append(item)
+        local["projects"].append({**item, "internal_project_id": project_code, "real_name": None, "canonical_path": None})
+        observed.add(project_id)
+    public["projects"].sort(key=lambda row: str(row.get("project_id") or ""))
+    local["projects"].sort(key=lambda row: str(row.get("project_id") or ""))
 
 
 def dataset_coverage(rows: list[dict[str, Any]]) -> dict[str, str | None]:
@@ -1344,8 +1416,23 @@ def dataset_coverage(rows: list[dict[str, Any]]) -> dict[str, str | None]:
     return {"from": min(candidates) if candidates else None, "to": max(candidates) if candidates else None}
 
 
-def _write_jsonl(path: Path, rows: list[dict[str, Any]]) -> str:
-    payload = "".join(json.dumps(row, sort_keys=True, separators=(",", ":"), ensure_ascii=True) + "\n" for row in rows)
+def _write_jsonl(
+    path: Path,
+    rows: list[dict[str, Any]],
+    preserved_lines: dict[tuple[str, str], tuple[dict[str, Any], str]] | None = None,
+) -> str:
+    rendered: list[str] = []
+    for row in rows:
+        preserved = None
+        if preserved_lines is not None:
+            preserved = preserved_lines.get(attention_ledger.attention_row_key(row))
+        if preserved is not None and preserved[0] == row:
+            rendered.append(preserved[1])
+        else:
+            rendered.append(
+                json.dumps(row, sort_keys=True, separators=(",", ":"), ensure_ascii=True) + "\n"
+            )
+    payload = "".join(rendered)
     atomic_text(path, payload)
     return hashlib.sha256(payload.encode()).hexdigest()
 
@@ -1356,6 +1443,25 @@ def write_machine_layers(
     snapshot: dict[str, Any],
     metric_catalog: list[dict[str, Any]] | None = None,
 ) -> list[Path]:
+    attention = snapshot.get("metrics", {}).get("attention", {})
+    if isinstance(attention, dict) and attention.get("public_history_status") == "invalid":
+        raise ObservatoryError("attention_history_invalid")
+    try:
+        existing_attention_records = attention_ledger.read_public_attention_records(
+            project_root / "data" / "machine" / "attention_days.jsonl"
+        )
+    except attention_ledger.AttentionError as exc:
+        raise ObservatoryError("attention_history_invalid") from exc
+    preserved_attention_lines = {
+        attention_ledger.attention_row_key(row): (row, raw_line)
+        for row, raw_line in existing_attention_records
+    }
+    snapshot_date = str(
+        snapshot.get("collection", {}).get("date")
+        or str(snapshot.get("generated_at") or "")[:10]
+    )
+    if any(str(row.get("date")) >= snapshot_date for row, _raw_line in existing_attention_records):
+        raise ObservatoryError("attention_history_invalid")
     store_path = state_root / STORE_NAME
     connection = connect_store(store_path)
     try:
@@ -1363,6 +1469,24 @@ def write_machine_layers(
         store_summary = public_summary(connection)
     finally:
         connection.close()
+    add_registry_only_projects(project_root, public, local)
+    attention = snapshot.get("metrics", {}).get("attention", {})
+    if (
+        isinstance(attention, dict)
+        and attention.get("publication_enabled") is True
+        and isinstance(attention.get("days"), list)
+    ):
+        attention_rows = attention["days"]
+    else:
+        # Disabling future publication cannot erase already-published closed
+        # history. A never-enabled installation still emits a valid zero-row
+        # dataset because this file does not yet exist.
+        attention_rows = [row for row, _raw_line in existing_attention_records]
+    public["attention_days"] = sorted(
+        [dict(row) for row in attention_rows if isinstance(row, dict)],
+        key=lambda row: (str(row.get("date") or ""), str(row.get("project_id") or "")),
+    )
+    local["attention_days"] = [dict(row) for row in public["attention_days"]]
     public["metrics"] = [dict(row) for row in (metric_catalog or [])]
     local["metrics"] = [dict(row) for row in (metric_catalog or [])]
     schemas: dict[str, dict[str, Any]] = {}
@@ -1372,8 +1496,13 @@ def write_machine_layers(
             raise ObservatoryError(f"schema_missing_{name}")
         schemas[name] = schema
         violations = [error for row in public[name] for error in validate_record(row, schema)]
+        if name == "attention_days":
+            violations.extend(error for row in public[name] for error in validate_attention_row(row))
         if violations:
             raise ObservatoryError(f"schema_validation_{name}_{violations[0]}")
+    project_codes = {str(row.get("project_code")) for row in public["projects"]}
+    if any(str(row.get("project_id")) not in project_codes for row in public["attention_days"]):
+        raise ObservatoryError("attention_project_join_failed")
     generated_at = str(snapshot.get("generated_at") or iso(utc_now()))
     machine_root = project_root / "data" / "machine"
     local_root = state_root / "machine"
@@ -1391,11 +1520,16 @@ def write_machine_layers(
         "tests": "Sanitized governed-loop test-run facts.",
         "publications": "Sanitized publication/deploy aggregate observations.",
         "incidents": "Sanitized quality/incident aggregate observations.",
+        "attention_days": "Explicitly opted-in UTC operator-timer aggregates by stable projects.project_code; completeness depends on operator timer use, and absent rows are not observed zero attention.",
         "metrics": "Definitions, exact derivations, sources, caveats, units, and page-versus-machine surface decisions.",
     }
     for name in DATASET_NAMES:
         path = machine_root / f"{name}.jsonl"
-        digest = _write_jsonl(path, public[name])
+        digest = _write_jsonl(
+            path,
+            public[name],
+            preserved_attention_lines if name == "attention_days" else None,
+        )
         written.append(path)
         entries.append(
             {
@@ -1422,6 +1556,7 @@ def write_machine_layers(
         "tokens": sum(safe_int(row["tokens"]) for row in public["sessions"]),
         "cost_usd": rounded(sum(float(row["api_equivalent_cost_usd"]) for row in public["sessions"])) or 0.0,
         "unpriced_tokens": sum(safe_int(row["unpriced_tokens"]) for row in public["sessions"]),
+        "attention_seconds": sum(safe_int(row["attention_seconds"]) for row in public["attention_days"]),
     }
     envelope = snapshot.get("metrics", {}).get("observatory", {}).get("totals", {})
     comparisons = {
@@ -1429,6 +1564,7 @@ def write_machine_layers(
         "tokens": safe_int(envelope.get("tokens")) == machine_totals["tokens"] == safe_int(store_summary["totals"]["tokens"]),
         "unpriced_tokens": safe_int(envelope.get("unpriced_tokens")) == machine_totals["unpriced_tokens"] == safe_int(store_summary["totals"]["unpriced_tokens"]),
         "cost_usd": abs(float(envelope.get("cost_usd") or 0) - machine_totals["cost_usd"]) < 0.01 and abs(float(store_summary["totals"]["cost_usd"]) - machine_totals["cost_usd"]) < 0.01,
+        "attention_seconds": machine_totals["attention_seconds"] == sum(safe_int(row.get("attention_seconds")) for row in attention_rows),
     }
     reconciliation = {"status": "ok" if all(comparisons.values()) else "fail", "store_envelope_machine": comparisons, "machine_totals": machine_totals}
     snapshot.setdefault("metrics", {}).setdefault("observatory", {})["reconciliation"] = reconciliation

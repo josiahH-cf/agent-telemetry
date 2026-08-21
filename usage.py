@@ -639,7 +639,14 @@ def sanitize_rate_limits(value: Any, observed_at: str | None) -> dict[str, Any] 
         return None
     output: dict[str, Any] = {"observed_at": iso(parse_timestamp(observed_at))}
     found = False
-    for name in ("primary", "secondary"):
+    candidates = [
+        str(name)
+        for name, raw in value.items()
+        if isinstance(raw, dict) and SAFE_IDENTIFIER_RE.fullmatch(str(name))
+    ]
+    names = [name for name in ("primary", "secondary") if name in candidates]
+    names.extend(sorted(name for name in candidates if name not in {"primary", "secondary"}))
+    for name in names:
         raw = value.get(name)
         if not isinstance(raw, dict):
             continue
@@ -647,6 +654,10 @@ def sanitize_rate_limits(value: Any, observed_at: str | None) -> dict[str, Any] 
         try:
             used_value = float(used)
         except (TypeError, ValueError, OverflowError):
+            used_value = None
+        if used_value is not None and (
+            not math.isfinite(used_value) or used_value < 0 or used_value > 100
+        ):
             used_value = None
         resets = raw.get("resets_at")
         resets_at = None

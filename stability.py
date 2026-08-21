@@ -8,6 +8,7 @@ host identity, and raw command output stay local.
 from __future__ import annotations
 
 import argparse
+import contextlib
 import datetime as dt
 import fcntl
 import hashlib
@@ -22,6 +23,9 @@ import tempfile
 import xml.etree.ElementTree as ET
 from pathlib import Path
 from typing import Any, Iterable
+
+import claude_usage_capture
+from tools import attention as attention_ledger
 
 
 SCHEMA_VERSION = 2
@@ -48,6 +52,7 @@ STATIC_TRACKED_PATHS = {
     "collect.py",
     "metric_catalog.py",
     "dashboard.js",
+    "data/schema/attention_days.schema.json",
     "data/schema/days.schema.json",
     "data/schema/incidents.schema.json",
     "data/schema/metrics.schema.json",
@@ -58,6 +63,7 @@ STATIC_TRACKED_PATHS = {
     "data/schema/specs.schema.json",
     "data/schema/tests.schema.json",
     "docs/OUTCOME_ADAPTER.md",
+    "docs/ATTENTION_GUIDANCE_SPIKE.md",
     "docs/STABILITY.md",
     "index.html",
     "git_guard.py",
@@ -69,21 +75,28 @@ STATIC_TRACKED_PATHS = {
     "sources.example.json",
     "stability.py",
     "tests/test_collect.py",
+    "tests/test_attention.py",
+    "tests/test_attention_collect.py",
+    "tests/test_attention_catalog.py",
+    "tests/test_attention_ui.py",
+    "tests/test_capacity.py",
     "tests/test_claude_usage_capture.py",
     "tests/test_dashboard.py",
     "tests/test_git_guard.py",
+    "tests/test_guidance_spike.py",
     "tests/test_observatory.py",
     "tests/test_publish.py",
     "tests/test_retention.py",
     "tests/test_stability.py",
     "tests/test_usage.py",
     "tools/retention.py",
+    "tools/attention.py",
     "usage.py",
 }
 GENERATED_TRACKED_RE = re.compile(
     r"^data/(?:telemetry\.(?:json|js)|rounds\.json|"
     r"history/(?:cost|daily|measurement|global)-\d{4}-\d{2}-\d{2}\.json|"
-    r"machine/(?:MANIFEST\.json|(?:days|incidents|metrics|projects|publications|rounds|sessions|specs|tests)\.jsonl))$"
+    r"machine/(?:MANIFEST\.json|(?:attention_days|days|incidents|metrics|projects|publications|rounds|sessions|specs|tests)\.jsonl))$"
 )
 LOG_RE = re.compile(
     r"^(?P<timestamp>\S+)\s+mode=(?P<mode>refresh|publish|catchup|lock-probe)"
@@ -489,14 +502,77 @@ def _claude_usage_capture_status(
     succeeded = parse_timestamp(value.get("last_success_at"))
     attempt_age = max(0.0, (now - attempted).total_seconds()) if attempted else math.inf
     success_age = max(0.0, (now - succeeded).total_seconds()) if succeeded else math.inf
-    max_age = capture.get("max_cache_age_seconds", 3600)
-    try:
-        max_age_seconds = min(3600.0, max(60.0, float(max_age)))
-    except (TypeError, ValueError, OverflowError):
-        max_age_seconds = 3600.0
+    max_age_seconds = claude_usage_capture.valid_max_cache_age_seconds(
+        capture.get("max_cache_age_seconds", claude_usage_capture.DEFAULT_MAX_CACHE_AGE_SECONDS)
+    ) or claude_usage_capture.DEFAULT_MAX_CACHE_AGE_SECONDS
     healthy = status in {"automatic_success", "manual_recorded"} and attempt_age <= GAP_THRESHOLD_MINUTES * 60 and success_age <= max_age_seconds
     detail = f"status_{status}_attempt_age_minutes_{rounded(attempt_age / 60, 1)}_success_age_minutes_{rounded(success_age / 60, 1)}"
     return ("ok" if healthy else "warn"), detail
+
+
+def _attention_status(
+    config: dict[str, Any],
+    project_root: Path,
+    state_root: Path,
+    now: dt.datetime,
+    current_attention: dict[str, Any] | None = None,
+) -> tuple[str, str]:
+    attention_config = config.get("attention") if isinstance(config.get("attention"), dict) else {}
+    publication = attention_ledger.attention_publication_enabled(attention_config)
+    schema_ok = (project_root / "data" / "schema" / "attention_days.schema.json").is_file()
+    try:
+        lock_context = contextlib.nullcontext() if os.environ.get("AGENT_TELEMETRY_LOCK_HELD") == "1" else attention_ledger.attention_lock(state_root)
+        with lock_context:
+            project_map = attention_ledger.load_public_project_map(project_root)
+            projects = frozenset(project_map)
+            parsed = attention_ledger.parse_ledger(state_root, projects, now=now)
+            active_state = attention_ledger.read_active_state(state_root)
+            active = active_state is not None
+            deferred_dates = attention_ledger.active_deferred_dates(state_root, now=now)
+            public_rows = attention_ledger.read_public_attention_rows(
+                project_root / "data" / "machine" / "attention_days.jsonl"
+            )
+            current_date = now.astimezone(dt.timezone.utc).date().isoformat()
+            if any(str(row.get("date")) >= current_date for row in public_rows):
+                raise attention_ledger.AttentionError(
+                    "public_attention_unclosed_or_future_row"
+                )
+            if any(
+                str(row.get("project_id")) not in project_map
+                for row in public_rows
+            ):
+                raise attention_ledger.AttentionError(
+                    "public_attention_project_mapping_invalid"
+                )
+        if isinstance(current_attention, dict):
+            attention = current_attention
+        else:
+            envelope = _read_json_object(project_root / "data" / "telemetry.json")
+            metrics = envelope.get("metrics") if isinstance(envelope.get("metrics"), dict) else {}
+            attention = metrics.get("attention") if isinstance(metrics.get("attention"), dict) else {}
+        conflicts = safe_int(attention.get("closed_history_conflicts"))
+        cancelled = safe_int(parsed.excluded_counts.get("cancelled"))
+        excluded = sum(
+            safe_int(value)
+            for reason, value in parsed.excluded_counts.items()
+            if reason != "cancelled"
+        )
+        detail = (
+            f"publication_{'enabled' if publication else 'disabled'}_ledger_ok_"
+            f"rows_{parsed.rows_seen}_excluded_{excluded}_cancelled_{cancelled}_"
+            f"deferred_dates_{len(deferred_dates)}_"
+            f"active_{'yes' if active else 'no'}_"
+            f"schema_{'ok' if schema_ok else 'missing'}_public_rows_{len(public_rows)}_"
+            f"closed_conflicts_{conflicts}"
+        )
+        status = "fail" if not schema_ok else "warn" if conflicts or excluded else "ok"
+        return status, detail
+    except attention_ledger.AttentionError as exc:
+        public_hazard = exc.reason.startswith("public_attention")
+        return "fail" if public_hazard or not schema_ok else "warn", (
+            f"publication_{'enabled' if publication else 'disabled'}_ledger_{exc.reason}_"
+            f"schema_{'ok' if schema_ok else 'missing'}"
+        )
 
 
 def _disk_status(project_root: Path, state_root: Path) -> tuple[str, str, dict[str, Any]]:
@@ -575,7 +651,7 @@ def _machine_manifest_status(project_root: Path) -> tuple[str, str]:
             invalid += 1
             continue
         invalid += int(digest != entry.get("sha256") or rows != safe_int(entry.get("rows"), -1))
-    expected = {"projects", "sessions", "days", "rounds", "specs", "tests", "publications", "incidents", "metrics"}
+    expected = {"projects", "sessions", "days", "attention_days", "rounds", "specs", "tests", "publications", "incidents", "metrics"}
     observed = {str(entry.get("dataset")) for entry in datasets if isinstance(entry, dict)}
     status = "ok" if observed == expected and invalid == 0 else "fail"
     return status, f"datasets_{len(datasets)}_invalid_{invalid}"
@@ -618,6 +694,7 @@ def run_doctor(
     state_root: Path,
     now: dt.datetime,
     source_meta: dict[str, Any] | None = None,
+    current_attention: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     """Return a sanitized, deterministic self-check for text and envelope use."""
     now = now.astimezone(dt.timezone.utc)
@@ -642,6 +719,12 @@ def run_doctor(
     pages_status, pages_detail = _pages_status(state_root)
     add("pages", pages_status, pages_detail)
     add("claude_usage_capture", *_claude_usage_capture_status(config, state_root, now))
+    add(
+        "attention",
+        *_attention_status(
+            config, project_root, state_root, now, current_attention=current_attention
+        ),
+    )
     cron_status, cron_detail = _cron_status()
     add("scheduler", cron_status, cron_detail)
     task_status, task_detail = _windows_task_status()

@@ -3,38 +3,38 @@
     {
       "coverage": {
         "from": "2026-02-28T12:19:02+00:00",
-        "to": "2026-08-20T18:34:37+00:00"
+        "to": "2026-08-21T12:05:47+00:00"
       },
       "dataset": "projects",
       "path": "data/machine/projects.jsonl",
-      "rows": 12,
+      "rows": 13,
       "schema": "data/schema/projects.schema.json",
       "semantics": "One public project identity or bulk bucket with lifetime totals and per-OS coverage.",
-      "sha256": "a377457f5e36b4c40b1e7dbaf96454ea6f27073f55bc283695571f5ac639d55a"
+      "sha256": "cb1ed04eb41010756802e2850571cca6a6c228f59bd46bf1e7dd73ac6f9e63ee"
     },
     {
       "coverage": {
         "from": "2026-02-28T12:19:02+00:00",
-        "to": "2026-08-20T18:34:37+00:00"
+        "to": "2026-08-21T12:05:47+00:00"
       },
       "dataset": "sessions",
       "path": "data/machine/sessions.jsonl",
-      "rows": 9800,
+      "rows": 9806,
       "schema": "data/schema/sessions.schema.json",
       "semantics": "One provider session after cross-source event deduplication; working directories are excluded.",
-      "sha256": "011de6bb92046641858017b6964cbb51bc7c062331b69f1872fbb425592405ac"
+      "sha256": "d062fd9192fcdb3f5123cf530f735cf6eac43596abda481777676c7ee01d0720"
     },
     {
       "coverage": {
         "from": "2026-02-28",
-        "to": "2026-08-20"
+        "to": "2026-08-21"
       },
       "dataset": "days",
       "path": "data/machine/days.jsonl",
-      "rows": 204,
+      "rows": 206,
       "schema": "data/schema/days.schema.json",
       "semantics": "UTC daily usage by public project identity, vendor, and host operating system.",
-      "sha256": "1f2d5e571eb3b20840089e68176c42981cc04d81a3ae58cd2c91c8588a61126d"
+      "sha256": "8ea6912293b3dc97afce0b19419a5360cf01c7341f5335e630437aef749265df"
     },
     {
       "coverage": {
@@ -101,14 +101,26 @@
         "from": null,
         "to": null
       },
+      "dataset": "attention_days",
+      "path": "data/machine/attention_days.jsonl",
+      "rows": 0,
+      "schema": "data/schema/attention_days.schema.json",
+      "semantics": "Explicitly opted-in UTC operator-timer aggregates by stable projects.project_code; completeness depends on operator timer use, and absent rows are not observed zero attention.",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "coverage": {
+        "from": null,
+        "to": null
+      },
       "dataset": "metrics",
       "path": "data/machine/metrics.jsonl",
-      "rows": 44,
+      "rows": 56,
       "schema": "data/schema/metrics.schema.json",
       "semantics": "Definitions, exact derivations, sources, caveats, units, and page-versus-machine surface decisions.",
-      "sha256": "39694ccc2bbdb15eab59398af964934bc819c46c6a7a227c26c22861569959bc"
+      "sha256": "e776ee4cb98d06d9a1736639bf8643b11df306b726a045c4c93be684f13ccc0b"
     }
   ],
-  "generated_at": "2026-08-20T22:47:36+00:00",
+  "generated_at": "2026-08-21T12:05:17+00:00",
   "schema_version": 1
 }

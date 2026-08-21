@@ -43,6 +43,15 @@ CAPTURE_STATUSES = {
 }
 
 
+def valid_max_cache_age_seconds(value: Any = DEFAULT_MAX_CACHE_AGE_SECONDS) -> float | None:
+    """Return the one supported Claude cache-freshness threshold, or null."""
+    try:
+        seconds = float(value)
+    except (TypeError, ValueError, OverflowError):
+        return None
+    return seconds if math.isfinite(seconds) and 60 <= seconds <= 3600 else None
+
+
 def _iso(value: dt.datetime) -> str:
     return value.astimezone(dt.timezone.utc).isoformat()
 
@@ -271,12 +280,12 @@ def capture(
     max_age = config.get("max_cache_age_seconds", DEFAULT_MAX_CACHE_AGE_SECONDS)
     try:
         timeout_seconds = float(timeout)
-        max_age_seconds = float(max_age)
     except (TypeError, ValueError, OverflowError):
         return {"status": "automatic_config_invalid", "attempted_at": _iso(now)}
+    max_age_seconds = valid_max_cache_age_seconds(max_age)
     if not math.isfinite(timeout_seconds) or not 5 <= timeout_seconds <= 120:
         return {"status": "automatic_config_invalid", "attempted_at": _iso(now)}
-    if not math.isfinite(max_age_seconds) or not 60 <= max_age_seconds <= 3600:
+    if max_age_seconds is None:
         return {"status": "automatic_config_invalid", "attempted_at": _iso(now)}
     cache_text = str(config.get("cache_path") or "").strip()
     cache_path = Path(cache_text).expanduser() if cache_text else Path.home() / ".claude.json"

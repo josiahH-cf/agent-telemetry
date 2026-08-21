@@ -25,8 +25,8 @@ Use the surface that matches the question:
 - The [public machine manifest](https://josiahh-cf.github.io/agent-telemetry/data/machine/MANIFEST.json)
   is the catalog for the complete public tier. It names each JSONL path, schema,
   row count, coverage bound, semantics, and SHA-256. The public datasets are
-  `projects`, `sessions`, `days`, `rounds`, `specs`, `tests`, `publications`,
-  `incidents`, and `metrics`; schemas live under `data/schema/`.
+  `projects`, `sessions`, `days`, `attention_days`, `rounds`, `specs`, `tests`,
+  `publications`, `incidents`, and `metrics`; schemas live under `data/schema/`.
 - The [metric catalog](data/machine/metrics.jsonl) is the only authority for a
   metric's stable id, display label, definition, exact derivation, source,
   caveats, unit, and `page` versus `machine-only` surface decision. Dashboard
@@ -45,6 +45,11 @@ hard-coding the current list.
 ### Join keys and executed example
 
 - `projects.project_id` joins `sessions.project_id` and `days.project_id`.
+- `projects.project_code` joins `attention_days.project_id`; the attention key
+  stays stable when an approved `public_label` changes and retains the code's
+  existing anonymous-or-explicitly-approved public status. These rows are
+  explicitly opted-in UTC timer aggregates, and missing rows are not observed
+  zero attention.
 - `rounds.spec_id` joins `specs.spec_id`; `rounds.round_id` is unique, and
   `round_number` is numeric.
 - `sessions.session_id` is a one-way public identifier, not a provider UUID.
@@ -119,6 +124,13 @@ PY
 - Governed-round duration is verdict time minus dispatch time for the same row
   and round. It includes queue idle; invalid or extreme deltas are counted as
   anomalies under the catalog's stated clamp.
+- Recorded operator attention comes only from the content-free local timer.
+  Session spans, prompts, response latency, agent runtime, and inactivity never
+  backfill it. Mode classifications are explicit, transitions are counts rather
+  than fixed cognitive penalties, and completeness depends on timer use.
+- Provider capacity is point-in-time and independent of historical windows.
+  A reported reset and the snapshot observation time are distinct from page
+  generation and collection cadence; retained-last-good values are not current.
 - Usage volume cannot establish prompt content, code quality, developer
   productivity, causal model superiority, or an invoice. Outcome metrics apply
   only where an explicit outcome adapter supplies evidence.
@@ -259,6 +271,36 @@ python3 collect.py --record-claude-usage \
 The collector never calls the quota endpoint directly or handles Claude
 credentials; the installed authenticated CLI owns that request. Do not replace
 this with terminal scraping or direct access to undocumented endpoints.
+
+**Recorded attention.** The local content-free timer is:
+
+```bash
+python3 tools/attention.py start --project-id PROJECT_ID --mode MODE
+python3 tools/attention.py status
+python3 tools/attention.py stop
+```
+
+Modes are `plan`, `guide`, `review`, `rework`, and `direct`. One timer may be
+active. `cancel --acknowledge-cancel` appends cancelled evidence rather than
+silently deleting it. The raw ledger and active state remain restricted under
+the telemetry state directory. Set
+`attention.publish_attention_aggregates` to `true` only in ignored
+`sources.local.json` to publish content-free daily aggregates; the default is
+false. Closed published attention rows are immutable, and dates touched by an
+active cross-midnight timer are deferred until it stops or is cancelled. A
+daily attention row is published only after its UTC date closes, so the current
+UTC date remains unavailable rather than becoming a partial row that later
+needs mutation.
+Turning publication off stops new page exposure but never erases closed rows
+that were already public. A never-enabled installation has a zero-row dataset.
+Because the current date is withheld, bounded drop-off metrics use the latest
+complete equal-length attention window and display its exact UTC dates.
+
+Mode definitions are fixed: `plan` decides scope, approach, or sequencing;
+`guide` prompts, clarifies, redirects, or approves agent work; `review` reads,
+checks, tests, or judges agent output; `rework` corrects or redoes work caused by
+an unsatisfactory attempt; and `direct` personally implements or operates
+without delegating that interval.
 
 **Tracked manifest.** Do not hand-edit generated `data/machine/MANIFEST.json`.
 Classify a new source, test, document, hook, or schema in

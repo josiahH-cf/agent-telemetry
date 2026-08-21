@@ -37,6 +37,7 @@ import stability as telemetry_stability
 import observatory as global_observatory
 import metric_catalog
 import claude_usage_capture
+from tools import attention as attention_ledger
 
 
 SCHEMA_VERSION = 2
@@ -73,6 +74,32 @@ MAX_ROUND_SECONDS = 48 * 60 * 60
 MAX_ROW_SECONDS = 30 * 24 * 60 * 60
 PAGES_URL = "https://josiahh-cf.github.io/agent-telemetry/"
 CLAUDE_USAGE_CAPTURE_FILE = "claude-usage-capture.json"
+CLAUDE_QUOTA_DEFAULT_MAX_AGE_SECONDS = claude_usage_capture.DEFAULT_MAX_CACHE_AGE_SECONDS
+OPENAI_QUOTA_MAX_AGE_SECONDS = 2 * 60 * 60
+QUOTA_CAPTURE_FAILURE = {
+    "automatic_cli_absent",
+    "automatic_command_failed",
+    "automatic_timeout",
+    "automatic_output_limit",
+    "automatic_inference_guard",
+    "automatic_cache_unavailable",
+    "automatic_cached_fallback",
+    "automatic_config_invalid",
+    "automatic_unknown",
+    "source_timeout",
+    "source_timeout_cached_last_good",
+    "source_partial_cached_last_good",
+    "source_error",
+}
+
+
+def configured_claude_quota_max_age_seconds(config: dict[str, Any]) -> float:
+    """Use the capture contract as the collector's sole Claude freshness rule."""
+    capture = config.get("claude_usage_capture") if isinstance(config.get("claude_usage_capture"), dict) else {}
+    value = claude_usage_capture.valid_max_cache_age_seconds(
+        capture.get("max_cache_age_seconds", CLAUDE_QUOTA_DEFAULT_MAX_AGE_SECONDS)
+    )
+    return value if value is not None else CLAUDE_QUOTA_DEFAULT_MAX_AGE_SECONDS
 
 
 class SourceTimeout(RuntimeError):
@@ -1193,7 +1220,18 @@ def adapt_provider_usage(root: Path, now: dt.datetime) -> dict[str, Any]:
         usage = raw.get("usage") if isinstance(raw.get("usage"), dict) else {}
         remaining = raw.get("remaining") if isinstance(raw.get("remaining"), dict) else {}
         quota = raw.get("quota") if isinstance(raw.get("quota"), dict) else {}
-        windows = [window for name in ("primary", "secondary") if (window := sanitize_quota_window(name, quota.get(name))) is not None]
+        candidates = [
+            str(name)
+            for name, value in quota.items()
+            if isinstance(value, dict) and SAFE_IDENTIFIER_RE.fullmatch(str(name))
+        ]
+        window_names = [name for name in ("primary", "secondary") if name in candidates]
+        window_names.extend(sorted(name for name in candidates if name not in {"primary", "secondary"}))
+        windows = [
+            window
+            for name in window_names
+            if (window := sanitize_quota_window(name, quota.get(name))) is not None
+        ]
         providers.append(
             {
                 "provider": safe_identifier(raw.get("provider")),
@@ -1499,7 +1537,11 @@ def capture_local_claude_usage(
     return result
 
 
-def read_local_claude_usage(cache_root: Path, now: dt.datetime | None = None) -> dict[str, Any] | None:
+def read_local_claude_usage(
+    cache_root: Path,
+    now: dt.datetime | None = None,
+    max_age_seconds: float = CLAUDE_QUOTA_DEFAULT_MAX_AGE_SECONDS,
+) -> dict[str, Any] | None:
     """Read a normalized, machine-local snapshot captured from Claude `/usage`."""
     now = now or utc_now()
     path = cache_root / "claude-usage.json"
@@ -1532,7 +1574,7 @@ def read_local_claude_usage(cache_root: Path, now: dt.datetime | None = None) ->
         return None
     age_hours = max(0.0, (now - observed).total_seconds() / 3600)
     resets = [parse_timestamp(item.get("resets_at")) for item in windows if item.get("resets_at")]
-    stale = bool(resets and all(item and item <= now for item in resets)) or age_hours > 168
+    stale = bool(resets and all(item and item <= now for item in resets)) or age_hours > max(0.0, max_age_seconds) / 3600
     remaining = min(float(item["remaining_percent"]) for item in windows)
     capture = read_claude_usage_capture_state(cache_root)
     default_capture = "manual_recorded" if value.get("source") == "claude_slash_usage_manual_capture" else "automatic_success"
@@ -1597,10 +1639,143 @@ def record_local_claude_usage(
     return value
 
 
-def build_usage_left(provider: dict[str, Any], usage_result: dict[str, Any]) -> dict[str, Any]:
+def quota_window_label(provider: str, window: str) -> str:
+    labels = {
+        ("anthropic", "five_hour"): "Five-hour window",
+        ("anthropic", "seven_day"): "Seven-day window",
+        ("openai", "primary"): "Primary window",
+        ("openai", "secondary"): "Secondary window",
+    }
+    return labels.get((provider, window), f"{window.replace('_', ' ').strip().title()} window")
+
+
+def normalize_quota_provider(
+    raw: dict[str, Any] | None,
+    *,
+    provider: str,
+    now: dt.datetime,
+    max_age_seconds: float,
+) -> dict[str, Any]:
+    """Allowlist and classify every reported quota window independently."""
+    raw = raw if isinstance(raw, dict) else {}
+    source = safe_identifier(raw.get("source"), "unavailable")
+    capture_status = safe_identifier(raw.get("capture_status"), "observed" if raw else "unavailable")
+    observed = parse_timestamp(raw.get("observed_at"))
+    observed_utc = observed.astimezone(dt.timezone.utc) if observed else None
+    observed_in_future = observed_utc is not None and observed_utc > now
+    age_hours = max(0.0, (now - observed_utc).total_seconds() / 3600) if observed_utc else None
+    freshness_seconds = max(0.0, float(max_age_seconds))
+    fresh_until = observed_utc + dt.timedelta(seconds=freshness_seconds) if observed_utc else None
+    capture_failed = capture_status in QUOTA_CAPTURE_FAILURE
+    windows: list[dict[str, Any]] = []
+    raw_windows = raw.get("quota_windows") if isinstance(raw.get("quota_windows"), list) else []
+    for item in raw_windows:
+        if not isinstance(item, dict):
+            continue
+        window = safe_identifier(item.get("window"), "")
+        remaining = safe_float(item.get("remaining_percent"))
+        used = safe_float(item.get("used_percent"))
+        if remaining is None and used is not None and 0 <= used <= 100:
+            remaining = 100 - used
+        if not window or remaining is None or not 0 <= remaining <= 100:
+            continue
+        if used is not None and not 0 <= used <= 100:
+            continue
+        if observed_utc is None:
+            # A percentage without an observation boundary cannot be proven to
+            # be current or a usable last-good capture.
+            continue
+        reset = parse_timestamp(item.get("resets_at"))
+        reset_utc = reset.astimezone(dt.timezone.utc) if reset else None
+        reset_passed_without_newer_observation = (
+            reset_utc is not None
+            and now >= reset_utc
+            and observed_utc <= reset_utc
+        )
+        window_minutes = safe_int(item.get("window_minutes")) if item.get("window_minutes") is not None else None
+        if window_minutes is not None and window_minutes <= 0:
+            window_minutes = None
+        if observed_in_future:
+            freshness = "stale"
+        elif capture_failed:
+            freshness = "retained_last_good"
+        elif (
+            observed_utc is None
+            or (fresh_until is not None and now >= fresh_until)
+            or reset_passed_without_newer_observation
+        ):
+            freshness = "stale"
+        else:
+            freshness = "available"
+        windows.append(
+            {
+                "provider": provider,
+                "window": window,
+                "display_label": quota_window_label(provider, window),
+                "remaining_percent": rounded(remaining, 2),
+                "used_percent": rounded(used, 2),
+                "window_minutes": window_minutes,
+                "resets_at": iso(reset_utc),
+                "observed_at": iso(observed_utc),
+                "age_hours": rounded(age_hours, 1),
+                "freshness_status": freshness,
+                "capture_status": capture_status,
+                "source": source,
+            }
+        )
+    if windows:
+        statuses = {row["freshness_status"] for row in windows}
+        quota_status = "retained_last_good" if "retained_last_good" in statuses else "available" if "available" in statuses else "stale"
+        remaining_percent = min(float(row["remaining_percent"]) for row in windows)
+    else:
+        quota_status = "error" if capture_failed else "unavailable"
+        remaining_percent = None
+    return {
+        "source": source,
+        "provider": provider,
+        "remaining_status": quota_status,
+        "remaining_percent": rounded(remaining_percent, 2),
+        "quota_status": quota_status,
+        "quota_windows": windows,
+        "observed_at": iso(observed_utc),
+        "age_hours": rounded(age_hours, 1),
+        "capture_status": capture_status,
+        "freshness_max_age_hours": rounded(freshness_seconds / 3600, 3),
+    }
+
+
+def build_usage_left(
+    provider: dict[str, Any],
+    usage_result: dict[str, Any],
+    *,
+    now: dt.datetime | None = None,
+    claude_max_age_seconds: float = CLAUDE_QUOTA_DEFAULT_MAX_AGE_SECONDS,
+) -> dict[str, Any]:
+    now = (now or utc_now()).astimezone(dt.timezone.utc)
     snapshot = provider.get("snapshot") if isinstance(provider.get("snapshot"), dict) else {}
     age_hours = snapshot.get("age_hours")
     local_claude = usage_result.get("claude_usage_snapshot") if isinstance(usage_result.get("claude_usage_snapshot"), dict) else None
+
+    sources = usage_result.get("sources") if isinstance(usage_result.get("sources"), dict) else {}
+    openai_source = sources.get("openai_usage") if isinstance(sources.get("openai_usage"), dict) else {}
+    openai_source_status = safe_identifier(openai_source.get("status"), "")
+    openai_skip_reasons = {
+        safe_identifier(item.get("reason"), "")
+        for item in openai_source.get("skips", [])
+        if isinstance(item, dict)
+    }
+    if "source_timeout_cached_last_good" in openai_skip_reasons:
+        openai_capture_status = "source_timeout_cached_last_good"
+    elif openai_source_status == "timeout":
+        openai_capture_status = "source_timeout"
+    elif openai_source_status == "partial" and openai_skip_reasons.intersection(
+        {"source_timeout", "source_unreadable", "cached_source_missing"}
+    ):
+        openai_capture_status = "source_partial_cached_last_good"
+    elif openai_source_status == "error":
+        openai_capture_status = "source_error"
+    else:
+        openai_capture_status = "observed"
     anthropic = local_claude or provider_snapshot_for(provider, {"anthropic", "claude"})
     if anthropic:
         anthropic = dict(anthropic)
@@ -1608,7 +1783,7 @@ def build_usage_left(provider: dict[str, Any], usage_result: dict[str, Any]) -> 
             anthropic.update({
                 "observed_at": snapshot.get("generated_at"),
                 "age_hours": age_hours,
-                "capture_status": "ready_awaiting_slash_usage_snapshot",
+                "capture_status": usage_result.get("claude_capture_status") or "ready_awaiting_slash_usage_snapshot",
             })
     else:
         anthropic = {
@@ -1620,12 +1795,10 @@ def build_usage_left(provider: dict[str, Any], usage_result: dict[str, Any]) -> 
             "quota_windows": [],
             "observed_at": snapshot.get("generated_at"),
             "age_hours": age_hours,
-            "capture_status": "ready_awaiting_slash_usage_snapshot",
+            "capture_status": usage_result.get("claude_capture_status") or "ready_awaiting_slash_usage_snapshot",
         }
     limits = usage_result.get("rate_limits") if isinstance(usage_result.get("rate_limits"), dict) else None
     if limits:
-        observed = parse_timestamp(limits.get("observed_at"))
-        openai_age = max(0.0, (utc_now() - observed).total_seconds() / 3600) if observed else None
         openai = {
             "source": "rollout_token_count",
             "provider": "openai",
@@ -1634,11 +1807,22 @@ def build_usage_left(provider: dict[str, Any], usage_result: dict[str, Any]) -> 
             "quota_status": "available",
             "quota_windows": [
                 {"window": name, **value}
-                for name in ("primary", "secondary")
+                for name in list(
+                    dict.fromkeys(
+                        [key for key in ("primary", "secondary") if isinstance(limits.get(key), dict)]
+                        + sorted(
+                            str(key)
+                            for key, candidate in limits.items()
+                            if key not in {"observed_at", "primary", "secondary"}
+                            and isinstance(candidate, dict)
+                            and SAFE_IDENTIFIER_RE.fullmatch(str(key))
+                        )
+                    )
+                )
                 if isinstance((value := limits.get(name)), dict)
             ],
             "observed_at": limits.get("observed_at"),
-            "age_hours": rounded(openai_age, 1),
+            "capture_status": openai_capture_status,
         }
     else:
         openai = provider_snapshot_for(provider, {"openai", "codex"}) or {
@@ -1649,8 +1833,115 @@ def build_usage_left(provider: dict[str, Any], usage_result: dict[str, Any]) -> 
             "quota_status": "unavailable",
             "quota_windows": [],
         }
-        openai.update({"observed_at": snapshot.get("generated_at"), "age_hours": age_hours})
-    return {"anthropic": anthropic, "openai": openai}
+        openai.update({"observed_at": snapshot.get("generated_at"), "age_hours": age_hours, "capture_status": openai_capture_status})
+    return {
+        "anthropic": normalize_quota_provider(
+            anthropic,
+            provider="anthropic",
+            now=now,
+            max_age_seconds=claude_max_age_seconds,
+        ),
+        "openai": normalize_quota_provider(
+            openai,
+            provider="openai",
+            now=now,
+            max_age_seconds=OPENAI_QUOTA_MAX_AGE_SECONDS,
+        ),
+    }
+
+
+def read_public_attention_rows(path: Path) -> list[dict[str, Any]]:
+    return attention_ledger.read_public_attention_rows(path)
+
+
+def collect_attention_metrics(
+    config: dict[str, Any],
+    project_root: Path,
+    state_root: Path,
+    now: dt.datetime,
+) -> dict[str, Any]:
+    """Isolate the restricted timer source and expose public aggregates only."""
+    attention_config = config.get("attention") if isinstance(config.get("attention"), dict) else {}
+    enabled = attention_ledger.attention_publication_enabled(attention_config)
+    base = {
+        "publication_enabled": enabled,
+        "status": "disabled" if not enabled else "no_records",
+        "finalization_status": "current_date_pending_utc_close" if enabled else "not_applicable",
+        "days": [],
+        "coverage": {"from": None, "to": None},
+        "source": "operator_timer",
+        "completeness": "depends_on_operator_timer_use",
+        "excluded_intervals": {},
+        "closed_history_conflicts": 0,
+        "closed_history_correction_dates": [],
+        "public_history_status": "valid",
+    }
+    existing_path = project_root / "data" / "machine" / "attention_days.jsonl"
+    try:
+        existing = read_public_attention_rows(existing_path)
+    except attention_ledger.AttentionError:
+        return {**base, "status": "error", "public_history_status": "invalid"}
+    current_date = now.astimezone(dt.timezone.utc).date().isoformat()
+    if any(str(row.get("date")) >= current_date for row in existing):
+        return {**base, "status": "error", "public_history_status": "invalid"}
+    if not enabled:
+        # Default-deny keeps the page empty, while already-published closed
+        # rows remain immutable in the additive machine tier.
+        try:
+            project_map = attention_ledger.load_public_project_map(project_root)
+        except attention_ledger.AttentionError:
+            return {**base, "status": "error", "public_history_status": "invalid"}
+        if any(str(row.get("project_id")) not in project_map for row in existing):
+            return {**base, "status": "error", "public_history_status": "invalid"}
+        return base
+    lock_context = contextlib.nullcontext() if os.environ.get("AGENT_TELEMETRY_LOCK_HELD") == "1" else attention_ledger.attention_lock(state_root)
+    try:
+        with lock_context:
+            project_map = attention_ledger.load_public_project_map(project_root)
+            if any(str(row.get("project_id")) not in project_map for row in existing):
+                return {
+                    **base,
+                    "status": "error",
+                    "public_history_status": "invalid",
+                }
+            parsed = attention_ledger.parse_ledger(state_root, project_map, now=now)
+            deferred = attention_ledger.active_deferred_dates(state_root, now=now)
+            candidate = attention_ledger.aggregate_attention_days(parsed.intervals, deferred_dates=deferred)
+            for row in candidate:
+                row["project_id"] = project_map[str(row["project_id"])]
+            # Publish a daily aggregate only after its UTC date closes.  This
+            # removes the possibility that a timer started late in the current
+            # day could ever require rewriting an emitted closed row.
+            candidate = [row for row in candidate if str(row.get("date")) < current_date]
+            rows, conflicts = attention_ledger.merge_immutable_attention_rows(
+                existing,
+                candidate,
+                current_date=current_date,
+            )
+    except (attention_ledger.AttentionError, OSError, ValueError):
+        coverage_days = sorted(str(row.get("date")) for row in existing if isinstance(row.get("date"), str))
+        return {
+            **base,
+            "status": "source_error_retained_last_good" if existing else "error",
+            "days": existing,
+            "coverage": {"from": coverage_days[0] if coverage_days else None, "to": coverage_days[-1] if coverage_days else None},
+        }
+    coverage_days = sorted({str(row["date"]) for row in rows})
+    last_closed_date = (dt.date.fromisoformat(current_date) - dt.timedelta(days=1)).isoformat()
+    return {
+        **base,
+        "status": "available" if rows else "no_records",
+        "days": rows,
+        "coverage": {
+            "from": coverage_days[0] if coverage_days else None,
+            "to": last_closed_date if coverage_days else None,
+        },
+        "excluded_intervals": parsed.excluded_counts,
+        "closed_history_conflicts": len(conflicts),
+        "closed_history_correction_dates": sorted(
+            {str(conflict["date"]) for conflict in conflicts if conflict.get("date")}
+        ),
+    }
 
 
 def build_spec_ledger(
@@ -1902,7 +2193,13 @@ def combine_results(
                 **usage_result.get("machine", {}),
                 "parity": usage_result.get("parity", {}),
                 "prices": usage_result.get("prices", {}),
-                "usage_left": build_usage_left(provider, usage_result),
+                "usage_left": build_usage_left(
+                    provider,
+                    usage_result,
+                    now=now,
+                    claude_max_age_seconds=safe_float(usage_result.get("claude_quota_max_age_seconds"))
+                    or CLAUDE_QUOTA_DEFAULT_MAX_AGE_SECONDS,
+                ),
                 "daily": [],
             },
             "time_v2": usage_result.get("time", {}),
@@ -2218,6 +2515,9 @@ def default_cost_day(day: str, collected_at: str) -> dict[str, Any]:
 
 
 def write_outputs(snapshot: dict[str, Any], project_root: Path) -> list[Path]:
+    attention = snapshot.get("metrics", {}).get("attention", {})
+    if isinstance(attention, dict) and attention.get("public_history_status") == "invalid":
+        raise RuntimeError("attention_history_invalid")
     data_root = project_root / "data"
     history_root = data_root / "history"
     history_root.mkdir(parents=True, exist_ok=True)
@@ -2228,7 +2528,11 @@ def write_outputs(snapshot: dict[str, Any], project_root: Path) -> list[Path]:
     snapshot.pop("_observatory_scan_results", None)
     observatory_state_text = snapshot.pop("_observatory_state_root", None)
     today = snapshot["collection"]["date"]
-    corrections: list[dict[str, str]] = []
+    corrections: list[dict[str, str]] = [
+        {"kind": "coverage_correction", "source": "attention", "date": str(day)}
+        for day in attention.get("closed_history_correction_dates", [])
+        if isinstance(day, str)
+    ] if isinstance(attention, dict) else []
     written: list[Path] = []
 
     for day, candidate in sorted(rollups.items()):
@@ -2703,7 +3007,8 @@ def collect_snapshot(
         results[name] = run_source(name, effective, now, default_timeout)
         if name == "spec_corpus":
             results[name] = spec_corpus_with_last_good(results[name], cache_root, now)
-    local_claude_usage = read_local_claude_usage(cache_root, now)
+    claude_max_age_seconds = configured_claude_quota_max_age_seconds(config)
+    local_claude_usage = read_local_claude_usage(cache_root, now, claude_max_age_seconds)
     usage_result: dict[str, Any] = {}
     usage_enabled = {
         name: bool(isinstance(source_configs.get(name), dict) and source_configs[name].get("enabled"))
@@ -2740,14 +3045,30 @@ def collect_snapshot(
             for name in USAGE_SOURCE_NAMES:
                 if usage_enabled[name]:
                     results[name] = unavailable_result("error", "usage_adapter_error")
-            usage_result = {}
+            usage_result = {
+                "sources": {
+                    name: results[name].get("meta", {})
+                    for name in USAGE_SOURCE_NAMES
+                    if usage_enabled[name]
+                }
+            }
     elif any(usage_enabled.values()):
         for name in USAGE_SOURCE_NAMES:
             if usage_enabled[name]:
                 results[name] = unavailable_result("absent", "scope_root_unconfigured")
     if local_claude_usage:
         usage_result["claude_usage_snapshot"] = local_claude_usage
+    capture_state = read_claude_usage_capture_state(cache_root)
+    if capture_state.get("status"):
+        usage_result["claude_capture_status"] = capture_state["status"]
+    usage_result["claude_quota_max_age_seconds"] = claude_max_age_seconds
     snapshot = combine_results(results, now, usage_result, read_publish_state(cache_root))
+    snapshot.setdefault("metrics", {})["attention"] = collect_attention_metrics(
+        config,
+        project_root,
+        cache_root,
+        now,
+    )
     observatory_summary, observatory_roots = global_observatory.collect_observatory(
         config,
         project_root,
@@ -2764,6 +3085,7 @@ def collect_snapshot(
         cache_root,
         now,
         snapshot.get("sources", {}),
+        snapshot.get("metrics", {}).get("attention"),
     )
     accepted_features = safe_int(snapshot.get("metrics", {}).get("worth", {}).get("accepted_features"))
     snapshot.setdefault("metrics", {}).setdefault("worth", {})["subscription_amortization"] = read_subscription_amortization(

@@ -296,6 +296,22 @@ class StoreTests(unittest.TestCase):
             snapshot = loop_snapshot()
             snapshot.update({"generated_at": observatory.iso(now), "collection": {"date": "2026-08-20"}})
             snapshot["metrics"]["observatory"] = summary  # type: ignore[index]
+            snapshot["metrics"]["attention"] = {  # type: ignore[index]
+                "publication_enabled": True,
+                "status": "available",
+                "days": [
+                    {
+                        "schema_version": 1,
+                        "date": "2026-08-19",
+                        "project_id": "ad-hoc",
+                        "attention_seconds": 90,
+                        "interval_segments": 1,
+                        "mode_seconds": {"plan": 0, "guide": 30, "review": 60, "rework": 0, "direct": 0},
+                        "transitions_in": 0,
+                        "source": "operator_timer",
+                    }
+                ],
+            }
             output_root = root / "output"
             (output_root / "data" / "schema").mkdir(parents=True)
             for schema in (PROJECT_ROOT / "data" / "schema").glob("*.schema.json"):
@@ -311,6 +327,7 @@ class StoreTests(unittest.TestCase):
                 self.assertEqual([error for row in rows for error in observatory.validate_record(row, schema)], [])
             machine = output_root / "data" / "machine"
             projects = {row["project_id"]: row for row in map(json.loads, (machine / "projects.jsonl").read_text().splitlines())}
+            attention_days = [row for row in map(json.loads, (machine / "attention_days.jsonl").read_text().splitlines())]
             sessions = [row for row in map(json.loads, (machine / "sessions.jsonl").read_text().splitlines()) if row["project_id"] in projects]
             public_sessions = (machine / "sessions.jsonl").read_text()
             local_sessions = (Path(str(config["cache_root"])) / "machine" / "sessions.jsonl").read_text()
@@ -318,11 +335,136 @@ class StoreTests(unittest.TestCase):
             store_mode = stat.S_IMODE((Path(str(config["cache_root"])) / observatory.STORE_NAME).stat().st_mode)
             local_mode = stat.S_IMODE((Path(str(config["cache_root"])) / "machine" / "sessions.jsonl").stat().st_mode)
         self.assertEqual(len(sessions), sum(item["sessions"] for item in projects.values()))
+        self.assertEqual(attention_days[0]["attention_seconds"], 90)
+        self.assertIn(attention_days[0]["project_id"], {row["project_code"] for row in projects.values()})
+        self.assertEqual(next(row for row in manifest["datasets"] if row["dataset"] == "attention_days")["rows"], 1)
+        self.assertTrue(snapshot["metrics"]["observatory"]["reconciliation"]["store_envelope_machine"]["attention_seconds"])  # type: ignore[index]
         self.assertEqual(snapshot["metrics"]["observatory"]["reconciliation"]["status"], "ok")  # type: ignore[index]
         self.assertTrue(any(path.name == "MANIFEST.json" for path in written))
         self.assertNotIn("raw_cwd", public_sessions)
         self.assertIn("raw_cwd", local_sessions)
         self.assertEqual((state_mode, store_mode, local_mode), (0o700, 0o600, 0o600))
+
+    def test_disabled_snapshot_cannot_write_poisoned_attention_rows(self) -> None:
+        with tempfile.TemporaryDirectory(dir="/tmp") as temporary:
+            root = Path(temporary)
+            config = fixture_config(root)
+            self.populate(root, config)
+            now = dt.datetime(2026, 8, 20, 3, tzinfo=UTC)
+            summary, _ = observatory.collect_observatory(config, PROJECT_ROOT, loop_snapshot(), now)
+            snapshot = loop_snapshot()
+            snapshot.update({"generated_at": observatory.iso(now), "collection": {"date": "2026-08-20"}})
+            snapshot["metrics"]["observatory"] = summary  # type: ignore[index]
+            snapshot["metrics"]["attention"] = {  # type: ignore[index]
+                "publication_enabled": False,
+                "status": "disabled",
+                "days": [{"event_id": "must-not-publish", "path": "/private"}],
+            }
+            output_root = root / "output"
+            (output_root / "data" / "schema").mkdir(parents=True)
+            for schema in (PROJECT_ROOT / "data" / "schema").glob("*.schema.json"):
+                (output_root / "data" / "schema" / schema.name).write_bytes(schema.read_bytes())
+            observatory.write_machine_layers(output_root, Path(str(config["cache_root"])), snapshot)
+            attention_path = output_root / "data" / "machine" / "attention_days.jsonl"
+            attention_payload = attention_path.read_text(encoding="utf-8")
+            manifest = json.loads((output_root / "data" / "machine" / "MANIFEST.json").read_text())
+        self.assertEqual(attention_payload, "")
+        entry = next(row for row in manifest["datasets"] if row["dataset"] == "attention_days")
+        self.assertEqual(entry["rows"], 0)
+        self.assertIn("completeness depends on operator timer use", entry["semantics"])
+
+    def test_machine_writer_preserves_exact_closed_attention_line_bytes(self) -> None:
+        with tempfile.TemporaryDirectory(dir="/tmp") as temporary:
+            root = Path(temporary)
+            output_root = root / "output"
+            state = root / "state"
+            connection = observatory.connect_store(state / observatory.STORE_NAME)
+            connection.close()
+            (output_root / "data" / "schema").mkdir(parents=True)
+            for schema in (PROJECT_ROOT / "data" / "schema").glob("*.schema.json"):
+                (output_root / "data" / "schema" / schema.name).write_bytes(schema.read_bytes())
+            (output_root / "projects.json").write_text(
+                json.dumps({"projects": [{"project_id": "proj-safe", "public_label": "Approved project Ω"}]}),
+                encoding="utf-8",
+            )
+            existing = {
+                "source": "operator_timer",
+                "transitions_in": 0,
+                "mode_seconds": {"direct": 0, "rework": 0, "review": 0, "guide": 0, "plan": 60},
+                "interval_segments": 1,
+                "attention_seconds": 60,
+                "project_id": "proj-safe",
+                "date": "2026-08-18",
+                "schema_version": 1,
+            }
+            existing_line = json.dumps(existing, ensure_ascii=True, separators=(", ", ": ")) + "\n"
+            machine_root = output_root / "data" / "machine"
+            machine_root.mkdir()
+            attention_path = machine_root / "attention_days.jsonl"
+            attention_path.write_text(existing_line, encoding="utf-8")
+            added = {
+                "schema_version": 1,
+                "date": "2026-08-19",
+                "project_id": "proj-safe",
+                "attention_seconds": 120,
+                "interval_segments": 1,
+                "mode_seconds": {"plan": 0, "guide": 120, "review": 0, "rework": 0, "direct": 0},
+                "transitions_in": 0,
+                "source": "operator_timer",
+            }
+            snapshot = {
+                "generated_at": "2026-08-20T12:00:00+00:00",
+                "collection": {"date": "2026-08-20"},
+                "metrics": {
+                    "observatory": {
+                        "totals": {"sessions": 0, "tokens": 0, "cost_usd": 0, "unpriced_tokens": 0}
+                    },
+                    "attention": {
+                        "publication_enabled": True,
+                        "status": "available",
+                        "days": [existing, added],
+                    },
+                },
+            }
+            observatory.write_machine_layers(output_root, state, snapshot)
+            lines = attention_path.read_text(encoding="utf-8").splitlines(keepends=True)
+            snapshot["metrics"]["attention"] = {  # type: ignore[index]
+                "publication_enabled": False,
+                "status": "disabled",
+                "days": [{"event_id": "must-not-publish", "path": "/private"}],
+            }
+            observatory.write_machine_layers(output_root, state, snapshot)
+            disabled_lines = attention_path.read_text(encoding="utf-8").splitlines(keepends=True)
+        self.assertEqual(lines[0], existing_line)
+        self.assertEqual(json.loads(lines[1]), added)
+        self.assertEqual(disabled_lines, lines)
+
+    def test_registry_only_project_preserves_approved_human_label_join_key(self) -> None:
+        with tempfile.TemporaryDirectory(dir="/tmp") as temporary:
+            root = Path(temporary)
+            (root / "projects.json").write_text(
+                json.dumps({"projects": [{"project_id": "proj-safe", "public_label": "Approved project Ω"}]}),
+                encoding="utf-8",
+            )
+            public = {name: [] for name in observatory.DATASET_NAMES}
+            local = {name: [] for name in observatory.DATASET_NAMES}
+            observatory.add_registry_only_projects(root, public, local)
+        self.assertEqual(public["projects"][0]["project_id"], "Approved project Ω")
+        self.assertEqual(local["projects"][0]["internal_project_id"], "proj-safe")
+
+    def test_attention_row_invariants_reject_private_fields_and_bad_mode_sum(self) -> None:
+        row = {
+            "schema_version": 1,
+            "date": "2026-08-20",
+            "project_id": "proj-safe",
+            "attention_seconds": 9,
+            "interval_segments": 1,
+            "mode_seconds": {"plan": 2, "guide": 2, "review": 2, "rework": 2, "direct": 2},
+            "transitions_in": 0,
+            "source": "operator_timer",
+            "event_id": "must-not-publish",
+        }
+        self.assertEqual(set(observatory.validate_attention_row(row)), {"attention_mode_sum", "attention_private_field"})
 
 
 if __name__ == "__main__":

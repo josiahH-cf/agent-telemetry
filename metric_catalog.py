@@ -11,6 +11,7 @@ from __future__ import annotations
 import datetime as dt
 import json
 import math
+import re
 import statistics
 from collections import defaultdict
 from typing import Any, Iterable
@@ -22,6 +23,9 @@ PAGE_TARGET_BYTES = 500_000
 PAGE_HARD_LIMIT_BYTES = 1_000_000
 TOP_N = 6
 MAX_TREND_POINTS = 48
+MAX_CAPACITY_WINDOWS_PER_PROVIDER = 2
+ATTENTION_MODES = ("plan", "guide", "review", "rework", "direct")
+EVIDENCE_CLASSES = frozenset({"observed", "derived", "self-reported", "scenario"})
 WINDOW_DAYS = (7, 30, 90)
 PRIOR_DELTA_METRICS = {
     "window_tokens",
@@ -42,6 +46,11 @@ PRIOR_DELTA_METRICS = {
 }
 
 
+def _public_project_key(value: Any) -> str:
+    """Preserve the existing machine-tier project join-key contract."""
+    return value if isinstance(value, str) and value else ""
+
+
 def _metric(
     metric_id: str,
     label: str,
@@ -51,10 +60,13 @@ def _metric(
     caveats: str,
     unit: str,
     surface: str = "page",
+    evidence_class: str | None = None,
 ) -> dict[str, Any]:
+    if evidence_class is not None and evidence_class not in EVIDENCE_CLASSES:
+        raise ValueError(f"unsupported_evidence_class:{evidence_class}")
     if metric_id in PRIOR_DELTA_METRICS:
         caveats += " The prior delta is unavailable for all-time or when a complete preceding equal-length window falls before that metric's observed source coverage."
-    return {
+    row = {
         "schema_version": CATALOG_SCHEMA_VERSION,
         "metric_id": metric_id,
         "display_label": label,
@@ -65,6 +77,9 @@ def _metric(
         "unit": unit,
         "surface": surface,
     }
+    if evidence_class is not None:
+        row["evidence_class"] = evidence_class
+    return row
 
 
 CATALOG: tuple[dict[str, Any], ...] = (
@@ -393,24 +408,162 @@ CATALOG: tuple[dict[str, Any], ...] = (
         "records",
     ),
     _metric(
+        "recorded_operator_attention_hours",
+        "Recorded operator attention",
+        "Operator attention explicitly captured by the content-free local timer in the selected inclusive UTC window.",
+        "SUM attention_days.attention_seconds / 3600 WHERE date is inside the inclusive selected UTC window; null when the window has no recorded attention rows.",
+        ["attention_days"],
+        "Recorded is not total human work: completeness depends on the operator starting and stopping the timer, and no missing time is inferred.",
+        "hours",
+        "page",
+        "observed",
+    ),
+    _metric(
+        "recorded_stewardship_attention_hours",
+        "Recorded agent-stewardship attention",
+        "Recorded attention explicitly classified as guiding, reviewing, or reworking agent work.",
+        "SUM attention_days.mode_seconds.guide + review + rework / 3600 inside the inclusive selected UTC window; plan and direct modes are excluded.",
+        ["attention_days"],
+        "This is deterministic arithmetic over explicit operator mode choices, not automatically detected effort or cognitive workload.",
+        "hours",
+        "page",
+        "derived",
+    ),
+    _metric(
+        "recorded_rework_attention_hours",
+        "Recorded rework attention",
+        "Recorded attention explicitly classified as correcting or redoing an unsatisfactory attempt.",
+        "SUM attention_days.mode_seconds.rework / 3600 inside the inclusive selected UTC window; null when the window has no recorded attention rows.",
+        ["attention_days"],
+        "The mode is selected by the operator; it is not inferred from agent behavior, elapsed time, or outcome quality.",
+        "hours",
+        "page",
+        "derived",
+    ),
+    _metric(
+        "recorded_rework_share",
+        "Recorded rework share",
+        "Share of all recorded attention in the selected window classified as rework.",
+        "SUM attention_days.mode_seconds.rework / SUM attention_days.attention_seconds inside the inclusive selected UTC window; null when the denominator is zero or absent.",
+        ["attention_days"],
+        "This is a composition of recorded timer intervals, not a project-quality or productivity score.",
+        "ratio",
+        "page",
+        "derived",
+    ),
+    _metric(
+        "recorded_project_transitions",
+        "Recorded project transitions",
+        "Transitions into a different project between adjacent valid recorded attention segments.",
+        "For valid completed nonoverlapping intervals, split at UTC midnight, reset adjacency on each UTC date, sort segments chronologically, and increment the destination project's transitions_in when adjacent project_id values differ; then SUM transitions_in inside the inclusive selected UTC window, or null when no attention row exists.",
+        ["attention_days"],
+        "This is a count, not a fixed time or cognitive penalty; gaps create no additional transitions.",
+        "transitions",
+        "page",
+        "derived",
+    ),
+    _metric(
+        "attention_top_project_share",
+        "Top-project attention share",
+        "Concentration of recorded attention in the selected window's most-attended project.",
+        "MAX per-project attention_seconds / SUM attention_days.attention_seconds inside the inclusive selected UTC window; null when no attention is recorded.",
+        ["attention_days"],
+        "Concentration does not establish quality, worth, harm, neglect, or the absence of unrecorded work.",
+        "ratio",
+        "page",
+        "derived",
+    ),
+    _metric(
+        "recorded_attention_dropoff_projects",
+        "Previously attended projects with no recorded attention.",
+        "Projects with recorded attention in the immediately preceding equal UTC window and none in the latest complete attention comparison window.",
+        "For 7-, 30-, and 90-day views, use the latest complete equal-length attention window (ending on the selected date, or the prior UTC date while current-date rows await closure), then COUNT DISTINCT project_id values in its immediately preceding equal window that are absent from that complete window; null for all-time, stale coverage, or incomplete prior coverage.",
+        ["attention_days"],
+        "No current recorded interval does not prove no work, no agent progress, harm, failure, or neglect. Daily attention rows finalize only after UTC date closure, so the count is provisional through the displayed attention coverage bound and may change after the current date closes.",
+        "projects",
+        "page",
+        "derived",
+    ),
+    _metric(
+        "attention_mode_composition",
+        "Recorded attention composition",
+        "Fixed plan, guide, review, rework, and direct recorded-attention totals and shares.",
+        "SUM each of the five attention_days.mode_seconds values inside the inclusive selected UTC window; divide each by total recorded attention for shares, which are null when no attention is recorded.",
+        ["attention_days"],
+        "Modes are explicit operator classifications and remain unlike evidence; they are never collapsed into a productivity score.",
+        "composition",
+        "page",
+        "derived",
+    ),
+    _metric(
+        "attention_project_ledger",
+        "Attention and cost resource ledger",
+        "A bounded per-project ledger that keeps recorded human attention and API-list-price-equivalent cost in separate units.",
+        "Map attention_days.project_id through projects.project_code and map days.project_id through projects.project_id; UNION those stable project codes, aggregate attention modes and transitions from attention_days and exact API-equivalent USD plus unpriced tokens from days; rank by attention_seconds descending then stable project code; show first 6 and an exact other rollup.",
+        ["attention_days", "projects", "days", "prices.json"],
+        "Hours and dollars are never added; API-equivalent dollars are not an invoice, subscriptions are excluded, and no governed-loop outcome is attached without a verified project-to-spec join.",
+        "records",
+        "page",
+        "derived",
+    ),
+    _metric(
+        "scenario_attention_delta_hours",
+        "Scenario attention delta",
+        "Browser-only difference between user-entered counterfactual manual attention and recorded project attention.",
+        "counterfactual_manual_hours - recorded_project_attention_hours; positive means attention returned, negative means additional attention required, and the sign is preserved.",
+        ["attention_days", "data/telemetry.js"],
+        "This counterfactual depends on browser-only assumptions, is blank by default, and is never stored or presented as observed time saved.",
+        "hours",
+        "page",
+        "scenario",
+    ),
+    _metric(
+        "scenario_attention_equivalent_hours",
+        "Scenario attention-equivalent total",
+        "Browser-only attention-equivalent total under exactly one user-selected cash basis.",
+        "recorded_attention_hours + chosen_cash_basis_USD / user_entered_value_of_attention_USD_per_hour; require a positive hourly value and exactly one basis: none, selected-project exact API-equivalent cost, or user-entered actual cash.",
+        ["attention_days", "days", "data/telemetry.js"],
+        "API-equivalent and actual cash are never combined; API-equivalent cost is not an invoice, and the result is a scenario rather than an observation.",
+        "hours",
+        "page",
+        "scenario",
+    ),
+    _metric(
+        "scenario_opportunity_cost_usd",
+        "Scenario opportunity cost",
+        "Browser-only value of explicitly displaced recorded attention under a named next-best alternative.",
+        "displaced_attention_hours = recorded_project_attention_hours x displaced_share_percent / 100; scenario_opportunity_cost_usd = displaced_attention_hours x user_entered_alternative_value_per_hour; require a nonempty alternative name, share from 0 through 100 percent, nonnegative value, and recorded project attention.",
+        ["attention_days", "data/telemetry.js"],
+        "The output depends entirely on browser-only assumptions and must never be ranked, persisted, or described without the Scenario qualifier.",
+        "USD",
+        "page",
+        "scenario",
+    ),
+    _metric(
         "claude_quota_remaining_percent",
         "Claude usage-window remaining",
-        "Latest normalized percentage-only Claude /usage snapshot.",
-        "Run the built-in /usage command in zero-turn print mode, require zero inference tokens/cost, then read only five-hour and seven-day utilization from Claude's structured local cache; use its fetched timestamp, retain last-good on failure, and never infer a missing value.",
-        ["data/telemetry.json"],
-        "Machine-only because this is an account-wide point-in-time subscription limit, not billing; raw command output and account identifiers are never stored.",
+        "Latest normalized vendor-reported remaining percentages for each reported Claude usage window.",
+        "Normalize every reported Claude window independently with remaining percentage, reset, observation age, freshness, capture state, and source; the bounded page selects at most two deterministically, preferring five-hour then seven-day and otherwise shortest then longest duration; never merge windows or infer a provider-wide number.",
+        [
+            "claude_slash_usage_local_snapshot",
+            "provider_usage_snapshot",
+            "data/telemetry.json",
+        ],
+        "This is an account-wide point-in-time capacity observation, not billing or an estimate of remaining messages; raw command output and account identifiers are never stored.",
         "percent",
-        "machine-only",
+        "page",
+        "observed",
     ),
     _metric(
         "openai_quota_remaining_percent",
-        "OpenAI usage-window remaining",
-        "Latest observed OpenAI rate-limit remaining percentage.",
-        "Use the newest honest rate-limit observation and retain its observed_at and source; never fill null with a guess.",
-        ["data/telemetry.json"],
-        "Machine-only detail; this is a point-in-time rollout observation, not a billing balance.",
+        "Codex usage-window remaining",
+        "Latest normalized vendor-reported remaining percentages for each reported Codex/OpenAI usage window.",
+        "Normalize every reported Codex/OpenAI window independently with remaining percentage, reset, duration, observation age, freshness, capture state, and source; the bounded page selects at most two deterministically, preferring primary then secondary and otherwise shortest then longest duration; never merge windows or fill null with a guess.",
+        ["rollout_token_count", "provider_usage_snapshot", "data/telemetry.json"],
+        "This is a point-in-time rollout observation, not a billing balance, invoice, token-to-message estimate, or promise of future availability.",
         "percent",
-        "machine-only",
+        "page",
+        "observed",
     ),
     _metric(
         "subscription_cost_per_accepted",
@@ -499,6 +652,36 @@ def _rounded(value: float, digits: int = 6) -> float:
     return round(value, digits)
 
 
+def _optional_number(value: Any, *, minimum: float | None = None, maximum: float | None = None) -> float | None:
+    if isinstance(value, bool):
+        return None
+    try:
+        result = float(value)
+    except (TypeError, ValueError, OverflowError):
+        return None
+    if not math.isfinite(result) or (minimum is not None and result < minimum) or (maximum is not None and result > maximum):
+        return None
+    return result
+
+
+def _safe_identifier(value: Any, default: str = "unknown") -> str:
+    text = str(value or "").strip()
+    return text if re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9_.:+-]{0,159}", text) else default
+
+
+def _safe_timestamp(value: Any) -> str | None:
+    if not isinstance(value, str) or not value.strip():
+        return None
+    text = value.strip()
+    try:
+        parsed = dt.datetime.fromisoformat(text.replace("Z", "+00:00"))
+    except ValueError:
+        return None
+    if parsed.tzinfo is None:
+        return None
+    return text
+
+
 def _day(value: Any) -> str | None:
     text = str(value or "")
     if len(text) < 10:
@@ -522,6 +705,117 @@ def _day(value: Any) -> str | None:
 
 def _add_days(day: str, amount: int) -> str:
     return (dt.date.fromisoformat(day) + dt.timedelta(days=amount)).isoformat()
+
+
+def _quota_freshness(value: Any) -> str:
+    aliases = {"fresh": "available", "capture_error": "error"}
+    status = aliases.get(_safe_identifier(value, "unavailable").lower(), _safe_identifier(value, "unavailable").lower())
+    return status if status in {"available", "stale", "retained_last_good", "unavailable", "error"} else "unavailable"
+
+
+def _quota_window_label(provider: str, window: str) -> str:
+    labels = {
+        ("anthropic", "five_hour"): "Five-hour",
+        ("anthropic", "seven_day"): "Seven-day",
+        ("openai", "primary"): "Primary",
+        ("openai", "secondary"): "Secondary",
+    }
+    return labels.get((provider, window), window.replace("_", " ").replace("-", " ").strip().title() or "Reported window")
+
+
+def _quota_display_label(value: Any, provider: str, window: str) -> str:
+    text = str(value or "").strip()
+    if text and len(text) <= 80 and re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9 ()/_.+-]*", text):
+        return text
+    return _quota_window_label(provider, window)
+
+
+def _select_quota_windows(provider: str, rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    known_order = {
+        "anthropic": ("five_hour", "seven_day"),
+        "openai": ("primary", "secondary"),
+    }[provider]
+    by_key = {str(row["window"]): row for row in rows}
+    chosen = [by_key[key] for key in known_order if key in by_key][:MAX_CAPACITY_WINDOWS_PER_PROVIDER]
+    remaining = [row for row in rows if row["window"] not in {item["window"] for item in chosen}]
+    remaining.sort(
+        key=lambda row: (
+            row.get("window_minutes") is None,
+            _number(row.get("window_minutes")),
+            str(row.get("window")),
+        )
+    )
+    slots = MAX_CAPACITY_WINDOWS_PER_PROVIDER - len(chosen)
+    if slots >= 2 and len(remaining) > 1:
+        chosen.extend([remaining[0], remaining[-1]])
+    elif slots and remaining:
+        chosen.append(remaining[-1] if len(chosen) == 1 else remaining[0])
+    return chosen[:MAX_CAPACITY_WINDOWS_PER_PROVIDER]
+
+
+def _capacity_now(snapshot: dict[str, Any]) -> dict[str, Any]:
+    metrics = snapshot.get("metrics") if isinstance(snapshot.get("metrics"), dict) else {}
+    cost = metrics.get("cost") if isinstance(metrics.get("cost"), dict) else {}
+    usage_left = cost.get("usage_left") if isinstance(cost.get("usage_left"), dict) else {}
+    providers: list[dict[str, Any]] = []
+    for provider, display_label in (("anthropic", "Claude (Anthropic)"), ("openai", "Codex (OpenAI)")):
+        raw = usage_left.get(provider) if isinstance(usage_left.get(provider), dict) else {}
+        inherited_observed = _safe_timestamp(raw.get("observed_at"))
+        inherited_age = _optional_number(raw.get("age_hours"), minimum=0)
+        inherited_freshness = _quota_freshness(raw.get("freshness_status") or raw.get("quota_status") or raw.get("remaining_status"))
+        inherited_capture = _safe_identifier(raw.get("capture_status"), "unavailable")
+        inherited_source = _safe_identifier(raw.get("source"), "unavailable")
+        normalized: list[dict[str, Any]] = []
+        seen: set[str] = set()
+        raw_windows = raw.get("quota_windows") if isinstance(raw.get("quota_windows"), list) else []
+        for item in raw_windows:
+            if not isinstance(item, dict):
+                continue
+            window = _safe_identifier(item.get("window"), "")
+            if not window or window in seen:
+                continue
+            seen.add(window)
+            remaining = _optional_number(item.get("remaining_percent"), minimum=0, maximum=100)
+            used = _optional_number(item.get("used_percent"), minimum=0, maximum=100)
+            minutes = _optional_number(item.get("window_minutes"), minimum=1)
+            normalized.append(
+                {
+                    "provider": provider,
+                    "window": window,
+                    "display_label": _quota_display_label(item.get("display_label"), provider, window),
+                    "remaining_percent": _rounded(remaining, 2) if remaining is not None else None,
+                    "used_percent": _rounded(used, 2) if used is not None else None,
+                    "window_minutes": int(minutes) if minutes is not None else None,
+                    "resets_at": _safe_timestamp(item.get("resets_at")),
+                    "observed_at": _safe_timestamp(item.get("observed_at")) or inherited_observed,
+                    "age_hours": _rounded(age, 2) if (age := _optional_number(item.get("age_hours"), minimum=0)) is not None else inherited_age,
+                    "freshness_status": _quota_freshness(item.get("freshness_status") or inherited_freshness),
+                    "capture_status": _safe_identifier(item.get("capture_status"), inherited_capture),
+                    "source": _safe_identifier(item.get("source"), inherited_source),
+                }
+            )
+        selected = _select_quota_windows(provider, normalized)
+        providers.append(
+            {
+                "provider": provider,
+                "display_label": display_label,
+                "freshness_status": inherited_freshness,
+                "capture_status": inherited_capture,
+                "source": inherited_source,
+                "observed_at": inherited_observed,
+                "age_hours": _rounded(inherited_age, 2) if inherited_age is not None else None,
+                "freshness_max_age_hours": _rounded(max_age, 3) if (max_age := _optional_number(raw.get("freshness_max_age_hours"), minimum=0)) is not None else None,
+                "reported_window_count": len(normalized),
+                "shown_window_count": len(selected),
+                "additional_windows": max(0, len(normalized) - len(selected)),
+                "windows": selected,
+            }
+        )
+    return {
+        "providers": providers,
+        "provider_count": len(providers),
+        "max_windows_per_provider": MAX_CAPACITY_WINDOWS_PER_PROVIDER,
+    }
 
 
 def _median(values: Iterable[Any]) -> float | None:
@@ -623,6 +917,205 @@ def _usage_days(snapshot: dict[str, Any]) -> tuple[list[dict[str, Any]], dict[st
         if host in {"wsl", "windows"}:
             item[f"{host}_tokens"] += tokens
     return [aggregate[key] for key in sorted(aggregate)], raw_by_day
+
+
+def _attention_source(snapshot: dict[str, Any]) -> dict[str, Any]:
+    metrics = snapshot.get("metrics") if isinstance(snapshot.get("metrics"), dict) else {}
+    value = metrics.get("attention") if isinstance(metrics.get("attention"), dict) else {}
+    coverage = value.get("coverage") if isinstance(value.get("coverage"), dict) else {}
+    coverage_from = _day(coverage.get("from"))
+    coverage_to = _day(coverage.get("to"))
+    if coverage_from and coverage_to and coverage_from > coverage_to:
+        coverage_from = coverage_to = None
+    publication_enabled = value.get("publication_enabled") is True
+    return {
+        "publication_enabled": publication_enabled,
+        "status": _safe_identifier(value.get("status"), "unavailable") if publication_enabled else "disabled",
+        "finalization_status": _safe_identifier(
+            value.get("finalization_status"),
+            "current_date_pending_utc_close" if publication_enabled else "not_applicable",
+        ),
+        "coverage": {"from": coverage_from, "to": coverage_to},
+        "days": value.get("days") if isinstance(value.get("days"), list) else [],
+    }
+
+
+def _attention_days(snapshot: dict[str, Any]) -> tuple[dict[str, Any], list[dict[str, Any]]]:
+    source = _attention_source(snapshot)
+    if not source["publication_enabled"]:
+        return source, []
+    rows: list[dict[str, Any]] = []
+    for raw in source["days"]:
+        if not isinstance(raw, dict) or raw.get("source") != "operator_timer" or not (day := _day(raw.get("date"))):
+            continue
+        project_id = _public_project_key(raw.get("project_id"))
+        seconds = raw.get("attention_seconds")
+        segments = raw.get("interval_segments")
+        transitions = raw.get("transitions_in")
+        modes = raw.get("mode_seconds") if isinstance(raw.get("mode_seconds"), dict) else {}
+        if (
+            not project_id
+            or not isinstance(seconds, int)
+            or isinstance(seconds, bool)
+            or seconds <= 0
+            or not isinstance(segments, int)
+            or isinstance(segments, bool)
+            or segments <= 0
+            or not isinstance(transitions, int)
+            or isinstance(transitions, bool)
+            or transitions < 0
+            or set(modes) != set(ATTENTION_MODES)
+            or any(not isinstance(modes[mode], int) or isinstance(modes[mode], bool) or modes[mode] < 0 for mode in ATTENTION_MODES)
+            or sum(modes[mode] for mode in ATTENTION_MODES) != seconds
+        ):
+            continue
+        rows.append(
+            {
+                "date": day,
+                "project_id": project_id,
+                "attention_seconds": seconds,
+                "interval_segments": segments,
+                "mode_seconds": {mode: modes[mode] for mode in ATTENTION_MODES},
+                "transitions_in": transitions,
+            }
+        )
+    rows.sort(key=lambda row: (row["date"], row["project_id"]))
+    return source, rows
+
+
+def _attention_ledger_row(project_id: str, values: dict[str, Any], *, other_count: int | None = None) -> dict[str, Any]:
+    seconds = _integer(values.get("attention_seconds"))
+    has_attention = bool(values.get("has_attention"))
+    stewardship = sum(_integer(values.get(mode)) for mode in ("guide", "review", "rework"))
+    row = {
+        "project_id": project_id,
+        "recorded_attention_hours": _rounded(seconds / 3600) if has_attention else None,
+        "stewardship_hours": _rounded(stewardship / 3600) if has_attention else None,
+        "rework_hours": _rounded(_integer(values.get("rework")) / 3600) if has_attention else None,
+        "transitions_in": _integer(values.get("transitions_in")) if has_attention else None,
+        "api_equivalent_cost_usd": _rounded(_number(values.get("api_equivalent_cost_usd"))),
+        "unpriced_tokens": _integer(values.get("unpriced_tokens")),
+    }
+    if other_count is not None:
+        row["other_count"] = other_count
+    return row
+
+
+def _attention_economics(
+    snapshot: dict[str, Any],
+    key: str,
+    from_day: str,
+    to_day: str,
+    usage_rows: list[dict[str, Any]],
+) -> dict[str, Any]:
+    source, all_rows = _attention_days(snapshot)
+    selected = [row for row in all_rows if from_day <= row["date"] <= to_day]
+    total_seconds = sum(row["attention_seconds"] for row in selected)
+    mode_totals = {mode: sum(row["mode_seconds"][mode] for row in selected) for mode in ATTENTION_MODES}
+    observatory = snapshot.get("metrics", {}).get("observatory", {})
+    project_rows = observatory.get("projects") if isinstance(observatory.get("projects"), list) else []
+    code_to_public: dict[str, str] = {}
+    public_to_code: dict[str, str] = {}
+    for row in project_rows:
+        if not isinstance(row, dict):
+            continue
+        code = _public_project_key(row.get("project_code"))
+        public_id = _public_project_key(row.get("project_id"))
+        if code and public_id:
+            code_to_public[code] = public_id
+            public_to_code[public_id] = code
+    projects: dict[str, dict[str, Any]] = defaultdict(lambda: defaultdict(float))
+    for row in selected:
+        values = projects[row["project_id"]]
+        values["has_attention"] = True
+        values["attention_seconds"] += row["attention_seconds"]
+        values["transitions_in"] += row["transitions_in"]
+        for mode in ATTENTION_MODES:
+            values[mode] += row["mode_seconds"][mode]
+    if source["publication_enabled"]:
+        for row in usage_rows:
+            public_id = _public_project_key(row.get("project_id")) if isinstance(row, dict) else ""
+            if not public_id:
+                continue
+            project_code = public_to_code.get(public_id, public_id)
+            values = projects[project_code]
+            cost_value = row.get("api_equivalent_cost_usd") if "api_equivalent_cost_usd" in row else row.get("cost_usd")
+            values["api_equivalent_cost_usd"] += _number(cost_value)
+            values["unpriced_tokens"] += _integer(row.get("unpriced_tokens"))
+    ordered = sorted(projects.items(), key=lambda item: (-_number(item[1].get("attention_seconds")), item[0]))
+    ledger = [
+        _attention_ledger_row(code_to_public.get(project_id, project_id), values)
+        for project_id, values in ordered[:TOP_N]
+    ]
+    tail = ordered[TOP_N:]
+    if tail:
+        combined: dict[str, Any] = defaultdict(float)
+        combined["has_attention"] = any(bool(values.get("has_attention")) for _, values in tail)
+        for _project_id, values in tail:
+            for field in (
+                "attention_seconds",
+                "transitions_in",
+                "plan",
+                "guide",
+                "review",
+                "rework",
+                "direct",
+                "api_equivalent_cost_usd",
+                "unpriced_tokens",
+            ):
+                combined[field] += _number(values.get(field))
+        ledger.append(_attention_ledger_row("other", combined, other_count=len(tail)))
+    coverage = source["coverage"]
+    dropoff: int | None = None
+    dropoff_comparison: dict[str, str] | None = None
+    if key != "all" and source["publication_enabled"] and source["status"] in {"available", "no_records"}:
+        equal_days = (dt.date.fromisoformat(to_day) - dt.date.fromisoformat(from_day)).days + 1
+        expected_to = _add_days(to_day, -1) if source["finalization_status"] == "current_date_pending_utc_close" else to_day
+        comparison_from = _add_days(expected_to, 1 - equal_days)
+        prior_from = _add_days(comparison_from, -equal_days)
+        prior_to = _add_days(comparison_from, -1)
+        if coverage["from"] and coverage["to"] and coverage["from"] <= prior_from and coverage["to"] >= expected_to:
+            current_projects = {row["project_id"] for row in all_rows if comparison_from <= row["date"] <= expected_to}
+            prior_projects = {row["project_id"] for row in all_rows if prior_from <= row["date"] <= prior_to}
+            dropoff = len(prior_projects - current_projects)
+            dropoff_comparison = {
+                "from": comparison_from,
+                "to": expected_to,
+                "prior_from": prior_from,
+                "prior_to": prior_to,
+            }
+    has_records = bool(selected)
+    transitions = sum(row["transitions_in"] for row in selected)
+    top_seconds = max((values.get("attention_seconds", 0) for values in projects.values() if values.get("has_attention")), default=0)
+    totals = {
+        "recorded_attention_hours": _rounded(total_seconds / 3600) if has_records else None,
+        "stewardship_attention_hours": _rounded(sum(mode_totals[mode] for mode in ("guide", "review", "rework")) / 3600) if has_records else None,
+        "rework_attention_hours": _rounded(mode_totals["rework"] / 3600) if has_records else None,
+        "rework_share": _rounded(mode_totals["rework"] / total_seconds) if total_seconds else None,
+        "recorded_project_transitions": transitions if has_records else None,
+        "top_project_share": _rounded(_number(top_seconds) / total_seconds) if total_seconds else None,
+        "dropoff_projects": dropoff,
+    }
+    composition = [
+        {
+            "mode": mode,
+            "seconds": mode_totals[mode] if has_records else None,
+            "hours": _rounded(mode_totals[mode] / 3600) if has_records else None,
+            "share": _rounded(mode_totals[mode] / total_seconds) if total_seconds else None,
+        }
+        for mode in ATTENTION_MODES
+    ]
+    return {
+        "publication_enabled": source["publication_enabled"],
+        "status": source["status"],
+        "finalization_status": source["finalization_status"],
+        "coverage": dict(coverage),
+        "has_records": has_records,
+        "totals": totals,
+        "dropoff_comparison": dropoff_comparison,
+        "mode_composition": composition,
+        "project_ledger": ledger if source["publication_enabled"] else [],
+    }
 
 
 def _rounds(snapshot: dict[str, Any]) -> list[dict[str, Any]]:
@@ -785,6 +1278,7 @@ def _window(
         "top_specs": _top_rows(spec_values, "cost_usd"),
         "recent_specs": recent_specs[:TOP_N],
         "measurement": _measurement(snapshot, from_day, to_day),
+        "attention_economics": _attention_economics(snapshot, key, from_day, to_day, raw_rows),
     }
 
 
@@ -818,8 +1312,9 @@ def build_page_envelope(snapshot: dict[str, Any]) -> dict[str, Any]:
     """Create the exact, bounded client payload from the complete snapshot."""
     usage_days, usage_raw = _usage_days(snapshot)
     all_rounds = _rounds(snapshot)
+    _attention, attention_rows = _attention_days(snapshot)
     collection_day = _day(snapshot.get("collection", {}).get("date")) or dt.datetime.now(dt.timezone.utc).date().isoformat()
-    available_days = [row["date"] for row in usage_days] + [str(_day(row.get("ended_at"))) for row in all_rounds]
+    available_days = [row["date"] for row in usage_days] + [str(_day(row.get("ended_at"))) for row in all_rounds] + [row["date"] for row in attention_rows]
     available_days = sorted(day for day in available_days if day and day != "None")
     available_from = available_days[0] if available_days else collection_day
     available_to = max(collection_day, available_days[-1]) if available_days else collection_day
@@ -879,6 +1374,7 @@ def build_page_envelope(snapshot: dict[str, Any]) -> dict[str, Any]:
         "coverage": {"from": available_from, "to": available_to},
         "default_window": "30",
         "catalog": catalog_rows(),
+        "capacity_now": _capacity_now(snapshot),
         "point_in_time": {
             "totals": {
                 "sessions": _integer(totals.get("sessions")),
@@ -921,6 +1417,8 @@ def build_page_envelope(snapshot: dict[str, Any]) -> dict[str, Any]:
         "contract": {
             "top_n": TOP_N,
             "max_trend_points": MAX_TREND_POINTS,
+            "max_capacity_windows_per_provider": MAX_CAPACITY_WINDOWS_PER_PROVIDER,
+            "attention_modes": list(ATTENTION_MODES),
             "window_keys": ["7", "30", "90", "all"],
             "page_target_bytes": PAGE_TARGET_BYTES,
             "page_hard_limit_bytes": PAGE_HARD_LIMIT_BYTES,
@@ -946,6 +1444,8 @@ def surface_signature(page: dict[str, Any], window_key: str = "30") -> dict[str,
     """Structural cardinality used by the scale-proof regression fixture."""
     window = page.get("windows", {}).get(window_key, {})
     point = page.get("point_in_time", {})
+    capacity = page.get("capacity_now", {})
+    attention = window.get("attention_economics", {}) if isinstance(window.get("attention_economics"), dict) else {}
     return {
         "catalog_page_metrics": sum(row.get("surface") == "page" for row in page.get("catalog", [])),
         "vendor_slices": len(point.get("by_vendor", [])),
@@ -956,4 +1456,8 @@ def surface_signature(page: dict[str, Any], window_key: str = "30") -> dict[str,
         "trend_paths": 4,
         "spec_rank_rows": len(window.get("top_specs", [])),
         "ledger_preview_rows": len(window.get("recent_specs", [])),
+        "capacity_provider_slots": len(capacity.get("providers", [])),
+        "capacity_window_limit": _integer(capacity.get("provider_count")) * _integer(capacity.get("max_windows_per_provider")),
+        "attention_mode_slots": len(attention.get("mode_composition", [])),
+        "attention_ledger_rows": len(attention.get("project_ledger", [])),
     }
