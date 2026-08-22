@@ -131,16 +131,34 @@ const AgentTelemetryUI = (() => {
     const candidate = candidateValue && typeof candidateValue === "object" ? candidateValue : {};
     const currentCatalog = Array.isArray(current.catalog) ? current.catalog : [];
     const candidateCatalog = Array.isArray(candidate.catalog) ? candidate.catalog : [];
+    const currentIds = currentCatalog.map(row => row && row.metric_id).filter(value => typeof value === "string");
+    const candidateIds = candidateCatalog.map(row => row && row.metric_id).filter(value => typeof value === "string");
+    const currentIdSet = new Set(currentIds);
+    const candidateIdSet = new Set(candidateIds);
+    const candidateCatalogById = new Map(candidateCatalog.map(row => [row && row.metric_id, row]));
     const currentKeys = current.contract && Array.isArray(current.contract.window_keys) ? current.contract.window_keys : [];
     const candidateKeys = candidate.contract && Array.isArray(candidate.contract.window_keys) ? candidate.contract.window_keys : [];
+    const compatibleShape = (reference, value, allowNewNull = true) => {
+      if (Array.isArray(reference)) return Array.isArray(value);
+      if (reference && typeof reference === "object") {
+        if (!value || typeof value !== "object" || Array.isArray(value)) return false;
+        return Object.keys(reference).every(key => Object.prototype.hasOwnProperty.call(value, key) && compatibleShape(reference[key], value[key], allowNewNull));
+      }
+      return reference === null || (allowNewNull && value === null) || typeof value === typeof reference;
+    };
     const valid = candidate.payload_kind === "bounded_page_envelope"
       && candidate.schema_version === current.schema_version
-      && candidate.point_in_time && typeof candidate.point_in_time === "object" && !Array.isArray(candidate.point_in_time)
+      && compatibleShape(current.contract, candidate.contract, false)
+      && compatibleShape(current.point_in_time, candidate.point_in_time)
       && candidate.windows && typeof candidate.windows === "object" && !Array.isArray(candidate.windows)
       && candidateCatalog.length >= currentCatalog.length
-      && candidateCatalog.every(row => row && typeof row === "object" && typeof row.metric_id === "string")
+      && candidateIds.length === candidateCatalog.length
+      && candidateIdSet.size === candidateIds.length
+      && currentIds.length === currentCatalog.length
+      && currentIdSet.size === currentIds.length
+      && currentCatalog.every(row => candidateIdSet.has(row.metric_id) && compatibleShape(row, candidateCatalogById.get(row.metric_id), false))
       && currentKeys.length > 0
-      && currentKeys.every(key => candidateKeys.includes(key) && candidate.windows[key] && typeof candidate.windows[key] === "object");
+      && currentKeys.every(key => candidateKeys.includes(key) && compatibleShape(current.windows[key], candidate.windows[key]));
     const candidateGenerated = parsedMillis(candidate.generated_at);
     if (!valid || candidateGenerated === null) return "invalid";
     const currentGenerated = parsedMillis(current.generated_at);

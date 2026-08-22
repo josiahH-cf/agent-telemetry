@@ -246,7 +246,7 @@ class AttentionStructureTests(unittest.TestCase):
 class SnapshotRefreshHelperTests(unittest.TestCase):
     def test_snapshot_decision_accepts_only_strictly_newer_compatible_envelopes(self) -> None:
         result = node_result(
-            "(()=>{const base={payload_kind:'bounded_page_envelope',schema_version:1,catalog:[{metric_id:'x'}],contract:{window_keys:['30']},point_in_time:{},windows:{'30':{}},generated_at:'2026-08-22T07:30:00Z'};"
+            "(()=>{const base={payload_kind:'bounded_page_envelope',schema_version:1,catalog:[{metric_id:'x',display_label:'X',sources:['fixture']}],contract:{window_keys:['30']},point_in_time:{totals:{tokens:1}},windows:{'30':{from:'2026-07-24',to:'2026-08-22',inclusive_days:30,summary:{tokens:1}}},generated_at:'2026-08-22T07:30:00Z'};"
             "const candidate=time=>({...base,generated_at:time});return {"
             "newer:ui.snapshotDecision(base,candidate('2026-08-22T07:31:00Z')),"
             "unchanged:ui.snapshotDecision(base,candidate('2026-08-22T07:30:00Z')),"
@@ -256,6 +256,11 @@ class SnapshotRefreshHelperTests(unittest.TestCase):
             "missingWindow:ui.snapshotDecision(base,{...candidate('2026-08-22T07:31:00Z'),windows:{}}),"
             "shrunkCatalog:ui.snapshotDecision(base,{...candidate('2026-08-22T07:31:00Z'),catalog:[]}),"
             "badCatalog:ui.snapshotDecision(base,{...candidate('2026-08-22T07:31:00Z'),catalog:[null]}),"
+            "emptyShape:ui.snapshotDecision(base,{...candidate('2026-08-22T07:31:00Z'),point_in_time:{},windows:{'30':{}}}),"
+            "renamedCatalog:ui.snapshotDecision(base,{...candidate('2026-08-22T07:31:00Z'),catalog:[{metric_id:'y'}]}),"
+            "duplicateCatalog:ui.snapshotDecision(base,{...candidate('2026-08-22T07:31:00Z'),catalog:[{metric_id:'x'},{metric_id:'x'}]}),"
+            "strippedCatalog:ui.snapshotDecision(base,{...candidate('2026-08-22T07:31:00Z'),catalog:[{metric_id:'x'}]}),"
+            "nullableValue:ui.snapshotDecision(base,{...candidate('2026-08-22T07:31:00Z'),point_in_time:{totals:{tokens:null}},windows:{'30':{...base.windows['30'],summary:{tokens:null}}}}),"
             "missingTime:ui.snapshotDecision(base,{...candidate(null)})};})()"
         )
         self.assertEqual(
@@ -269,6 +274,11 @@ class SnapshotRefreshHelperTests(unittest.TestCase):
                 "missingWindow": "invalid",
                 "shrunkCatalog": "invalid",
                 "badCatalog": "invalid",
+                "emptyShape": "invalid",
+                "renamedCatalog": "invalid",
+                "duplicateCatalog": "invalid",
+                "strippedCatalog": "invalid",
+                "nullableValue": "newer",
                 "missingTime": "invalid",
             },
         )
