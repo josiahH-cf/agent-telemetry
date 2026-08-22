@@ -22,6 +22,11 @@ Use the surface that matches the question:
 - The [page payload](data/telemetry.js) is the compact browser input. The
   [verbose envelope](data/telemetry.json) preserves broader generated views for
   inspection, but it is not a substitute for the versioned machine contract.
+  A visible open page checks that same-origin compact payload at minute 05 and
+  35 and adopts only a strictly newer compatible generation in place. Equal,
+  older, invalid, unavailable, or timed-out checks retain last-good data. The
+  check is a local file read or static Pages request, never a provider, model,
+  API, or third-party call; the initial payload remains fully usable offline.
 - The [public machine manifest](https://josiahh-cf.github.io/agent-telemetry/data/machine/MANIFEST.json)
   is the catalog for the complete public tier. It names each JSONL path, schema,
   row count, coverage bound, semantics, and SHA-256. The public datasets are

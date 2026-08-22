@@ -126,7 +126,55 @@ const AgentTelemetryUI = (() => {
     };
   }
 
-  return Object.freeze({capacityProviderState, capacityWindowState, captureStatusFailed, calculateScenario, relativeDuration});
+  function snapshotDecision(currentValue, candidateValue) {
+    const current = currentValue && typeof currentValue === "object" ? currentValue : {};
+    const candidate = candidateValue && typeof candidateValue === "object" ? candidateValue : {};
+    const currentCatalog = Array.isArray(current.catalog) ? current.catalog : [];
+    const candidateCatalog = Array.isArray(candidate.catalog) ? candidate.catalog : [];
+    const currentKeys = current.contract && Array.isArray(current.contract.window_keys) ? current.contract.window_keys : [];
+    const candidateKeys = candidate.contract && Array.isArray(candidate.contract.window_keys) ? candidate.contract.window_keys : [];
+    const valid = candidate.payload_kind === "bounded_page_envelope"
+      && candidate.schema_version === current.schema_version
+      && candidate.point_in_time && typeof candidate.point_in_time === "object" && !Array.isArray(candidate.point_in_time)
+      && candidate.windows && typeof candidate.windows === "object" && !Array.isArray(candidate.windows)
+      && candidateCatalog.length >= currentCatalog.length
+      && candidateCatalog.every(row => row && typeof row === "object" && typeof row.metric_id === "string")
+      && currentKeys.length > 0
+      && currentKeys.every(key => candidateKeys.includes(key) && candidate.windows[key] && typeof candidate.windows[key] === "object");
+    const candidateGenerated = parsedMillis(candidate.generated_at);
+    if (!valid || candidateGenerated === null) return "invalid";
+    const currentGenerated = parsedMillis(current.generated_at);
+    if (currentGenerated === null || candidateGenerated > currentGenerated) return "newer";
+    if (candidateGenerated === currentGenerated) return "unchanged";
+    return "older";
+  }
+
+  function telemetryRefreshUrl(baseURI, nowMillis, intervalMinutes = 30) {
+    const interval = numericValue(intervalMinutes);
+    if (!finiteNumber(nowMillis) || !Number.isFinite(interval) || interval <= 0) return null;
+    try {
+      const url = new URL("data/telemetry.js", baseURI);
+      url.searchParams.set("refresh", String(Math.floor(nowMillis / (interval * 60000))));
+      return url.href;
+    } catch (_error) {
+      return null;
+    }
+  }
+
+  function snapshotRefreshSlot(nowMillis, intervalMinutes = 30, offsetMinutes = 5) {
+    const interval = numericValue(intervalMinutes);
+    const offset = numericValue(offsetMinutes);
+    if (!finiteNumber(nowMillis) || !Number.isFinite(interval) || interval <= 0 || !Number.isFinite(offset) || offset < 0 || offset >= interval) return null;
+    return Math.floor((nowMillis - offset * 60000) / (interval * 60000));
+  }
+
+  function nextSnapshotRefreshMillis(nowMillis, intervalMinutes = 30, offsetMinutes = 5) {
+    const slot = snapshotRefreshSlot(nowMillis, intervalMinutes, offsetMinutes);
+    if (slot === null) return null;
+    return (slot + 1) * intervalMinutes * 60000 + offsetMinutes * 60000;
+  }
+
+  return Object.freeze({capacityProviderState, capacityWindowState, captureStatusFailed, calculateScenario, relativeDuration, snapshotDecision, telemetryRefreshUrl, snapshotRefreshSlot, nextSnapshotRefreshMillis});
 })();
 
 if (typeof window !== "undefined") window.AgentTelemetryUI = AgentTelemetryUI;
@@ -137,7 +185,7 @@ if (typeof module === "object" && module.exports) module.exports = AgentTelemetr
 
   if (typeof window === "undefined" || typeof document === "undefined") return;
 
-  const data = window.TELEMETRY || {};
+  let data = window.TELEMETRY || {};
   const $ = id => document.getElementById(id);
   const esc = value => String(value ?? "").replace(/[&<>'"]/g, char => ({"&":"&amp;","<":"&lt;",">":"&gt;","'":"&#39;",'"':"&quot;"})[char]);
   const finite = value => typeof value === "number" && Number.isFinite(value);
@@ -148,14 +196,23 @@ if (typeof module === "object" && module.exports) module.exports = AgentTelemetr
   const money = new Intl.NumberFormat("en-US", {style:"currency", currency:"USD", maximumFractionDigits:2});
   const percentNumber = new Intl.NumberFormat("en-US", {maximumFractionDigits:1});
   const colors = ["#7bdcff", "#8ba9ff", "#75e6ad", "#ffd166", "#c4a7ff", "#ff8c9b", "#b8c5d3"];
-  const {capacityProviderState, capacityWindowState, calculateScenario, relativeDuration} = AgentTelemetryUI;
-  const catalog = new Map((data.catalog || []).map(row => [row.metric_id, row]));
-  const windows = data.windows || {};
-  const validWindows = data.contract && data.contract.window_keys || ["7", "30", "90", "all"];
+  const {capacityProviderState, capacityWindowState, calculateScenario, relativeDuration, snapshotDecision, telemetryRefreshUrl, snapshotRefreshSlot, nextSnapshotRefreshMillis} = AgentTelemetryUI;
+  const focusableSelector = "button,summary,a[href],input,select,textarea,[tabindex]:not([tabindex='-1'])";
+  const snapshotRefreshIntervalMinutes = 30;
+  const snapshotRefreshOffsetMinutes = 5;
+  const snapshotRefreshIntervalMs = snapshotRefreshIntervalMinutes * 60000;
+  let catalog = new Map((data.catalog || []).map(row => [row.metric_id, row]));
+  let windows = data.windows || {};
+  let validWindows = data.contract && data.contract.window_keys || ["7", "30", "90", "all"];
   const params = new URLSearchParams(window.location.search);
   let activeKey = validWindows.includes(params.get("window")) ? params.get("window") : data.default_window || "30";
   let active = windows[activeKey] || Object.values(windows)[0] || {};
   let scenarioProjects = [];
+  let snapshotRefreshTimer = null;
+  let snapshotRefreshInFlight = false;
+  let snapshotRefreshLastSlot = snapshotRefreshSlot(Date.now(), snapshotRefreshIntervalMinutes, snapshotRefreshOffsetMinutes);
+  let snapshotRefreshState = "scheduled";
+  let snapshotRefreshCheckedAt = null;
 
   function fmt(value, kind = "number", reason = "not observed") {
     if (!finite(value)) return `<span class="empty">n/a · ${esc(reason)}</span>`;
@@ -273,7 +330,12 @@ if (typeof module === "object" && module.exports) module.exports = AgentTelemetr
 
   function renderMasthead() {
     const age = ageMinutes();
-    $("mast-meta").innerHTML = `<span data-metric-id="data_age_minutes">${finite(age) ? `${full.format(age)}m old` : "age n/a"} ${metricButton("data_age_minutes")}</span><br>Generated ${esc(when(data.generated_at))}`;
+    const refreshText = snapshotRefreshState === "updated"
+      ? "Snapshot updated automatically"
+      : snapshotRefreshState === "failed-last-good"
+        ? "Auto-check retrying · last-good retained"
+        : "Snapshot auto-check at :05 / :35";
+    $("mast-meta").innerHTML = `<span data-metric-id="data_age_minutes">${finite(age) ? `${full.format(age)}m old` : "age n/a"} ${metricButton("data_age_minutes")}</span><br>Generated ${esc(when(data.generated_at))}<br><span class="refresh-note">${esc(refreshText)}</span>`;
   }
 
   function relativeObservation(value, ageHours = null) {
@@ -379,7 +441,6 @@ if (typeof module === "object" && module.exports) module.exports = AgentTelemetr
 
   function refreshCapacityPreservingInteraction() {
     const capacityRoot = $("capacity-now");
-    const focusableSelector = "button,summary,a[href],input,select,textarea,[tabindex]:not([tabindex='-1'])";
     const focusables = [...capacityRoot.querySelectorAll(focusableSelector)];
     const focusIndex = capacityRoot.contains(document.activeElement)
       ? focusables.indexOf(document.activeElement)
@@ -486,12 +547,19 @@ if (typeof module === "object" && module.exports) module.exports = AgentTelemetr
   }
 
   function populateScenarioProjects(rows) {
+    const select = $("scenario-project");
+    const selectedIndex = Number.parseInt(select.value, 10);
+    const selectedProject = Number.isInteger(selectedIndex) ? scenarioProjects[selectedIndex] : null;
+    const selectedIdentity = selectedProject ? String(selectedProject.project_id || selectedProject.label || "") : "";
     scenarioProjects = rows.filter(row => {
       const label = String(row.label || row.project_id || "").toLowerCase();
       return !row.other_count && label !== "other" && finite(numeric(row.recorded_attention_hours)) && numeric(row.recorded_attention_hours) > 0;
     });
-    const select = $("scenario-project");
     select.innerHTML = '<option value="">Choose a displayed project</option>' + scenarioProjects.map((row, index) => `<option value="${index}">${esc(row.label || row.project_id || `Project ${index + 1}`)}</option>`).join("");
+    if (selectedIdentity) {
+      const replacement = scenarioProjects.findIndex(row => String(row.project_id || row.label || "") === selectedIdentity);
+      if (replacement >= 0) select.value = String(replacement);
+    }
   }
 
   function renderAttention() {
@@ -629,7 +697,7 @@ if (typeof module === "object" && module.exports) module.exports = AgentTelemetr
     const doctor = point.doctor || {};
     const measurement = active.measurement || {};
     $("reliability-cards").innerHTML = [
-      card("data_age_minutes", fmt(ageMinutes(), "minutes", "generation timestamp missing"), "Updates in this page without a reload"),
+      card("data_age_minutes", fmt(ageMinutes(), "minutes", "generation timestamp missing"), "Age and metrics update when the generated snapshot advances"),
       card("doctor_status", esc(doctor.status || "unknown"), "Latest self-check result"),
       card("missed_intervals", fmt(cadence.missed_intervals), "Derived from observed wrapper starts"),
       card("disk_runway_years", fmt(disk.runway_years, "years", "disk snapshot unavailable"), "Shorter conservative drive bound"),
@@ -689,6 +757,146 @@ if (typeof module === "object" && module.exports) module.exports = AgentTelemetr
     if (detail.open) lazyBody(detailId);
   }
 
+  function captureFocusState() {
+    const element = document.activeElement;
+    if (!element || element === document.body) return null;
+    const container = element.closest && element.closest("[id]");
+    if (!container) return {element, containerId:null, index:-1};
+    const focusables = [...container.querySelectorAll(focusableSelector)];
+    return {element, containerId:container.id, index:focusables.indexOf(element)};
+  }
+
+  function restoreFocusState(state) {
+    if (!state || (state.element && state.element.isConnected)) return;
+    const container = state.containerId ? $(state.containerId) : null;
+    if (!container || state.index < 0) return;
+    const focusables = [...container.querySelectorAll(focusableSelector)];
+    if (focusables[state.index]) focusables[state.index].focus({preventScroll:true});
+  }
+
+  function bindSnapshot(snapshot) {
+    data = snapshot;
+    window.TELEMETRY = data;
+    catalog = new Map((Array.isArray(data.catalog) ? data.catalog : []).map(row => [row.metric_id, row]));
+    windows = data.windows && typeof data.windows === "object" ? data.windows : {};
+    const contractKeys = data.contract && Array.isArray(data.contract.window_keys) ? data.contract.window_keys : [];
+    validWindows = contractKeys.length ? contractKeys : ["7", "30", "90", "all"];
+    if (!validWindows.includes(activeKey) || !windows[activeKey]) {
+      activeKey = validWindows.includes(data.default_window) && windows[data.default_window]
+        ? data.default_window
+        : validWindows.find(key => windows[key]) || Object.keys(windows)[0] || "30";
+      const url = new URL(window.location.href);
+      url.searchParams.set("window", activeKey);
+      window.history.replaceState({}, "", url);
+    }
+    active = windows[activeKey] || Object.values(windows)[0] || {};
+  }
+
+  function adoptSnapshot(candidate) {
+    if (snapshotDecision(data, candidate) !== "newer") return false;
+    const focusState = captureFocusState();
+    const scrollX = window.scrollX;
+    const scrollY = window.scrollY;
+    const previous = {data, catalog, windows, validWindows, activeKey, active};
+    try {
+      bindSnapshot(candidate);
+      snapshotRefreshState = "updated";
+      refreshCapacityPreservingInteraction();
+      render();
+      renderScenario();
+      window.scrollTo(scrollX, scrollY);
+      restoreFocusState(focusState);
+      return true;
+    } catch (_error) {
+      ({data, catalog, windows, validWindows, activeKey, active} = previous);
+      window.TELEMETRY = data;
+      snapshotRefreshState = "failed-last-good";
+      refreshCapacityPreservingInteraction();
+      render();
+      renderScenario();
+      window.scrollTo(scrollX, scrollY);
+      restoreFocusState(focusState);
+      return false;
+    }
+  }
+
+  function finishSnapshotCheck(script, state) {
+    script.remove();
+    snapshotRefreshInFlight = false;
+    snapshotRefreshState = state;
+    snapshotRefreshCheckedAt = new Date().toISOString();
+    window.TELEMETRY = data;
+    renderMasthead();
+    updateTestHook();
+  }
+
+  function checkForNewSnapshot(force = false) {
+    const now = Date.now();
+    const slot = snapshotRefreshSlot(now, snapshotRefreshIntervalMinutes, snapshotRefreshOffsetMinutes);
+    if (snapshotRefreshInFlight) return false;
+    if (!force && (document.visibilityState === "hidden" || slot === null || slot <= snapshotRefreshLastSlot)) return false;
+    const source = telemetryRefreshUrl(document.baseURI, now, snapshotRefreshIntervalMinutes);
+    if (!source) {
+      snapshotRefreshState = "failed-last-good";
+      snapshotRefreshCheckedAt = new Date(now).toISOString();
+      renderMasthead();
+      updateTestHook();
+      return false;
+    }
+    snapshotRefreshInFlight = true;
+    if (slot !== null) snapshotRefreshLastSlot = slot;
+    snapshotRefreshState = "checking";
+    updateTestHook();
+    const script = document.createElement("script");
+    script.async = true;
+    script.dataset.telemetryRefresh = "true";
+    script.src = source;
+    let settled = false;
+    let timeout = null;
+    const settle = state => {
+      if (settled) return;
+      settled = true;
+      if (timeout !== null) window.clearTimeout(timeout);
+      finishSnapshotCheck(script, state);
+    };
+    script.addEventListener("load", () => {
+      if (settled) {
+        window.TELEMETRY = data;
+        return;
+      }
+      const candidate = window.TELEMETRY;
+      const decision = snapshotDecision(data, candidate);
+      if (decision === "newer") {
+        settle(adoptSnapshot(candidate) ? "updated" : "failed-last-good");
+        return;
+      }
+      settle(decision === "invalid" ? "failed-last-good" : "current");
+    }, {once:true});
+    script.addEventListener("error", () => settle("failed-last-good"), {once:true});
+    timeout = window.setTimeout(() => settle("failed-last-good"), 15000);
+    document.head.append(script);
+    return true;
+  }
+
+  function scheduleSnapshotRefresh() {
+    if (snapshotRefreshTimer !== null) window.clearTimeout(snapshotRefreshTimer);
+    const now = Date.now();
+    const next = nextSnapshotRefreshMillis(now, snapshotRefreshIntervalMinutes, snapshotRefreshOffsetMinutes);
+    const delay = Math.max(1000, (next === null ? now + snapshotRefreshIntervalMs : next) - now + 1000);
+    snapshotRefreshTimer = window.setTimeout(() => {
+      checkForNewSnapshot();
+      scheduleSnapshotRefresh();
+    }, delay);
+  }
+
+  function refreshClientTime() {
+    renderMasthead();
+    refreshCapacityPreservingInteraction();
+    const cardNode = document.querySelector('[data-metric-id="data_age_minutes"] .value');
+    if (cardNode) cardNode.innerHTML = fmt(ageMinutes(), "minutes");
+    updateTestHook();
+  }
+
   function showMetric(metricId) {
     const metric = catalog.get(metricId);
     if (!metric) return;
@@ -712,11 +920,25 @@ if (typeof module === "object" && module.exports) module.exports = AgentTelemetr
       },
       payloadBytes: data.contract && data.contract.payload_bytes,
       capacitySignature:JSON.stringify(data.capacity_now || {}),
+      snapshotRefresh: {
+        status:snapshotRefreshState,
+        checkedAt:snapshotRefreshCheckedAt,
+        inFlight:snapshotRefreshInFlight,
+        intervalMinutes:snapshotRefreshIntervalMinutes,
+        offsetMinutes:snapshotRefreshOffsetMinutes,
+        generatedAt:data.generated_at || null,
+      },
       capacityProviderState,
       capacityWindowState,
       capacityStateText,
       calculateScenario,
       relativeDuration,
+      snapshotDecision,
+      telemetryRefreshUrl,
+      snapshotRefreshSlot,
+      nextSnapshotRefreshMillis,
+      checkForNewSnapshot,
+      adoptSnapshot,
     };
   }
 
@@ -732,7 +954,7 @@ if (typeof module === "object" && module.exports) module.exports = AgentTelemetr
     renderOutcomes();
     renderReliability();
     renderEvidence();
-    $("generated-foot").textContent = `Generated ${when(data.generated_at)} · compact page is within its published budget · full envelope and all machine URLs retained · no runtime network requests.`;
+    $("generated-foot").textContent = `Generated ${when(data.generated_at)} · compact page is within its published budget · full envelope and all machine URLs retained · same-origin telemetry checks at :05 and :35 while visible · last-good data stays usable offline · no provider, API, model, or third-party requests from this page.`;
     updateTestHook();
   }
 
@@ -760,6 +982,13 @@ if (typeof module === "object" && module.exports) module.exports = AgentTelemetr
   $("scenario-form").addEventListener("change", renderScenario);
   $("scenario-form").addEventListener("submit", event => event.preventDefault());
   $("scenario-clear").addEventListener("click", clearScenario);
+  const refreshAfterVisibilityReturn = () => {
+    refreshClientTime();
+    checkForNewSnapshot();
+  };
+  document.addEventListener("visibilitychange", () => { if (document.visibilityState === "visible") refreshAfterVisibilityReturn(); });
+  window.addEventListener("focus", refreshAfterVisibilityReturn);
+  window.addEventListener("pageshow", refreshAfterVisibilityReturn);
   if (data.payload_kind !== "bounded_page_envelope") {
     document.body.innerHTML = '<main class="shell"><section><h1>Telemetry unavailable</h1><p class="empty">The bounded page envelope is missing or incompatible.</p></section></main>';
     return;
@@ -767,5 +996,6 @@ if (typeof module === "object" && module.exports) module.exports = AgentTelemetr
   renderCapacity();
   render();
   renderScenario();
-  window.setInterval(() => { renderMasthead(); refreshCapacityPreservingInteraction(); const cardNode = document.querySelector('[data-metric-id="data_age_minutes"] .value'); if (cardNode) cardNode.innerHTML = fmt(ageMinutes(), "minutes"); updateTestHook(); }, 60000);
+  scheduleSnapshotRefresh();
+  window.setInterval(refreshClientTime, 60000);
 })();

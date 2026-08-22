@@ -156,6 +156,33 @@ Explicit surface decisions:
   latter passed Pages verification. Policy fields follow GitHub's documented
   branch-protection API: <https://docs.github.com/en/rest/branches/branch-protection>.
 
+### ST-45 — Open dashboards retained the startup usage snapshot indefinitely
+
+- **Observation:** successful half-hour collections advanced
+  `data/telemetry.js`, but an already-open dashboard kept the object captured at
+  startup. Its one-minute timer updated client-time age and capacity state only;
+  usage, cost, windows, and generated time remained frozen until a manual reload.
+- **Evidence:** file and HTTP browser traces made no snapshot request after the
+  initial load. A cache-busted classic script loaded correctly in both modes,
+  while a full-page reload destroyed disclosure, focus, scroll, and browser-only
+  scenario state. Pages keys its bounded static asset cache by query string.
+- **Action:** **fixed / bounded** — visible pages check only the same-origin
+  compact snapshot at minute 05 and 35, after the expected collector slot. One
+  in-flight, 15-second-bounded request uses an integer time bucket. Only a
+  strictly newer schema-compatible envelope with the complete window contract
+  is adopted; every other result retains last-good data. Adoption rebinds the
+  selected window in place and preserves disclosures, browser-only form values,
+  focus, scroll, and dialog state. No provider, model, API, third party, storage,
+  `fetch`, XHR, service worker, or page reload is involved.
+- **Verifying check:** pure helpers pin the `:05`/`:35` schedule, file and Pages
+  subpath URLs, and monotonic validation. Real Edge passes under the local file
+  protocol and HTTP prove that a newer injected snapshot changes rendered usage
+  and generated time while the selected window, URL, five open disclosure states, focused
+  control, exact scroll position, and browser-only inputs survive. Equal, older,
+  incompatible, and blocked loads leave the rendered signature unchanged,
+  remove the probe script, and report a named last-good state without console
+  exceptions or horizontal overflow.
+
 ## V4 global rebaseline register
 
 This section is the phase-ordered findings register for the machine-wide,

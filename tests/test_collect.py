@@ -372,7 +372,7 @@ class HistoryAndPrivacyTests(unittest.TestCase):
             second = collect.merge_round_records(path, [record], "2026-08-20T02:00:00+00:00")
         self.assertEqual(second["generated_at"], "2026-08-20T01:00:00+00:00")
 
-    def test_dashboard_uses_local_script_without_network_data_loading(self) -> None:
+    def test_dashboard_uses_bounded_same_origin_snapshot_loading(self) -> None:
         text = (PROJECT_ROOT / "index.html").read_text(encoding="utf-8")
         self.assertIn('src="data/telemetry.js"', text)
         self.assertIn('src="dashboard.js"', text)
@@ -397,6 +397,12 @@ class HistoryAndPrivacyTests(unittest.TestCase):
         dashboard = (PROJECT_ROOT / "dashboard.js").read_text(encoding="utf-8")
         self.assertIn("Date.now()", dashboard)
         self.assertIn("__AGENT_TELEMETRY_TEST__", dashboard)
+        self.assertIn('new URL("data/telemetry.js", baseURI)', dashboard)
+        self.assertIn('script.dataset.telemetryRefresh = "true"', dashboard)
+        self.assertIn('snapshotDecision(data, candidate)', dashboard)
+        self.assertIn('document.visibilityState === "hidden"', dashboard)
+        for forbidden in ("fetch(", "XMLHttpRequest", "location.reload", "WebSocket", "EventSource"):
+            self.assertNotIn(forbidden, dashboard)
 
     def test_dashboard_core_dark_palette_meets_wcag_aa_text_contrast(self) -> None:
         text = (PROJECT_ROOT / "index.html").read_text(encoding="utf-8")

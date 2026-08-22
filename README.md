@@ -6,11 +6,11 @@ API-equivalent cost, collection health, and governed-loop outcomes without
 publishing prompts, messages, code, working directories, or private project
 mappings.
 
-The dashboard also has a point-in-time provider-capacity strip and an optional
-attention-economics ledger. Capacity uses already captured vendor-reported
-windows; it never estimates messages from tokens. Human attention is recorded
-only by the explicit local timer, never inferred from sessions, prompts, agent
-runtime, or response latency.
+The dashboard also has a collapsed point-in-time provider-capacity disclosure
+and an optional attention-economics ledger. Capacity uses already captured
+vendor-reported windows; it never estimates messages from tokens. Human
+attention is recorded only by the explicit local timer, never inferred from
+sessions, prompts, agent runtime, or response latency.
 
 ## Quick start
 
@@ -23,7 +23,11 @@ python3 -m unittest discover -s tests -v
 
 Open `index.html` directly or from the published site. The page works without a
 server and offers 7-, 30-, 90-day, and all-time views; machine-readable files
-are under `data/machine/`.
+are under `data/machine/`. While visible, an open page checks the same-origin
+bounded snapshot at minute 05 and 35, adopts only a newer compatible generation,
+and retains last-good data on an unavailable or invalid check. This is a static
+file read locally and a static Pages request when published; it never calls a
+provider, model, API, or third party.
 
 ## Optional recorded attention
 

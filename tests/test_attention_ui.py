@@ -199,7 +199,7 @@ class AttentionStructureTests(unittest.TestCase):
         self.assertIn('.capacity-summary-meta { grid-column:1/-1; grid-row:2; justify-content:space-between; }', INDEX)
 
     def test_pure_helpers_are_exposed_in_the_browser_test_hook(self) -> None:
-        for helper in ("capacityProviderState", "capacityWindowState", "captureStatusFailed", "calculateScenario", "relativeDuration"):
+        for helper in ("capacityProviderState", "capacityWindowState", "captureStatusFailed", "calculateScenario", "relativeDuration", "snapshotDecision", "telemetryRefreshUrl", "snapshotRefreshSlot", "nextSnapshotRefreshMillis"):
             self.assertIn(helper, DASHBOARD)
         self.assertIn("capacitySignature:JSON.stringify(data.capacity_now || {})", DASHBOARD)
         for metric_id in (
@@ -209,6 +209,30 @@ class AttentionStructureTests(unittest.TestCase):
         ):
             self.assertIn(f'metricButton("{metric_id}")', DASHBOARD)
 
+    def test_snapshot_refresh_is_bounded_same_origin_and_interaction_safe(self) -> None:
+        self.assertIn('let data = window.TELEMETRY || {};', DASHBOARD)
+        self.assertIn('new URL("data/telemetry.js", baseURI)', DASHBOARD)
+        self.assertIn('url.searchParams.set("refresh"', DASHBOARD)
+        self.assertIn('const snapshotRefreshIntervalMinutes = 30;', DASHBOARD)
+        self.assertIn('const snapshotRefreshOffsetMinutes = 5;', DASHBOARD)
+        self.assertIn('document.visibilityState === "hidden"', DASHBOARD)
+        self.assertIn('document.addEventListener("visibilitychange"', DASHBOARD)
+        self.assertIn('window.addEventListener("focus"', DASHBOARD)
+        self.assertIn('window.addEventListener("pageshow"', DASHBOARD)
+        self.assertIn('snapshotRefreshInFlight', DASHBOARD)
+        self.assertIn('timeout = window.setTimeout(() => settle("failed-last-good"), 15000);', DASHBOARD)
+        self.assertIn('script.remove();', DASHBOARD)
+        self.assertIn('window.TELEMETRY = data;', DASHBOARD)
+        self.assertIn('selectedProject.project_id || selectedProject.label', DASHBOARD)
+        self.assertIn('captureFocusState()', DASHBOARD)
+        self.assertIn('restoreFocusState(focusState)', DASHBOARD)
+        self.assertIn('focus({preventScroll:true})', DASHBOARD)
+        self.assertIn('window.scrollTo(scrollX, scrollY)', DASHBOARD)
+        self.assertIn('same-origin telemetry checks at :05 and :35 while visible', DASHBOARD)
+        self.assertIn('no provider, API, model, or third-party requests from this page', DASHBOARD)
+        for forbidden in ("fetch(", "XMLHttpRequest", "location.reload", "WebSocket", "EventSource", "import("):
+            self.assertNotIn(forbidden, DASHBOARD)
+
     def test_dropoff_only_evidence_keeps_headline_cards_visible(self) -> None:
         self.assertIn("const hasDropoffEvidence = finite(dropoffProjects);", DASHBOARD)
         self.assertIn("The prior-window drop-off comparison remains available.", DASHBOARD)
@@ -217,6 +241,67 @@ class AttentionStructureTests(unittest.TestCase):
         )[0]
         self.assertNotIn("return;", no_records_branch)
         self.assertIn("The current UTC date is withheld until it closes.", DASHBOARD)
+
+
+class SnapshotRefreshHelperTests(unittest.TestCase):
+    def test_snapshot_decision_accepts_only_strictly_newer_compatible_envelopes(self) -> None:
+        result = node_result(
+            "(()=>{const base={payload_kind:'bounded_page_envelope',schema_version:1,catalog:[{metric_id:'x'}],contract:{window_keys:['30']},point_in_time:{},windows:{'30':{}},generated_at:'2026-08-22T07:30:00Z'};"
+            "const candidate=time=>({...base,generated_at:time});return {"
+            "newer:ui.snapshotDecision(base,candidate('2026-08-22T07:31:00Z')),"
+            "unchanged:ui.snapshotDecision(base,candidate('2026-08-22T07:30:00Z')),"
+            "older:ui.snapshotDecision(base,candidate('2026-08-22T07:29:00Z')),"
+            "wrongSchema:ui.snapshotDecision(base,{...candidate('2026-08-22T07:31:00Z'),schema_version:2}),"
+            "wrongKind:ui.snapshotDecision(base,{...candidate('2026-08-22T07:31:00Z'),payload_kind:'verbose'}),"
+            "missingWindow:ui.snapshotDecision(base,{...candidate('2026-08-22T07:31:00Z'),windows:{}}),"
+            "shrunkCatalog:ui.snapshotDecision(base,{...candidate('2026-08-22T07:31:00Z'),catalog:[]}),"
+            "badCatalog:ui.snapshotDecision(base,{...candidate('2026-08-22T07:31:00Z'),catalog:[null]}),"
+            "missingTime:ui.snapshotDecision(base,{...candidate(null)})};})()"
+        )
+        self.assertEqual(
+            result,
+            {
+                "newer": "newer",
+                "unchanged": "unchanged",
+                "older": "older",
+                "wrongSchema": "invalid",
+                "wrongKind": "invalid",
+                "missingWindow": "invalid",
+                "shrunkCatalog": "invalid",
+                "badCatalog": "invalid",
+                "missingTime": "invalid",
+            },
+        )
+
+    def test_refresh_url_keeps_file_and_pages_paths_and_uses_a_deterministic_slot(self) -> None:
+        result = node_result(
+            "({file:ui.telemetryRefreshUrl('file:'+'///'+'repo/index.html',300000,5),"
+            "pages:ui.telemetryRefreshUrl('https://example.test/agent-telemetry/index.html',300000,5),"
+            "sameSlot:ui.telemetryRefreshUrl('https://example.test/agent-telemetry/index.html',599999,5),"
+            "nextSlot:ui.telemetryRefreshUrl('https://example.test/agent-telemetry/index.html',600000,5)})"
+        )
+        self.assertEqual(result["file"], "file:" + "///" + "repo/data/telemetry.js?refresh=1")
+        self.assertEqual(result["pages"], "https://example.test/agent-telemetry/data/telemetry.js?refresh=1")
+        self.assertEqual(result["sameSlot"], result["pages"])
+        self.assertEqual(result["nextSlot"], "https://example.test/agent-telemetry/data/telemetry.js?refresh=2")
+
+    def test_refresh_schedule_is_pinned_to_minute_five_and_thirty_five(self) -> None:
+        result = node_result(
+            "({beforeFirst:ui.nextSnapshotRefreshMillis(0,30,5),"
+            "justBeforeFirst:ui.nextSnapshotRefreshMillis(299999,30,5),"
+            "atFirst:ui.nextSnapshotRefreshMillis(300000,30,5),"
+            "justBeforeSecond:ui.nextSnapshotRefreshMillis(2099999,30,5),"
+            "slotBefore:ui.snapshotRefreshSlot(299999,30,5),"
+            "slotAt:ui.snapshotRefreshSlot(300000,30,5),"
+            "invalid:ui.nextSnapshotRefreshMillis(0,5,5)})"
+        )
+        self.assertEqual(result["beforeFirst"], 300000)
+        self.assertEqual(result["justBeforeFirst"], 300000)
+        self.assertEqual(result["atFirst"], 2100000)
+        self.assertEqual(result["justBeforeSecond"], 2100000)
+        self.assertEqual(result["slotBefore"], -1)
+        self.assertEqual(result["slotAt"], 0)
+        self.assertIsNone(result["invalid"])
 
 
 class CapacityHelperTests(unittest.TestCase):
