@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-08-24T04:00:04+00:00",
+  "generated_at": "2026-08-24T05:00:05+00:00",
   "rounds": [
     {
       "accepted": false,
@@ -18102,6 +18102,93 @@
       "total_usd": 8.411789,
       "unpriced_tokens": 0,
       "verdict": "ACCEPT"
+    },
+    {
+      "accepted": false,
+      "builder": {
+        "attribution": "exact",
+        "classes": {
+          "cache_read_tokens": 26460790,
+          "cache_write_1h_tokens": 74389,
+          "cache_write_5m_tokens": 0,
+          "input_tokens": 108,
+          "output_tokens": 48858
+        },
+        "cost_status": "complete",
+        "flags": [],
+        "model_declared": "claude-opus-5",
+        "model_observed": "claude-opus-5",
+        "models": {
+          "claude-opus-5": {
+            "best_effort_estimate": null,
+            "classes": {
+              "cache_read_tokens": 26460790,
+              "cache_write_1h_tokens": 74389,
+              "cache_write_5m_tokens": 0,
+              "input_tokens": 108,
+              "output_tokens": 48858
+            },
+            "tokens": 26584145,
+            "unpriced_tokens": 0,
+            "usd": 15.196275
+          }
+        },
+        "sessions_expected": 1,
+        "sessions_found": 1,
+        "tokens": 26584145,
+        "unpriced_tokens": 0,
+        "usd": 15.196275,
+        "vendor": "anthropic"
+      },
+      "cost_status": "complete",
+      "debt_at_accept": null,
+      "duration_minutes": 12.167,
+      "ended_at": "2026-08-24T04:52:40+00:00",
+      "findings": 8,
+      "flags": [],
+      "judge": {
+        "attribution": "exact",
+        "classes": {
+          "cache_write_tokens": 0,
+          "cached_input_tokens": 9436416,
+          "input_tokens": 10010526,
+          "output_tokens": 89841,
+          "reasoning_output_tokens": 54004
+        },
+        "cost_status": "complete",
+        "flags": [],
+        "model_declared": "gpt-5.5",
+        "model_observed": "gpt-5.6-sol",
+        "models": {
+          "gpt-5.6-sol": {
+            "best_effort_estimate": null,
+            "classes": {
+              "cache_write_tokens": 0,
+              "cached_input_tokens": 9436416,
+              "input_tokens": 10010526,
+              "output_tokens": 89841,
+              "reasoning_output_tokens": 54004
+            },
+            "tokens": 10100367,
+            "unpriced_tokens": 0,
+            "usd": 10.283988
+          }
+        },
+        "sessions_expected": 4,
+        "sessions_found": 4,
+        "tokens": 10100367,
+        "unpriced_tokens": 0,
+        "usd": 10.283988,
+        "vendor": "openai"
+      },
+      "round": 1,
+      "row": "g09c",
+      "spec": "governance-states-controls",
+      "started_at": "2026-08-24T04:40:30+00:00",
+      "total_tokens": 36684512,
+      "total_usd": 25.480263,
+      "unpriced_tokens": 0,
+      "verdict": "NOT_ACCEPTED"
     },
     {
       "accepted": false,
