@@ -2,16 +2,16 @@
   "attribution": {
     "anthropic": {
       "correlated": 0,
-      "exact": 6,
+      "exact": 15,
       "unattributed": 0
     },
     "openai": {
       "correlated": 0,
-      "exact": 6,
+      "exact": 13,
       "unattributed": 0
     }
   },
-  "collected_at": "2026-08-24T08:17:04+00:00",
+  "collected_at": "2026-08-24T23:30:03+00:00",
   "date": "2026-08-24",
   "schema_version": 2,
   "vendors": {
@@ -28,18 +28,44 @@
         "unpriced_tokens": 0
       },
       "by_model": {
+        "claude-opus-4-8": {
+          "best_effort_estimate": null,
+          "classes": {
+            "cache_read_tokens": 30611,
+            "cache_write_1h_tokens": 843643,
+            "cache_write_5m_tokens": 0,
+            "input_tokens": 4,
+            "output_tokens": 10014
+          },
+          "tokens": 884272,
+          "unpriced_tokens": 0,
+          "usd": 8.702106
+        },
         "claude-opus-5": {
           "best_effort_estimate": null,
           "classes": {
-            "cache_read_tokens": 213708715,
-            "cache_write_1h_tokens": 1123999,
-            "cache_write_5m_tokens": 4518303,
-            "input_tokens": 3680,
-            "output_tokens": 1936264
+            "cache_read_tokens": 415486021,
+            "cache_write_1h_tokens": 2329418,
+            "cache_write_5m_tokens": 5109095,
+            "input_tokens": 5042,
+            "output_tokens": 2737444
           },
-          "tokens": 221290961,
+          "tokens": 425667020,
           "unpriced_tokens": 0,
-          "usd": 194.758741
+          "usd": 331.430344
+        },
+        "claude-sonnet-5": {
+          "best_effort_estimate": null,
+          "classes": {
+            "cache_read_tokens": 761782,
+            "cache_write_1h_tokens": 527056,
+            "cache_write_5m_tokens": 0,
+            "input_tokens": 64,
+            "output_tokens": 31043
+          },
+          "tokens": 1319945,
+          "unpriced_tokens": 0,
+          "usd": 2.571138
         },
         "unknown": {
           "best_effort_estimate": null,
@@ -72,15 +98,15 @@
             "claude-opus-5": {
               "best_effort_estimate": null,
               "classes": {
-                "cache_read_tokens": 213708715,
-                "cache_write_1h_tokens": 1123999,
-                "cache_write_5m_tokens": 4518303,
-                "input_tokens": 3680,
-                "output_tokens": 1936264
+                "cache_read_tokens": 415486021,
+                "cache_write_1h_tokens": 2329418,
+                "cache_write_5m_tokens": 5109095,
+                "input_tokens": 5042,
+                "output_tokens": 2737444
               },
-              "tokens": 221290961,
+              "tokens": 425667020,
               "unpriced_tokens": 0,
-              "usd": 194.758741
+              "usd": 331.430344
             },
             "unknown": {
               "best_effort_estimate": null,
@@ -97,15 +123,15 @@
             }
           },
           "classes": {
-            "cache_read_tokens": 213708715,
-            "cache_write_1h_tokens": 1123999,
-            "cache_write_5m_tokens": 4518303,
-            "input_tokens": 3680,
-            "output_tokens": 1936264
+            "cache_read_tokens": 415486021,
+            "cache_write_1h_tokens": 2329418,
+            "cache_write_5m_tokens": 5109095,
+            "input_tokens": 5042,
+            "output_tokens": 2737444
           },
-          "tokens": 221290961,
+          "tokens": 425667020,
           "unpriced_tokens": 0,
-          "usd": 194.758741
+          "usd": 331.430344
         },
         "other": {
           "best_effort_estimate": {
@@ -119,22 +145,49 @@
             "unestimated_tokens": 0,
             "unpriced_tokens": 0
           },
-          "by_model": {},
-          "classes": {
-            "cache_read_tokens": 0,
-            "cache_write_1h_tokens": 0,
-            "cache_write_5m_tokens": 0,
-            "input_tokens": 0,
-            "output_tokens": 0
+          "by_model": {
+            "claude-opus-4-8": {
+              "best_effort_estimate": null,
+              "classes": {
+                "cache_read_tokens": 30611,
+                "cache_write_1h_tokens": 843643,
+                "cache_write_5m_tokens": 0,
+                "input_tokens": 4,
+                "output_tokens": 10014
+              },
+              "tokens": 884272,
+              "unpriced_tokens": 0,
+              "usd": 8.702106
+            },
+            "claude-sonnet-5": {
+              "best_effort_estimate": null,
+              "classes": {
+                "cache_read_tokens": 761782,
+                "cache_write_1h_tokens": 527056,
+                "cache_write_5m_tokens": 0,
+                "input_tokens": 64,
+                "output_tokens": 31043
+              },
+              "tokens": 1319945,
+              "unpriced_tokens": 0,
+              "usd": 2.571138
+            }
           },
-          "tokens": 0,
+          "classes": {
+            "cache_read_tokens": 792393,
+            "cache_write_1h_tokens": 1370699,
+            "cache_write_5m_tokens": 0,
+            "input_tokens": 68,
+            "output_tokens": 41057
+          },
+          "tokens": 2204217,
           "unpriced_tokens": 0,
-          "usd": 0.0
+          "usd": 11.273244
         }
       },
-      "tokens": 221290961,
+      "tokens": 427871237,
       "unpriced_tokens": 0,
-      "usd": 194.758741
+      "usd": 342.703588
     },
     "openai": {
       "best_effort_estimate": {
@@ -149,18 +202,44 @@
         "unpriced_tokens": 0
       },
       "by_model": {
+        "gpt-5.4": {
+          "best_effort_estimate": null,
+          "classes": {
+            "cache_write_tokens": 0,
+            "cached_input_tokens": 1350144,
+            "input_tokens": 1487006,
+            "output_tokens": 12132,
+            "reasoning_output_tokens": 2550
+          },
+          "tokens": 1499138,
+          "unpriced_tokens": 0,
+          "usd": 0.861671
+        },
+        "gpt-5.6-luna": {
+          "best_effort_estimate": null,
+          "classes": {
+            "cache_write_tokens": 0,
+            "cached_input_tokens": 11008,
+            "input_tokens": 175481,
+            "output_tokens": 729,
+            "reasoning_output_tokens": 396
+          },
+          "tokens": 176210,
+          "unpriced_tokens": 0,
+          "usd": 0.03399
+        },
         "gpt-5.6-sol": {
           "best_effort_estimate": null,
           "classes": {
             "cache_write_tokens": 0,
-            "cached_input_tokens": 69770240,
-            "input_tokens": 73081834,
-            "output_tokens": 435167,
-            "reasoning_output_tokens": 241126
+            "cached_input_tokens": 685901568,
+            "input_tokens": 704391219,
+            "output_tokens": 2668815,
+            "reasoning_output_tokens": 1166072
           },
-          "tokens": 73517001,
+          "tokens": 707060034,
           "unpriced_tokens": 0,
-          "usd": 64.4981
+          "usd": 515.463489
         }
       },
       "by_scope": {
@@ -181,26 +260,26 @@
               "best_effort_estimate": null,
               "classes": {
                 "cache_write_tokens": 0,
-                "cached_input_tokens": 45155328,
-                "input_tokens": 47915063,
-                "output_tokens": 381724,
-                "reasoning_output_tokens": 219520
+                "cached_input_tokens": 81431040,
+                "input_tokens": 86854783,
+                "output_tokens": 747494,
+                "reasoning_output_tokens": 428611
               },
-              "tokens": 48296787,
+              "tokens": 87602277,
               "unpriced_tokens": 0,
-              "usd": 47.828059
+              "usd": 90.259055
             }
           },
           "classes": {
             "cache_write_tokens": 0,
-            "cached_input_tokens": 45155328,
-            "input_tokens": 47915063,
-            "output_tokens": 381724,
-            "reasoning_output_tokens": 219520
+            "cached_input_tokens": 81431040,
+            "input_tokens": 86854783,
+            "output_tokens": 747494,
+            "reasoning_output_tokens": 428611
           },
-          "tokens": 48296787,
+          "tokens": 87602277,
           "unpriced_tokens": 0,
-          "usd": 47.828059
+          "usd": 90.259055
         },
         "other": {
           "best_effort_estimate": {
@@ -215,35 +294,61 @@
             "unpriced_tokens": 0
           },
           "by_model": {
+            "gpt-5.4": {
+              "best_effort_estimate": null,
+              "classes": {
+                "cache_write_tokens": 0,
+                "cached_input_tokens": 1350144,
+                "input_tokens": 1487006,
+                "output_tokens": 12132,
+                "reasoning_output_tokens": 2550
+              },
+              "tokens": 1499138,
+              "unpriced_tokens": 0,
+              "usd": 0.861671
+            },
+            "gpt-5.6-luna": {
+              "best_effort_estimate": null,
+              "classes": {
+                "cache_write_tokens": 0,
+                "cached_input_tokens": 11008,
+                "input_tokens": 175481,
+                "output_tokens": 729,
+                "reasoning_output_tokens": 396
+              },
+              "tokens": 176210,
+              "unpriced_tokens": 0,
+              "usd": 0.03399
+            },
             "gpt-5.6-sol": {
               "best_effort_estimate": null,
               "classes": {
                 "cache_write_tokens": 0,
-                "cached_input_tokens": 24614912,
-                "input_tokens": 25166771,
-                "output_tokens": 53443,
-                "reasoning_output_tokens": 21606
+                "cached_input_tokens": 604470528,
+                "input_tokens": 617536436,
+                "output_tokens": 1921321,
+                "reasoning_output_tokens": 737461
               },
-              "tokens": 25220214,
+              "tokens": 619457757,
               "unpriced_tokens": 0,
-              "usd": 16.670041
+              "usd": 425.204434
             }
           },
           "classes": {
             "cache_write_tokens": 0,
-            "cached_input_tokens": 24614912,
-            "input_tokens": 25166771,
-            "output_tokens": 53443,
-            "reasoning_output_tokens": 21606
+            "cached_input_tokens": 605831680,
+            "input_tokens": 619198923,
+            "output_tokens": 1934182,
+            "reasoning_output_tokens": 740407
           },
-          "tokens": 25220214,
+          "tokens": 621133105,
           "unpriced_tokens": 0,
-          "usd": 16.670041
+          "usd": 426.100095
         }
       },
-      "tokens": 73517001,
+      "tokens": 708735382,
       "unpriced_tokens": 0,
-      "usd": 64.4981
+      "usd": 516.35915
     }
   }
 }
