@@ -2,16 +2,16 @@
   "attribution": {
     "anthropic": {
       "correlated": 0,
-      "exact": 0,
+      "exact": 26,
       "unattributed": 0
     },
     "openai": {
       "correlated": 0,
-      "exact": 0,
+      "exact": 24,
       "unattributed": 0
     }
   },
-  "collected_at": "2026-08-26T08:17:03+00:00",
+  "collected_at": "2026-08-26T23:30:04+00:00",
   "date": "2026-08-26",
   "schema_version": 2,
   "vendors": {
@@ -28,18 +28,70 @@
         "unpriced_tokens": 0
       },
       "by_model": {
+        "claude-fable-5": {
+          "best_effort_estimate": null,
+          "classes": {
+            "cache_read_tokens": 382826242,
+            "cache_write_1h_tokens": 2150506,
+            "cache_write_5m_tokens": 0,
+            "input_tokens": 1418,
+            "output_tokens": 1008522
+          },
+          "tokens": 385986688,
+          "unpriced_tokens": 0,
+          "usd": 476.276642
+        },
+        "claude-opus-4-8": {
+          "best_effort_estimate": null,
+          "classes": {
+            "cache_read_tokens": 15171,
+            "cache_write_1h_tokens": 6382,
+            "cache_write_5m_tokens": 0,
+            "input_tokens": 2,
+            "output_tokens": 9
+          },
+          "tokens": 21564,
+          "unpriced_tokens": 0,
+          "usd": 0.07164
+        },
+        "claude-opus-5": {
+          "best_effort_estimate": null,
+          "classes": {
+            "cache_read_tokens": 13154225,
+            "cache_write_1h_tokens": 910067,
+            "cache_write_5m_tokens": 0,
+            "input_tokens": 1710,
+            "output_tokens": 185742
+          },
+          "tokens": 14251744,
+          "unpriced_tokens": 0,
+          "usd": 20.329883
+        },
         "claude-sonnet-5": {
           "best_effort_estimate": null,
           "classes": {
-            "cache_read_tokens": 23283,
-            "cache_write_1h_tokens": 60233,
+            "cache_read_tokens": 139698,
+            "cache_write_1h_tokens": 248566,
             "cache_write_5m_tokens": 0,
-            "input_tokens": 4,
-            "output_tokens": 1525
+            "input_tokens": 18,
+            "output_tokens": 18575
           },
-          "tokens": 85045,
+          "tokens": 406857,
           "unpriced_tokens": 0,
-          "usd": 0.260847
+          "usd": 1.20799
+        },
+        "unknown": {
+          "best_effort_estimate": null,
+          "classes": {
+            "cache_read_tokens": 0,
+            "cache_write_1h_tokens": 0,
+            "cache_write_5m_tokens": 0,
+            "input_tokens": 0,
+            "output_tokens": 0
+          },
+          "tokens": 0,
+          "unpriced_tokens": 0,
+          "usd": 0.0
         }
       },
       "by_scope": {
@@ -55,17 +107,57 @@
             "unestimated_tokens": 0,
             "unpriced_tokens": 0
           },
-          "by_model": {},
-          "classes": {
-            "cache_read_tokens": 0,
-            "cache_write_1h_tokens": 0,
-            "cache_write_5m_tokens": 0,
-            "input_tokens": 0,
-            "output_tokens": 0
+          "by_model": {
+            "claude-fable-5": {
+              "best_effort_estimate": null,
+              "classes": {
+                "cache_read_tokens": 382826242,
+                "cache_write_1h_tokens": 2150506,
+                "cache_write_5m_tokens": 0,
+                "input_tokens": 1418,
+                "output_tokens": 1008522
+              },
+              "tokens": 385986688,
+              "unpriced_tokens": 0,
+              "usd": 476.276642
+            },
+            "claude-opus-5": {
+              "best_effort_estimate": null,
+              "classes": {
+                "cache_read_tokens": 13154225,
+                "cache_write_1h_tokens": 910067,
+                "cache_write_5m_tokens": 0,
+                "input_tokens": 1710,
+                "output_tokens": 185742
+              },
+              "tokens": 14251744,
+              "unpriced_tokens": 0,
+              "usd": 20.329883
+            },
+            "unknown": {
+              "best_effort_estimate": null,
+              "classes": {
+                "cache_read_tokens": 0,
+                "cache_write_1h_tokens": 0,
+                "cache_write_5m_tokens": 0,
+                "input_tokens": 0,
+                "output_tokens": 0
+              },
+              "tokens": 0,
+              "unpriced_tokens": 0,
+              "usd": 0.0
+            }
           },
-          "tokens": 0,
+          "classes": {
+            "cache_read_tokens": 395980467,
+            "cache_write_1h_tokens": 3060573,
+            "cache_write_5m_tokens": 0,
+            "input_tokens": 3128,
+            "output_tokens": 1194264
+          },
+          "tokens": 400238432,
           "unpriced_tokens": 0,
-          "usd": 0.0
+          "usd": 496.606525
         },
         "other": {
           "best_effort_estimate": {
@@ -80,35 +172,48 @@
             "unpriced_tokens": 0
           },
           "by_model": {
+            "claude-opus-4-8": {
+              "best_effort_estimate": null,
+              "classes": {
+                "cache_read_tokens": 15171,
+                "cache_write_1h_tokens": 6382,
+                "cache_write_5m_tokens": 0,
+                "input_tokens": 2,
+                "output_tokens": 9
+              },
+              "tokens": 21564,
+              "unpriced_tokens": 0,
+              "usd": 0.07164
+            },
             "claude-sonnet-5": {
               "best_effort_estimate": null,
               "classes": {
-                "cache_read_tokens": 23283,
-                "cache_write_1h_tokens": 60233,
+                "cache_read_tokens": 139698,
+                "cache_write_1h_tokens": 248566,
                 "cache_write_5m_tokens": 0,
-                "input_tokens": 4,
-                "output_tokens": 1525
+                "input_tokens": 18,
+                "output_tokens": 18575
               },
-              "tokens": 85045,
+              "tokens": 406857,
               "unpriced_tokens": 0,
-              "usd": 0.260847
+              "usd": 1.20799
             }
           },
           "classes": {
-            "cache_read_tokens": 23283,
-            "cache_write_1h_tokens": 60233,
+            "cache_read_tokens": 154869,
+            "cache_write_1h_tokens": 254948,
             "cache_write_5m_tokens": 0,
-            "input_tokens": 4,
-            "output_tokens": 1525
+            "input_tokens": 20,
+            "output_tokens": 18584
           },
-          "tokens": 85045,
+          "tokens": 428421,
           "unpriced_tokens": 0,
-          "usd": 0.260847
+          "usd": 1.27963
         }
       },
-      "tokens": 85045,
+      "tokens": 400666853,
       "unpriced_tokens": 0,
-      "usd": 0.260847
+      "usd": 497.886155
     },
     "openai": {
       "best_effort_estimate": {
@@ -122,7 +227,21 @@
         "unestimated_tokens": 0,
         "unpriced_tokens": 0
       },
-      "by_model": {},
+      "by_model": {
+        "gpt-5.6-sol": {
+          "best_effort_estimate": null,
+          "classes": {
+            "cache_write_tokens": 0,
+            "cached_input_tokens": 352882304,
+            "input_tokens": 367472288,
+            "output_tokens": 1945473,
+            "reasoning_output_tokens": 946701
+          },
+          "tokens": 369417761,
+          "unpriced_tokens": 0,
+          "usd": 307.755262
+        }
+      },
       "by_scope": {
         "loop": {
           "best_effort_estimate": {
@@ -136,17 +255,31 @@
             "unestimated_tokens": 0,
             "unpriced_tokens": 0
           },
-          "by_model": {},
+          "by_model": {
+            "gpt-5.6-sol": {
+              "best_effort_estimate": null,
+              "classes": {
+                "cache_write_tokens": 0,
+                "cached_input_tokens": 141800448,
+                "input_tokens": 151910274,
+                "output_tokens": 1378071,
+                "reasoning_output_tokens": 782410
+              },
+              "tokens": 153288345,
+              "unpriced_tokens": 0,
+              "usd": 162.791484
+            }
+          },
           "classes": {
             "cache_write_tokens": 0,
-            "cached_input_tokens": 0,
-            "input_tokens": 0,
-            "output_tokens": 0,
-            "reasoning_output_tokens": 0
+            "cached_input_tokens": 141800448,
+            "input_tokens": 151910274,
+            "output_tokens": 1378071,
+            "reasoning_output_tokens": 782410
           },
-          "tokens": 0,
+          "tokens": 153288345,
           "unpriced_tokens": 0,
-          "usd": 0.0
+          "usd": 162.791484
         },
         "other": {
           "best_effort_estimate": {
@@ -160,22 +293,36 @@
             "unestimated_tokens": 0,
             "unpriced_tokens": 0
           },
-          "by_model": {},
+          "by_model": {
+            "gpt-5.6-sol": {
+              "best_effort_estimate": null,
+              "classes": {
+                "cache_write_tokens": 0,
+                "cached_input_tokens": 211081856,
+                "input_tokens": 215562014,
+                "output_tokens": 567402,
+                "reasoning_output_tokens": 164291
+              },
+              "tokens": 216129416,
+              "unpriced_tokens": 0,
+              "usd": 144.963778
+            }
+          },
           "classes": {
             "cache_write_tokens": 0,
-            "cached_input_tokens": 0,
-            "input_tokens": 0,
-            "output_tokens": 0,
-            "reasoning_output_tokens": 0
+            "cached_input_tokens": 211081856,
+            "input_tokens": 215562014,
+            "output_tokens": 567402,
+            "reasoning_output_tokens": 164291
           },
-          "tokens": 0,
+          "tokens": 216129416,
           "unpriced_tokens": 0,
-          "usd": 0.0
+          "usd": 144.963778
         }
       },
-      "tokens": 0,
+      "tokens": 369417761,
       "unpriced_tokens": 0,
-      "usd": 0.0
+      "usd": 307.755262
     }
   }
 }
