@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-08-30T04:30:04+00:00",
+  "generated_at": "2026-08-30T07:30:03+00:00",
   "rounds": [
     {
       "accepted": false,
@@ -19861,6 +19861,180 @@
       "builder": {
         "attribution": "exact",
         "classes": {
+          "cache_read_tokens": 6004789,
+          "cache_write_1h_tokens": 9127,
+          "cache_write_5m_tokens": 0,
+          "input_tokens": 18,
+          "output_tokens": 5567
+        },
+        "cost_status": "complete",
+        "flags": [],
+        "model_declared": "claude-opus-5",
+        "model_observed": "claude-opus-5",
+        "models": {
+          "claude-opus-5": {
+            "best_effort_estimate": null,
+            "classes": {
+              "cache_read_tokens": 6004789,
+              "cache_write_1h_tokens": 9127,
+              "cache_write_5m_tokens": 0,
+              "input_tokens": 18,
+              "output_tokens": 5567
+            },
+            "tokens": 6019501,
+            "unpriced_tokens": 0,
+            "usd": 3.23293
+          }
+        },
+        "sessions_expected": 1,
+        "sessions_found": 1,
+        "tokens": 6019501,
+        "unpriced_tokens": 0,
+        "usd": 3.23293,
+        "vendor": "anthropic"
+      },
+      "cost_status": "complete",
+      "debt_at_accept": null,
+      "duration_minutes": 7.75,
+      "ended_at": "2026-08-30T04:41:09+00:00",
+      "findings": 1,
+      "flags": [],
+      "judge": {
+        "attribution": "exact",
+        "classes": {
+          "cache_write_tokens": 0,
+          "cached_input_tokens": 2755584,
+          "input_tokens": 3021769,
+          "output_tokens": 50124,
+          "reasoning_output_tokens": 30951
+        },
+        "cost_status": "complete",
+        "flags": [],
+        "model_declared": "gpt-5.5",
+        "model_observed": "gpt-5.6-sol",
+        "models": {
+          "gpt-5.6-sol": {
+            "best_effort_estimate": null,
+            "classes": {
+              "cache_write_tokens": 0,
+              "cached_input_tokens": 2755584,
+              "input_tokens": 3021769,
+              "output_tokens": 50124,
+              "reasoning_output_tokens": 30951
+            },
+            "tokens": 3071893,
+            "unpriced_tokens": 0,
+            "usd": 4.212437
+          }
+        },
+        "sessions_expected": 3,
+        "sessions_found": 3,
+        "tokens": 3071893,
+        "unpriced_tokens": 0,
+        "usd": 4.212437,
+        "vendor": "openai"
+      },
+      "round": 6,
+      "row": "g09c",
+      "spec": "governance-states-controls",
+      "started_at": "2026-08-30T04:33:24+00:00",
+      "total_tokens": 9091394,
+      "total_usd": 7.445367,
+      "unpriced_tokens": 0,
+      "verdict": "HOLD"
+    },
+    {
+      "accepted": true,
+      "builder": {
+        "attribution": "exact",
+        "classes": {
+          "cache_read_tokens": 4734936,
+          "cache_write_1h_tokens": 8230,
+          "cache_write_5m_tokens": 0,
+          "input_tokens": 14,
+          "output_tokens": 5723
+        },
+        "cost_status": "complete",
+        "flags": [],
+        "model_declared": "claude-opus-5",
+        "model_observed": "claude-opus-5",
+        "models": {
+          "claude-opus-5": {
+            "best_effort_estimate": null,
+            "classes": {
+              "cache_read_tokens": 4734936,
+              "cache_write_1h_tokens": 8230,
+              "cache_write_5m_tokens": 0,
+              "input_tokens": 14,
+              "output_tokens": 5723
+            },
+            "tokens": 4748903,
+            "unpriced_tokens": 0,
+            "usd": 2.592913
+          }
+        },
+        "sessions_expected": 1,
+        "sessions_found": 1,
+        "tokens": 4748903,
+        "unpriced_tokens": 0,
+        "usd": 2.592913,
+        "vendor": "anthropic"
+      },
+      "cost_status": "complete",
+      "debt_at_accept": 6,
+      "duration_minutes": 10.733,
+      "ended_at": "2026-08-30T04:58:25+00:00",
+      "findings": 0,
+      "flags": [],
+      "judge": {
+        "attribution": "exact",
+        "classes": {
+          "cache_write_tokens": 0,
+          "cached_input_tokens": 3920896,
+          "input_tokens": 4326280,
+          "output_tokens": 72225,
+          "reasoning_output_tokens": 46636
+        },
+        "cost_status": "complete",
+        "flags": [],
+        "model_declared": "gpt-5.5",
+        "model_observed": "gpt-5.6-sol",
+        "models": {
+          "gpt-5.6-sol": {
+            "best_effort_estimate": null,
+            "classes": {
+              "cache_write_tokens": 0,
+              "cached_input_tokens": 3920896,
+              "input_tokens": 4326280,
+              "output_tokens": 72225,
+              "reasoning_output_tokens": 46636
+            },
+            "tokens": 4398505,
+            "unpriced_tokens": 0,
+            "usd": 6.154118
+          }
+        },
+        "sessions_expected": 3,
+        "sessions_found": 3,
+        "tokens": 4398505,
+        "unpriced_tokens": 0,
+        "usd": 6.154118,
+        "vendor": "openai"
+      },
+      "round": 7,
+      "row": "g09c",
+      "spec": "governance-states-controls",
+      "started_at": "2026-08-30T04:47:41+00:00",
+      "total_tokens": 9147408,
+      "total_usd": 8.747031,
+      "unpriced_tokens": 0,
+      "verdict": "ACCEPT"
+    },
+    {
+      "accepted": false,
+      "builder": {
+        "attribution": "exact",
+        "classes": {
           "cache_read_tokens": 18055445,
           "cache_write_1h_tokens": 90480,
           "cache_write_5m_tokens": 0,
@@ -20377,6 +20551,528 @@
       "total_usd": 16.97867,
       "unpriced_tokens": 0,
       "verdict": "NOT_ACCEPTED"
+    },
+    {
+      "accepted": false,
+      "builder": {
+        "attribution": "exact",
+        "classes": {
+          "cache_read_tokens": 88576548,
+          "cache_write_1h_tokens": 134178,
+          "cache_write_5m_tokens": 0,
+          "input_tokens": 236,
+          "output_tokens": 75028
+        },
+        "cost_status": "complete",
+        "flags": [],
+        "model_declared": "claude-opus-5",
+        "model_observed": "claude-opus-5",
+        "models": {
+          "claude-opus-5": {
+            "best_effort_estimate": null,
+            "classes": {
+              "cache_read_tokens": 88576548,
+              "cache_write_1h_tokens": 134178,
+              "cache_write_5m_tokens": 0,
+              "input_tokens": 236,
+              "output_tokens": 75028
+            },
+            "tokens": 88785990,
+            "unpriced_tokens": 0,
+            "usd": 47.506934
+          }
+        },
+        "sessions_expected": 1,
+        "sessions_found": 1,
+        "tokens": 88785990,
+        "unpriced_tokens": 0,
+        "usd": 47.506934,
+        "vendor": "anthropic"
+      },
+      "cost_status": "complete",
+      "debt_at_accept": null,
+      "duration_minutes": 9.267,
+      "ended_at": "2026-08-30T05:49:34+00:00",
+      "findings": 2,
+      "flags": [],
+      "judge": {
+        "attribution": "exact",
+        "classes": {
+          "cache_write_tokens": 0,
+          "cached_input_tokens": 8096000,
+          "input_tokens": 8613927,
+          "output_tokens": 65118,
+          "reasoning_output_tokens": 34752
+        },
+        "cost_status": "complete",
+        "flags": [],
+        "model_declared": "gpt-5.5",
+        "model_observed": "gpt-5.6-sol",
+        "models": {
+          "gpt-5.6-sol": {
+            "best_effort_estimate": null,
+            "classes": {
+              "cache_write_tokens": 0,
+              "cached_input_tokens": 8096000,
+              "input_tokens": 8613927,
+              "output_tokens": 65118,
+              "reasoning_output_tokens": 34752
+            },
+            "tokens": 8679045,
+            "unpriced_tokens": 0,
+            "usd": 8.591175
+          }
+        },
+        "sessions_expected": 3,
+        "sessions_found": 3,
+        "tokens": 8679045,
+        "unpriced_tokens": 0,
+        "usd": 8.591175,
+        "vendor": "openai"
+      },
+      "round": 7,
+      "row": "g09b",
+      "spec": "governance-states-serving",
+      "started_at": "2026-08-30T05:40:18+00:00",
+      "total_tokens": 97465035,
+      "total_usd": 56.098109,
+      "unpriced_tokens": 0,
+      "verdict": "NOT_ACCEPTED"
+    },
+    {
+      "accepted": false,
+      "builder": {
+        "attribution": "exact",
+        "classes": {
+          "cache_read_tokens": 10717182,
+          "cache_write_1h_tokens": 15190,
+          "cache_write_5m_tokens": 0,
+          "input_tokens": 26,
+          "output_tokens": 11654
+        },
+        "cost_status": "complete",
+        "flags": [],
+        "model_declared": "claude-opus-5",
+        "model_observed": "claude-opus-5",
+        "models": {
+          "claude-opus-5": {
+            "best_effort_estimate": null,
+            "classes": {
+              "cache_read_tokens": 10717182,
+              "cache_write_1h_tokens": 15190,
+              "cache_write_5m_tokens": 0,
+              "input_tokens": 26,
+              "output_tokens": 11654
+            },
+            "tokens": 10744052,
+            "unpriced_tokens": 0,
+            "usd": 5.801971
+          }
+        },
+        "sessions_expected": 1,
+        "sessions_found": 1,
+        "tokens": 10744052,
+        "unpriced_tokens": 0,
+        "usd": 5.801971,
+        "vendor": "anthropic"
+      },
+      "cost_status": "complete",
+      "debt_at_accept": null,
+      "duration_minutes": 8.4,
+      "ended_at": "2026-08-30T06:09:54+00:00",
+      "findings": 4,
+      "flags": [],
+      "judge": {
+        "attribution": "exact",
+        "classes": {
+          "cache_write_tokens": 0,
+          "cached_input_tokens": 7879936,
+          "input_tokens": 8349390,
+          "output_tokens": 50421,
+          "reasoning_output_tokens": 28101
+        },
+        "cost_status": "complete",
+        "flags": [],
+        "model_declared": "gpt-5.5",
+        "model_observed": "gpt-5.6-sol",
+        "models": {
+          "gpt-5.6-sol": {
+            "best_effort_estimate": null,
+            "classes": {
+              "cache_write_tokens": 0,
+              "cached_input_tokens": 7879936,
+              "input_tokens": 8349390,
+              "output_tokens": 50421,
+              "reasoning_output_tokens": 28101
+            },
+            "tokens": 8399811,
+            "unpriced_tokens": 0,
+            "usd": 7.799868
+          }
+        },
+        "sessions_expected": 3,
+        "sessions_found": 3,
+        "tokens": 8399811,
+        "unpriced_tokens": 0,
+        "usd": 7.799868,
+        "vendor": "openai"
+      },
+      "round": 8,
+      "row": "g09b",
+      "spec": "governance-states-serving",
+      "started_at": "2026-08-30T06:01:30+00:00",
+      "total_tokens": 19143863,
+      "total_usd": 13.601839,
+      "unpriced_tokens": 0,
+      "verdict": "NOT_ACCEPTED"
+    },
+    {
+      "accepted": false,
+      "builder": {
+        "attribution": "exact",
+        "classes": {
+          "cache_read_tokens": 10077681,
+          "cache_write_1h_tokens": 15764,
+          "cache_write_5m_tokens": 0,
+          "input_tokens": 24,
+          "output_tokens": 12609
+        },
+        "cost_status": "complete",
+        "flags": [],
+        "model_declared": "claude-opus-5",
+        "model_observed": "claude-opus-5",
+        "models": {
+          "claude-opus-5": {
+            "best_effort_estimate": null,
+            "classes": {
+              "cache_read_tokens": 10077681,
+              "cache_write_1h_tokens": 15764,
+              "cache_write_5m_tokens": 0,
+              "input_tokens": 24,
+              "output_tokens": 12609
+            },
+            "tokens": 10106078,
+            "unpriced_tokens": 0,
+            "usd": 5.511825
+          }
+        },
+        "sessions_expected": 1,
+        "sessions_found": 1,
+        "tokens": 10106078,
+        "unpriced_tokens": 0,
+        "usd": 5.511825,
+        "vendor": "anthropic"
+      },
+      "cost_status": "complete",
+      "debt_at_accept": null,
+      "duration_minutes": 9.417,
+      "ended_at": "2026-08-30T06:28:39+00:00",
+      "findings": 6,
+      "flags": [],
+      "judge": {
+        "attribution": "exact",
+        "classes": {
+          "cache_write_tokens": 0,
+          "cached_input_tokens": 5120768,
+          "input_tokens": 5519878,
+          "output_tokens": 55480,
+          "reasoning_output_tokens": 30695
+        },
+        "cost_status": "complete",
+        "flags": [],
+        "model_declared": "gpt-5.5",
+        "model_observed": "gpt-5.6-sol",
+        "models": {
+          "gpt-5.6-sol": {
+            "best_effort_estimate": null,
+            "classes": {
+              "cache_write_tokens": 0,
+              "cached_input_tokens": 5120768,
+              "input_tokens": 5519878,
+              "output_tokens": 55480,
+              "reasoning_output_tokens": 30695
+            },
+            "tokens": 5575358,
+            "unpriced_tokens": 0,
+            "usd": 6.220334
+          }
+        },
+        "sessions_expected": 3,
+        "sessions_found": 3,
+        "tokens": 5575358,
+        "unpriced_tokens": 0,
+        "usd": 6.220334,
+        "vendor": "openai"
+      },
+      "round": 9,
+      "row": "g09b",
+      "spec": "governance-states-serving",
+      "started_at": "2026-08-30T06:19:14+00:00",
+      "total_tokens": 15681436,
+      "total_usd": 11.732159,
+      "unpriced_tokens": 0,
+      "verdict": "NOT_ACCEPTED"
+    },
+    {
+      "accepted": false,
+      "builder": {
+        "attribution": "exact",
+        "classes": {
+          "cache_read_tokens": 5961408,
+          "cache_write_1h_tokens": 12029,
+          "cache_write_5m_tokens": 0,
+          "input_tokens": 14,
+          "output_tokens": 6473
+        },
+        "cost_status": "complete",
+        "flags": [],
+        "model_declared": "claude-opus-5",
+        "model_observed": "claude-opus-5",
+        "models": {
+          "claude-opus-5": {
+            "best_effort_estimate": null,
+            "classes": {
+              "cache_read_tokens": 5961408,
+              "cache_write_1h_tokens": 12029,
+              "cache_write_5m_tokens": 0,
+              "input_tokens": 14,
+              "output_tokens": 6473
+            },
+            "tokens": 5979924,
+            "unpriced_tokens": 0,
+            "usd": 3.262889
+          }
+        },
+        "sessions_expected": 1,
+        "sessions_found": 1,
+        "tokens": 5979924,
+        "unpriced_tokens": 0,
+        "usd": 3.262889,
+        "vendor": "anthropic"
+      },
+      "cost_status": "complete",
+      "debt_at_accept": null,
+      "duration_minutes": 9.283,
+      "ended_at": "2026-08-30T06:39:45+00:00",
+      "findings": 1,
+      "flags": [],
+      "judge": {
+        "attribution": "exact",
+        "classes": {
+          "cache_write_tokens": 0,
+          "cached_input_tokens": 7272960,
+          "input_tokens": 7769354,
+          "output_tokens": 55895,
+          "reasoning_output_tokens": 33204
+        },
+        "cost_status": "complete",
+        "flags": [],
+        "model_declared": "gpt-5.5",
+        "model_observed": "gpt-5.6-sol",
+        "models": {
+          "gpt-5.6-sol": {
+            "best_effort_estimate": null,
+            "classes": {
+              "cache_write_tokens": 0,
+              "cached_input_tokens": 7272960,
+              "input_tokens": 7769354,
+              "output_tokens": 55895,
+              "reasoning_output_tokens": 33204
+            },
+            "tokens": 7825249,
+            "unpriced_tokens": 0,
+            "usd": 7.7953
+          }
+        },
+        "sessions_expected": 3,
+        "sessions_found": 3,
+        "tokens": 7825249,
+        "unpriced_tokens": 0,
+        "usd": 7.7953,
+        "vendor": "openai"
+      },
+      "round": 10,
+      "row": "g09b",
+      "spec": "governance-states-serving",
+      "started_at": "2026-08-30T06:30:28+00:00",
+      "total_tokens": 13805173,
+      "total_usd": 11.058189,
+      "unpriced_tokens": 0,
+      "verdict": "NOT_ACCEPTED"
+    },
+    {
+      "accepted": false,
+      "builder": {
+        "attribution": "exact",
+        "classes": {
+          "cache_read_tokens": 18307318,
+          "cache_write_1h_tokens": 20119,
+          "cache_write_5m_tokens": 0,
+          "input_tokens": 42,
+          "output_tokens": 14286
+        },
+        "cost_status": "complete",
+        "flags": [],
+        "model_declared": "claude-opus-5",
+        "model_observed": "claude-opus-5",
+        "models": {
+          "claude-opus-5": {
+            "best_effort_estimate": null,
+            "classes": {
+              "cache_read_tokens": 18307318,
+              "cache_write_1h_tokens": 20119,
+              "cache_write_5m_tokens": 0,
+              "input_tokens": 42,
+              "output_tokens": 14286
+            },
+            "tokens": 18341765,
+            "unpriced_tokens": 0,
+            "usd": 9.712209
+          }
+        },
+        "sessions_expected": 1,
+        "sessions_found": 1,
+        "tokens": 18341765,
+        "unpriced_tokens": 0,
+        "usd": 9.712209,
+        "vendor": "anthropic"
+      },
+      "cost_status": "complete",
+      "debt_at_accept": null,
+      "duration_minutes": 8.817,
+      "ended_at": "2026-08-30T06:58:56+00:00",
+      "findings": 2,
+      "flags": [],
+      "judge": {
+        "attribution": "exact",
+        "classes": {
+          "cache_write_tokens": 0,
+          "cached_input_tokens": 6389760,
+          "input_tokens": 7028572,
+          "output_tokens": 52375,
+          "reasoning_output_tokens": 29908
+        },
+        "cost_status": "complete",
+        "flags": [],
+        "model_declared": "gpt-5.5",
+        "model_observed": "gpt-5.6-sol",
+        "models": {
+          "gpt-5.6-sol": {
+            "best_effort_estimate": null,
+            "classes": {
+              "cache_write_tokens": 0,
+              "cached_input_tokens": 6389760,
+              "input_tokens": 7028572,
+              "output_tokens": 52375,
+              "reasoning_output_tokens": 29908
+            },
+            "tokens": 7080947,
+            "unpriced_tokens": 0,
+            "usd": 7.96019
+          }
+        },
+        "sessions_expected": 3,
+        "sessions_found": 3,
+        "tokens": 7080947,
+        "unpriced_tokens": 0,
+        "usd": 7.96019,
+        "vendor": "openai"
+      },
+      "round": 11,
+      "row": "g09b",
+      "spec": "governance-states-serving",
+      "started_at": "2026-08-30T06:50:07+00:00",
+      "total_tokens": 25422712,
+      "total_usd": 17.672399,
+      "unpriced_tokens": 0,
+      "verdict": "NOT_ACCEPTED"
+    },
+    {
+      "accepted": true,
+      "builder": {
+        "attribution": "exact",
+        "classes": {
+          "cache_read_tokens": 11545222,
+          "cache_write_1h_tokens": 13217,
+          "cache_write_5m_tokens": 0,
+          "input_tokens": 26,
+          "output_tokens": 8792
+        },
+        "cost_status": "complete",
+        "flags": [],
+        "model_declared": "claude-opus-5",
+        "model_observed": "claude-opus-5",
+        "models": {
+          "claude-opus-5": {
+            "best_effort_estimate": null,
+            "classes": {
+              "cache_read_tokens": 11545222,
+              "cache_write_1h_tokens": 13217,
+              "cache_write_5m_tokens": 0,
+              "input_tokens": 26,
+              "output_tokens": 8792
+            },
+            "tokens": 11567257,
+            "unpriced_tokens": 0,
+            "usd": 6.124711
+          }
+        },
+        "sessions_expected": 1,
+        "sessions_found": 1,
+        "tokens": 11567257,
+        "unpriced_tokens": 0,
+        "usd": 6.124711,
+        "vendor": "anthropic"
+      },
+      "cost_status": "complete",
+      "debt_at_accept": 5,
+      "duration_minutes": 9.567,
+      "ended_at": "2026-08-30T07:20:48+00:00",
+      "findings": 0,
+      "flags": [],
+      "judge": {
+        "attribution": "exact",
+        "classes": {
+          "cache_write_tokens": 0,
+          "cached_input_tokens": 8020736,
+          "input_tokens": 8499495,
+          "output_tokens": 50288,
+          "reasoning_output_tokens": 28858
+        },
+        "cost_status": "complete",
+        "flags": [],
+        "model_declared": "gpt-5.5",
+        "model_observed": "gpt-5.6-sol",
+        "models": {
+          "gpt-5.6-sol": {
+            "best_effort_estimate": null,
+            "classes": {
+              "cache_write_tokens": 0,
+              "cached_input_tokens": 8020736,
+              "input_tokens": 8499495,
+              "output_tokens": 50288,
+              "reasoning_output_tokens": 28858
+            },
+            "tokens": 8549783,
+            "unpriced_tokens": 0,
+            "usd": 7.912803
+          }
+        },
+        "sessions_expected": 3,
+        "sessions_found": 3,
+        "tokens": 8549783,
+        "unpriced_tokens": 0,
+        "usd": 7.912803,
+        "vendor": "openai"
+      },
+      "round": 12,
+      "row": "g09b",
+      "spec": "governance-states-serving",
+      "started_at": "2026-08-30T07:11:14+00:00",
+      "total_tokens": 20117040,
+      "total_usd": 14.037514,
+      "unpriced_tokens": 0,
+      "verdict": "ACCEPT"
     },
     {
       "accepted": false,
