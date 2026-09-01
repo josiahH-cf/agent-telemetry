@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-08-31T08:00:03+00:00",
+  "generated_at": "2026-09-01T01:30:04+00:00",
   "rounds": [
     {
       "accepted": false,
@@ -18104,6 +18104,344 @@
       "verdict": "ACCEPT"
     },
     {
+      "accepted": true,
+      "builder": {
+        "attribution": "unattributed",
+        "classes": {
+          "cache_write_tokens": 0,
+          "cached_input_tokens": 0,
+          "input_tokens": 0,
+          "output_tokens": 0,
+          "reasoning_output_tokens": 0
+        },
+        "cost_status": "unavailable",
+        "flags": [
+          "builder_prefix_missing"
+        ],
+        "model_declared": "unknown",
+        "model_observed": null,
+        "models": {},
+        "sessions_expected": 1,
+        "sessions_found": 0,
+        "tokens": 0,
+        "unpriced_tokens": 0,
+        "usd": 0.0,
+        "vendor": "unknown"
+      },
+      "cost_status": "complete",
+      "debt_at_accept": 1,
+      "duration_minutes": 12.817,
+      "ended_at": "2026-08-31T12:22:15+00:00",
+      "findings": 0,
+      "flags": [
+        "builder_prefix_missing"
+      ],
+      "judge": {
+        "attribution": "exact",
+        "classes": {
+          "cache_read_tokens": 7528084,
+          "cache_write_1h_tokens": 434005,
+          "cache_write_5m_tokens": 0,
+          "input_tokens": 187,
+          "output_tokens": 149038
+        },
+        "cost_status": "complete",
+        "flags": [],
+        "model_declared": "claude-opus-5",
+        "model_observed": "claude-opus-5",
+        "models": {
+          "claude-opus-5": {
+            "best_effort_estimate": null,
+            "classes": {
+              "cache_read_tokens": 7528084,
+              "cache_write_1h_tokens": 434005,
+              "cache_write_5m_tokens": 0,
+              "input_tokens": 187,
+              "output_tokens": 149038
+            },
+            "tokens": 8111314,
+            "unpriced_tokens": 0,
+            "usd": 11.830977
+          }
+        },
+        "sessions_expected": 4,
+        "sessions_found": 4,
+        "tokens": 8111314,
+        "unpriced_tokens": 0,
+        "usd": 11.830977,
+        "vendor": "anthropic"
+      },
+      "round": 1,
+      "row": "g09e",
+      "spec": "governance-age-expiry",
+      "started_at": "2026-08-31T12:09:26+00:00",
+      "total_tokens": 8111314,
+      "total_usd": 11.830977,
+      "unpriced_tokens": 0,
+      "verdict": "HOLD"
+    },
+    {
+      "accepted": false,
+      "builder": {
+        "attribution": "exact",
+        "classes": {
+          "cache_read_tokens": 17097334,
+          "cache_write_1h_tokens": 71212,
+          "cache_write_5m_tokens": 0,
+          "input_tokens": 138,
+          "output_tokens": 43713
+        },
+        "cost_status": "complete",
+        "flags": [],
+        "model_declared": "claude-opus-5",
+        "model_observed": "claude-opus-5",
+        "models": {
+          "claude-opus-5": {
+            "best_effort_estimate": null,
+            "classes": {
+              "cache_read_tokens": 17097334,
+              "cache_write_1h_tokens": 71212,
+              "cache_write_5m_tokens": 0,
+              "input_tokens": 138,
+              "output_tokens": 43713
+            },
+            "tokens": 17212397,
+            "unpriced_tokens": 0,
+            "usd": 10.354302
+          }
+        },
+        "sessions_expected": 1,
+        "sessions_found": 1,
+        "tokens": 17212397,
+        "unpriced_tokens": 0,
+        "usd": 10.354302,
+        "vendor": "anthropic"
+      },
+      "cost_status": "complete",
+      "debt_at_accept": null,
+      "duration_minutes": 15.95,
+      "ended_at": "2026-08-31T12:44:31+00:00",
+      "findings": 4,
+      "flags": [],
+      "judge": {
+        "attribution": "exact",
+        "classes": {
+          "cache_write_tokens": 0,
+          "cached_input_tokens": 5574912,
+          "input_tokens": 6022566,
+          "output_tokens": 56272,
+          "reasoning_output_tokens": 36819
+        },
+        "cost_status": "complete",
+        "flags": [],
+        "model_declared": "gpt-5.5",
+        "model_observed": "gpt-5.6-sol",
+        "models": {
+          "gpt-5.6-sol": {
+            "best_effort_estimate": null,
+            "classes": {
+              "cache_write_tokens": 0,
+              "cached_input_tokens": 5574912,
+              "input_tokens": 6022566,
+              "output_tokens": 56272,
+              "reasoning_output_tokens": 36819
+            },
+            "tokens": 6078838,
+            "unpriced_tokens": 0,
+            "usd": 6.713886
+          }
+        },
+        "sessions_expected": 3,
+        "sessions_found": 3,
+        "tokens": 6078838,
+        "unpriced_tokens": 0,
+        "usd": 6.713886,
+        "vendor": "openai"
+      },
+      "round": 2,
+      "row": "g09e",
+      "spec": "governance-age-expiry",
+      "started_at": "2026-08-31T12:28:34+00:00",
+      "total_tokens": 23291235,
+      "total_usd": 17.068188,
+      "unpriced_tokens": 0,
+      "verdict": "NOT_ACCEPTED"
+    },
+    {
+      "accepted": false,
+      "builder": {
+        "attribution": "exact",
+        "classes": {
+          "cache_read_tokens": 39892916,
+          "cache_write_1h_tokens": 103070,
+          "cache_write_5m_tokens": 0,
+          "input_tokens": 228,
+          "output_tokens": 61504
+        },
+        "cost_status": "complete",
+        "flags": [],
+        "model_declared": "claude-opus-5",
+        "model_observed": "claude-opus-5",
+        "models": {
+          "claude-opus-5": {
+            "best_effort_estimate": null,
+            "classes": {
+              "cache_read_tokens": 39892916,
+              "cache_write_1h_tokens": 103070,
+              "cache_write_5m_tokens": 0,
+              "input_tokens": 228,
+              "output_tokens": 61504
+            },
+            "tokens": 40057718,
+            "unpriced_tokens": 0,
+            "usd": 22.515898
+          }
+        },
+        "sessions_expected": 1,
+        "sessions_found": 1,
+        "tokens": 40057718,
+        "unpriced_tokens": 0,
+        "usd": 22.515898,
+        "vendor": "anthropic"
+      },
+      "cost_status": "complete",
+      "debt_at_accept": null,
+      "duration_minutes": 16.55,
+      "ended_at": "2026-08-31T13:31:36+00:00",
+      "findings": 1,
+      "flags": [],
+      "judge": {
+        "attribution": "exact",
+        "classes": {
+          "cache_write_tokens": 0,
+          "cached_input_tokens": 4738816,
+          "input_tokens": 5167749,
+          "output_tokens": 47152,
+          "reasoning_output_tokens": 28776
+        },
+        "cost_status": "complete",
+        "flags": [],
+        "model_declared": "gpt-5.5",
+        "model_observed": "gpt-5.6-sol",
+        "models": {
+          "gpt-5.6-sol": {
+            "best_effort_estimate": null,
+            "classes": {
+              "cache_write_tokens": 0,
+              "cached_input_tokens": 4738816,
+              "input_tokens": 5167749,
+              "output_tokens": 47152,
+              "reasoning_output_tokens": 28776
+            },
+            "tokens": 5214901,
+            "unpriced_tokens": 0,
+            "usd": 5.928633
+          }
+        },
+        "sessions_expected": 3,
+        "sessions_found": 3,
+        "tokens": 5214901,
+        "unpriced_tokens": 0,
+        "usd": 5.928633,
+        "vendor": "openai"
+      },
+      "round": 3,
+      "row": "g09e",
+      "spec": "governance-age-expiry",
+      "started_at": "2026-08-31T13:15:03+00:00",
+      "total_tokens": 45272619,
+      "total_usd": 28.444531,
+      "unpriced_tokens": 0,
+      "verdict": "NOT_ACCEPTED"
+    },
+    {
+      "accepted": true,
+      "builder": {
+        "attribution": "exact",
+        "classes": {
+          "cache_read_tokens": 8577338,
+          "cache_write_1h_tokens": 460836,
+          "cache_write_5m_tokens": 0,
+          "input_tokens": 38,
+          "output_tokens": 11405
+        },
+        "cost_status": "complete",
+        "flags": [],
+        "model_declared": "claude-opus-5",
+        "model_observed": "claude-opus-5",
+        "models": {
+          "claude-opus-5": {
+            "best_effort_estimate": null,
+            "classes": {
+              "cache_read_tokens": 8577338,
+              "cache_write_1h_tokens": 460836,
+              "cache_write_5m_tokens": 0,
+              "input_tokens": 38,
+              "output_tokens": 11405
+            },
+            "tokens": 9049617,
+            "unpriced_tokens": 0,
+            "usd": 9.182344
+          }
+        },
+        "sessions_expected": 1,
+        "sessions_found": 1,
+        "tokens": 9049617,
+        "unpriced_tokens": 0,
+        "usd": 9.182344,
+        "vendor": "anthropic"
+      },
+      "cost_status": "complete",
+      "debt_at_accept": 2,
+      "duration_minutes": 15.983,
+      "ended_at": "2026-08-31T15:03:58+00:00",
+      "findings": 0,
+      "flags": [],
+      "judge": {
+        "attribution": "exact",
+        "classes": {
+          "cache_write_tokens": 0,
+          "cached_input_tokens": 4301056,
+          "input_tokens": 4672810,
+          "output_tokens": 49202,
+          "reasoning_output_tokens": 31391
+        },
+        "cost_status": "complete",
+        "flags": [],
+        "model_declared": "gpt-5.5",
+        "model_observed": "gpt-5.6-sol",
+        "models": {
+          "gpt-5.6-sol": {
+            "best_effort_estimate": null,
+            "classes": {
+              "cache_write_tokens": 0,
+              "cached_input_tokens": 4301056,
+              "input_tokens": 4672810,
+              "output_tokens": 49202,
+              "reasoning_output_tokens": 31391
+            },
+            "tokens": 4722012,
+            "unpriced_tokens": 0,
+            "usd": 5.485358
+          }
+        },
+        "sessions_expected": 3,
+        "sessions_found": 3,
+        "tokens": 4722012,
+        "unpriced_tokens": 0,
+        "usd": 5.485358,
+        "vendor": "openai"
+      },
+      "round": 4,
+      "row": "g09e",
+      "spec": "governance-age-expiry",
+      "started_at": "2026-08-31T14:47:59+00:00",
+      "total_tokens": 13771629,
+      "total_usd": 14.667702,
+      "unpriced_tokens": 0,
+      "verdict": "ACCEPT"
+    },
+    {
       "accepted": false,
       "builder": {
         "attribution": "exact",
@@ -31275,6 +31613,514 @@
       "builder": {
         "attribution": "exact",
         "classes": {
+          "cache_read_tokens": 56662625,
+          "cache_write_1h_tokens": 283812,
+          "cache_write_5m_tokens": 0,
+          "input_tokens": 398,
+          "output_tokens": 126703
+        },
+        "cost_status": "complete",
+        "flags": [],
+        "model_declared": "claude-opus-5",
+        "model_observed": "claude-opus-5",
+        "models": {
+          "claude-opus-5": {
+            "best_effort_estimate": null,
+            "classes": {
+              "cache_read_tokens": 56662625,
+              "cache_write_1h_tokens": 283812,
+              "cache_write_5m_tokens": 0,
+              "input_tokens": 398,
+              "output_tokens": 126703
+            },
+            "tokens": 57073538,
+            "unpriced_tokens": 0,
+            "usd": 34.338997
+          }
+        },
+        "sessions_expected": 1,
+        "sessions_found": 1,
+        "tokens": 57073538,
+        "unpriced_tokens": 0,
+        "usd": 34.338997,
+        "vendor": "anthropic"
+      },
+      "cost_status": "complete",
+      "debt_at_accept": null,
+      "duration_minutes": 21.117,
+      "ended_at": "2026-08-31T12:20:53+00:00",
+      "findings": 4,
+      "flags": [],
+      "judge": {
+        "attribution": "exact",
+        "classes": {
+          "cache_write_tokens": 0,
+          "cached_input_tokens": 8290048,
+          "input_tokens": 8710943,
+          "output_tokens": 69430,
+          "reasoning_output_tokens": 44877
+        },
+        "cost_status": "complete",
+        "flags": [],
+        "model_declared": "gpt-5.5",
+        "model_observed": "gpt-5.6-sol",
+        "models": {
+          "gpt-5.6-sol": {
+            "best_effort_estimate": null,
+            "classes": {
+              "cache_write_tokens": 0,
+              "cached_input_tokens": 8290048,
+              "input_tokens": 8710943,
+              "output_tokens": 69430,
+              "reasoning_output_tokens": 44877
+            },
+            "tokens": 8780373,
+            "unpriced_tokens": 0,
+            "usd": 8.332399
+          }
+        },
+        "sessions_expected": 3,
+        "sessions_found": 3,
+        "tokens": 8780373,
+        "unpriced_tokens": 0,
+        "usd": 8.332399,
+        "vendor": "openai"
+      },
+      "round": 26,
+      "row": "tp3",
+      "spec": "intake-settle-walk-cost",
+      "started_at": "2026-08-31T11:59:46+00:00",
+      "total_tokens": 65853911,
+      "total_usd": 42.671396,
+      "unpriced_tokens": 0,
+      "verdict": "NOT_ACCEPTED"
+    },
+    {
+      "accepted": false,
+      "builder": {
+        "attribution": "exact",
+        "classes": {
+          "cache_read_tokens": 4930824,
+          "cache_write_1h_tokens": 9487,
+          "cache_write_5m_tokens": 0,
+          "input_tokens": 34,
+          "output_tokens": 6398
+        },
+        "cost_status": "complete",
+        "flags": [],
+        "model_declared": "claude-opus-5",
+        "model_observed": "claude-opus-5",
+        "models": {
+          "claude-opus-5": {
+            "best_effort_estimate": null,
+            "classes": {
+              "cache_read_tokens": 4930824,
+              "cache_write_1h_tokens": 9487,
+              "cache_write_5m_tokens": 0,
+              "input_tokens": 34,
+              "output_tokens": 6398
+            },
+            "tokens": 4946743,
+            "unpriced_tokens": 0,
+            "usd": 2.720402
+          }
+        },
+        "sessions_expected": 1,
+        "sessions_found": 1,
+        "tokens": 4946743,
+        "unpriced_tokens": 0,
+        "usd": 2.720402,
+        "vendor": "anthropic"
+      },
+      "cost_status": "complete",
+      "debt_at_accept": null,
+      "duration_minutes": 15.95,
+      "ended_at": "2026-08-31T12:51:33+00:00",
+      "findings": 9,
+      "flags": [],
+      "judge": {
+        "attribution": "exact",
+        "classes": {
+          "cache_write_tokens": 0,
+          "cached_input_tokens": 6107392,
+          "input_tokens": 6554553,
+          "output_tokens": 63002,
+          "reasoning_output_tokens": 37423
+        },
+        "cost_status": "complete",
+        "flags": [],
+        "model_declared": "gpt-5.5",
+        "model_observed": "gpt-5.6-sol",
+        "models": {
+          "gpt-5.6-sol": {
+            "best_effort_estimate": null,
+            "classes": {
+              "cache_write_tokens": 0,
+              "cached_input_tokens": 6107392,
+              "input_tokens": 6554553,
+              "output_tokens": 63002,
+              "reasoning_output_tokens": 37423
+            },
+            "tokens": 6617555,
+            "unpriced_tokens": 0,
+            "usd": 7.179561
+          }
+        },
+        "sessions_expected": 3,
+        "sessions_found": 3,
+        "tokens": 6617555,
+        "unpriced_tokens": 0,
+        "usd": 7.179561,
+        "vendor": "openai"
+      },
+      "round": 27,
+      "row": "tp3",
+      "spec": "intake-settle-walk-cost",
+      "started_at": "2026-08-31T12:35:36+00:00",
+      "total_tokens": 11564298,
+      "total_usd": 9.899963,
+      "unpriced_tokens": 0,
+      "verdict": "NOT_ACCEPTED"
+    },
+    {
+      "accepted": false,
+      "builder": {
+        "attribution": "exact",
+        "classes": {
+          "cache_read_tokens": 1195921,
+          "cache_write_1h_tokens": 1570,
+          "cache_write_5m_tokens": 0,
+          "input_tokens": 6,
+          "output_tokens": 1075
+        },
+        "cost_status": "complete",
+        "flags": [],
+        "model_declared": "claude-opus-5",
+        "model_observed": "claude-opus-5",
+        "models": {
+          "claude-opus-5": {
+            "best_effort_estimate": null,
+            "classes": {
+              "cache_read_tokens": 1195921,
+              "cache_write_1h_tokens": 1570,
+              "cache_write_5m_tokens": 0,
+              "input_tokens": 6,
+              "output_tokens": 1075
+            },
+            "tokens": 1198572,
+            "unpriced_tokens": 0,
+            "usd": 0.640566
+          }
+        },
+        "sessions_expected": 1,
+        "sessions_found": 1,
+        "tokens": 1198572,
+        "unpriced_tokens": 0,
+        "usd": 0.640566,
+        "vendor": "anthropic"
+      },
+      "cost_status": "complete",
+      "debt_at_accept": null,
+      "duration_minutes": 18.4,
+      "ended_at": "2026-08-31T13:36:54+00:00",
+      "findings": 5,
+      "flags": [],
+      "judge": {
+        "attribution": "exact",
+        "classes": {
+          "cache_write_tokens": 0,
+          "cached_input_tokens": 5942272,
+          "input_tokens": 6414341,
+          "output_tokens": 58314,
+          "reasoning_output_tokens": 37045
+        },
+        "cost_status": "complete",
+        "flags": [],
+        "model_declared": "gpt-5.5",
+        "model_observed": "gpt-5.6-sol",
+        "models": {
+          "gpt-5.6-sol": {
+            "best_effort_estimate": null,
+            "classes": {
+              "cache_write_tokens": 0,
+              "cached_input_tokens": 5942272,
+              "input_tokens": 6414341,
+              "output_tokens": 58314,
+              "reasoning_output_tokens": 37045
+            },
+            "tokens": 6472655,
+            "unpriced_tokens": 0,
+            "usd": 7.080901
+          }
+        },
+        "sessions_expected": 3,
+        "sessions_found": 3,
+        "tokens": 6472655,
+        "unpriced_tokens": 0,
+        "usd": 7.080901,
+        "vendor": "openai"
+      },
+      "round": 28,
+      "row": "tp3",
+      "spec": "intake-settle-walk-cost",
+      "started_at": "2026-08-31T13:18:30+00:00",
+      "total_tokens": 7671227,
+      "total_usd": 7.721467,
+      "unpriced_tokens": 0,
+      "verdict": "NOT_ACCEPTED"
+    },
+    {
+      "accepted": false,
+      "builder": {
+        "attribution": "exact",
+        "classes": {
+          "cache_read_tokens": 14118743,
+          "cache_write_1h_tokens": 32363,
+          "cache_write_5m_tokens": 0,
+          "input_tokens": 68,
+          "output_tokens": 22782
+        },
+        "cost_status": "complete",
+        "flags": [],
+        "model_declared": "claude-opus-5",
+        "model_observed": "claude-opus-5",
+        "models": {
+          "claude-opus-5": {
+            "best_effort_estimate": null,
+            "classes": {
+              "cache_read_tokens": 14118743,
+              "cache_write_1h_tokens": 32363,
+              "cache_write_5m_tokens": 0,
+              "input_tokens": 68,
+              "output_tokens": 22782
+            },
+            "tokens": 14173956,
+            "unpriced_tokens": 0,
+            "usd": 7.952891
+          }
+        },
+        "sessions_expected": 1,
+        "sessions_found": 1,
+        "tokens": 14173956,
+        "unpriced_tokens": 0,
+        "usd": 7.952891,
+        "vendor": "anthropic"
+      },
+      "cost_status": "complete",
+      "debt_at_accept": null,
+      "duration_minutes": 11.217,
+      "ended_at": "2026-08-31T13:51:37+00:00",
+      "findings": 3,
+      "flags": [],
+      "judge": {
+        "attribution": "exact",
+        "classes": {
+          "cache_write_tokens": 0,
+          "cached_input_tokens": 3778304,
+          "input_tokens": 4093750,
+          "output_tokens": 37999,
+          "reasoning_output_tokens": 22969
+        },
+        "cost_status": "complete",
+        "flags": [],
+        "model_declared": "gpt-5.5",
+        "model_observed": "gpt-5.6-sol",
+        "models": {
+          "gpt-5.6-sol": {
+            "best_effort_estimate": null,
+            "classes": {
+              "cache_write_tokens": 0,
+              "cached_input_tokens": 3778304,
+              "input_tokens": 4093750,
+              "output_tokens": 37999,
+              "reasoning_output_tokens": 22969
+            },
+            "tokens": 4131749,
+            "unpriced_tokens": 0,
+            "usd": 4.606352
+          }
+        },
+        "sessions_expected": 3,
+        "sessions_found": 3,
+        "tokens": 4131749,
+        "unpriced_tokens": 0,
+        "usd": 4.606352,
+        "vendor": "openai"
+      },
+      "round": 29,
+      "row": "tp3",
+      "spec": "intake-settle-walk-cost",
+      "started_at": "2026-08-31T13:40:24+00:00",
+      "total_tokens": 18305705,
+      "total_usd": 12.559243,
+      "unpriced_tokens": 0,
+      "verdict": "NOT_ACCEPTED"
+    },
+    {
+      "accepted": false,
+      "builder": {
+        "attribution": "exact",
+        "classes": {
+          "cache_read_tokens": 9327527,
+          "cache_write_1h_tokens": 22513,
+          "cache_write_5m_tokens": 0,
+          "input_tokens": 42,
+          "output_tokens": 16190
+        },
+        "cost_status": "complete",
+        "flags": [],
+        "model_declared": "claude-opus-5",
+        "model_observed": "claude-opus-5",
+        "models": {
+          "claude-opus-5": {
+            "best_effort_estimate": null,
+            "classes": {
+              "cache_read_tokens": 9327527,
+              "cache_write_1h_tokens": 22513,
+              "cache_write_5m_tokens": 0,
+              "input_tokens": 42,
+              "output_tokens": 16190
+            },
+            "tokens": 9366272,
+            "unpriced_tokens": 0,
+            "usd": 5.293853
+          }
+        },
+        "sessions_expected": 1,
+        "sessions_found": 1,
+        "tokens": 9366272,
+        "unpriced_tokens": 0,
+        "usd": 5.293853,
+        "vendor": "anthropic"
+      },
+      "cost_status": "complete",
+      "debt_at_accept": null,
+      "duration_minutes": 16.15,
+      "ended_at": "2026-08-31T14:19:25+00:00",
+      "findings": 7,
+      "flags": [],
+      "judge": {
+        "attribution": "exact",
+        "classes": {
+          "cache_write_tokens": 0,
+          "cached_input_tokens": 7480064,
+          "input_tokens": 7914509,
+          "output_tokens": 59754,
+          "reasoning_output_tokens": 37263
+        },
+        "cost_status": "complete",
+        "flags": [],
+        "model_declared": "gpt-5.5",
+        "model_observed": "gpt-5.6-sol",
+        "models": {
+          "gpt-5.6-sol": {
+            "best_effort_estimate": null,
+            "classes": {
+              "cache_write_tokens": 0,
+              "cached_input_tokens": 7480064,
+              "input_tokens": 7914509,
+              "output_tokens": 59754,
+              "reasoning_output_tokens": 37263
+            },
+            "tokens": 7974263,
+            "unpriced_tokens": 0,
+            "usd": 7.704877
+          }
+        },
+        "sessions_expected": 3,
+        "sessions_found": 3,
+        "tokens": 7974263,
+        "unpriced_tokens": 0,
+        "usd": 7.704877,
+        "vendor": "openai"
+      },
+      "round": 30,
+      "row": "tp3",
+      "spec": "intake-settle-walk-cost",
+      "started_at": "2026-08-31T14:03:16+00:00",
+      "total_tokens": 17340535,
+      "total_usd": 12.99873,
+      "unpriced_tokens": 0,
+      "verdict": "NOT_ACCEPTED"
+    },
+    {
+      "accepted": false,
+      "builder": {
+        "attribution": "exact",
+        "classes": {
+          "cache_read_tokens": 0,
+          "cache_write_1h_tokens": 0,
+          "cache_write_5m_tokens": 0,
+          "input_tokens": 0,
+          "output_tokens": 0
+        },
+        "cost_status": "unavailable",
+        "flags": [],
+        "model_declared": "claude-opus-5",
+        "model_observed": null,
+        "models": {},
+        "sessions_expected": 1,
+        "sessions_found": 1,
+        "tokens": 0,
+        "unpriced_tokens": 0,
+        "usd": 0.0,
+        "vendor": "anthropic"
+      },
+      "cost_status": "complete",
+      "debt_at_accept": null,
+      "duration_minutes": 17.05,
+      "ended_at": "2026-08-31T15:03:35+00:00",
+      "findings": 2,
+      "flags": [],
+      "judge": {
+        "attribution": "exact",
+        "classes": {
+          "cache_write_tokens": 0,
+          "cached_input_tokens": 8340224,
+          "input_tokens": 8852152,
+          "output_tokens": 61615,
+          "reasoning_output_tokens": 37640
+        },
+        "cost_status": "complete",
+        "flags": [],
+        "model_declared": "gpt-5.5",
+        "model_observed": "gpt-5.6-sol",
+        "models": {
+          "gpt-5.6-sol": {
+            "best_effort_estimate": null,
+            "classes": {
+              "cache_write_tokens": 0,
+              "cached_input_tokens": 8340224,
+              "input_tokens": 8852152,
+              "output_tokens": 61615,
+              "reasoning_output_tokens": 37640
+            },
+            "tokens": 8913767,
+            "unpriced_tokens": 0,
+            "usd": 8.578202
+          }
+        },
+        "sessions_expected": 3,
+        "sessions_found": 3,
+        "tokens": 8913767,
+        "unpriced_tokens": 0,
+        "usd": 8.578202,
+        "vendor": "openai"
+      },
+      "round": 31,
+      "row": "tp3",
+      "spec": "intake-settle-walk-cost",
+      "started_at": "2026-08-31T14:46:32+00:00",
+      "total_tokens": 8913767,
+      "total_usd": 8.578202,
+      "unpriced_tokens": 0,
+      "verdict": "NOT_ACCEPTED"
+    },
+    {
+      "accepted": false,
+      "builder": {
+        "attribution": "exact",
+        "classes": {
           "cache_read_tokens": 14784474,
           "cache_write_1h_tokens": 71677,
           "cache_write_5m_tokens": 0,
@@ -42175,6 +43021,793 @@
       "builder": {
         "attribution": "exact",
         "classes": {
+          "cache_read_tokens": 3240238,
+          "cache_write_1h_tokens": 3394,
+          "cache_write_5m_tokens": 0,
+          "input_tokens": 12,
+          "output_tokens": 2516
+        },
+        "cost_status": "complete",
+        "flags": [],
+        "model_declared": "claude-opus-5",
+        "model_observed": "claude-opus-5",
+        "models": {
+          "claude-opus-5": {
+            "best_effort_estimate": null,
+            "classes": {
+              "cache_read_tokens": 3240238,
+              "cache_write_1h_tokens": 3394,
+              "cache_write_5m_tokens": 0,
+              "input_tokens": 12,
+              "output_tokens": 2516
+            },
+            "tokens": 3246160,
+            "unpriced_tokens": 0,
+            "usd": 1.717019
+          }
+        },
+        "sessions_expected": 1,
+        "sessions_found": 1,
+        "tokens": 3246160,
+        "unpriced_tokens": 0,
+        "usd": 1.717019,
+        "vendor": "anthropic"
+      },
+      "cost_status": "complete",
+      "debt_at_accept": null,
+      "duration_minutes": 18.667,
+      "ended_at": "2026-08-31T15:35:56+00:00",
+      "findings": 1,
+      "flags": [],
+      "judge": {
+        "attribution": "exact",
+        "classes": {
+          "cache_write_tokens": 0,
+          "cached_input_tokens": 5201920,
+          "input_tokens": 5620722,
+          "output_tokens": 62667,
+          "reasoning_output_tokens": 37402
+        },
+        "cost_status": "complete",
+        "flags": [],
+        "model_declared": "gpt-5.5",
+        "model_observed": "gpt-5.6-sol",
+        "models": {
+          "gpt-5.6-sol": {
+            "best_effort_estimate": null,
+            "classes": {
+              "cache_write_tokens": 0,
+              "cached_input_tokens": 5201920,
+              "input_tokens": 5620722,
+              "output_tokens": 62667,
+              "reasoning_output_tokens": 37402
+            },
+            "tokens": 5683389,
+            "unpriced_tokens": 0,
+            "usd": 6.57498
+          }
+        },
+        "sessions_expected": 4,
+        "sessions_found": 4,
+        "tokens": 5683389,
+        "unpriced_tokens": 0,
+        "usd": 6.57498,
+        "vendor": "openai"
+      },
+      "round": 1,
+      "row": "sec1",
+      "spec": "push-report-no-producer-text",
+      "started_at": "2026-08-31T15:17:16+00:00",
+      "total_tokens": 8929549,
+      "total_usd": 8.291999,
+      "unpriced_tokens": 0,
+      "verdict": "NOT_ACCEPTED"
+    },
+    {
+      "accepted": false,
+      "builder": {
+        "attribution": "exact",
+        "classes": {
+          "cache_read_tokens": 20681630,
+          "cache_write_1h_tokens": 33962,
+          "cache_write_5m_tokens": 0,
+          "input_tokens": 72,
+          "output_tokens": 23035
+        },
+        "cost_status": "complete",
+        "flags": [],
+        "model_declared": "claude-opus-5",
+        "model_observed": "claude-opus-5",
+        "models": {
+          "claude-opus-5": {
+            "best_effort_estimate": null,
+            "classes": {
+              "cache_read_tokens": 20681630,
+              "cache_write_1h_tokens": 33962,
+              "cache_write_5m_tokens": 0,
+              "input_tokens": 72,
+              "output_tokens": 23035
+            },
+            "tokens": 20738699,
+            "unpriced_tokens": 0,
+            "usd": 11.25667
+          }
+        },
+        "sessions_expected": 1,
+        "sessions_found": 1,
+        "tokens": 20738699,
+        "unpriced_tokens": 0,
+        "usd": 11.25667,
+        "vendor": "anthropic"
+      },
+      "cost_status": "complete",
+      "debt_at_accept": null,
+      "duration_minutes": 14.083,
+      "ended_at": "2026-08-31T16:12:24+00:00",
+      "findings": 1,
+      "flags": [],
+      "judge": {
+        "attribution": "exact",
+        "classes": {
+          "cache_write_tokens": 0,
+          "cached_input_tokens": 2268416,
+          "input_tokens": 2552215,
+          "output_tokens": 40461,
+          "reasoning_output_tokens": 23119
+        },
+        "cost_status": "complete",
+        "flags": [],
+        "model_declared": "gpt-5.5",
+        "model_observed": "gpt-5.6-sol",
+        "models": {
+          "gpt-5.6-sol": {
+            "best_effort_estimate": null,
+            "classes": {
+              "cache_write_tokens": 0,
+              "cached_input_tokens": 2268416,
+              "input_tokens": 2552215,
+              "output_tokens": 40461,
+              "reasoning_output_tokens": 23119
+            },
+            "tokens": 2592676,
+            "unpriced_tokens": 0,
+            "usd": 3.767033
+          }
+        },
+        "sessions_expected": 3,
+        "sessions_found": 3,
+        "tokens": 2592676,
+        "unpriced_tokens": 0,
+        "usd": 3.767033,
+        "vendor": "openai"
+      },
+      "round": 2,
+      "row": "sec1",
+      "spec": "push-report-no-producer-text",
+      "started_at": "2026-08-31T15:58:19+00:00",
+      "total_tokens": 23331375,
+      "total_usd": 15.023703,
+      "unpriced_tokens": 0,
+      "verdict": "NOT_ACCEPTED"
+    },
+    {
+      "accepted": false,
+      "builder": {
+        "attribution": "exact",
+        "classes": {
+          "cache_read_tokens": 4365821,
+          "cache_write_1h_tokens": 3709,
+          "cache_write_5m_tokens": 0,
+          "input_tokens": 14,
+          "output_tokens": 2690
+        },
+        "cost_status": "complete",
+        "flags": [],
+        "model_declared": "claude-opus-5",
+        "model_observed": "claude-opus-5",
+        "models": {
+          "claude-opus-5": {
+            "best_effort_estimate": null,
+            "classes": {
+              "cache_read_tokens": 4365821,
+              "cache_write_1h_tokens": 3709,
+              "cache_write_5m_tokens": 0,
+              "input_tokens": 14,
+              "output_tokens": 2690
+            },
+            "tokens": 4372234,
+            "unpriced_tokens": 0,
+            "usd": 2.28732
+          }
+        },
+        "sessions_expected": 1,
+        "sessions_found": 1,
+        "tokens": 4372234,
+        "unpriced_tokens": 0,
+        "usd": 2.28732,
+        "vendor": "anthropic"
+      },
+      "cost_status": "complete",
+      "debt_at_accept": null,
+      "duration_minutes": 10.883,
+      "ended_at": "2026-08-31T16:45:42+00:00",
+      "findings": 0,
+      "flags": [],
+      "judge": {
+        "attribution": "exact",
+        "classes": {
+          "cache_write_tokens": 0,
+          "cached_input_tokens": 1738496,
+          "input_tokens": 1956615,
+          "output_tokens": 32822,
+          "reasoning_output_tokens": 16158
+        },
+        "cost_status": "complete",
+        "flags": [],
+        "model_declared": "gpt-5.5",
+        "model_observed": "gpt-5.6-sol",
+        "models": {
+          "gpt-5.6-sol": {
+            "best_effort_estimate": null,
+            "classes": {
+              "cache_write_tokens": 0,
+              "cached_input_tokens": 1738496,
+              "input_tokens": 1956615,
+              "output_tokens": 32822,
+              "reasoning_output_tokens": 16158
+            },
+            "tokens": 1989437,
+            "unpriced_tokens": 0,
+            "usd": 2.944503
+          }
+        },
+        "sessions_expected": 3,
+        "sessions_found": 3,
+        "tokens": 1989437,
+        "unpriced_tokens": 0,
+        "usd": 2.944503,
+        "vendor": "openai"
+      },
+      "round": 3,
+      "row": "sec1",
+      "spec": "push-report-no-producer-text",
+      "started_at": "2026-08-31T16:34:49+00:00",
+      "total_tokens": 6361671,
+      "total_usd": 5.231823,
+      "unpriced_tokens": 0,
+      "verdict": "HOLD"
+    },
+    {
+      "accepted": false,
+      "builder": {
+        "attribution": "exact",
+        "classes": {
+          "cache_read_tokens": 10794705,
+          "cache_write_1h_tokens": 23049,
+          "cache_write_5m_tokens": 0,
+          "input_tokens": 34,
+          "output_tokens": 14929
+        },
+        "cost_status": "complete",
+        "flags": [],
+        "model_declared": "claude-opus-5",
+        "model_observed": "claude-opus-5",
+        "models": {
+          "claude-opus-5": {
+            "best_effort_estimate": null,
+            "classes": {
+              "cache_read_tokens": 10794705,
+              "cache_write_1h_tokens": 23049,
+              "cache_write_5m_tokens": 0,
+              "input_tokens": 34,
+              "output_tokens": 14929
+            },
+            "tokens": 10832717,
+            "unpriced_tokens": 0,
+            "usd": 6.001238
+          }
+        },
+        "sessions_expected": 1,
+        "sessions_found": 1,
+        "tokens": 10832717,
+        "unpriced_tokens": 0,
+        "usd": 6.001238,
+        "vendor": "anthropic"
+      },
+      "cost_status": "complete",
+      "debt_at_accept": null,
+      "duration_minutes": 13.183,
+      "ended_at": "2026-08-31T17:04:57+00:00",
+      "findings": 2,
+      "flags": [],
+      "judge": {
+        "attribution": "exact",
+        "classes": {
+          "cache_write_tokens": 0,
+          "cached_input_tokens": 3346944,
+          "input_tokens": 3597985,
+          "output_tokens": 41851,
+          "reasoning_output_tokens": 23411
+        },
+        "cost_status": "complete",
+        "flags": [],
+        "model_declared": "gpt-5.5",
+        "model_observed": "gpt-5.6-sol",
+        "models": {
+          "gpt-5.6-sol": {
+            "best_effort_estimate": null,
+            "classes": {
+              "cache_write_tokens": 0,
+              "cached_input_tokens": 3346944,
+              "input_tokens": 3597985,
+              "output_tokens": 41851,
+              "reasoning_output_tokens": 23411
+            },
+            "tokens": 3639836,
+            "unpriced_tokens": 0,
+            "usd": 4.184207
+          }
+        },
+        "sessions_expected": 3,
+        "sessions_found": 3,
+        "tokens": 3639836,
+        "unpriced_tokens": 0,
+        "usd": 4.184207,
+        "vendor": "openai"
+      },
+      "round": 4,
+      "row": "sec1",
+      "spec": "push-report-no-producer-text",
+      "started_at": "2026-08-31T16:51:46+00:00",
+      "total_tokens": 14472553,
+      "total_usd": 10.185445,
+      "unpriced_tokens": 0,
+      "verdict": "NOT_ACCEPTED"
+    },
+    {
+      "accepted": false,
+      "builder": {
+        "attribution": "exact",
+        "classes": {
+          "cache_read_tokens": 12734422,
+          "cache_write_1h_tokens": 209651,
+          "cache_write_5m_tokens": 0,
+          "input_tokens": 142,
+          "output_tokens": 59652
+        },
+        "cost_status": "complete",
+        "flags": [],
+        "model_declared": "claude-opus-5",
+        "model_observed": "claude-opus-5",
+        "models": {
+          "claude-opus-5": {
+            "best_effort_estimate": null,
+            "classes": {
+              "cache_read_tokens": 12734422,
+              "cache_write_1h_tokens": 209651,
+              "cache_write_5m_tokens": 0,
+              "input_tokens": 142,
+              "output_tokens": 59652
+            },
+            "tokens": 13003867,
+            "unpriced_tokens": 0,
+            "usd": 9.955731
+          }
+        },
+        "sessions_expected": 1,
+        "sessions_found": 1,
+        "tokens": 13003867,
+        "unpriced_tokens": 0,
+        "usd": 9.955731,
+        "vendor": "anthropic"
+      },
+      "cost_status": "complete",
+      "debt_at_accept": null,
+      "duration_minutes": 20.583,
+      "ended_at": "2026-08-31T17:49:36+00:00",
+      "findings": 3,
+      "flags": [],
+      "judge": {
+        "attribution": "exact",
+        "classes": {
+          "cache_write_tokens": 0,
+          "cached_input_tokens": 3414272,
+          "input_tokens": 3707882,
+          "output_tokens": 63889,
+          "reasoning_output_tokens": 30789
+        },
+        "cost_status": "complete",
+        "flags": [],
+        "model_declared": "gpt-5.5",
+        "model_observed": "gpt-5.6-sol",
+        "models": {
+          "gpt-5.6-sol": {
+            "best_effort_estimate": null,
+            "classes": {
+              "cache_write_tokens": 0,
+              "cached_input_tokens": 3414272,
+              "input_tokens": 3707882,
+              "output_tokens": 63889,
+              "reasoning_output_tokens": 30789
+            },
+            "tokens": 3771771,
+            "unpriced_tokens": 0,
+            "usd": 5.091856
+          }
+        },
+        "sessions_expected": 3,
+        "sessions_found": 3,
+        "tokens": 3771771,
+        "unpriced_tokens": 0,
+        "usd": 5.091856,
+        "vendor": "openai"
+      },
+      "round": 5,
+      "row": "sec1",
+      "spec": "push-report-no-producer-text",
+      "started_at": "2026-08-31T17:29:01+00:00",
+      "total_tokens": 16775638,
+      "total_usd": 15.047587,
+      "unpriced_tokens": 0,
+      "verdict": "NOT_ACCEPTED"
+    },
+    {
+      "accepted": false,
+      "builder": {
+        "attribution": "exact",
+        "classes": {
+          "cache_read_tokens": 5446856,
+          "cache_write_1h_tokens": 34760,
+          "cache_write_5m_tokens": 0,
+          "input_tokens": 66,
+          "output_tokens": 22158
+        },
+        "cost_status": "complete",
+        "flags": [],
+        "model_declared": "claude-opus-5",
+        "model_observed": "claude-opus-5",
+        "models": {
+          "claude-opus-5": {
+            "best_effort_estimate": null,
+            "classes": {
+              "cache_read_tokens": 5446856,
+              "cache_write_1h_tokens": 34760,
+              "cache_write_5m_tokens": 0,
+              "input_tokens": 66,
+              "output_tokens": 22158
+            },
+            "tokens": 5503840,
+            "unpriced_tokens": 0,
+            "usd": 3.625308
+          }
+        },
+        "sessions_expected": 1,
+        "sessions_found": 1,
+        "tokens": 5503840,
+        "unpriced_tokens": 0,
+        "usd": 3.625308,
+        "vendor": "anthropic"
+      },
+      "cost_status": "complete",
+      "debt_at_accept": null,
+      "duration_minutes": 14.633,
+      "ended_at": "2026-08-31T18:14:52+00:00",
+      "findings": 2,
+      "flags": [],
+      "judge": {
+        "attribution": "exact",
+        "classes": {
+          "cache_write_tokens": 0,
+          "cached_input_tokens": 2544640,
+          "input_tokens": 2798028,
+          "output_tokens": 44335,
+          "reasoning_output_tokens": 27624
+        },
+        "cost_status": "complete",
+        "flags": [],
+        "model_declared": "gpt-5.5",
+        "model_observed": "gpt-5.6-sol",
+        "models": {
+          "gpt-5.6-sol": {
+            "best_effort_estimate": null,
+            "classes": {
+              "cache_write_tokens": 0,
+              "cached_input_tokens": 2544640,
+              "input_tokens": 2798028,
+              "output_tokens": 44335,
+              "reasoning_output_tokens": 27624
+            },
+            "tokens": 2842363,
+            "unpriced_tokens": 0,
+            "usd": 3.86931
+          }
+        },
+        "sessions_expected": 3,
+        "sessions_found": 3,
+        "tokens": 2842363,
+        "unpriced_tokens": 0,
+        "usd": 3.86931,
+        "vendor": "openai"
+      },
+      "round": 6,
+      "row": "sec1",
+      "spec": "push-report-no-producer-text",
+      "started_at": "2026-08-31T18:00:14+00:00",
+      "total_tokens": 8346203,
+      "total_usd": 7.494618,
+      "unpriced_tokens": 0,
+      "verdict": "NOT_ACCEPTED"
+    },
+    {
+      "accepted": false,
+      "builder": {
+        "attribution": "exact",
+        "classes": {
+          "cache_read_tokens": 908368,
+          "cache_write_1h_tokens": 6377,
+          "cache_write_5m_tokens": 0,
+          "input_tokens": 10,
+          "output_tokens": 3447
+        },
+        "cost_status": "complete",
+        "flags": [],
+        "model_declared": "claude-opus-5",
+        "model_observed": "claude-opus-5",
+        "models": {
+          "claude-opus-5": {
+            "best_effort_estimate": null,
+            "classes": {
+              "cache_read_tokens": 908368,
+              "cache_write_1h_tokens": 6377,
+              "cache_write_5m_tokens": 0,
+              "input_tokens": 10,
+              "output_tokens": 3447
+            },
+            "tokens": 918202,
+            "unpriced_tokens": 0,
+            "usd": 0.604179
+          }
+        },
+        "sessions_expected": 1,
+        "sessions_found": 1,
+        "tokens": 918202,
+        "unpriced_tokens": 0,
+        "usd": 0.604179,
+        "vendor": "anthropic"
+      },
+      "cost_status": "complete",
+      "debt_at_accept": null,
+      "duration_minutes": 14.133,
+      "ended_at": "2026-08-31T18:34:27+00:00",
+      "findings": 3,
+      "flags": [],
+      "judge": {
+        "attribution": "exact",
+        "classes": {
+          "cache_write_tokens": 0,
+          "cached_input_tokens": 2575104,
+          "input_tokens": 2817187,
+          "output_tokens": 40004,
+          "reasoning_output_tokens": 21242
+        },
+        "cost_status": "complete",
+        "flags": [],
+        "model_declared": "gpt-5.5",
+        "model_observed": "gpt-5.6-sol",
+        "models": {
+          "gpt-5.6-sol": {
+            "best_effort_estimate": null,
+            "classes": {
+              "cache_write_tokens": 0,
+              "cached_input_tokens": 2575104,
+              "input_tokens": 2817187,
+              "output_tokens": 40004,
+              "reasoning_output_tokens": 21242
+            },
+            "tokens": 2857191,
+            "unpriced_tokens": 0,
+            "usd": 3.698087
+          }
+        },
+        "sessions_expected": 3,
+        "sessions_found": 3,
+        "tokens": 2857191,
+        "unpriced_tokens": 0,
+        "usd": 3.698087,
+        "vendor": "openai"
+      },
+      "round": 7,
+      "row": "sec1",
+      "spec": "push-report-no-producer-text",
+      "started_at": "2026-08-31T18:20:19+00:00",
+      "total_tokens": 3775393,
+      "total_usd": 4.302266,
+      "unpriced_tokens": 0,
+      "verdict": "NOT_ACCEPTED"
+    },
+    {
+      "accepted": false,
+      "builder": {
+        "attribution": "exact",
+        "classes": {
+          "cache_read_tokens": 1701965,
+          "cache_write_1h_tokens": 7623,
+          "cache_write_5m_tokens": 0,
+          "input_tokens": 18,
+          "output_tokens": 6341
+        },
+        "cost_status": "complete",
+        "flags": [],
+        "model_declared": "claude-opus-5",
+        "model_observed": "claude-opus-5",
+        "models": {
+          "claude-opus-5": {
+            "best_effort_estimate": null,
+            "classes": {
+              "cache_read_tokens": 1701965,
+              "cache_write_1h_tokens": 7623,
+              "cache_write_5m_tokens": 0,
+              "input_tokens": 18,
+              "output_tokens": 6341
+            },
+            "tokens": 1715947,
+            "unpriced_tokens": 0,
+            "usd": 1.085827
+          }
+        },
+        "sessions_expected": 1,
+        "sessions_found": 1,
+        "tokens": 1715947,
+        "unpriced_tokens": 0,
+        "usd": 1.085827,
+        "vendor": "anthropic"
+      },
+      "cost_status": "complete",
+      "debt_at_accept": null,
+      "duration_minutes": 12.117,
+      "ended_at": "2026-08-31T18:48:21+00:00",
+      "findings": 1,
+      "flags": [
+        "cwd_and_round_window_correlation"
+      ],
+      "judge": {
+        "attribution": "correlated",
+        "classes": {
+          "cache_write_tokens": 0,
+          "cached_input_tokens": 3218688,
+          "input_tokens": 3478953,
+          "output_tokens": 35944,
+          "reasoning_output_tokens": 21245
+        },
+        "cost_status": "complete",
+        "flags": [
+          "cwd_and_round_window_correlation"
+        ],
+        "model_declared": "gpt-5.5",
+        "model_observed": "gpt-5.6-sol",
+        "models": {
+          "gpt-5.6-sol": {
+            "best_effort_estimate": null,
+            "classes": {
+              "cache_write_tokens": 0,
+              "cached_input_tokens": 3218688,
+              "input_tokens": 3478953,
+              "output_tokens": 35944,
+              "reasoning_output_tokens": 21245
+            },
+            "tokens": 3514897,
+            "unpriced_tokens": 0,
+            "usd": 3.988989
+          }
+        },
+        "sessions_expected": 3,
+        "sessions_found": 3,
+        "tokens": 3514897,
+        "unpriced_tokens": 0,
+        "usd": 3.988989,
+        "vendor": "openai"
+      },
+      "round": 8,
+      "row": "sec1",
+      "spec": "push-report-no-producer-text",
+      "started_at": "2026-08-31T18:36:14+00:00",
+      "total_tokens": 5230844,
+      "total_usd": 5.074816,
+      "unpriced_tokens": 0,
+      "verdict": "NOT_ACCEPTED"
+    },
+    {
+      "accepted": true,
+      "builder": {
+        "attribution": "exact",
+        "classes": {
+          "cache_read_tokens": 2828942,
+          "cache_write_1h_tokens": 12822,
+          "cache_write_5m_tokens": 0,
+          "input_tokens": 28,
+          "output_tokens": 8255
+        },
+        "cost_status": "complete",
+        "flags": [],
+        "model_declared": "claude-opus-5",
+        "model_observed": "claude-opus-5",
+        "models": {
+          "claude-opus-5": {
+            "best_effort_estimate": null,
+            "classes": {
+              "cache_read_tokens": 2828942,
+              "cache_write_1h_tokens": 12822,
+              "cache_write_5m_tokens": 0,
+              "input_tokens": 28,
+              "output_tokens": 8255
+            },
+            "tokens": 2850047,
+            "unpriced_tokens": 0,
+            "usd": 1.749206
+          }
+        },
+        "sessions_expected": 1,
+        "sessions_found": 1,
+        "tokens": 2850047,
+        "unpriced_tokens": 0,
+        "usd": 1.749206,
+        "vendor": "anthropic"
+      },
+      "cost_status": "complete",
+      "debt_at_accept": 4,
+      "duration_minutes": 16.767,
+      "ended_at": "2026-08-31T19:11:34+00:00",
+      "findings": 0,
+      "flags": [],
+      "judge": {
+        "attribution": "exact",
+        "classes": {
+          "cache_write_tokens": 0,
+          "cached_input_tokens": 3818496,
+          "input_tokens": 4113165,
+          "output_tokens": 59269,
+          "reasoning_output_tokens": 36415
+        },
+        "cost_status": "complete",
+        "flags": [],
+        "model_declared": "gpt-5.5",
+        "model_observed": "gpt-5.6-sol",
+        "models": {
+          "gpt-5.6-sol": {
+            "best_effort_estimate": null,
+            "classes": {
+              "cache_write_tokens": 0,
+              "cached_input_tokens": 3818496,
+              "input_tokens": 4113165,
+              "output_tokens": 59269,
+              "reasoning_output_tokens": 36415
+            },
+            "tokens": 4172434,
+            "unpriced_tokens": 0,
+            "usd": 5.160663
+          }
+        },
+        "sessions_expected": 3,
+        "sessions_found": 3,
+        "tokens": 4172434,
+        "unpriced_tokens": 0,
+        "usd": 5.160663,
+        "vendor": "openai"
+      },
+      "round": 9,
+      "row": "sec1",
+      "spec": "push-report-no-producer-text",
+      "started_at": "2026-08-31T18:54:48+00:00",
+      "total_tokens": 7022481,
+      "total_usd": 6.909869,
+      "unpriced_tokens": 0,
+      "verdict": "ACCEPT"
+    },
+    {
+      "accepted": false,
+      "builder": {
+        "attribution": "exact",
+        "classes": {
           "cache_read_tokens": 106729477,
           "cache_write_1h_tokens": 391400,
           "cache_write_5m_tokens": 0,
@@ -50146,6 +51779,1736 @@
       "total_usd": 10.505608,
       "unpriced_tokens": 0,
       "verdict": "NOT_ACCEPTED"
+    },
+    {
+      "accepted": false,
+      "builder": {
+        "attribution": "exact",
+        "classes": {
+          "cache_read_tokens": 2067342,
+          "cache_write_1h_tokens": 17114,
+          "cache_write_5m_tokens": 0,
+          "input_tokens": 20,
+          "output_tokens": 13424
+        },
+        "cost_status": "complete",
+        "flags": [],
+        "model_declared": "claude-opus-5",
+        "model_observed": "claude-opus-5",
+        "models": {
+          "claude-opus-5": {
+            "best_effort_estimate": null,
+            "classes": {
+              "cache_read_tokens": 2067342,
+              "cache_write_1h_tokens": 17114,
+              "cache_write_5m_tokens": 0,
+              "input_tokens": 20,
+              "output_tokens": 13424
+            },
+            "tokens": 2097900,
+            "unpriced_tokens": 0,
+            "usd": 1.540511
+          }
+        },
+        "sessions_expected": 1,
+        "sessions_found": 1,
+        "tokens": 2097900,
+        "unpriced_tokens": 0,
+        "usd": 1.540511,
+        "vendor": "anthropic"
+      },
+      "cost_status": "complete",
+      "debt_at_accept": null,
+      "duration_minutes": 15.0,
+      "ended_at": "2026-08-31T12:17:33+00:00",
+      "findings": 3,
+      "flags": [],
+      "judge": {
+        "attribution": "exact",
+        "classes": {
+          "cache_write_tokens": 0,
+          "cached_input_tokens": 3089664,
+          "input_tokens": 3364658,
+          "output_tokens": 53632,
+          "reasoning_output_tokens": 35497
+        },
+        "cost_status": "complete",
+        "flags": [],
+        "model_declared": "gpt-5.5",
+        "model_observed": "gpt-5.6-sol",
+        "models": {
+          "gpt-5.6-sol": {
+            "best_effort_estimate": null,
+            "classes": {
+              "cache_write_tokens": 0,
+              "cached_input_tokens": 3089664,
+              "input_tokens": 3364658,
+              "output_tokens": 53632,
+              "reasoning_output_tokens": 35497
+            },
+            "tokens": 3418290,
+            "unpriced_tokens": 0,
+            "usd": 4.528762
+          }
+        },
+        "sessions_expected": 3,
+        "sessions_found": 3,
+        "tokens": 3418290,
+        "unpriced_tokens": 0,
+        "usd": 4.528762,
+        "vendor": "openai"
+      },
+      "round": 17,
+      "row": "tp2",
+      "spec": "telegram-lane-overrun-ownership",
+      "started_at": "2026-08-31T12:02:33+00:00",
+      "total_tokens": 5516190,
+      "total_usd": 6.069273,
+      "unpriced_tokens": 0,
+      "verdict": "NOT_ACCEPTED"
+    },
+    {
+      "accepted": false,
+      "builder": {
+        "attribution": "exact",
+        "classes": {
+          "cache_read_tokens": 25586438,
+          "cache_write_1h_tokens": 50800,
+          "cache_write_5m_tokens": 0,
+          "input_tokens": 100,
+          "output_tokens": 28395
+        },
+        "cost_status": "complete",
+        "flags": [],
+        "model_declared": "claude-opus-5",
+        "model_observed": "claude-opus-5",
+        "models": {
+          "claude-opus-5": {
+            "best_effort_estimate": null,
+            "classes": {
+              "cache_read_tokens": 25586438,
+              "cache_write_1h_tokens": 50800,
+              "cache_write_5m_tokens": 0,
+              "input_tokens": 100,
+              "output_tokens": 28395
+            },
+            "tokens": 25665733,
+            "unpriced_tokens": 0,
+            "usd": 14.011594
+          }
+        },
+        "sessions_expected": 1,
+        "sessions_found": 1,
+        "tokens": 25665733,
+        "unpriced_tokens": 0,
+        "usd": 14.011594,
+        "vendor": "anthropic"
+      },
+      "cost_status": "complete",
+      "debt_at_accept": null,
+      "duration_minutes": 14.133,
+      "ended_at": "2026-08-31T15:26:47+00:00",
+      "findings": 3,
+      "flags": [],
+      "judge": {
+        "attribution": "exact",
+        "classes": {
+          "cache_write_tokens": 0,
+          "cached_input_tokens": 3838976,
+          "input_tokens": 4146051,
+          "output_tokens": 48158,
+          "reasoning_output_tokens": 31833
+        },
+        "cost_status": "complete",
+        "flags": [],
+        "model_declared": "gpt-5.5",
+        "model_observed": "gpt-5.6-sol",
+        "models": {
+          "gpt-5.6-sol": {
+            "best_effort_estimate": null,
+            "classes": {
+              "cache_write_tokens": 0,
+              "cached_input_tokens": 3838976,
+              "input_tokens": 4146051,
+              "output_tokens": 48158,
+              "reasoning_output_tokens": 31833
+            },
+            "tokens": 4194209,
+            "unpriced_tokens": 0,
+            "usd": 4.899603
+          }
+        },
+        "sessions_expected": 3,
+        "sessions_found": 3,
+        "tokens": 4194209,
+        "unpriced_tokens": 0,
+        "usd": 4.899603,
+        "vendor": "openai"
+      },
+      "round": 18,
+      "row": "tp2",
+      "spec": "telegram-lane-overrun-ownership",
+      "started_at": "2026-08-31T15:12:39+00:00",
+      "total_tokens": 29859942,
+      "total_usd": 18.911197,
+      "unpriced_tokens": 0,
+      "verdict": "NOT_ACCEPTED"
+    },
+    {
+      "accepted": false,
+      "builder": {
+        "attribution": "exact",
+        "classes": {
+          "cache_read_tokens": 7704944,
+          "cache_write_1h_tokens": 15022,
+          "cache_write_5m_tokens": 0,
+          "input_tokens": 28,
+          "output_tokens": 9327
+        },
+        "cost_status": "complete",
+        "flags": [],
+        "model_declared": "claude-opus-5",
+        "model_observed": "claude-opus-5",
+        "models": {
+          "claude-opus-5": {
+            "best_effort_estimate": null,
+            "classes": {
+              "cache_read_tokens": 7704944,
+              "cache_write_1h_tokens": 15022,
+              "cache_write_5m_tokens": 0,
+              "input_tokens": 28,
+              "output_tokens": 9327
+            },
+            "tokens": 7729321,
+            "unpriced_tokens": 0,
+            "usd": 4.236007
+          }
+        },
+        "sessions_expected": 1,
+        "sessions_found": 1,
+        "tokens": 7729321,
+        "unpriced_tokens": 0,
+        "usd": 4.236007,
+        "vendor": "anthropic"
+      },
+      "cost_status": "complete",
+      "debt_at_accept": null,
+      "duration_minutes": 17.017,
+      "ended_at": "2026-08-31T15:51:22+00:00",
+      "findings": 3,
+      "flags": [],
+      "judge": {
+        "attribution": "exact",
+        "classes": {
+          "cache_write_tokens": 0,
+          "cached_input_tokens": 3721472,
+          "input_tokens": 4090507,
+          "output_tokens": 64374,
+          "reasoning_output_tokens": 40354
+        },
+        "cost_status": "complete",
+        "flags": [],
+        "model_declared": "gpt-5.5",
+        "model_observed": "gpt-5.6-sol",
+        "models": {
+          "gpt-5.6-sol": {
+            "best_effort_estimate": null,
+            "classes": {
+              "cache_write_tokens": 0,
+              "cached_input_tokens": 3721472,
+              "input_tokens": 4090507,
+              "output_tokens": 64374,
+              "reasoning_output_tokens": 40354
+            },
+            "tokens": 4154881,
+            "unpriced_tokens": 0,
+            "usd": 5.637131
+          }
+        },
+        "sessions_expected": 3,
+        "sessions_found": 3,
+        "tokens": 4154881,
+        "unpriced_tokens": 0,
+        "usd": 5.637131,
+        "vendor": "openai"
+      },
+      "round": 19,
+      "row": "tp2",
+      "spec": "telegram-lane-overrun-ownership",
+      "started_at": "2026-08-31T15:34:21+00:00",
+      "total_tokens": 11884202,
+      "total_usd": 9.873138,
+      "unpriced_tokens": 0,
+      "verdict": "NOT_ACCEPTED"
+    },
+    {
+      "accepted": false,
+      "builder": {
+        "attribution": "exact",
+        "classes": {
+          "cache_read_tokens": 20053263,
+          "cache_write_1h_tokens": 31129,
+          "cache_write_5m_tokens": 0,
+          "input_tokens": 66,
+          "output_tokens": 22316
+        },
+        "cost_status": "complete",
+        "flags": [],
+        "model_declared": "claude-opus-5",
+        "model_observed": "claude-opus-5",
+        "models": {
+          "claude-opus-5": {
+            "best_effort_estimate": null,
+            "classes": {
+              "cache_read_tokens": 20053263,
+              "cache_write_1h_tokens": 31129,
+              "cache_write_5m_tokens": 0,
+              "input_tokens": 66,
+              "output_tokens": 22316
+            },
+            "tokens": 20106774,
+            "unpriced_tokens": 0,
+            "usd": 10.896152
+          }
+        },
+        "sessions_expected": 1,
+        "sessions_found": 1,
+        "tokens": 20106774,
+        "unpriced_tokens": 0,
+        "usd": 10.896152,
+        "vendor": "anthropic"
+      },
+      "cost_status": "complete",
+      "debt_at_accept": null,
+      "duration_minutes": 24.833,
+      "ended_at": "2026-08-31T16:49:54+00:00",
+      "findings": 2,
+      "flags": [],
+      "judge": {
+        "attribution": "exact",
+        "classes": {
+          "cache_write_tokens": 0,
+          "cached_input_tokens": 4431104,
+          "input_tokens": 4781569,
+          "output_tokens": 69050,
+          "reasoning_output_tokens": 40219
+        },
+        "cost_status": "complete",
+        "flags": [],
+        "model_declared": "gpt-5.5",
+        "model_observed": "gpt-5.6-sol",
+        "models": {
+          "gpt-5.6-sol": {
+            "best_effort_estimate": null,
+            "classes": {
+              "cache_write_tokens": 0,
+              "cached_input_tokens": 4431104,
+              "input_tokens": 4781569,
+              "output_tokens": 69050,
+              "reasoning_output_tokens": 40219
+            },
+            "tokens": 4850619,
+            "unpriced_tokens": 0,
+            "usd": 6.039377
+          }
+        },
+        "sessions_expected": 3,
+        "sessions_found": 3,
+        "tokens": 4850619,
+        "unpriced_tokens": 0,
+        "usd": 6.039377,
+        "vendor": "openai"
+      },
+      "round": 20,
+      "row": "tp2",
+      "spec": "telegram-lane-overrun-ownership",
+      "started_at": "2026-08-31T16:25:04+00:00",
+      "total_tokens": 24957393,
+      "total_usd": 16.935529,
+      "unpriced_tokens": 0,
+      "verdict": "NOT_ACCEPTED"
+    },
+    {
+      "accepted": false,
+      "builder": {
+        "attribution": "exact",
+        "classes": {
+          "cache_read_tokens": 3910933,
+          "cache_write_1h_tokens": 7431,
+          "cache_write_5m_tokens": 0,
+          "input_tokens": 12,
+          "output_tokens": 6826
+        },
+        "cost_status": "complete",
+        "flags": [],
+        "model_declared": "claude-opus-5",
+        "model_observed": "claude-opus-5",
+        "models": {
+          "claude-opus-5": {
+            "best_effort_estimate": null,
+            "classes": {
+              "cache_read_tokens": 3910933,
+              "cache_write_1h_tokens": 7431,
+              "cache_write_5m_tokens": 0,
+              "input_tokens": 12,
+              "output_tokens": 6826
+            },
+            "tokens": 3925202,
+            "unpriced_tokens": 0,
+            "usd": 2.200486
+          }
+        },
+        "sessions_expected": 1,
+        "sessions_found": 1,
+        "tokens": 3925202,
+        "unpriced_tokens": 0,
+        "usd": 2.200486,
+        "vendor": "anthropic"
+      },
+      "cost_status": "complete",
+      "debt_at_accept": null,
+      "duration_minutes": 13.383,
+      "ended_at": "2026-08-31T17:12:00+00:00",
+      "findings": 3,
+      "flags": [],
+      "judge": {
+        "attribution": "exact",
+        "classes": {
+          "cache_write_tokens": 0,
+          "cached_input_tokens": 3186176,
+          "input_tokens": 3451563,
+          "output_tokens": 45760,
+          "reasoning_output_tokens": 27862
+        },
+        "cost_status": "complete",
+        "flags": [],
+        "model_declared": "gpt-5.5",
+        "model_observed": "gpt-5.6-sol",
+        "models": {
+          "gpt-5.6-sol": {
+            "best_effort_estimate": null,
+            "classes": {
+              "cache_write_tokens": 0,
+              "cached_input_tokens": 3186176,
+              "input_tokens": 3451563,
+              "output_tokens": 45760,
+              "reasoning_output_tokens": 27862
+            },
+            "tokens": 3497323,
+            "unpriced_tokens": 0,
+            "usd": 4.292823
+          }
+        },
+        "sessions_expected": 3,
+        "sessions_found": 3,
+        "tokens": 3497323,
+        "unpriced_tokens": 0,
+        "usd": 4.292823,
+        "vendor": "openai"
+      },
+      "round": 21,
+      "row": "tp2",
+      "spec": "telegram-lane-overrun-ownership",
+      "started_at": "2026-08-31T16:58:37+00:00",
+      "total_tokens": 7422525,
+      "total_usd": 6.493309,
+      "unpriced_tokens": 0,
+      "verdict": "NOT_ACCEPTED"
+    },
+    {
+      "accepted": false,
+      "builder": {
+        "attribution": "exact",
+        "classes": {
+          "cache_read_tokens": 1257154,
+          "cache_write_1h_tokens": 2808,
+          "cache_write_5m_tokens": 0,
+          "input_tokens": 12,
+          "output_tokens": 1531
+        },
+        "cost_status": "complete",
+        "flags": [],
+        "model_declared": "claude-opus-5",
+        "model_observed": "claude-opus-5",
+        "models": {
+          "claude-opus-5": {
+            "best_effort_estimate": null,
+            "classes": {
+              "cache_read_tokens": 1257154,
+              "cache_write_1h_tokens": 2808,
+              "cache_write_5m_tokens": 0,
+              "input_tokens": 12,
+              "output_tokens": 1531
+            },
+            "tokens": 1261505,
+            "unpriced_tokens": 0,
+            "usd": 0.694992
+          }
+        },
+        "sessions_expected": 1,
+        "sessions_found": 1,
+        "tokens": 1261505,
+        "unpriced_tokens": 0,
+        "usd": 0.694992,
+        "vendor": "anthropic"
+      },
+      "cost_status": "complete",
+      "debt_at_accept": null,
+      "duration_minutes": 22.1,
+      "ended_at": "2026-08-31T19:46:23+00:00",
+      "findings": 2,
+      "flags": [],
+      "judge": {
+        "attribution": "exact",
+        "classes": {
+          "cache_write_tokens": 0,
+          "cached_input_tokens": 7866112,
+          "input_tokens": 8303141,
+          "output_tokens": 77502,
+          "reasoning_output_tokens": 50311
+        },
+        "cost_status": "complete",
+        "flags": [],
+        "model_declared": "gpt-5.5",
+        "model_observed": "gpt-5.6-sol",
+        "models": {
+          "gpt-5.6-sol": {
+            "best_effort_estimate": null,
+            "classes": {
+              "cache_write_tokens": 0,
+              "cached_input_tokens": 7866112,
+              "input_tokens": 8303141,
+              "output_tokens": 77502,
+              "reasoning_output_tokens": 50311
+            },
+            "tokens": 8380643,
+            "unpriced_tokens": 0,
+            "usd": 8.443261
+          }
+        },
+        "sessions_expected": 3,
+        "sessions_found": 3,
+        "tokens": 8380643,
+        "unpriced_tokens": 0,
+        "usd": 8.443261,
+        "vendor": "openai"
+      },
+      "round": 22,
+      "row": "tp2",
+      "spec": "telegram-lane-overrun-ownership",
+      "started_at": "2026-08-31T19:24:17+00:00",
+      "total_tokens": 9642148,
+      "total_usd": 9.138253,
+      "unpriced_tokens": 0,
+      "verdict": "NOT_ACCEPTED"
+    },
+    {
+      "accepted": false,
+      "builder": {
+        "attribution": "exact",
+        "classes": {
+          "cache_read_tokens": 7889487,
+          "cache_write_1h_tokens": 45257,
+          "cache_write_5m_tokens": 0,
+          "input_tokens": 68,
+          "output_tokens": 32984
+        },
+        "cost_status": "complete",
+        "flags": [],
+        "model_declared": "claude-opus-5",
+        "model_observed": "claude-opus-5",
+        "models": {
+          "claude-opus-5": {
+            "best_effort_estimate": null,
+            "classes": {
+              "cache_read_tokens": 7889487,
+              "cache_write_1h_tokens": 45257,
+              "cache_write_5m_tokens": 0,
+              "input_tokens": 68,
+              "output_tokens": 32984
+            },
+            "tokens": 7967796,
+            "unpriced_tokens": 0,
+            "usd": 5.222253
+          }
+        },
+        "sessions_expected": 1,
+        "sessions_found": 1,
+        "tokens": 7967796,
+        "unpriced_tokens": 0,
+        "usd": 5.222253,
+        "vendor": "anthropic"
+      },
+      "cost_status": "complete",
+      "debt_at_accept": null,
+      "duration_minutes": 25.933,
+      "ended_at": "2026-08-31T20:25:42+00:00",
+      "findings": 3,
+      "flags": [],
+      "judge": {
+        "attribution": "exact",
+        "classes": {
+          "cache_write_tokens": 0,
+          "cached_input_tokens": 7803136,
+          "input_tokens": 8244754,
+          "output_tokens": 89290,
+          "reasoning_output_tokens": 48222
+        },
+        "cost_status": "complete",
+        "flags": [],
+        "model_declared": "gpt-5.5",
+        "model_observed": "gpt-5.6-sol",
+        "models": {
+          "gpt-5.6-sol": {
+            "best_effort_estimate": null,
+            "classes": {
+              "cache_write_tokens": 0,
+              "cached_input_tokens": 7803136,
+              "input_tokens": 8244754,
+              "output_tokens": 89290,
+              "reasoning_output_tokens": 48222
+            },
+            "tokens": 8334044,
+            "unpriced_tokens": 0,
+            "usd": 8.788358
+          }
+        },
+        "sessions_expected": 3,
+        "sessions_found": 3,
+        "tokens": 8334044,
+        "unpriced_tokens": 0,
+        "usd": 8.788358,
+        "vendor": "openai"
+      },
+      "round": 23,
+      "row": "tp2",
+      "spec": "telegram-lane-overrun-ownership",
+      "started_at": "2026-08-31T19:59:46+00:00",
+      "total_tokens": 16301840,
+      "total_usd": 14.010611,
+      "unpriced_tokens": 0,
+      "verdict": "NOT_ACCEPTED"
+    },
+    {
+      "accepted": true,
+      "builder": {
+        "attribution": "unattributed",
+        "classes": {
+          "cache_write_tokens": 0,
+          "cached_input_tokens": 0,
+          "input_tokens": 0,
+          "output_tokens": 0,
+          "reasoning_output_tokens": 0
+        },
+        "cost_status": "unavailable",
+        "flags": [
+          "builder_prefix_missing"
+        ],
+        "model_declared": "unknown",
+        "model_observed": null,
+        "models": {},
+        "sessions_expected": 1,
+        "sessions_found": 0,
+        "tokens": 0,
+        "unpriced_tokens": 0,
+        "usd": 0.0,
+        "vendor": "unknown"
+      },
+      "cost_status": "complete",
+      "debt_at_accept": 0,
+      "duration_minutes": 15.483,
+      "ended_at": "2026-08-31T20:51:04+00:00",
+      "findings": 0,
+      "flags": [
+        "builder_prefix_missing"
+      ],
+      "judge": {
+        "attribution": "exact",
+        "classes": {
+          "cache_read_tokens": 4523509,
+          "cache_write_1h_tokens": 363689,
+          "cache_write_5m_tokens": 0,
+          "input_tokens": 97,
+          "output_tokens": 125718
+        },
+        "cost_status": "complete",
+        "flags": [],
+        "model_declared": "claude-opus-5",
+        "model_observed": "claude-opus-5",
+        "models": {
+          "claude-opus-5": {
+            "best_effort_estimate": null,
+            "classes": {
+              "cache_read_tokens": 4523509,
+              "cache_write_1h_tokens": 363689,
+              "cache_write_5m_tokens": 0,
+              "input_tokens": 97,
+              "output_tokens": 125718
+            },
+            "tokens": 5013013,
+            "unpriced_tokens": 0,
+            "usd": 9.042079
+          }
+        },
+        "sessions_expected": 3,
+        "sessions_found": 3,
+        "tokens": 5013013,
+        "unpriced_tokens": 0,
+        "usd": 9.042079,
+        "vendor": "anthropic"
+      },
+      "round": 24,
+      "row": "tp2",
+      "spec": "telegram-lane-overrun-ownership",
+      "started_at": "2026-08-31T20:35:35+00:00",
+      "total_tokens": 5013013,
+      "total_usd": 9.042079,
+      "unpriced_tokens": 0,
+      "verdict": "HOLD"
+    },
+    {
+      "accepted": false,
+      "builder": {
+        "attribution": "exact",
+        "classes": {
+          "cache_read_tokens": 12427283,
+          "cache_write_1h_tokens": 48098,
+          "cache_write_5m_tokens": 0,
+          "input_tokens": 88,
+          "output_tokens": 34322
+        },
+        "cost_status": "complete",
+        "flags": [],
+        "model_declared": "claude-opus-5",
+        "model_observed": "claude-opus-5",
+        "models": {
+          "claude-opus-5": {
+            "best_effort_estimate": null,
+            "classes": {
+              "cache_read_tokens": 12427283,
+              "cache_write_1h_tokens": 48098,
+              "cache_write_5m_tokens": 0,
+              "input_tokens": 88,
+              "output_tokens": 34322
+            },
+            "tokens": 12509791,
+            "unpriced_tokens": 0,
+            "usd": 7.553111
+          }
+        },
+        "sessions_expected": 1,
+        "sessions_found": 1,
+        "tokens": 12509791,
+        "unpriced_tokens": 0,
+        "usd": 7.553111,
+        "vendor": "anthropic"
+      },
+      "cost_status": "complete",
+      "debt_at_accept": null,
+      "duration_minutes": 15.85,
+      "ended_at": "2026-08-31T21:19:07+00:00",
+      "findings": 1,
+      "flags": [],
+      "judge": {
+        "attribution": "exact",
+        "classes": {
+          "cache_write_tokens": 0,
+          "cached_input_tokens": 3133440,
+          "input_tokens": 3455897,
+          "output_tokens": 52978,
+          "reasoning_output_tokens": 37027
+        },
+        "cost_status": "complete",
+        "flags": [],
+        "model_declared": "gpt-5.5",
+        "model_observed": "gpt-5.6-sol",
+        "models": {
+          "gpt-5.6-sol": {
+            "best_effort_estimate": null,
+            "classes": {
+              "cache_write_tokens": 0,
+              "cached_input_tokens": 3133440,
+              "input_tokens": 3455897,
+              "output_tokens": 52978,
+              "reasoning_output_tokens": 37027
+            },
+            "tokens": 3508875,
+            "unpriced_tokens": 0,
+            "usd": 4.768345
+          }
+        },
+        "sessions_expected": 3,
+        "sessions_found": 3,
+        "tokens": 3508875,
+        "unpriced_tokens": 0,
+        "usd": 4.768345,
+        "vendor": "openai"
+      },
+      "round": 25,
+      "row": "tp2",
+      "spec": "telegram-lane-overrun-ownership",
+      "started_at": "2026-08-31T21:03:16+00:00",
+      "total_tokens": 16018666,
+      "total_usd": 12.321456,
+      "unpriced_tokens": 0,
+      "verdict": "NOT_ACCEPTED"
+    },
+    {
+      "accepted": false,
+      "builder": {
+        "attribution": "exact",
+        "classes": {
+          "cache_read_tokens": 10599543,
+          "cache_write_1h_tokens": 33438,
+          "cache_write_5m_tokens": 0,
+          "input_tokens": 66,
+          "output_tokens": 24537
+        },
+        "cost_status": "complete",
+        "flags": [],
+        "model_declared": "claude-opus-5",
+        "model_observed": "claude-opus-5",
+        "models": {
+          "claude-opus-5": {
+            "best_effort_estimate": null,
+            "classes": {
+              "cache_read_tokens": 10599543,
+              "cache_write_1h_tokens": 33438,
+              "cache_write_5m_tokens": 0,
+              "input_tokens": 66,
+              "output_tokens": 24537
+            },
+            "tokens": 10657584,
+            "unpriced_tokens": 0,
+            "usd": 6.247907
+          }
+        },
+        "sessions_expected": 1,
+        "sessions_found": 1,
+        "tokens": 10657584,
+        "unpriced_tokens": 0,
+        "usd": 6.247907,
+        "vendor": "anthropic"
+      },
+      "cost_status": "complete",
+      "debt_at_accept": null,
+      "duration_minutes": 18.7,
+      "ended_at": "2026-08-31T21:59:59+00:00",
+      "findings": 3,
+      "flags": [],
+      "judge": {
+        "attribution": "exact",
+        "classes": {
+          "cache_write_tokens": 0,
+          "cached_input_tokens": 4841984,
+          "input_tokens": 5193723,
+          "output_tokens": 67750,
+          "reasoning_output_tokens": 45797
+        },
+        "cost_status": "complete",
+        "flags": [],
+        "model_declared": "gpt-5.5",
+        "model_observed": "gpt-5.6-sol",
+        "models": {
+          "gpt-5.6-sol": {
+            "best_effort_estimate": null,
+            "classes": {
+              "cache_write_tokens": 0,
+              "cached_input_tokens": 4841984,
+              "input_tokens": 5193723,
+              "output_tokens": 67750,
+              "reasoning_output_tokens": 45797
+            },
+            "tokens": 5261473,
+            "unpriced_tokens": 0,
+            "usd": 6.212187
+          }
+        },
+        "sessions_expected": 3,
+        "sessions_found": 3,
+        "tokens": 5261473,
+        "unpriced_tokens": 0,
+        "usd": 6.212187,
+        "vendor": "openai"
+      },
+      "round": 26,
+      "row": "tp2",
+      "spec": "telegram-lane-overrun-ownership",
+      "started_at": "2026-08-31T21:41:17+00:00",
+      "total_tokens": 15919057,
+      "total_usd": 12.460094,
+      "unpriced_tokens": 0,
+      "verdict": "NOT_ACCEPTED"
+    },
+    {
+      "accepted": false,
+      "builder": {
+        "attribution": "exact",
+        "classes": {
+          "cache_read_tokens": 3786991,
+          "cache_write_1h_tokens": 12409,
+          "cache_write_5m_tokens": 0,
+          "input_tokens": 22,
+          "output_tokens": 10126
+        },
+        "cost_status": "complete",
+        "flags": [],
+        "model_declared": "claude-opus-5",
+        "model_observed": "claude-opus-5",
+        "models": {
+          "claude-opus-5": {
+            "best_effort_estimate": null,
+            "classes": {
+              "cache_read_tokens": 3786991,
+              "cache_write_1h_tokens": 12409,
+              "cache_write_5m_tokens": 0,
+              "input_tokens": 22,
+              "output_tokens": 10126
+            },
+            "tokens": 3809548,
+            "unpriced_tokens": 0,
+            "usd": 2.270846
+          }
+        },
+        "sessions_expected": 1,
+        "sessions_found": 1,
+        "tokens": 3809548,
+        "unpriced_tokens": 0,
+        "usd": 2.270846,
+        "vendor": "anthropic"
+      },
+      "cost_status": "complete",
+      "debt_at_accept": null,
+      "duration_minutes": 17.9,
+      "ended_at": "2026-08-31T22:27:30+00:00",
+      "findings": 2,
+      "flags": [],
+      "judge": {
+        "attribution": "exact",
+        "classes": {
+          "cache_write_tokens": 0,
+          "cached_input_tokens": 4399360,
+          "input_tokens": 4813844,
+          "output_tokens": 62100,
+          "reasoning_output_tokens": 42636
+        },
+        "cost_status": "complete",
+        "flags": [],
+        "model_declared": "gpt-5.5",
+        "model_observed": "gpt-5.6-sol",
+        "models": {
+          "gpt-5.6-sol": {
+            "best_effort_estimate": null,
+            "classes": {
+              "cache_write_tokens": 0,
+              "cached_input_tokens": 4399360,
+              "input_tokens": 4813844,
+              "output_tokens": 62100,
+              "reasoning_output_tokens": 42636
+            },
+            "tokens": 4875944,
+            "unpriced_tokens": 0,
+            "usd": 6.1351
+          }
+        },
+        "sessions_expected": 3,
+        "sessions_found": 3,
+        "tokens": 4875944,
+        "unpriced_tokens": 0,
+        "usd": 6.1351,
+        "vendor": "openai"
+      },
+      "round": 27,
+      "row": "tp2",
+      "spec": "telegram-lane-overrun-ownership",
+      "started_at": "2026-08-31T22:09:36+00:00",
+      "total_tokens": 8685492,
+      "total_usd": 8.405946,
+      "unpriced_tokens": 0,
+      "verdict": "NOT_ACCEPTED"
+    },
+    {
+      "accepted": false,
+      "builder": {
+        "attribution": "exact",
+        "classes": {
+          "cache_read_tokens": 4981033,
+          "cache_write_1h_tokens": 11115,
+          "cache_write_5m_tokens": 0,
+          "input_tokens": 28,
+          "output_tokens": 7937
+        },
+        "cost_status": "complete",
+        "flags": [],
+        "model_declared": "claude-opus-5",
+        "model_observed": "claude-opus-5",
+        "models": {
+          "claude-opus-5": {
+            "best_effort_estimate": null,
+            "classes": {
+              "cache_read_tokens": 4981033,
+              "cache_write_1h_tokens": 11115,
+              "cache_write_5m_tokens": 0,
+              "input_tokens": 28,
+              "output_tokens": 7937
+            },
+            "tokens": 5000113,
+            "unpriced_tokens": 0,
+            "usd": 2.800232
+          }
+        },
+        "sessions_expected": 1,
+        "sessions_found": 1,
+        "tokens": 5000113,
+        "unpriced_tokens": 0,
+        "usd": 2.800232,
+        "vendor": "anthropic"
+      },
+      "cost_status": "complete",
+      "debt_at_accept": null,
+      "duration_minutes": 12.433,
+      "ended_at": "2026-08-31T22:49:11+00:00",
+      "findings": 3,
+      "flags": [],
+      "judge": {
+        "attribution": "exact",
+        "classes": {
+          "cache_write_tokens": 0,
+          "cached_input_tokens": 5526784,
+          "input_tokens": 5884154,
+          "output_tokens": 67271,
+          "reasoning_output_tokens": 44166
+        },
+        "cost_status": "complete",
+        "flags": [],
+        "model_declared": "gpt-5.5",
+        "model_observed": "gpt-5.6-sol",
+        "models": {
+          "gpt-5.6-sol": {
+            "best_effort_estimate": null,
+            "classes": {
+              "cache_write_tokens": 0,
+              "cached_input_tokens": 5526784,
+              "input_tokens": 5884154,
+              "output_tokens": 67271,
+              "reasoning_output_tokens": 44166
+            },
+            "tokens": 5951425,
+            "unpriced_tokens": 0,
+            "usd": 6.568372
+          }
+        },
+        "sessions_expected": 3,
+        "sessions_found": 3,
+        "tokens": 5951425,
+        "unpriced_tokens": 0,
+        "usd": 6.568372,
+        "vendor": "openai"
+      },
+      "round": 28,
+      "row": "tp2",
+      "spec": "telegram-lane-overrun-ownership",
+      "started_at": "2026-08-31T22:36:45+00:00",
+      "total_tokens": 10951538,
+      "total_usd": 9.368604,
+      "unpriced_tokens": 0,
+      "verdict": "NOT_ACCEPTED"
+    },
+    {
+      "accepted": false,
+      "builder": {
+        "attribution": "exact",
+        "classes": {
+          "cache_read_tokens": 3279580,
+          "cache_write_1h_tokens": 6942,
+          "cache_write_5m_tokens": 0,
+          "input_tokens": 18,
+          "output_tokens": 4906
+        },
+        "cost_status": "complete",
+        "flags": [],
+        "model_declared": "claude-opus-5",
+        "model_observed": "claude-opus-5",
+        "models": {
+          "claude-opus-5": {
+            "best_effort_estimate": null,
+            "classes": {
+              "cache_read_tokens": 3279580,
+              "cache_write_1h_tokens": 6942,
+              "cache_write_5m_tokens": 0,
+              "input_tokens": 18,
+              "output_tokens": 4906
+            },
+            "tokens": 3291446,
+            "unpriced_tokens": 0,
+            "usd": 1.83195
+          }
+        },
+        "sessions_expected": 1,
+        "sessions_found": 1,
+        "tokens": 3291446,
+        "unpriced_tokens": 0,
+        "usd": 1.83195,
+        "vendor": "anthropic"
+      },
+      "cost_status": "complete",
+      "debt_at_accept": null,
+      "duration_minutes": 10.217,
+      "ended_at": "2026-08-31T23:00:58+00:00",
+      "findings": 3,
+      "flags": [],
+      "judge": {
+        "attribution": "exact",
+        "classes": {
+          "cache_write_tokens": 0,
+          "cached_input_tokens": 4725504,
+          "input_tokens": 5070968,
+          "output_tokens": 66232,
+          "reasoning_output_tokens": 47337
+        },
+        "cost_status": "complete",
+        "flags": [],
+        "model_declared": "gpt-5.5",
+        "model_observed": "gpt-5.6-sol",
+        "models": {
+          "gpt-5.6-sol": {
+            "best_effort_estimate": null,
+            "classes": {
+              "cache_write_tokens": 0,
+              "cached_input_tokens": 4725504,
+              "input_tokens": 5070968,
+              "output_tokens": 66232,
+              "reasoning_output_tokens": 47337
+            },
+            "tokens": 5137200,
+            "unpriced_tokens": 0,
+            "usd": 6.077032
+          }
+        },
+        "sessions_expected": 3,
+        "sessions_found": 3,
+        "tokens": 5137200,
+        "unpriced_tokens": 0,
+        "usd": 6.077032,
+        "vendor": "openai"
+      },
+      "round": 29,
+      "row": "tp2",
+      "spec": "telegram-lane-overrun-ownership",
+      "started_at": "2026-08-31T22:50:45+00:00",
+      "total_tokens": 8428646,
+      "total_usd": 7.908982,
+      "unpriced_tokens": 0,
+      "verdict": "NOT_ACCEPTED"
+    },
+    {
+      "accepted": false,
+      "builder": {
+        "attribution": "exact",
+        "classes": {
+          "cache_read_tokens": 14456662,
+          "cache_write_1h_tokens": 39414,
+          "cache_write_5m_tokens": 0,
+          "input_tokens": 74,
+          "output_tokens": 27823
+        },
+        "cost_status": "complete",
+        "flags": [],
+        "model_declared": "claude-opus-5",
+        "model_observed": "claude-opus-5",
+        "models": {
+          "claude-opus-5": {
+            "best_effort_estimate": null,
+            "classes": {
+              "cache_read_tokens": 14456662,
+              "cache_write_1h_tokens": 39414,
+              "cache_write_5m_tokens": 0,
+              "input_tokens": 74,
+              "output_tokens": 27823
+            },
+            "tokens": 14523973,
+            "unpriced_tokens": 0,
+            "usd": 8.318416
+          }
+        },
+        "sessions_expected": 1,
+        "sessions_found": 1,
+        "tokens": 14523973,
+        "unpriced_tokens": 0,
+        "usd": 8.318416,
+        "vendor": "anthropic"
+      },
+      "cost_status": "complete",
+      "debt_at_accept": null,
+      "duration_minutes": 9.267,
+      "ended_at": "2026-08-31T23:30:39+00:00",
+      "findings": 2,
+      "flags": [],
+      "judge": {
+        "attribution": "exact",
+        "classes": {
+          "cache_write_tokens": 0,
+          "cached_input_tokens": 4965376,
+          "input_tokens": 5323557,
+          "output_tokens": 54795,
+          "reasoning_output_tokens": 34534
+        },
+        "cost_status": "complete",
+        "flags": [],
+        "model_declared": "gpt-5.5",
+        "model_observed": "gpt-5.6-sol",
+        "models": {
+          "gpt-5.6-sol": {
+            "best_effort_estimate": null,
+            "classes": {
+              "cache_write_tokens": 0,
+              "cached_input_tokens": 4965376,
+              "input_tokens": 5323557,
+              "output_tokens": 54795,
+              "reasoning_output_tokens": 34534
+            },
+            "tokens": 5378352,
+            "unpriced_tokens": 0,
+            "usd": 5.917443
+          }
+        },
+        "sessions_expected": 3,
+        "sessions_found": 3,
+        "tokens": 5378352,
+        "unpriced_tokens": 0,
+        "usd": 5.917443,
+        "vendor": "openai"
+      },
+      "round": 30,
+      "row": "tp2",
+      "spec": "telegram-lane-overrun-ownership",
+      "started_at": "2026-08-31T23:21:23+00:00",
+      "total_tokens": 19902325,
+      "total_usd": 14.235859,
+      "unpriced_tokens": 0,
+      "verdict": "NOT_ACCEPTED"
+    },
+    {
+      "accepted": false,
+      "builder": {
+        "attribution": "exact",
+        "classes": {
+          "cache_read_tokens": 4134297,
+          "cache_write_1h_tokens": 11182,
+          "cache_write_5m_tokens": 0,
+          "input_tokens": 20,
+          "output_tokens": 9330
+        },
+        "cost_status": "complete",
+        "flags": [],
+        "model_declared": "claude-opus-5",
+        "model_observed": "claude-opus-5",
+        "models": {
+          "claude-opus-5": {
+            "best_effort_estimate": null,
+            "classes": {
+              "cache_read_tokens": 4134297,
+              "cache_write_1h_tokens": 11182,
+              "cache_write_5m_tokens": 0,
+              "input_tokens": 20,
+              "output_tokens": 9330
+            },
+            "tokens": 4154829,
+            "unpriced_tokens": 0,
+            "usd": 2.412319
+          }
+        },
+        "sessions_expected": 1,
+        "sessions_found": 1,
+        "tokens": 4154829,
+        "unpriced_tokens": 0,
+        "usd": 2.412319,
+        "vendor": "anthropic"
+      },
+      "cost_status": "complete",
+      "debt_at_accept": null,
+      "duration_minutes": 7.65,
+      "ended_at": "2026-08-31T23:47:15+00:00",
+      "findings": 0,
+      "flags": [],
+      "judge": {
+        "attribution": "exact",
+        "classes": {
+          "cache_write_tokens": 0,
+          "cached_input_tokens": 4478720,
+          "input_tokens": 4807117,
+          "output_tokens": 49799,
+          "reasoning_output_tokens": 33045
+        },
+        "cost_status": "complete",
+        "flags": [],
+        "model_declared": "gpt-5.5",
+        "model_observed": "gpt-5.6-sol",
+        "models": {
+          "gpt-5.6-sol": {
+            "best_effort_estimate": null,
+            "classes": {
+              "cache_write_tokens": 0,
+              "cached_input_tokens": 4478720,
+              "input_tokens": 4807117,
+              "output_tokens": 49799,
+              "reasoning_output_tokens": 33045
+            },
+            "tokens": 4856916,
+            "unpriced_tokens": 0,
+            "usd": 5.375315
+          }
+        },
+        "sessions_expected": 3,
+        "sessions_found": 3,
+        "tokens": 4856916,
+        "unpriced_tokens": 0,
+        "usd": 5.375315,
+        "vendor": "openai"
+      },
+      "round": 31,
+      "row": "tp2",
+      "spec": "telegram-lane-overrun-ownership",
+      "started_at": "2026-08-31T23:39:36+00:00",
+      "total_tokens": 9011745,
+      "total_usd": 7.787634,
+      "unpriced_tokens": 0,
+      "verdict": "HOLD"
+    },
+    {
+      "accepted": false,
+      "builder": {
+        "attribution": "exact",
+        "classes": {
+          "cache_read_tokens": 7700273,
+          "cache_write_1h_tokens": 16046,
+          "cache_write_5m_tokens": 0,
+          "input_tokens": 36,
+          "output_tokens": 9233
+        },
+        "cost_status": "complete",
+        "flags": [],
+        "model_declared": "claude-opus-5",
+        "model_observed": "claude-opus-5",
+        "models": {
+          "claude-opus-5": {
+            "best_effort_estimate": null,
+            "classes": {
+              "cache_read_tokens": 7700273,
+              "cache_write_1h_tokens": 16046,
+              "cache_write_5m_tokens": 0,
+              "input_tokens": 36,
+              "output_tokens": 9233
+            },
+            "tokens": 7725588,
+            "unpriced_tokens": 0,
+            "usd": 4.241601
+          }
+        },
+        "sessions_expected": 1,
+        "sessions_found": 1,
+        "tokens": 7725588,
+        "unpriced_tokens": 0,
+        "usd": 4.241601,
+        "vendor": "anthropic"
+      },
+      "cost_status": "complete",
+      "debt_at_accept": null,
+      "duration_minutes": 9.967,
+      "ended_at": "2026-09-01T00:04:52+00:00",
+      "findings": 1,
+      "flags": [],
+      "judge": {
+        "attribution": "exact",
+        "classes": {
+          "cache_write_tokens": 0,
+          "cached_input_tokens": 3904512,
+          "input_tokens": 4269555,
+          "output_tokens": 60741,
+          "reasoning_output_tokens": 33279
+        },
+        "cost_status": "complete",
+        "flags": [],
+        "model_declared": "gpt-5.5",
+        "model_observed": "gpt-5.6-sol",
+        "models": {
+          "gpt-5.6-sol": {
+            "best_effort_estimate": null,
+            "classes": {
+              "cache_write_tokens": 0,
+              "cached_input_tokens": 3904512,
+              "input_tokens": 4269555,
+              "output_tokens": 60741,
+              "reasoning_output_tokens": 33279
+            },
+            "tokens": 4330296,
+            "unpriced_tokens": 0,
+            "usd": 5.599701
+          }
+        },
+        "sessions_expected": 3,
+        "sessions_found": 3,
+        "tokens": 4330296,
+        "unpriced_tokens": 0,
+        "usd": 5.599701,
+        "vendor": "openai"
+      },
+      "round": 32,
+      "row": "tp2",
+      "spec": "telegram-lane-overrun-ownership",
+      "started_at": "2026-08-31T23:54:54+00:00",
+      "total_tokens": 12055884,
+      "total_usd": 9.841302,
+      "unpriced_tokens": 0,
+      "verdict": "NOT_ACCEPTED"
+    },
+    {
+      "accepted": false,
+      "builder": {
+        "attribution": "exact",
+        "classes": {
+          "cache_read_tokens": 6179883,
+          "cache_write_1h_tokens": 12718,
+          "cache_write_5m_tokens": 0,
+          "input_tokens": 28,
+          "output_tokens": 9326
+        },
+        "cost_status": "complete",
+        "flags": [],
+        "model_declared": "claude-opus-5",
+        "model_observed": "claude-opus-5",
+        "models": {
+          "claude-opus-5": {
+            "best_effort_estimate": null,
+            "classes": {
+              "cache_read_tokens": 6179883,
+              "cache_write_1h_tokens": 12718,
+              "cache_write_5m_tokens": 0,
+              "input_tokens": 28,
+              "output_tokens": 9326
+            },
+            "tokens": 6201955,
+            "unpriced_tokens": 0,
+            "usd": 3.450411
+          }
+        },
+        "sessions_expected": 1,
+        "sessions_found": 1,
+        "tokens": 6201955,
+        "unpriced_tokens": 0,
+        "usd": 3.450411,
+        "vendor": "anthropic"
+      },
+      "cost_status": "complete",
+      "debt_at_accept": null,
+      "duration_minutes": 7.7,
+      "ended_at": "2026-09-01T00:22:56+00:00",
+      "findings": 0,
+      "flags": [],
+      "judge": {
+        "attribution": "exact",
+        "classes": {
+          "cache_write_tokens": 0,
+          "cached_input_tokens": 3734016,
+          "input_tokens": 4053442,
+          "output_tokens": 51410,
+          "reasoning_output_tokens": 33299
+        },
+        "cost_status": "complete",
+        "flags": [],
+        "model_declared": "gpt-5.5",
+        "model_observed": "gpt-5.6-sol",
+        "models": {
+          "gpt-5.6-sol": {
+            "best_effort_estimate": null,
+            "classes": {
+              "cache_write_tokens": 0,
+              "cached_input_tokens": 3734016,
+              "input_tokens": 4053442,
+              "output_tokens": 51410,
+              "reasoning_output_tokens": 33299
+            },
+            "tokens": 4104852,
+            "unpriced_tokens": 0,
+            "usd": 5.006438
+          }
+        },
+        "sessions_expected": 3,
+        "sessions_found": 3,
+        "tokens": 4104852,
+        "unpriced_tokens": 0,
+        "usd": 5.006438,
+        "vendor": "openai"
+      },
+      "round": 33,
+      "row": "tp2",
+      "spec": "telegram-lane-overrun-ownership",
+      "started_at": "2026-09-01T00:15:14+00:00",
+      "total_tokens": 10306807,
+      "total_usd": 8.456849,
+      "unpriced_tokens": 0,
+      "verdict": "HOLD"
+    },
+    {
+      "accepted": false,
+      "builder": {
+        "attribution": "exact",
+        "classes": {
+          "cache_read_tokens": 5879396,
+          "cache_write_1h_tokens": 9202,
+          "cache_write_5m_tokens": 0,
+          "input_tokens": 26,
+          "output_tokens": 6054
+        },
+        "cost_status": "complete",
+        "flags": [],
+        "model_declared": "claude-opus-5",
+        "model_observed": "claude-opus-5",
+        "models": {
+          "claude-opus-5": {
+            "best_effort_estimate": null,
+            "classes": {
+              "cache_read_tokens": 5879396,
+              "cache_write_1h_tokens": 9202,
+              "cache_write_5m_tokens": 0,
+              "input_tokens": 26,
+              "output_tokens": 6054
+            },
+            "tokens": 5894678,
+            "unpriced_tokens": 0,
+            "usd": 3.183198
+          }
+        },
+        "sessions_expected": 1,
+        "sessions_found": 1,
+        "tokens": 5894678,
+        "unpriced_tokens": 0,
+        "usd": 3.183198,
+        "vendor": "anthropic"
+      },
+      "cost_status": "complete",
+      "debt_at_accept": null,
+      "duration_minutes": 8.9,
+      "ended_at": "2026-09-01T00:41:57+00:00",
+      "findings": 1,
+      "flags": [],
+      "judge": {
+        "attribution": "exact",
+        "classes": {
+          "cache_write_tokens": 0,
+          "cached_input_tokens": 5634304,
+          "input_tokens": 6005736,
+          "output_tokens": 56091,
+          "reasoning_output_tokens": 36447
+        },
+        "cost_status": "complete",
+        "flags": [],
+        "model_declared": "gpt-5.5",
+        "model_observed": "gpt-5.6-sol",
+        "models": {
+          "gpt-5.6-sol": {
+            "best_effort_estimate": null,
+            "classes": {
+              "cache_write_tokens": 0,
+              "cached_input_tokens": 5634304,
+              "input_tokens": 6005736,
+              "output_tokens": 56091,
+              "reasoning_output_tokens": 36447
+            },
+            "tokens": 6061827,
+            "unpriced_tokens": 0,
+            "usd": 6.357042
+          }
+        },
+        "sessions_expected": 3,
+        "sessions_found": 3,
+        "tokens": 6061827,
+        "unpriced_tokens": 0,
+        "usd": 6.357042,
+        "vendor": "openai"
+      },
+      "round": 34,
+      "row": "tp2",
+      "spec": "telegram-lane-overrun-ownership",
+      "started_at": "2026-09-01T00:33:03+00:00",
+      "total_tokens": 11956505,
+      "total_usd": 9.54024,
+      "unpriced_tokens": 0,
+      "verdict": "NOT_ACCEPTED"
+    },
+    {
+      "accepted": false,
+      "builder": {
+        "attribution": "exact",
+        "classes": {
+          "cache_read_tokens": 4155515,
+          "cache_write_1h_tokens": 10031,
+          "cache_write_5m_tokens": 0,
+          "input_tokens": 18,
+          "output_tokens": 8345
+        },
+        "cost_status": "complete",
+        "flags": [],
+        "model_declared": "claude-opus-5",
+        "model_observed": "claude-opus-5",
+        "models": {
+          "claude-opus-5": {
+            "best_effort_estimate": null,
+            "classes": {
+              "cache_read_tokens": 4155515,
+              "cache_write_1h_tokens": 10031,
+              "cache_write_5m_tokens": 0,
+              "input_tokens": 18,
+              "output_tokens": 8345
+            },
+            "tokens": 4173909,
+            "unpriced_tokens": 0,
+            "usd": 2.386782
+          }
+        },
+        "sessions_expected": 1,
+        "sessions_found": 1,
+        "tokens": 4173909,
+        "unpriced_tokens": 0,
+        "usd": 2.386782,
+        "vendor": "anthropic"
+      },
+      "cost_status": "complete",
+      "debt_at_accept": null,
+      "duration_minutes": 9.933,
+      "ended_at": "2026-09-01T01:02:39+00:00",
+      "findings": 2,
+      "flags": [],
+      "judge": {
+        "attribution": "exact",
+        "classes": {
+          "cache_write_tokens": 0,
+          "cached_input_tokens": 4468992,
+          "input_tokens": 4840810,
+          "output_tokens": 61023,
+          "reasoning_output_tokens": 37596
+        },
+        "cost_status": "complete",
+        "flags": [],
+        "model_declared": "gpt-5.5",
+        "model_observed": "gpt-5.6-sol",
+        "models": {
+          "gpt-5.6-sol": {
+            "best_effort_estimate": null,
+            "classes": {
+              "cache_write_tokens": 0,
+              "cached_input_tokens": 4468992,
+              "input_tokens": 4840810,
+              "output_tokens": 61023,
+              "reasoning_output_tokens": 37596
+            },
+            "tokens": 4901833,
+            "unpriced_tokens": 0,
+            "usd": 5.924276
+          }
+        },
+        "sessions_expected": 3,
+        "sessions_found": 3,
+        "tokens": 4901833,
+        "unpriced_tokens": 0,
+        "usd": 5.924276,
+        "vendor": "openai"
+      },
+      "round": 35,
+      "row": "tp2",
+      "spec": "telegram-lane-overrun-ownership",
+      "started_at": "2026-09-01T00:52:43+00:00",
+      "total_tokens": 9075742,
+      "total_usd": 8.311058,
+      "unpriced_tokens": 0,
+      "verdict": "NOT_ACCEPTED"
+    },
+    {
+      "accepted": true,
+      "builder": {
+        "attribution": "exact",
+        "classes": {
+          "cache_read_tokens": 2342782,
+          "cache_write_1h_tokens": 4211,
+          "cache_write_5m_tokens": 0,
+          "input_tokens": 10,
+          "output_tokens": 3214
+        },
+        "cost_status": "complete",
+        "flags": [],
+        "model_declared": "claude-opus-5",
+        "model_observed": "claude-opus-5",
+        "models": {
+          "claude-opus-5": {
+            "best_effort_estimate": null,
+            "classes": {
+              "cache_read_tokens": 2342782,
+              "cache_write_1h_tokens": 4211,
+              "cache_write_5m_tokens": 0,
+              "input_tokens": 10,
+              "output_tokens": 3214
+            },
+            "tokens": 2350217,
+            "unpriced_tokens": 0,
+            "usd": 1.293901
+          }
+        },
+        "sessions_expected": 1,
+        "sessions_found": 1,
+        "tokens": 2350217,
+        "unpriced_tokens": 0,
+        "usd": 1.293901,
+        "vendor": "anthropic"
+      },
+      "cost_status": "complete",
+      "debt_at_accept": 0,
+      "duration_minutes": 7.733,
+      "ended_at": "2026-09-01T01:11:35+00:00",
+      "findings": 0,
+      "flags": [],
+      "judge": {
+        "attribution": "exact",
+        "classes": {
+          "cache_write_tokens": 0,
+          "cached_input_tokens": 3477760,
+          "input_tokens": 3799915,
+          "output_tokens": 46484,
+          "reasoning_output_tokens": 30440
+        },
+        "cost_status": "complete",
+        "flags": [],
+        "model_declared": "gpt-5.5",
+        "model_observed": "gpt-5.6-sol",
+        "models": {
+          "gpt-5.6-sol": {
+            "best_effort_estimate": null,
+            "classes": {
+              "cache_write_tokens": 0,
+              "cached_input_tokens": 3477760,
+              "input_tokens": 3799915,
+              "output_tokens": 46484,
+              "reasoning_output_tokens": 30440
+            },
+            "tokens": 3846399,
+            "unpriced_tokens": 0,
+            "usd": 4.744175
+          }
+        },
+        "sessions_expected": 3,
+        "sessions_found": 3,
+        "tokens": 3846399,
+        "unpriced_tokens": 0,
+        "usd": 4.744175,
+        "vendor": "openai"
+      },
+      "round": 36,
+      "row": "tp2",
+      "spec": "telegram-lane-overrun-ownership",
+      "started_at": "2026-09-01T01:03:51+00:00",
+      "total_tokens": 6196616,
+      "total_usd": 6.038076,
+      "unpriced_tokens": 0,
+      "verdict": "ACCEPT"
     },
     {
       "accepted": false,
