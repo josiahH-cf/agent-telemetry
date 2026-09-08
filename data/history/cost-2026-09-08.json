@@ -11,7 +11,7 @@
       "unattributed": 0
     }
   },
-  "collected_at": "2026-09-08T07:05:19+00:00",
+  "collected_at": "2026-09-08T08:17:01+00:00",
   "date": "2026-09-08",
   "schema_version": 2,
   "vendors": {
@@ -27,7 +27,21 @@
         "unestimated_tokens": 0,
         "unpriced_tokens": 0
       },
-      "by_model": {},
+      "by_model": {
+        "unknown": {
+          "best_effort_estimate": null,
+          "classes": {
+            "cache_read_tokens": 0,
+            "cache_write_1h_tokens": 0,
+            "cache_write_5m_tokens": 0,
+            "input_tokens": 0,
+            "output_tokens": 0
+          },
+          "tokens": 0,
+          "unpriced_tokens": 0,
+          "usd": 0.0
+        }
+      },
       "by_scope": {
         "loop": {
           "best_effort_estimate": {
@@ -65,7 +79,21 @@
             "unestimated_tokens": 0,
             "unpriced_tokens": 0
           },
-          "by_model": {},
+          "by_model": {
+            "unknown": {
+              "best_effort_estimate": null,
+              "classes": {
+                "cache_read_tokens": 0,
+                "cache_write_1h_tokens": 0,
+                "cache_write_5m_tokens": 0,
+                "input_tokens": 0,
+                "output_tokens": 0
+              },
+              "tokens": 0,
+              "unpriced_tokens": 0,
+              "usd": 0.0
+            }
+          },
           "classes": {
             "cache_read_tokens": 0,
             "cache_write_1h_tokens": 0,
@@ -86,67 +114,163 @@
       "best_effort_estimate": {
         "basis": "current_verified_rate_envelope",
         "caveat": "estimates_are_separate_from_exact_cost_and_omit_unknown_turn_level_long_context",
-        "estimated_tokens": 0,
-        "high_usd": null,
-        "low_usd": null,
-        "midpoint_usd": null,
-        "status": "not_needed",
+        "estimated_tokens": 35465843,
+        "high_usd": 33.512254,
+        "low_usd": 1.34049,
+        "midpoint_usd": 17.426372,
+        "status": "available",
         "unestimated_tokens": 0,
-        "unpriced_tokens": 0
+        "unpriced_tokens": 35465843
       },
-      "by_model": {},
+      "by_model": {
+        "gpt-6-astra": {
+          "best_effort_estimate": {
+            "basis": "current_verified_rate_envelope",
+            "candidate_models": [
+              "gpt-5.3-codex",
+              "gpt-5.4",
+              "gpt-5.4-mini",
+              "gpt-5.5",
+              "gpt-5.6-luna",
+              "gpt-5.6-sol",
+              "gpt-5.6-terra"
+            ],
+            "caveat": "unknown_model_and_no_turn_level_long_context",
+            "estimated_tokens": 35465843,
+            "high_usd": 33.512254,
+            "low_usd": 1.34049,
+            "midpoint_usd": 17.426372,
+            "status": "available",
+            "unpriced_tokens": 35465843
+          },
+          "classes": {
+            "cache_write_tokens": 0,
+            "cached_input_tokens": 33259008,
+            "input_tokens": 35231900,
+            "output_tokens": 233943,
+            "reasoning_output_tokens": 108691
+          },
+          "tokens": 35465843,
+          "unpriced_tokens": 35465843,
+          "usd": 0.0
+        }
+      },
       "by_scope": {
         "loop": {
           "best_effort_estimate": {
             "basis": "current_verified_rate_envelope",
             "caveat": "estimates_are_separate_from_exact_cost_and_omit_unknown_turn_level_long_context",
-            "estimated_tokens": 0,
-            "high_usd": null,
-            "low_usd": null,
-            "midpoint_usd": null,
-            "status": "not_needed",
+            "estimated_tokens": 23936144,
+            "high_usd": 20.998943,
+            "low_usd": 0.839958,
+            "midpoint_usd": 10.91945,
+            "status": "available",
             "unestimated_tokens": 0,
-            "unpriced_tokens": 0
+            "unpriced_tokens": 23936144
           },
-          "by_model": {},
+          "by_model": {
+            "gpt-6-astra": {
+              "best_effort_estimate": {
+                "basis": "current_verified_rate_envelope",
+                "candidate_models": [
+                  "gpt-5.3-codex",
+                  "gpt-5.4",
+                  "gpt-5.4-mini",
+                  "gpt-5.5",
+                  "gpt-5.6-luna",
+                  "gpt-5.6-sol",
+                  "gpt-5.6-terra"
+                ],
+                "caveat": "unknown_model_and_no_turn_level_long_context",
+                "estimated_tokens": 23936144,
+                "high_usd": 20.998943,
+                "low_usd": 0.839958,
+                "midpoint_usd": 10.91945,
+                "status": "available",
+                "unpriced_tokens": 23936144
+              },
+              "classes": {
+                "cache_write_tokens": 0,
+                "cached_input_tokens": 22752256,
+                "input_tokens": 23788009,
+                "output_tokens": 148135,
+                "reasoning_output_tokens": 63360
+              },
+              "tokens": 23936144,
+              "unpriced_tokens": 23936144,
+              "usd": 0.0
+            }
+          },
           "classes": {
             "cache_write_tokens": 0,
-            "cached_input_tokens": 0,
-            "input_tokens": 0,
-            "output_tokens": 0,
-            "reasoning_output_tokens": 0
+            "cached_input_tokens": 22752256,
+            "input_tokens": 23788009,
+            "output_tokens": 148135,
+            "reasoning_output_tokens": 63360
           },
-          "tokens": 0,
-          "unpriced_tokens": 0,
+          "tokens": 23936144,
+          "unpriced_tokens": 23936144,
           "usd": 0.0
         },
         "other": {
           "best_effort_estimate": {
             "basis": "current_verified_rate_envelope",
             "caveat": "estimates_are_separate_from_exact_cost_and_omit_unknown_turn_level_long_context",
-            "estimated_tokens": 0,
-            "high_usd": null,
-            "low_usd": null,
-            "midpoint_usd": null,
-            "status": "not_needed",
+            "estimated_tokens": 11529699,
+            "high_usd": 12.513311,
+            "low_usd": 0.500532,
+            "midpoint_usd": 6.506922,
+            "status": "available",
             "unestimated_tokens": 0,
-            "unpriced_tokens": 0
+            "unpriced_tokens": 11529699
           },
-          "by_model": {},
+          "by_model": {
+            "gpt-6-astra": {
+              "best_effort_estimate": {
+                "basis": "current_verified_rate_envelope",
+                "candidate_models": [
+                  "gpt-5.3-codex",
+                  "gpt-5.4",
+                  "gpt-5.4-mini",
+                  "gpt-5.5",
+                  "gpt-5.6-luna",
+                  "gpt-5.6-sol",
+                  "gpt-5.6-terra"
+                ],
+                "caveat": "unknown_model_and_no_turn_level_long_context",
+                "estimated_tokens": 11529699,
+                "high_usd": 12.513311,
+                "low_usd": 0.500532,
+                "midpoint_usd": 6.506922,
+                "status": "available",
+                "unpriced_tokens": 11529699
+              },
+              "classes": {
+                "cache_write_tokens": 0,
+                "cached_input_tokens": 10506752,
+                "input_tokens": 11443891,
+                "output_tokens": 85808,
+                "reasoning_output_tokens": 45331
+              },
+              "tokens": 11529699,
+              "unpriced_tokens": 11529699,
+              "usd": 0.0
+            }
+          },
           "classes": {
             "cache_write_tokens": 0,
-            "cached_input_tokens": 0,
-            "input_tokens": 0,
-            "output_tokens": 0,
-            "reasoning_output_tokens": 0
+            "cached_input_tokens": 10506752,
+            "input_tokens": 11443891,
+            "output_tokens": 85808,
+            "reasoning_output_tokens": 45331
           },
-          "tokens": 0,
-          "unpriced_tokens": 0,
+          "tokens": 11529699,
+          "unpriced_tokens": 11529699,
           "usd": 0.0
         }
       },
-      "tokens": 0,
-      "unpriced_tokens": 0,
+      "tokens": 35465843,
+      "unpriced_tokens": 35465843,
       "usd": 0.0
     }
   }
