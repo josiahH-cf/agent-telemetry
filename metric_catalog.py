@@ -1342,6 +1342,7 @@ def build_page_envelope(snapshot: dict[str, Any]) -> dict[str, Any]:
     observatory = metrics.get("observatory", {}) if isinstance(metrics.get("observatory"), dict) else {}
     reliability = metrics.get("reliability", {}) if isinstance(metrics.get("reliability"), dict) else {}
     now = metrics.get("now", {}) if isinstance(metrics.get("now"), dict) else {}
+    loop_history = metrics.get("loop_history", {}) if isinstance(metrics.get("loop_history"), dict) else {}
     roots = observatory.get("source_roots") if isinstance(observatory.get("source_roots"), list) else []
     root_rows = [
         {
@@ -1412,6 +1413,14 @@ def build_page_envelope(snapshot: dict[str, Any]) -> dict[str, Any]:
             },
             "reconciliation": str((observatory.get("reconciliation") or {}).get("status") or "unknown"),
             "store_integrity": str((observatory.get("store") or {}).get("integrity") or "unknown"),
+            # The governed loop is retired; sections 05/07 render its datasets as frozen history.
+            "loop_history": {
+                "status": str(loop_history.get("status") or "unknown"),
+                "retired_on": loop_history.get("retired_on"),
+                "served_from": loop_history.get("served_from"),
+                "last_collected_at": loop_history.get("last_collected_at"),
+                "coverage_to": loop_history.get("coverage_to"),
+            },
         },
         "windows": windows,
         "contract": {

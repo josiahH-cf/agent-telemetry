@@ -45,6 +45,13 @@ BASE_SOURCE_NAMES = ("suite_state", "agent_repo", "spec_corpus", "provider_usage
 USAGE_SOURCE_NAMES = ("anthropic_usage", "openai_usage")
 SOURCE_NAMES = BASE_SOURCE_NAMES + USAGE_SOURCE_NAMES
 AVAILABLE_STATUSES = {"ok", "partial"}
+# The governed loop was retired on this date. Its sources are served from a sanitized last-good
+# snapshot whenever a live read is unavailable or would shrink, so the published loop datasets
+# (rounds, specs, tests, publications, incidents) stay frozen history (AGENTS.md invariant 7).
+LOOP_RETIRED_ON = "2026-09-08"
+LEGACY_LOOP_SOURCES = ("suite_state", "agent_repo", "spec_corpus")
+LOOP_USAGE_KEYS = ("rounds", "row_time", "time")
+LAST_GOOD_RESERVED_KEYS = {"schema_version", "recorded_at", "meta"}
 KNOWN_EVENT_KINDS = {
     "before-preview",
     "before-preview-failed",
@@ -1313,38 +1320,159 @@ def source_timeout_seconds(name: str, config: dict[str, Any], default_timeout: f
     return configured
 
 
-def spec_corpus_with_last_good(result: dict[str, Any], cache_root: Path, now: dt.datetime) -> dict[str, Any]:
-    """Cache only sanitized corpus derivations and reuse them under a named outage."""
-    path = cache_root / "spec-corpus-last-good.json"
-    details = result.get("meta") if isinstance(result.get("meta"), dict) else {}
-    if details.get("available"):
-        value = {
-            "schema_version": SCHEMA_VERSION,
-            "recorded_at": iso(now),
-            "records": result.get("records", []),
-            "counts": result.get("counts", {}),
-        }
-        atomic_write(path, json_text(value))
-        return result
+def last_good_path(cache_root: Path, name: str) -> Path:
+    return cache_root / f"{name.replace('_', '-')}-last-good.json"
+
+
+def read_last_good(path: Path) -> dict[str, Any]:
     try:
         cached = json.loads(path.read_text(encoding="utf-8"))
     except (OSError, json.JSONDecodeError):
-        return result
+        return {}
     if not isinstance(cached, dict) or cached.get("schema_version") != SCHEMA_VERSION:
+        return {}
+    return cached
+
+
+def counts_shrunk(live: dict[str, Any], cached: dict[str, Any]) -> bool:
+    """True when a live read reports fewer of anything the last-good snapshot already counted."""
+    return any(
+        safe_int(live.get(key), -1) < safe_int(value)
+        for key, value in cached.items()
+        if key in live and isinstance(value, int) and not isinstance(value, bool)
+    )
+
+
+def source_with_last_good(name: str, result: dict[str, Any], cache_root: Path, now: dt.datetime) -> dict[str, Any]:
+    """Serve a retired-loop source from its sanitized last-good snapshot when the live read cannot.
+
+    A live, available read that does not shrink any recorded count refreshes the snapshot and is
+    returned unchanged. Otherwise (root missing, timeout, error, or a partial deletion that would
+    shrink published history) the cached derivations are served with status ``historical``,
+    ``available`` false and the named skips ``cached_last_good`` (plus ``source_shrunk`` when a
+    live read was refused). A source the operator disabled stays ``disabled``: the store keeps its
+    already-ingested loop history, but nothing is read or served for it. Only sanitized adapter
+    output is cached, in the private state root.
+    """
+    path = last_good_path(cache_root, name)
+    details = result.get("meta") if isinstance(result.get("meta"), dict) else {}
+    if details.get("status") == "disabled":
+        return result
+    cached = read_last_good(path)
+    cached_meta = cached.get("meta") if isinstance(cached.get("meta"), dict) else {}
+    cached_ingested = cached_meta.get("ingested") if isinstance(cached_meta.get("ingested"), dict) else {}
+    live_ingested = details.get("ingested") if isinstance(details.get("ingested"), dict) else {}
+    shrunk = bool(cached) and bool(details.get("available")) and counts_shrunk(live_ingested, cached_ingested)
+    if details.get("available") and not shrunk:
+        value = {
+            "schema_version": SCHEMA_VERSION,
+            "recorded_at": iso(now),
+            "meta": {"status": details.get("status"), "coverage": details.get("coverage"), "high_water": details.get("high_water") or {}, "ingested": live_ingested},
+            **{key: item for key, item in result.items() if key != "meta"},
+        }
+        atomic_write(path, json_text(value))
+        return result
+    if not cached:
         return result
     recorded = parse_timestamp(cached.get("recorded_at"))
     age_hours = max(0.0, (now - recorded).total_seconds() / 3600) if recorded else None
     merged = dict(result)
-    merged["records"] = cached.get("records") if isinstance(cached.get("records"), list) else []
-    merged["counts"] = cached.get("counts") if isinstance(cached.get("counts"), dict) else {}
+    merged.update({key: item for key, item in cached.items() if key not in LAST_GOOD_RESERVED_KEYS})
     source_meta = dict(details)
-    high_water = dict(source_meta.get("high_water") or {})
-    high_water.update({"cached_last_good_at": iso(recorded), "cached_last_good_age_hours": rounded(age_hours, 1)})
+    high_water = dict(cached_meta.get("high_water") or source_meta.get("high_water") or {})
+    high_water.update({"cached_last_good_at": iso(recorded), "cached_last_good_age_hours": rounded(age_hours, 1), "live_status": safe_identifier(details.get("status"))})
     skips = list(source_meta.get("skips") or [])
     skips.append({"reason": "cached_last_good", "count": 1})
-    source_meta.update({"high_water": high_water, "skips": sorted(skips, key=lambda item: item.get("reason", ""))})
+    if shrunk:
+        skips.append({"reason": "source_shrunk", "count": 1})
+    source_meta.update(
+        {
+            "status": "historical",
+            "available": False,
+            "coverage": cached_meta.get("coverage") if cached_meta.get("coverage") is not None else source_meta.get("coverage"),
+            "ingested": cached_ingested or source_meta.get("ingested") or {},
+            "high_water": high_water,
+            "skips": sorted(skips, key=lambda item: item.get("reason", "")),
+        }
+    )
     merged["meta"] = source_meta
     return merged
+
+
+def spec_corpus_with_last_good(result: dict[str, Any], cache_root: Path, now: dt.datetime) -> dict[str, Any]:
+    """Cache only sanitized corpus derivations and reuse them under a named outage."""
+    return source_with_last_good("spec_corpus", result, cache_root, now)
+
+
+def loop_usage_with_last_good(usage_result: dict[str, Any], cache_root: Path, now: dt.datetime, *, serve_cached: bool = True) -> tuple[dict[str, Any], dict[str, Any]]:
+    """Freeze the usage-derived loop attribution (rounds, row timing, driver time) the same way.
+
+    Returns the usage result plus how the loop part was served: ``live`` (snapshot refreshed),
+    ``last_good`` (cached rounds served because the live read had none or fewer) or ``none``.
+    ``serve_cached`` is false when the operator disabled the suite-state source.
+    """
+    path = last_good_path(cache_root, "loop_usage")
+    rounds = usage_result.get("rounds") if isinstance(usage_result.get("rounds"), list) else []
+    row_time = usage_result.get("row_time") if isinstance(usage_result.get("row_time"), dict) else {}
+    live_counts = {"rounds": len(rounds), "rows": len(row_time)}
+    cached = read_last_good(path)
+    cached_meta = cached.get("meta") if isinstance(cached.get("meta"), dict) else {}
+    cached_counts = cached_meta.get("ingested") if isinstance(cached_meta.get("ingested"), dict) else {}
+    if rounds and not counts_shrunk(live_counts, cached_counts):
+        value = {
+            "schema_version": SCHEMA_VERSION,
+            "recorded_at": iso(now),
+            "meta": {"ingested": live_counts},
+            "rounds": rounds,
+            "row_time": row_time,
+            "time": usage_result.get("time") if isinstance(usage_result.get("time"), dict) else {},
+        }
+        atomic_write(path, json_text(value))
+        return usage_result, {"served_from": "live", "last_collected_at": iso(now)}
+    if not cached or not serve_cached:
+        return usage_result, {"served_from": "none", "last_collected_at": None}
+    merged = dict(usage_result)
+    for key in LOOP_USAGE_KEYS:
+        if key in cached:
+            merged[key] = cached[key]
+    return merged, {"served_from": "last_good", "last_collected_at": iso(parse_timestamp(cached.get("recorded_at")))}
+
+
+def loop_history_view(results: dict[str, dict[str, Any]], usage_status: dict[str, Any], now: dt.datetime) -> dict[str, Any]:
+    """Describe how the retired governed loop's evidence was served in this collection."""
+    sources: dict[str, dict[str, Any]] = {}
+    collected: list[str] = []
+    any_cached = usage_status.get("served_from") == "last_good"
+    any_live = usage_status.get("served_from") == "live"
+    for name in LEGACY_LOOP_SOURCES:
+        result = results.get(name) if isinstance(results.get(name), dict) else {}
+        details = result.get("meta") if isinstance(result.get("meta"), dict) else {}
+        status = safe_identifier(details.get("status"))
+        high_water = details.get("high_water") if isinstance(details.get("high_water"), dict) else {}
+        if status == "historical":
+            any_cached = True
+            last_collected = iso(parse_timestamp(high_water.get("cached_last_good_at")))
+        elif details.get("available"):
+            any_live = True
+            last_collected = iso(now)
+        else:
+            last_collected = None
+        sources[name] = {"status": status, "last_collected_at": last_collected}
+        if last_collected:
+            collected.append(last_collected)
+    if usage_status.get("last_collected_at"):
+        collected.append(str(usage_status["last_collected_at"]))
+    suite_meta = results.get("suite_state", {}).get("meta", {}) if isinstance(results.get("suite_state"), dict) else {}
+    coverage = suite_meta.get("coverage") if isinstance(suite_meta.get("coverage"), dict) else {}
+    return {
+        "status": "historical",
+        "retired_on": LOOP_RETIRED_ON,
+        "served_from": "last_good" if any_cached else "live" if any_live else "none",
+        "last_collected_at": min(collected) if collected else None,
+        "coverage_to": coverage.get("to"),
+        "sources": sources,
+        "usage_attribution": dict(usage_status),
+    }
 
 
 def default_daily(date: str, collected_at: str) -> dict[str, Any]:
@@ -2132,17 +2260,18 @@ def combine_results(
     judge_duration = suite.get("durations", {}).get("judge_rounds", {}).get("minutes", {})
     enabled_count = sum(bool(results.get(name, {}).get("meta", {}).get("status") != "disabled") for name in SOURCE_NAMES)
     available_count = sum(bool(sources[name].get("available")) for name in SOURCE_NAMES)
+    suite_served = bool(sources["suite_state"].get("available")) or sources["suite_state"].get("status") == "historical"
     overview = {
-        "accepted_rows": suite.get("efficacy", {}).get("accepted_rows") if sources["suite_state"].get("available") else None,
-        "judge_rounds": suite.get("judges", {}).get("complete_rounds") if sources["suite_state"].get("available") else None,
+        "accepted_rows": suite.get("efficacy", {}).get("accepted_rows") if suite_served else None,
+        "judge_rounds": suite.get("judges", {}).get("complete_rounds") if suite_served else None,
         "median_rounds_per_accepted_spec": accepted_median,
-        "judge_acceptance_rate": suite.get("judges", {}).get("acceptance_rate") if sources["suite_state"].get("available") else None,
-        "median_judge_round_minutes": judge_duration.get("median") if sources["suite_state"].get("available") else None,
+        "judge_acceptance_rate": suite.get("judges", {}).get("acceptance_rate") if suite_served else None,
+        "median_judge_round_minutes": judge_duration.get("median") if suite_served else None,
         "latest_tests": latest_test.get("tests") if latest_test else None,
         "latest_test_seconds": latest_test.get("seconds") if latest_test else None,
-        "proof_error_rate": suite.get("errors", {}).get("proof_error_rate") if sources["suite_state"].get("available") else None,
+        "proof_error_rate": suite.get("errors", {}).get("proof_error_rate") if suite_served else None,
         "distinct_vendor_rate": adherence["rate"] if floor else None,
-        "builds_by_vendor": suite.get("models", {}).get("builder_by_vendor", {}) if sources["suite_state"].get("available") else {},
+        "builds_by_vendor": suite.get("models", {}).get("builder_by_vendor", {}) if suite_served else {},
     }
     models = dict(suite.get("models", {}))
     models.pop("round_level_records", None)
@@ -2526,6 +2655,7 @@ def write_outputs(snapshot: dict[str, Any], project_root: Path) -> list[Path]:
     round_records = snapshot.pop("_round_records", [])
     observation = snapshot.pop("_measurement_observation", None)
     snapshot.pop("_observatory_scan_results", None)
+    snapshot.pop("_observatory_run_id", None)
     observatory_state_text = snapshot.pop("_observatory_state_root", None)
     today = snapshot["collection"]["date"]
     corrections: list[dict[str, str]] = [
@@ -3005,8 +3135,8 @@ def collect_snapshot(
         effective = dict(value)
         effective["timeout_seconds"] = source_timeout_seconds(name, value, default_timeout)
         results[name] = run_source(name, effective, now, default_timeout)
-        if name == "spec_corpus":
-            results[name] = spec_corpus_with_last_good(results[name], cache_root, now)
+        if name in LEGACY_LOOP_SOURCES:
+            results[name] = source_with_last_good(name, results[name], cache_root, now)
     claude_max_age_seconds = configured_claude_quota_max_age_seconds(config)
     local_claude_usage = read_local_claude_usage(cache_root, now, claude_max_age_seconds)
     usage_result: dict[str, Any] = {}
@@ -3056,6 +3186,9 @@ def collect_snapshot(
         for name in USAGE_SOURCE_NAMES:
             if usage_enabled[name]:
                 results[name] = unavailable_result("absent", "scope_root_unconfigured")
+    usage_result, loop_usage_status = loop_usage_with_last_good(
+        usage_result, cache_root, now, serve_cached=results["suite_state"].get("meta", {}).get("status") != "disabled"
+    )
     if local_claude_usage:
         usage_result["claude_usage_snapshot"] = local_claude_usage
     capture_state = read_claude_usage_capture_state(cache_root)
@@ -3063,6 +3196,7 @@ def collect_snapshot(
         usage_result["claude_capture_status"] = capture_state["status"]
     usage_result["claude_quota_max_age_seconds"] = claude_max_age_seconds
     snapshot = combine_results(results, now, usage_result, read_publish_state(cache_root))
+    snapshot.setdefault("metrics", {})["loop_history"] = loop_history_view(results, loop_usage_status, now)
     snapshot.setdefault("metrics", {})["attention"] = collect_attention_metrics(
         config,
         project_root,
@@ -3076,6 +3210,7 @@ def collect_snapshot(
         now,
         rebuild=rebuild_observatory,
     )
+    snapshot["_observatory_run_id"] = observatory_summary.pop("run_id", None)
     snapshot.setdefault("metrics", {})["observatory"] = observatory_summary
     snapshot["_observatory_scan_results"] = observatory_roots
     snapshot["_observatory_state_root"] = str(cache_root)
@@ -3153,6 +3288,21 @@ def check_sources(config: dict[str, Any]) -> int:
     return 0
 
 
+def commit_subject(snapshot: dict[str, Any]) -> str:
+    """The generated-only commit subject; frozen loop counts no longer pose as live activity."""
+    metrics = snapshot.get("metrics", {}) if isinstance(snapshot.get("metrics"), dict) else {}
+    observatory_summary = metrics.get("observatory", {}) if isinstance(metrics.get("observatory"), dict) else {}
+    totals = observatory_summary.get("totals", {}) if isinstance(observatory_summary.get("totals"), dict) else {}
+    return f"collect: {snapshot['collection']['date']} {safe_int(totals.get('sessions'))} sessions"
+
+
+def failure_detail_code(phase: str, exc: BaseException) -> str:
+    """A sanitized run detail code: the named error code when the message is one, else the type."""
+    message = str(exc)
+    code = message if SAFE_IDENTIFIER_RE.fullmatch(message) else type(exc).__name__
+    return f"{phase}_failed:{code}"
+
+
 def commit_generated(project_root: Path, snapshot: dict[str, Any], written: list[Path]) -> None:
     try:
         subprocess.run(["git", "-C", str(project_root), "rev-parse", "--git-dir"], check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
@@ -3174,9 +3324,7 @@ def commit_generated(project_root: Path, snapshot: dict[str, Any], written: list
     if not changed:
         print("[git] no generated changes to commit")
         return
-    overview = snapshot.get("metrics", {}).get("overview", {})
-    summary = f"{overview.get('accepted_rows') or 0} accepted, {overview.get('judge_rounds') or 0} rounds"
-    message = f"collect: {snapshot['collection']['date']} {summary}"
+    message = commit_subject(snapshot)
     subprocess.run(["git", "-C", str(project_root), "commit", "-m", message], check=True)
     print(f"[git] committed: {message}")
 
@@ -3312,19 +3460,30 @@ def main(argv: list[str] | None = None) -> int:
         if not clock.get("allowed"):
             print(f"[clock] skipped: clock_skew seconds={clock.get('skew_seconds')}")
             return 0
-        snapshot, results = collect_snapshot(config, now=now, project_root=project_root, rebuild_observatory=args.rebuild)
-        for name in SOURCE_NAMES:
-            print(source_summary(name, results[name]))
-        for item in snapshot.pop("_observatory_scan_results", []):
-            print(
-                f"[{item.get('root_id', 'observatory')}] {item.get('status', 'error')}: "
-                f"files={item.get('files', 0)}, changed={item.get('changed', 0)}, "
-                f"reused={item.get('reused', 0)}, strategy={item.get('strategy', 'unknown')}, "
-                f"seconds={item.get('seconds', 0)}"
-            )
-        if snapshot["collection"]["sources_enabled"] == 0:
-            print("no sources enabled; existing history will be preserved")
-        written = write_outputs(snapshot, project_root)
+        run_id: int | None = None
+        phase = "collection"
+        try:
+            snapshot, results = collect_snapshot(config, now=now, project_root=project_root, rebuild_observatory=args.rebuild)
+            run_id = snapshot.get("_observatory_run_id")
+            for name in SOURCE_NAMES:
+                print(source_summary(name, results[name]))
+            for item in snapshot.pop("_observatory_scan_results", []):
+                print(
+                    f"[{item.get('root_id', 'observatory')}] {item.get('status', 'error')}: "
+                    f"files={item.get('files', 0)}, changed={item.get('changed', 0)}, "
+                    f"reused={item.get('reused', 0)}, strategy={item.get('strategy', 'unknown')}, "
+                    f"seconds={item.get('seconds', 0)}"
+                )
+            if snapshot["collection"]["sources_enabled"] == 0:
+                print("no sources enabled; existing history will be preserved")
+            phase = "outputs"
+            written = write_outputs(snapshot, project_root)
+        except Exception as exc:
+            # The store run stays short of 'success' so no consumer adopts a generation whose
+            # public outputs were never written; the failure is named on the run immediately.
+            global_observatory.finish_run(cache_root, run_id, "failure", failure_detail_code(phase, exc))
+            raise
+        global_observatory.finish_run(cache_root, run_id, "success", "ok")
         telemetry_stability.record_clock_success(cache_root, now)
         print(f"wrote data/telemetry.json and {len(snapshot['history'])} daily history files")
         if args.commit:

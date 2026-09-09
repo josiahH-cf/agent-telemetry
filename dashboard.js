@@ -691,9 +691,23 @@ if (typeof module === "object" && module.exports) module.exports = AgentTelemetr
     renderScenarioEmpty("Complete every assumption to see scenario results. Nothing is stored or sent.");
   }
 
+  function loopHistoryNote() {
+    const history = (data.point_in_time || {}).loop_history || {};
+    if (history.status !== "historical") return "";
+    const collected = typeof history.last_collected_at === "string" && history.last_collected_at.length >= 10 ? history.last_collected_at.slice(0, 10) : "unknown";
+    return `historical (loop retired ${history.retired_on || "2026-09-08"}; last collected ${collected})`;
+  }
+
+  function renderLoopHistoryNotes() {
+    const note = loopHistoryNote();
+    $("outcomes-note").textContent = note ? `${note} · UTC completion window` : "Historical governed-loop evidence (loop retired 2026-09-08) · UTC completion window";
+    $("evidence-note").textContent = note || "Historical governed-loop evidence (loop retired 2026-09-08)";
+  }
+
   function renderOutcomes() {
     const outcome = active.outcomes || {};
     const prior = (active.comparison || {}).outcomes || {};
+    renderLoopHistoryNotes();
     $("outcome-cards").innerHTML = [
       card("accepted_features", fmt(outcome.accepted_features), "Distinct accepted specs", deltaText(outcome.accepted_features, prior.accepted_features)),
       card("acceptance_efficiency", fmt(outcome.acceptance_efficiency, "percent", "no specs in window"), "Accepted specs / represented specs", deltaText(outcome.acceptance_efficiency, prior.acceptance_efficiency, "percent")),

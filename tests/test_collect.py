@@ -23,57 +23,121 @@ def write_json(path: Path, value: object) -> None:
     path.write_text(json.dumps(value), encoding="utf-8")
 
 
+def make_suite(root: Path) -> str:
+    """Write a sanitizable governed-loop suite-state fixture and return its secret sentinel."""
+    secret = "SENTINEL-RAW-PROSE"
+    driver = root / "driver"
+    driver.mkdir(parents=True)
+    events = [
+        {"ts": "2026-08-01T10:00:00+00:00", "kind": "dispatch", "row": "r1", "round": "round1"},
+        {"ts": "2026-08-01T10:01:00+00:00", "kind": "proof", "row": "r1", "name": "checklist", "exit": 1, "tail": secret},
+        {"ts": "2026-08-01T10:02:00+00:00", "kind": "verdict", "row": "r1", "round": "round1", "exit": 0, "tail": secret},
+        {"ts": "2026-08-01T10:02:01+00:00", "kind": "step", "row": "r1", "round": "round1", "state": "DISPATCHED_ACCEPT"},
+        {"ts": "2026-08-01T10:03:00+00:00", "kind": "merged", "row": "r1"},
+        {"ts": "2026-08-01T10:04:00+00:00", "kind": "future-kind", "row": "r1", "detail": secret},
+    ]
+    payload = "".join(json.dumps(item) + "\n" for item in events).encode() + b'{"ts":"partial"'
+    (driver / "driver-log.jsonl").write_bytes(payload)
+    write_json(
+        driver / "state.json",
+        {"done": ["r1"], "escalated": [], "held": [], "current": None, "curve_base": {"r1": [3, 2], "r2": 4}},
+    )
+    round1 = root / "seals" / "spec-x" / "round1"
+    write_json(round1 / "builder-identity.json", {"family": "anthropic", "provider": "anthropic", "model": "claude-opus-5", "evidence": [{"note": secret}]})
+    write_json(
+        round1 / "judge-identity.json",
+        {
+            "builder_vendor": "anthropic",
+            "declared": {"vendor": "openai", "model": "gpt-5.5", "command": secret},
+            "surfaces": {
+                "a": {"independence_level": "distinct_vendor", "note": secret},
+                "b": {"independence_level": "distinct_vendor"},
+            },
+        },
+    )
+    write_json(
+        round1 / "merged-verdict.json",
+        {"final": "ACCEPT", "judges_accepted": True, "row": "r1", "reason": f"2 NEW blocking {secret}", "noted": secret},
+    )
+    write_json(round1 / "digest.json", {"sealed_at_round_end": True, "files": [secret]})
+    (root / "seals" / "spec-x" / "round2").mkdir(parents=True)
+    (root / "seals" / "spec-x" / "round10").mkdir(parents=True)
+    junit = root / "test-results" / "broad-abc123.xml"
+    junit.parent.mkdir(parents=True)
+    junit.write_text(
+        '<testsuite tests="12" time="1.5" failures="1" errors="0" skipped="2" timestamp="2026-08-01T10:01:30+00:00" hostname="fixture-host"><testcase name="private"/></testsuite>',
+        encoding="utf-8",
+    )
+    write_json(
+        root / "publications" / "r1-abc123-independently-judged-acceptance.json",
+        {"recorded_at": "2026-08-01T10:03:00+00:00", "reason": secret},
+    )
+    write_json(root / "deploys" / "1785580000000-r1.json", {"row": "r1", "notes": secret})
+    return secret
+
+
+def make_agent_repo(root: Path) -> None:
+    """Write a Git repository fixture carrying one accepted loop row and a model policy."""
+    subprocess.run(["git", "init", "-b", "main", str(root)], check=True, stdout=subprocess.DEVNULL)
+    subprocess.run(["git", "-C", str(root), "config", "user.name", "fixture"], check=True)
+    subprocess.run(["git", "-C", str(root), "config", "user.email", "fixture" + "@" + "example.invalid"], check=True)
+    suite = root / "tools" / "suite"
+    write_json(suite / "models.json", {"interface": "model-policy-v1", "candidates": [{"id": "openai-codex", "vendor": "openai", "model": "gpt-5.5"}], "tiers": {"large": ["openai-codex"]}})
+    write_json(suite / "roster.json", {"floor": "distinct_vendor", "tier": "large"})
+    (root / "seed.txt").write_text("one", encoding="utf-8")
+    subprocess.run(["git", "-C", str(root), "add", "--", "seed.txt", "tools/suite/models.json", "tools/suite/roster.json"], check=True)
+    env = {**os.environ, "GIT_AUTHOR_DATE": "2026-08-01T10:03:00+00:00", "GIT_COMMITTER_DATE": "2026-08-01T10:03:00+00:00"}
+    subprocess.run(["git", "-C", str(root), "commit", "-m", "loop: accept row r1 (abc123)"], check=True, stdout=subprocess.DEVNULL, env=env)
+
+
+def make_spec_corpus(root: Path) -> None:
+    active = root / "review" / "feature-specs" / "spec-x.md"
+    active.parent.mkdir(parents=True)
+    active.write_text("---\nfeature_id: spec-x\nstatus: review\nwave: C\nsuite: governance\ncreated: 2026-08-01\n---\n", encoding="utf-8")
+    archived = root / "archive" / "features" / "2026" / "spec-y.md"
+    archived.parent.mkdir(parents=True)
+    archived.write_text("---\nfeature_id: spec-y\nstatus: accepted\ncreated: 2026-07-30\n---\n", encoding="utf-8")
+
+
+def loop_config(root: Path, *, suite: Path, repo: Path, corpus: Path, state: Path) -> dict[str, object]:
+    """A collection configuration whose retired-loop sources and observatory roots live under root."""
+    roots = []
+    for root_id, vendor, host in (("wsl_claude", "anthropic", "wsl"), ("wsl_codex", "openai", "wsl"), ("windows_claude", "anthropic", "windows"), ("windows_codex", "openai", "windows")):
+        source = root / "transcripts" / root_id
+        source.mkdir(parents=True, exist_ok=True)
+        roots.append({"root_id": root_id, "vendor": vendor, "host_os": host, "path": str(source), "backfill_timeout_seconds": 30, "incremental_timeout_seconds": 30})
+    return {
+        "schema_version": 2,
+        "cache_root": str(state),
+        "default_timeout_seconds": 30,
+        "observatory": {"enabled": True, "roots": roots, "registry_paths": []},
+        "sources": {
+            "suite_state": {"enabled": True, "root": str(suite)},
+            "agent_repo": {"enabled": True, "root": str(repo)},
+            "spec_corpus": {"enabled": True, "root": str(corpus)},
+            "provider_usage": {"enabled": False, "root": "<DISABLED>"},
+            "anthropic_usage": {"enabled": True, "root": str(root / "transcripts" / "wsl_claude")},
+            "openai_usage": {"enabled": False, "roots": []},
+        },
+    }
+
+
+def output_project(root: Path, *, schemas: bool = True) -> Path:
+    """An output project root carrying the tracked inputs write_outputs needs."""
+    out = root / "out"
+    (out / "data").mkdir(parents=True)
+    for name in ("projects.json", "prices.json"):
+        (out / name).write_bytes((PROJECT_ROOT / name).read_bytes())
+    if schemas:
+        (out / "data" / "schema").mkdir()
+        for schema in (PROJECT_ROOT / "data" / "schema").glob("*.schema.json"):
+            (out / "data" / "schema" / schema.name).write_bytes(schema.read_bytes())
+    return out
+
+
 class SuiteAdapterTests(unittest.TestCase):
     def make_suite(self, root: Path) -> str:
-        secret = "SENTINEL-RAW-PROSE"
-        driver = root / "driver"
-        driver.mkdir(parents=True)
-        events = [
-            {"ts": "2026-08-01T10:00:00+00:00", "kind": "dispatch", "row": "r1", "round": "round1"},
-            {"ts": "2026-08-01T10:01:00+00:00", "kind": "proof", "row": "r1", "name": "checklist", "exit": 1, "tail": secret},
-            {"ts": "2026-08-01T10:02:00+00:00", "kind": "verdict", "row": "r1", "round": "round1", "exit": 0, "tail": secret},
-            {"ts": "2026-08-01T10:02:01+00:00", "kind": "step", "row": "r1", "round": "round1", "state": "DISPATCHED_ACCEPT"},
-            {"ts": "2026-08-01T10:03:00+00:00", "kind": "merged", "row": "r1"},
-            {"ts": "2026-08-01T10:04:00+00:00", "kind": "future-kind", "row": "r1", "detail": secret},
-        ]
-        payload = "".join(json.dumps(item) + "\n" for item in events).encode() + b'{"ts":"partial"'
-        (driver / "driver-log.jsonl").write_bytes(payload)
-        write_json(
-            driver / "state.json",
-            {"done": ["r1"], "escalated": [], "held": [], "current": None, "curve_base": {"r1": [3, 2], "r2": 4}},
-        )
-        round1 = root / "seals" / "spec-x" / "round1"
-        write_json(round1 / "builder-identity.json", {"family": "anthropic", "provider": "anthropic", "model": "claude-opus-5", "evidence": [{"note": secret}]})
-        write_json(
-            round1 / "judge-identity.json",
-            {
-                "builder_vendor": "anthropic",
-                "declared": {"vendor": "openai", "model": "gpt-5.5", "command": secret},
-                "surfaces": {
-                    "a": {"independence_level": "distinct_vendor", "note": secret},
-                    "b": {"independence_level": "distinct_vendor"},
-                },
-            },
-        )
-        write_json(
-            round1 / "merged-verdict.json",
-            {"final": "ACCEPT", "judges_accepted": True, "row": "r1", "reason": f"2 NEW blocking {secret}", "noted": secret},
-        )
-        write_json(round1 / "digest.json", {"sealed_at_round_end": True, "files": [secret]})
-        (root / "seals" / "spec-x" / "round2").mkdir(parents=True)
-        (root / "seals" / "spec-x" / "round10").mkdir(parents=True)
-        junit = root / "test-results" / "broad-abc123.xml"
-        junit.parent.mkdir(parents=True)
-        junit.write_text(
-            '<testsuite tests="12" time="1.5" failures="1" errors="0" skipped="2" timestamp="2026-08-01T10:01:30+00:00" hostname="fixture-host"><testcase name="private"/></testsuite>',
-            encoding="utf-8",
-        )
-        write_json(
-            root / "publications" / "r1-abc123-independently-judged-acceptance.json",
-            {"recorded_at": "2026-08-01T10:03:00+00:00", "reason": secret},
-        )
-        write_json(root / "deploys" / "1785580000000-r1.json", {"row": "r1", "notes": secret})
-        return secret
+        return make_suite(root)
 
     def test_suite_adapter_is_numeric_sorted_partial_safe_and_complete(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
@@ -550,6 +614,111 @@ class HistoryAndPrivacyTests(unittest.TestCase):
         self.assertIn(".githooks/pre-commit", agents)
         self.assertNotIn("### Repository guardrails", readme)
         self.assertNotIn("### Automation inventory", readme)
+
+
+LOOP_DATASETS = ("rounds", "specs", "tests", "publications", "incidents")
+
+
+def machine_bytes(out: Path) -> dict[str, bytes]:
+    return {name: (out / "data" / "machine" / f"{name}.jsonl").read_bytes() for name in LOOP_DATASETS}
+
+
+class RetiredLoopHistoryTests(unittest.TestCase):
+    def test_retired_loop_sources_serve_last_good_when_their_roots_disappear(self) -> None:
+        with tempfile.TemporaryDirectory(dir="/tmp") as temporary:
+            root = Path(temporary)
+            suite, repo, corpus, state = root / "suite", root / "repo", root / "corpus", root / "state"
+            make_suite(suite)
+            make_agent_repo(repo)
+            make_spec_corpus(corpus)
+            out = output_project(root)
+            config = loop_config(root, suite=suite, repo=repo, corpus=corpus, state=state)
+            first_at = dt.datetime(2026, 9, 9, 10, tzinfo=UTC)
+
+            first, _ = collect.collect_snapshot(config, first_at, project_root=out)
+            self.assertTrue(first["sources"]["suite_state"]["available"])
+            self.assertEqual(first["metrics"]["overview"]["judge_rounds"], 1)
+            self.assertEqual(len(first["metrics"]["ledger"]["rounds"]), 1)
+            self.assertEqual(first["metrics"]["loop_history"]["served_from"], "live")
+            self.assertEqual(first["metrics"]["loop_history"]["last_collected_at"], first["generated_at"])
+            first_ledger = json.loads(json.dumps(first["metrics"]["ledger"]))
+            first_loop = {key: json.loads(json.dumps(first["metrics"][key])) for key in ("tests", "efficacy", "errors", "judges", "specs", "worth")}
+            collect.write_outputs(first, out)
+            live_bytes = machine_bytes(out)
+            self.assertEqual(len(live_bytes["rounds"].splitlines()), 1)
+
+            # The loop is retired: its state root, repository and spec corpus all disappear.
+            for path in (suite, repo, corpus):
+                os.rename(path, path.with_name(path.name + ".gone"))
+            second_at = first_at + dt.timedelta(minutes=30)
+            second, _ = collect.collect_snapshot(config, second_at, project_root=out)
+            for name in ("suite_state", "agent_repo", "spec_corpus"):
+                with self.subTest(source=name):
+                    meta = second["sources"][name]
+                    self.assertEqual(meta["status"], "historical")
+                    self.assertFalse(meta["available"])
+                    self.assertIn("cached_last_good", {item["reason"] for item in meta["skips"]})
+            self.assertEqual(second["metrics"]["overview"]["judge_rounds"], 1)
+            self.assertEqual(second["metrics"]["overview"]["accepted_rows"], 1)
+            self.assertEqual(second["metrics"]["ledger"], first_ledger)
+            for key, value in first_loop.items():
+                self.assertEqual(second["metrics"][key], value, key)
+            history = second["metrics"]["loop_history"]
+            self.assertEqual((history["status"], history["retired_on"], history["served_from"]), ("historical", "2026-09-08", "last_good"))
+            self.assertEqual(history["last_collected_at"], first["generated_at"])
+            collect.write_outputs(second, out)
+            self.assertEqual(machine_bytes(out), live_bytes)
+            self.assertEqual(collect.commit_subject(second), f"collect: {second['collection']['date']} {second['metrics']['observatory']['totals']['sessions']} sessions")
+
+            # A partial deletion (the seals are gone, the driver log stays) may not shrink published history either.
+            for path in (suite, repo, corpus):
+                os.rename(path.with_name(path.name + ".gone"), path)
+            os.rename(suite / "seals", suite / "seals.gone")
+            third, _ = collect.collect_snapshot(config, second_at + dt.timedelta(minutes=30), project_root=out)
+            suite_meta = third["sources"]["suite_state"]
+            self.assertEqual(suite_meta["status"], "historical")
+            self.assertEqual({"cached_last_good", "source_shrunk"} & {item["reason"] for item in suite_meta["skips"]}, {"cached_last_good", "source_shrunk"})
+            self.assertTrue(third["sources"]["agent_repo"]["available"])
+            self.assertEqual(third["metrics"]["ledger"], first_ledger)
+            self.assertEqual(third["metrics"]["loop_history"]["served_from"], "last_good")
+            collect.write_outputs(third, out)
+            self.assertEqual(machine_bytes(out), live_bytes)
+            serialized = json.dumps(second) + json.dumps(third)
+            self.assertNotIn("SENTINEL", serialized)
+            self.assertEqual(collect.forbidden_value_violations(second), [])
+
+    def test_collection_failure_marks_the_run_and_the_consumer_sees_it_immediately(self) -> None:
+        import consumer
+        import observatory
+
+        with tempfile.TemporaryDirectory(dir="/tmp") as temporary:
+            root = Path(temporary)
+            state = root / "state"
+            out = output_project(root, schemas=False)  # no data/schema: the machine layers cannot validate
+            config = loop_config(root, suite=root / "no-suite", repo=root / "no-repo", corpus=root / "no-corpus", state=state)
+            config["sources"] = {name: {"enabled": False, "root": "<DISABLED>"} for name in collect.SOURCE_NAMES}
+            config_path = root / "config.json"
+            write_json(config_path, config)
+            self.assertEqual(collect.main(["--config", str(config_path), "--project-root", str(out)]), 2)
+            failed = consumer.consumer_view(out, state, {})
+            self.assertEqual(failed["generation"]["status"], "never-collected")
+            self.assertEqual(failed["status"], "unavailable")
+            self.assertEqual((failed["collection"]["status"], failed["collection"]["last_error"]), ("failure", "outputs_failed:schema_missing_projects"))
+            (out / "data" / "schema").mkdir()
+            for schema in (PROJECT_ROOT / "data" / "schema").glob("*.schema.json"):
+                (out / "data" / "schema" / schema.name).write_bytes(schema.read_bytes())
+            self.assertEqual(collect.main(["--config", str(config_path), "--project-root", str(out)]), 0)
+            healthy = consumer.consumer_view(out, state, {})
+            connection = consumer.open_read_only(state / observatory.STORE_NAME)
+            try:
+                statuses = [row[0] for row in connection.execute("SELECT status FROM runs ORDER BY run_id")]
+            finally:
+                connection.close()
+        self.assertEqual(statuses, ["failure", "success"])
+        self.assertEqual(healthy["generation"]["status"], "ok")
+        self.assertEqual(healthy["status"], "current")
+        self.assertEqual((healthy["collection"]["status"], healthy["collection"]["last_error"]), ("success", None))
+        self.assertIsInstance(healthy["collection"]["observed_at"], str)
 
 
 if __name__ == "__main__":

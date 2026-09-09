@@ -253,6 +253,22 @@ class DashboardEnvelopeTests(unittest.TestCase):
         self.assertNotIn('["Last successful scan",false]', script)
         self.assertNotIn('["Latest",false]]', script)
 
+    def test_page_marks_governed_loop_sections_historical(self) -> None:
+        snapshot = synthetic_snapshot()
+        history = {"status": "historical", "retired_on": "2026-09-08", "served_from": "last_good", "last_collected_at": "2026-09-09T10:00:00+00:00", "coverage_to": "2026-08-31T20:17:26-05:00"}
+        snapshot["metrics"]["loop_history"] = history
+        page = metric_catalog.build_page_envelope(snapshot)
+        self.assertEqual(page["point_in_time"]["loop_history"], history)
+        bare = metric_catalog.build_page_envelope(synthetic_snapshot())
+        self.assertEqual(bare["point_in_time"]["loop_history"]["status"], "unknown")
+        self.assertEqual(set(bare["point_in_time"]["loop_history"]), set(history))
+        html = (PROJECT_ROOT / "index.html").read_text(encoding="utf-8")
+        for marker in ('id="outcomes-note"', 'id="evidence-note"', "loop retired 2026-09-08"):
+            self.assertIn(marker, html)
+        script = (PROJECT_ROOT / "dashboard.js").read_text(encoding="utf-8")
+        self.assertIn("loop_history", script)
+        self.assertIn("last collected", script)
+
     def test_stale_publish_fixture_survives_into_lazy_diagnostics(self) -> None:
         snapshot = synthetic_snapshot()
         snapshot["metrics"]["reliability"]["status"] = "warn"
