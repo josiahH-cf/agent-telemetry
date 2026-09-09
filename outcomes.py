@@ -33,6 +33,7 @@ KINDS = {
     "check.result", "publication.result", "update.result", "outcome.disposition", "usage.observed", "session.bound",
 }
 RECEIPT_VENDORS = {"anthropic", "openai", "cursor"}
+ENVIRONMENTS = {"personal", "work"}
 MAX_LINE_BYTES = 65536
 
 MIGRATION_2 = """
@@ -134,7 +135,19 @@ def configured_receipt_roots(config: dict[str, Any]) -> list[dict[str, Any]]:
     return out
 
 
+def normalize_environment(value: Any) -> str | None:
+    """Lower-case a receipt environment label; None stays None so the root default applies."""
+
+    if value is None:
+        return None
+    if not isinstance(value, str):
+        return ""
+    return value.strip().lower()
+
+
 def _validate(record: Any, root: dict[str, Any]) -> tuple[dict[str, Any] | None, str | None]:
+    """Return the record with its environment normalised, or a named rejection reason."""
+
     if not isinstance(record, dict):
         return None, "not_an_object"
     if record.get("interface") != RECEIPT_INTERFACE:
@@ -162,6 +175,11 @@ def _validate(record: Any, root: dict[str, Any]) -> tuple[dict[str, Any] | None,
     host_os = record.get("host_os")
     if host_os is not None and host_os not in {"wsl", "windows"}:
         return None, "host_os_unknown"
+    environment = normalize_environment(record.get("environment"))
+    if environment is not None:
+        if environment not in ENVIRONMENTS:
+            return None, "environment_unknown"
+        record = {**record, "environment": environment}
     return record, None
 
 
@@ -239,7 +257,7 @@ def ingest_receipt_root(connection: sqlite3.Connection, root: dict[str, Any], no
                         record["event_id"], root["root_id"], root["producer"], record["kind"], record.get("outcome_id"), record.get("project_id"), record.get("outcome_kind"),
                         usage.iso(usage.parse_timestamp(record.get("at"))), record.get("ledger_seq") if isinstance(record.get("ledger_seq"), int) else None, record["linkage"],
                         record.get("vendor"), record.get("client"), record.get("host_os"), record.get("environment") or root["environment"], record.get("native_session_id"), record.get("native_turn_id"),
-                        record.get("status") or record.get("disposition") or record.get("phase"), record["evidence_digest"], record.get("source_version"), json.dumps(record, sort_keys=True, separators=(",", ":")), observed_at,
+                        record.get("status") or record.get("disposition") or record.get("phase"), record["evidence_digest"], record.get("source_version"), json.dumps(raw, sort_keys=True, separators=(",", ":")), observed_at,
                     )
                 )
                 usage_row = _usage_row(file_id, record)
@@ -286,6 +304,7 @@ def public_rows(connection: sqlite3.Connection) -> tuple[list[dict[str, Any]], l
 
     public: list[dict[str, Any]] = []
     local: list[dict[str, Any]] = []
+    root_environments = {str(row["root_id"]): normalize_environment(row["environment"]) for row in connection.execute("SELECT root_id, environment FROM receipt_roots")}
     by_outcome: dict[str, list[sqlite3.Row]] = {}
     for row in connection.execute("SELECT * FROM outcome_events WHERE outcome_id IS NOT NULL ORDER BY outcome_id, at, event_id"):
         by_outcome.setdefault(str(row["outcome_id"]), []).append(row)
@@ -299,10 +318,16 @@ def public_rows(connection: sqlite3.Connection) -> tuple[list[dict[str, Any]], l
         updates = [str(r["status"]) for r in rows if r["kind"] == "update.result" and r["status"]]
         linkage = "exact" if any(r["linkage"] == "exact" for r in rows) else "correlated" if any(r["linkage"] == "correlated" for r in rows) else "unattributed"
         public_id = "outc-" + hashlib.sha256(outcome_id.encode()).hexdigest()[:16]
+        # Rows stored before environment normalisation existed (or by a future producer) validate at read time.
+        environment = normalize_environment(rows[0]["environment"])
+        if environment not in ENVIRONMENTS:
+            environment = root_environments.get(str(rows[0]["root_id"]))
+        if environment not in ENVIRONMENTS:
+            environment = "personal"
         item = {
             "outcome_id": public_id,
             "producer": str(rows[0]["producer"]),
-            "environment": str(rows[0]["environment"] or "personal"),
+            "environment": environment,
             "outcome_kind": rows[0]["outcome_kind"],
             "first_at": rows[0]["at"],
             "last_at": rows[-1]["at"],
@@ -323,4 +348,4 @@ def public_rows(connection: sqlite3.Connection) -> tuple[list[dict[str, Any]], l
     return public, local
 
 
-__all__ = ["KINDS", "MIGRATION_2", "RECEIPT_INTERFACE", "configured_receipt_roots", "ingest_receipt_root", "ingest_receipt_roots", "public_rows"]
+__all__ = ["ENVIRONMENTS", "KINDS", "MIGRATION_2", "RECEIPT_INTERFACE", "configured_receipt_roots", "ingest_receipt_root", "ingest_receipt_roots", "normalize_environment", "public_rows"]

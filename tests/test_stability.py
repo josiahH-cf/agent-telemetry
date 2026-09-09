@@ -36,6 +36,57 @@ class StabilityTests(unittest.TestCase):
             violations = stability.tracked_manifest_violations(root)
         self.assertEqual(violations, ["accidental-notes.txt"])
 
+    def test_every_machine_dataset_and_schema_is_allowlisted_for_publication(self) -> None:
+        import observatory
+
+        for name in observatory.DATASET_NAMES:
+            with self.subTest(dataset=name):
+                self.assertTrue(stability.tracked_path_allowed(f"data/machine/{name}.jsonl"))
+                self.assertIn(f"data/schema/{name}.schema.json", stability.STATIC_TRACKED_PATHS)
+        self.assertTrue(stability.tracked_path_allowed("data/machine/MANIFEST.json"))
+        self.assertFalse(stability.tracked_path_allowed("data/machine/private.jsonl"))
+
+    def test_doctor_reports_failed_publication_and_collection_immediately(self) -> None:
+        import observatory
+
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary) / "repo"
+            state = Path(temporary) / "state"
+            root.mkdir()
+            state.mkdir()
+            subprocess.run(["git", "init", "-b", "main", str(root)], check=True, stdout=subprocess.DEVNULL)
+            (root / "README.md").write_text("safe\n", encoding="utf-8")
+            (root / "data").mkdir()
+            (root / "data" / "telemetry.json").write_text(json.dumps({"schema_version": 2}), encoding="utf-8")
+            (root / "prices.json").write_text(json.dumps({"schema_version": 2, "verified_at": "2026-09-01"}), encoding="utf-8")
+            now = dt.datetime(2026, 9, 9, 10, tzinfo=UTC)
+            failure = {"schema_version": 2, "status": "failure", "reason": "collect_failed", "last_attempt_at": "2026-09-09T09:38:00+00:00", "last_success_at": "2026-09-09T08:18:46+00:00"}
+            (state / "publish-status.json").write_text(json.dumps(failure), encoding="utf-8")
+            self.assertEqual(stability._publish_status(state, now), ("warn", "status_failure_reason_collect_failed_last_success_age_hours_1.7"))
+            (state / "publish-status.json").write_text(json.dumps({**failure, "status": "success", "reason": "pushed"}), encoding="utf-8")
+            self.assertEqual(stability._publish_status(state, now), ("ok", "last_success_age_hours_1.7"))
+            self.assertEqual(stability._collection_status(state), ("warn", "store_absent"))
+            store = observatory.connect_store(state / stability.OBSERVATORY_STORE)
+            try:
+                self.assertEqual(stability._collection_status(state), ("warn", "no_completed_collection"))
+                with store:
+                    store.execute("INSERT INTO runs(started_at,finished_at,mode,status,detail_code) VALUES(?,?,?,?,?)", ("2026-09-09T09:30:00+00:00", "2026-09-09T09:31:00+00:00", "incremental", "failure", "outputs_failed:schema_validation_outcomes_enum:environment"))
+                    store.execute("INSERT INTO runs(started_at,mode,status,detail_code) VALUES(?,?,?,?)", ("2026-09-09T10:00:00+00:00", "incremental", "collected", "outputs_pending"))
+                self.assertEqual(stability._collection_status(state), ("warn", "latest_failure_outputs_failed:schema_validation_outcomes_enum:environment"))
+                (state / "publish-status.json").write_text(json.dumps(failure), encoding="utf-8")
+                doctor = stability.run_doctor({"schema_version": 2}, root, state, now, {"suite_state": {"status": "historical", "available": False}})
+                checks = {item["name"]: item for item in doctor["checks"]}
+                self.assertEqual(checks["last_collection"]["status"], "warn")
+                self.assertIn("outputs_failed", checks["last_collection"]["detail"])
+                self.assertEqual(checks["publish"]["status"], "warn")
+                self.assertIn("status_failure_reason_collect_failed", checks["publish"]["detail"])
+                self.assertEqual(checks["sources"]["detail"], "available_0_of_0")  # a historical source is not expected live
+                with store:
+                    store.execute("UPDATE runs SET status='success', detail_code='ok', finished_at='2026-09-09T10:01:00+00:00' WHERE status='collected'")
+                self.assertEqual(stability._collection_status(state), ("ok", "latest_success_ok"))
+            finally:
+                store.close()
+
     def test_collection_log_counts_real_gaps_and_open_gap(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary)

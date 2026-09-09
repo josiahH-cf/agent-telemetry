@@ -143,6 +143,40 @@ class OutcomeReceiptTests(unittest.TestCase):
             observatory.configured_roots({"observatory": {"roots": [{"root_id": "cursor_x", "vendor": "cursor", "host_os": "windows", "path": "/tmp"}]}})
         self.assertEqual(str(caught.exception), "cursor_roots_are_receipt_roots")
 
+    def test_environment_is_normalized_and_unknown_values_are_named_rejections(self) -> None:
+        rows = [
+            receipt(1, "outcome.started", environment="Personal"),
+            receipt(2, "outcome.disposition", disposition="satisfied", environment="Personal"),
+            receipt(3, "outcome.started", outcome_id="oc-2", environment=None),
+            receipt(4, "outcome.started", outcome_id="oc-3", environment=" Work "),
+            receipt(5, "outcome.started", outcome_id="oc-4", environment="Prod"),
+            receipt(6, "outcome.started", outcome_id="oc-5", environment=7),
+        ]
+        write(self.receipts / "mixed.jsonl", rows)
+        result = outcomes.ingest_receipt_roots(self.store, self.config, NOW)[0]
+        self.assertEqual(result["status"], "partial")
+        self.assertEqual(result["rejections"], {"environment_unknown": 2})
+        self.assertEqual(self.store.execute("SELECT count(*) FROM outcome_events").fetchone()[0], 4)
+        stored = {row[0] for row in self.store.execute("SELECT environment FROM outcome_events")}
+        self.assertEqual(stored, {"personal", "work"})
+        verbatim = self.store.execute("SELECT record_json FROM outcome_events WHERE event_id=?", (rows[0]["event_id"],)).fetchone()[0]
+        self.assertEqual(json.loads(verbatim)["environment"], "Personal")  # the local tier keeps the exact receipt
+        public, _local = outcomes.public_rows(self.store)
+        self.assertEqual([row["environment"] for row in public], ["personal", "personal", "work"])
+        schema = json.loads((Path(__file__).resolve().parents[1] / "data/schema/outcomes.schema.json").read_text())
+        self.assertEqual([error for row in public for error in observatory.validate_record(row, schema)], [])
+
+    def test_public_rows_normalize_environments_stored_before_normalization_existed(self) -> None:
+        write(self.receipts / "a.jsonl", [receipt(1, "outcome.started"), receipt(2, "outcome.started", outcome_id="oc-2")])
+        outcomes.ingest_receipt_roots(self.store, self.config, NOW)
+        with self.store:
+            self.store.execute("UPDATE outcome_events SET environment='Personal' WHERE outcome_id='oc-1'")
+            self.store.execute("UPDATE outcome_events SET environment='Staging' WHERE outcome_id='oc-2'")
+        public, _local = outcomes.public_rows(self.store)
+        self.assertEqual([row["environment"] for row in public], ["personal", "personal"])  # no store rewrite needed
+        schema = json.loads((Path(__file__).resolve().parents[1] / "data/schema/outcomes.schema.json").read_text())
+        self.assertEqual([error for row in public for error in observatory.validate_record(row, schema)], [])
+
 
 class ConsumerBoundaryTests(unittest.TestCase):
     def test_consumer_view_reports_generation_capacity_coverage_and_sessions_from_one_store(self) -> None:

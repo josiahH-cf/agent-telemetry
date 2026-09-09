@@ -100,12 +100,15 @@ STATIC_TRACKED_PATHS = {
 GENERATED_TRACKED_RE = re.compile(
     r"^data/(?:telemetry\.(?:json|js)|rounds\.json|"
     r"history/(?:cost|daily|measurement|global)-\d{4}-\d{2}-\d{2}\.json|"
-    r"machine/(?:MANIFEST\.json|(?:attention_days|days|incidents|metrics|projects|publications|rounds|sessions|specs|tests)\.jsonl))$"
+    r"machine/(?:MANIFEST\.json|(?:attention_days|days|incidents|metrics|outcomes|projects|publications|rounds|sessions|specs|tests)\.jsonl))$"
 )
 LOG_RE = re.compile(
     r"^(?P<timestamp>\S+)\s+mode=(?P<mode>refresh|publish|catchup|lock-probe)"
     r"(?:\s+trigger=(?P<trigger>[A-Za-z0-9_.:+-]+))?\s+(?P<event>start|finish)(?:\s+exit=(?P<exit>\d+))?$"
 )
+SAFE_DETAIL_RE = re.compile(r"^[A-Za-z0-9][A-Za-z0-9_.:+-]{0,159}$")
+# Retired sources served from their last-good snapshot are not expected to be live.
+NOT_LIVE_SOURCE_STATUSES = {"disabled", "historical"}
 
 
 def parse_timestamp(value: Any) -> dt.datetime | None:
@@ -468,14 +471,47 @@ def _schema_status(config: dict[str, Any], project_root: Path) -> tuple[str, str
     return ("ok", "all_schema_versions_match") if valid else ("fail", "schema_version_mismatch")
 
 
+def _safe_detail(value: Any, default: str = "unknown") -> str:
+    text = str(value or "")
+    return text if SAFE_DETAIL_RE.fullmatch(text) else default
+
+
 def _publish_status(state_root: Path, now: dt.datetime) -> tuple[str, str]:
+    """A failed or blocked publication is a warning immediately, not only once its last success is old."""
     value = _read_json_object(state_root / "publish-status.json")
     success = parse_timestamp(value.get("last_success_at"))
     if not success:
         return "warn", "no_success_recorded"
     age = max(0.0, (now - success).total_seconds() / 3600)
+    age_detail = f"last_success_age_hours_{rounded(age, 1)}"
+    publish_state = str(value.get("status") or "")
+    if publish_state in {"failure", "blocked"}:
+        return "warn", f"status_{publish_state}_reason_{_safe_detail(value.get('reason'))}_{age_detail}"
     status = "warn" if age > 28 else "ok"
-    return status, f"last_success_age_hours_{rounded(age, 1)}"
+    return status, age_detail
+
+
+def _collection_status(state_root: Path) -> tuple[str, str]:
+    """Report the latest completed collection run from the canonical store, read-only."""
+    store = state_root / OBSERVATORY_STORE
+    if not store.is_file():
+        return "warn", "store_absent"
+    try:
+        connection = sqlite3.connect(f"file:{store}?mode=ro", uri=True, timeout=3)
+        try:
+            row = connection.execute(
+                "SELECT status, detail_code FROM runs WHERE status IN ('success','failure') ORDER BY run_id DESC LIMIT 1"
+            ).fetchone()
+        finally:
+            connection.close()
+    except (OSError, sqlite3.Error):
+        return "warn", "store_unreadable"
+    if row is None:
+        return "warn", "no_completed_collection"
+    detail = _safe_detail(row[1])
+    if row[0] == "success":
+        return "ok", f"latest_success_{detail}"
+    return "warn", f"latest_failure_{detail}"
 
 
 def _pages_status(state_root: Path) -> tuple[str, str]:
@@ -718,7 +754,7 @@ def run_doctor(
         checks.append({"name": name, "status": status, "detail": detail})
 
     source_meta = source_meta or {}
-    enabled = sum(item.get("status") != "disabled" for item in source_meta.values() if isinstance(item, dict))
+    enabled = sum(item.get("status") not in NOT_LIVE_SOURCE_STATUSES for item in source_meta.values() if isinstance(item, dict))
     available = sum(bool(item.get("available")) for item in source_meta.values() if isinstance(item, dict))
     add("sources", "ok" if enabled and available == enabled else "warn", f"available_{available}_of_{enabled}")
 
@@ -727,6 +763,7 @@ def run_doctor(
 
     cadence = parse_collection_log(state_root, now)
     add("collection_cadence", "ok" if cadence["status"] == "ok" else "warn", f"status_{cadence['status']}_missed_{cadence['missed_intervals']}")
+    add("last_collection", *_collection_status(state_root))
 
     publish_status, publish_detail = _publish_status(state_root, now)
     add("publish", publish_status, publish_detail)
