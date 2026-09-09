@@ -2,9 +2,9 @@
 
 Agent Telemetry is a passive, metadata-only dashboard for Claude Code and Codex
 CLI activity across WSL and Windows. It shows privacy-safe usage,
-API-equivalent cost, collection health, and governed-loop outcomes without
-publishing prompts, messages, code, working directories, or private project
-mappings.
+API-equivalent cost, collection health, historical governed-loop outcomes, and
+successor outcome receipts without publishing prompts, messages, code, working
+directories, or private project mappings.
 
 The dashboard also has a collapsed point-in-time provider-capacity disclosure
 and an optional attention-economics ledger. Capacity uses already captured

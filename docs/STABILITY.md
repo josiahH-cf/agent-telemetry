@@ -183,6 +183,43 @@ Explicit surface decisions:
   remove the probe script, and report a named last-good state without console
   exceptions or horizontal overflow.
 
+### ST-46 — A producer label halted the public tier while every health surface stayed green
+
+- **Observation:** from 2026-09-09T03:30Z every collection failed at the public
+  outcomes schema check (`schema_validation_outcomes_enum:environment`) because
+  successor receipts carried a mixed-case environment label the adapter never
+  validated. The public payload, machine tier and history froze at 03:00Z and
+  each scheduled publish recorded `collect_failed`, yet the store had already
+  marked each run `success` before the outputs were written, the doctor's
+  publish check tolerated 28 hours of failure, and the new `outcomes` dataset
+  was not even allow-listed for the generated-only commit. Separately, the
+  retired governed loop's sources were still re-read every half hour, and
+  deleting them would have emptied five published datasets.
+- **Evidence:** the collection log and `publish-status.json` recorded the
+  failures; a read-only simulation showed 11 of 20 public outcome rows failing
+  the enum; `tracked_path_allowed("data/machine/outcomes.jsonl")` was false.
+- **Action:** **fixed** — receipt environments are normalised and unknown
+  values are the named rejection `environment_unknown`; public rows normalise
+  already-stored labels without a store rewrite; `outcomes` is allow-listed and
+  a test pins every `DATASET_NAMES` entry; a store run is `collected` until
+  `write_outputs` succeeds and only then `success` (`failure` with a sanitized
+  `outputs_failed:<code>` otherwise), so a consumer generation never advances
+  past a broken public tier; the doctor gains `last_collection` and its publish
+  check warns immediately on failure/blocked; `consumer_view` adds the additive
+  `publication` and `collection` health objects; the three loop sources and the
+  usage-derived round attribution serve a sanitized last-good snapshot whenever
+  a live read is unavailable or would shrink (status `historical`), the store
+  never deletes loop rows for an unavailable uncached source, the page marks
+  sections 05/07 historical with the last collected date, and the generated
+  commit subject reports sessions instead of loop activity.
+- **Verifying check:** unit tests cover the mixed-case, unknown and
+  already-stored labels against the public schema; the allow-list over
+  `DATASET_NAMES`; run states before and after finalization through
+  `collect.main` with a consumer view on each side; the doctor and consumer
+  fixtures for a failed publication; and a three-collection freeze fixture whose
+  loop datasets stay byte-identical after its roots disappear and after a
+  partial deletion.
+
 ## V4 global rebaseline register
 
 This section is the phase-ordered findings register for the machine-wide,

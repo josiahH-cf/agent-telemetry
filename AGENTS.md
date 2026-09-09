@@ -3,9 +3,10 @@
 This is the single authoritative entry point for both data consumers and
 maintainers. Agent Telemetry is a passive, metadata-only observatory for Claude
 Code and Codex CLI activity hosted in WSL and Windows. It publishes usage,
-API-equivalent cost, source health, and one governed outcome loop without
-publishing prompts, messages, tool output, code, working directories, machine
-identity, or the private project mapping.
+API-equivalent cost, source health, the historical governed-loop datasets (the
+loop was retired on 2026-09-08; they stay published as frozen history), and
+successor outcome receipts without publishing prompts, messages, tool output,
+code, working directories, machine identity, or the private project mapping.
 
 ## Data consumers
 
@@ -124,6 +125,12 @@ PY
 - Null means not observed or not applicable. Zero means observed zero.
 - Coverage begins at different times by provider root, host OS, project, and
   outcome adapter. Use each dataset's manifest coverage and row-level bounds.
+- `rounds`, `specs`, `tests`, `publications`, and `incidents` are frozen
+  governed-loop history. The loop was retired on 2026-09-08; once a live loop
+  source is gone or would shrink, its last-good snapshot is served (source
+  status `historical`, skip `cached_last_good`), so these datasets never shrink
+  and the page marks sections 05 and 07 as historical with the last collected
+  date. `outcomes` is the successor receipt dataset.
 - Session counts are deduplicated provider sessions. `days.sessions` is
   session-days, so a session active on two UTC dates contributes twice there.
 - Governed-round duration is verdict time minus dispatch time for the same row
@@ -202,7 +209,10 @@ python3 -m unittest discover -s tests -v
 
 - `--check` probes configured sources without writing.
 - `--doctor` checks source availability, all four provider roots and cursors,
-  cadence, publication and Pages state, Claude usage-capture health, both schedulers, the lock, prices,
+  cadence, the latest completed collection (`last_collection`: a run counts as
+  successful only after its public outputs were written), publication and Pages
+  state (a failed or blocked publication warns at once), Claude usage-capture
+  health, both schedulers, the lock, prices,
   schemas, store integrity, machine reconciliation, hooks, the tracked manifest,
   clock watermark, collection age, and disk state.
 - A normal collection transactionally updates the canonical store, full
