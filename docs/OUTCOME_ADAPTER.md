@@ -33,3 +33,19 @@ second adapter for the publicly named system project is the next documented
 candidate; it is intentionally not implemented until that project's owner
 defines outcome evidence and attribution rules. Adding one must not require a
 provider-store or project-identity redesign.
+
+## Successor outcome receipts (2026-09-08)
+
+`outcomes.py` is the second adapter: it reads only configured
+`observatory.receipt_roots` (JSONL `outcome-receipts-v1` records appended by
+the Obsidian Agent console rebuild's outcome runtime), keeps every event once
+by its stable id with transactional per-file cursors, stores exact
+environment/client/native identity in the local tier, and derives the public
+`outcomes` dataset of counts and enums. Its tables are independent of the
+retired suite's `ingest_loop_snapshot`, so an old refresh cannot erase new
+receipts. Records of kind `usage.observed` with vendor `cursor` are the
+supported Cursor CLI measurement source (no transcript parser exists for it);
+they stay unpriced and are never merged into Claude Code because the model
+matches. The read-only consumer boundary for first-party local consumers is
+`consumer.py` (`telemetry-consumer-v1`).
+

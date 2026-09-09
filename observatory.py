@@ -29,13 +29,16 @@ import usage
 from tools import attention as attention_ledger
 
 
-STORE_SCHEMA_VERSION = 1
+STORE_SCHEMA_VERSION = 2
 PUBLIC_SCHEMA_VERSION = 1
 STORE_NAME = "observatory.sqlite3"
 SALT_NAME = "project-salt-v1"
 LOCAL_REGISTRY_NAME = "projects.local.json"
 HOST_OSES = {"wsl", "windows"}
-VENDORS = {"anthropic", "openai"}
+VENDORS = {"anthropic", "openai", "cursor"}
+#: Transcript roots are scanned by vendor parser; Cursor has none here, so a
+#: Cursor root must be a receipt root (see outcomes.py), never a transcript root.
+TRANSCRIPT_VENDORS = {"anthropic", "openai"}
 BUCKET_IDS = {"ad-hoc", "remote"}
 TOKEN_COLUMNS = (
     "input_tokens",
@@ -321,8 +324,8 @@ def configured_roots(config: dict[str, Any]) -> list[dict[str, Any]]:
         path = Path(str(raw.get("path") or "")).expanduser()
         if not re.fullmatch(r"[a-z][a-z0-9_]{1,39}", root_id) or root_id in seen:
             raise ObservatoryError("root_id_invalid_or_duplicate")
-        if vendor not in VENDORS or host_os not in HOST_OSES:
-            raise ObservatoryError("root_enum_invalid")
+        if vendor not in TRANSCRIPT_VENDORS or host_os not in HOST_OSES:
+            raise ObservatoryError("root_enum_invalid" if vendor != "cursor" else "cursor_roots_are_receipt_roots")
         seen.add(root_id)
         output.append(
             {
@@ -510,6 +513,13 @@ def migrate(connection: sqlite3.Connection) -> None:
             connection.executescript(MIGRATION_1)
             connection.execute("PRAGMA user_version=1")
             connection.execute("INSERT OR REPLACE INTO meta(key,value) VALUES('schema_version','1')")
+    if current < 2:
+        import outcomes as receipt_outcomes
+
+        with connection:
+            connection.executescript(receipt_outcomes.MIGRATION_2)
+            connection.execute("PRAGMA user_version=2")
+            connection.execute("INSERT OR REPLACE INTO meta(key,value) VALUES('schema_version','2')")
 
 
 def store_integrity(connection: sqlite3.Connection) -> str:
@@ -818,7 +828,7 @@ def price_observations(vendor: str, rows: list[sqlite3.Row], prices: dict[str, A
                 {key: safe_int(row[key]) for key in usage.OPENAI_KEYS}
                 for row in rows if str(row["model"]) == model
             ]
-        priced = usage.price_tokens(vendor, model, classes, prices, turns)
+        priced = usage.price_tokens(vendor, model, classes, prices, turns) if vendor in TRANSCRIPT_VENDORS else {"usd": 0.0, "priced_tokens": 0, "unpriced_tokens": usage.token_total(vendor, classes)}
         dollars += float(priced["usd"])
         unpriced += safe_int(priced["unpriced_tokens"])
     return rounded(dollars) or 0.0, unpriced, totals, sorted(by_model)
@@ -1123,7 +1133,7 @@ def public_summary(connection: sqlite3.Connection) -> dict[str, Any]:
     }
 
 
-STORE_DATASET_NAMES = ("projects", "sessions", "days", "rounds", "specs", "tests", "publications", "incidents")
+STORE_DATASET_NAMES = ("projects", "sessions", "days", "rounds", "specs", "tests", "publications", "incidents", "outcomes")
 DATASET_NAMES = STORE_DATASET_NAMES + ("attention_days", "metrics")
 
 
@@ -1293,6 +1303,9 @@ def machine_datasets(connection: sqlite3.Connection) -> tuple[dict[str, list[dic
             item = {id_key: row["record_id"], "observed_at": None, "metrics": raw}
             public[dataset].append(item)
             local[dataset].append(item)
+    import outcomes as receipt_outcomes
+
+    public["outcomes"], local["outcomes"] = receipt_outcomes.public_rows(connection)
     return public, local
 
 
@@ -1522,6 +1535,7 @@ def write_machine_layers(
         "incidents": "Sanitized quality/incident aggregate observations.",
         "attention_days": "Explicitly opted-in UTC operator-timer aggregates by stable projects.project_code; completeness depends on operator timer use, and absent rows are not observed zero attention.",
         "metrics": "Definitions, exact derivations, sources, caveats, units, and page-versus-machine surface decisions.",
+        "outcomes": "Successor outcome receipts (Obsidian Agent console rebuild): per-outcome counts, dispositions, check/publication/update statuses and native linkage strength; no titles, prompts or paths.",
     }
     for name in DATASET_NAMES:
         path = machine_root / f"{name}.jsonl"
@@ -1606,6 +1620,10 @@ def _collect_into(
     try:
         for root in configured_roots(config):
             root_results.append(scan_one_root(connection, root, state_root, now, rebuild=rebuild, allow_legacy_import=allow_legacy_import))
+        import outcomes as receipt_outcomes
+
+        for receipt in receipt_outcomes.ingest_receipt_roots(connection, config, now):
+            root_results.append({"root_id": receipt["root_id"], "status": receipt["status"], "files": receipt["files"], "changed": receipt["ingested"], "reused": 0, "strategy": "receipts", "seconds": 0.0})
         regenerate_derived(connection, registry, salt, prices, now)
         ingest_loop_snapshot(connection, loop_snapshot)
         digest = semantic_digest(connection)

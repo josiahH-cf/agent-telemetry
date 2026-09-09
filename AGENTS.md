@@ -31,7 +31,7 @@ Use the surface that matches the question:
   is the catalog for the complete public tier. It names each JSONL path, schema,
   row count, coverage bound, semantics, and SHA-256. The public datasets are
   `projects`, `sessions`, `days`, `attention_days`, `rounds`, `specs`, `tests`,
-  `publications`, `incidents`, and `metrics`; schemas live under `data/schema/`.
+  `publications`, `incidents`, `outcomes`, and `metrics`; schemas live under `data/schema/`.
 - The [metric catalog](data/machine/metrics.jsonl) is the only authority for a
   metric's stable id, display label, definition, exact derivation, source,
   caveats, unit, and `page` versus `machine-only` surface decision. Dashboard

@@ -8,7 +8,7 @@
   "required": ["session_id", "vendor", "model", "host_os", "project_id", "started_at", "ended_at", "input_tokens", "cached_input_tokens", "cache_write_5m_tokens", "cache_write_1h_tokens", "cache_read_tokens", "cache_write_tokens", "output_tokens", "reasoning_output_tokens", "tokens", "api_equivalent_cost_usd", "unpriced_tokens", "linkage", "attribution", "source_files"],
   "properties": {
     "session_id": {"type": "string", "pattern": "sess-[0-9a-f]{16}", "description": "Stable one-way public session identifier."},
-    "vendor": {"type": "string", "enum": ["anthropic", "openai"], "description": "Provider that emitted the usage metadata."},
+    "vendor": {"type": "string", "enum": ["anthropic", "openai", "cursor"], "description": "Provider that emitted the usage metadata."},
     "model": {"type": "string", "description": "Exact observed model, mixed, or unknown."},
     "host_os": {"type": "string", "enum": ["wsl", "windows"], "description": "Operating system hosting the provider process, not the path the session viewed."},
     "project_id": {"type": "string", "description": "Public project join key."},

@@ -9,7 +9,7 @@
   "properties": {
     "date": {"type": "string", "pattern": "[0-9]{4}-[0-9]{2}-[0-9]{2}", "description": "UTC calendar date."},
     "project_id": {"type": "string", "description": "Public project join key."},
-    "vendor": {"type": "string", "enum": ["anthropic", "openai"]},
+    "vendor": {"type": "string", "enum": ["anthropic", "openai", "cursor"]},
     "host_os": {"type": "string", "enum": ["wsl", "windows"]},
     "sessions": {"type": "integer", "description": "Distinct sessions with an event in this cell."},
     "input_tokens": {"type": "integer"},

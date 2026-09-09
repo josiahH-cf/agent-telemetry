@@ -1,0 +1,111 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "agent-telemetry/outcomes-record-v1",
+  "title": "Successor outcome record",
+  "description": "One outcome from the Obsidian Agent console rebuild's receipt feed: counts, dispositions and linkage only. No title, prompt, path, project name or native identifier is present.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "outcome_id",
+    "producer",
+    "environment",
+    "outcome_kind",
+    "first_at",
+    "last_at",
+    "events",
+    "questions",
+    "answers",
+    "checks_passed",
+    "checks_failed",
+    "publication_status",
+    "updates_applied",
+    "updates_failed",
+    "disposition",
+    "linkage",
+    "vendors"
+  ],
+  "properties": {
+    "outcome_id": {
+      "type": "string",
+      "pattern": "outc-[0-9a-f]{16}",
+      "description": "One-way public outcome identifier."
+    },
+    "producer": {
+      "type": "string"
+    },
+    "environment": {
+      "type": "string",
+      "enum": [
+        "personal",
+        "work"
+      ]
+    },
+    "outcome_kind": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "first_at": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "last_at": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "events": {
+      "type": "integer"
+    },
+    "questions": {
+      "type": "integer"
+    },
+    "answers": {
+      "type": "integer"
+    },
+    "checks_passed": {
+      "type": "integer"
+    },
+    "checks_failed": {
+      "type": "integer"
+    },
+    "publication_status": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "updates_applied": {
+      "type": "integer"
+    },
+    "updates_failed": {
+      "type": "integer"
+    },
+    "disposition": {
+      "type": "string"
+    },
+    "linkage": {
+      "type": "string",
+      "enum": [
+        "exact",
+        "correlated",
+        "unattributed"
+      ]
+    },
+    "vendors": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": [
+          "anthropic",
+          "openai",
+          "cursor"
+        ]
+      }
+    }
+  }
+}
