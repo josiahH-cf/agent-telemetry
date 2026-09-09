@@ -37,7 +37,7 @@ DISK_FILE = "disk-snapshot.json"
 PAGES_FILE = "pages-status.json"
 CLAUDE_USAGE_CAPTURE_FILE = "claude-usage-capture.json"
 OBSERVATORY_STORE = "observatory.sqlite3"
-OBSERVATORY_STORE_SCHEMA_VERSION = 1
+OBSERVATORY_STORE_SCHEMA_VERSION = 2  # observatory.STORE_SCHEMA_VERSION: receipt tables, cursor vendor, environment on roots
 WINDOWS_TASK_NAMES = ("agent-telemetry-logon", "agent-telemetry-continuity")
 WINDOWS_SCHTASKS = Path("/") / "mnt" / "c" / "Windows" / "System32" / "schtasks.exe"
 
@@ -665,7 +665,7 @@ def _machine_manifest_status(project_root: Path) -> tuple[str, str]:
             invalid += 1
             continue
         invalid += int(digest != entry.get("sha256") or rows != safe_int(entry.get("rows"), -1))
-    expected = {"projects", "sessions", "days", "attention_days", "rounds", "specs", "tests", "publications", "incidents", "metrics"}
+    expected = {"projects", "sessions", "days", "attention_days", "rounds", "specs", "tests", "publications", "incidents", "outcomes", "metrics"}
     observed = {str(entry.get("dataset")) for entry in datasets if isinstance(entry, dict)}
     status = "ok" if observed == expected and invalid == 0 else "fail"
     return status, f"datasets_{len(datasets)}_invalid_{invalid}"
