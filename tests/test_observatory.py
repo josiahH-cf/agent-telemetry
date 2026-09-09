@@ -284,6 +284,57 @@ class StoreTests(unittest.TestCase):
         self.assertEqual(version, observatory.STORE_SCHEMA_VERSION)
         self.assertTrue({"source_files", "usage_observations", "sessions", "projects", "daily_rollups"} <= tables)
 
+    def test_run_reads_success_only_after_outputs_are_finalized(self) -> None:
+        import consumer
+
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            config = fixture_config(root)
+            self.populate(root, config)
+            state = Path(str(config["cache_root"]))
+            now = dt.datetime(2026, 8, 20, 3, tzinfo=UTC)
+            summary, _ = observatory.collect_observatory(config, PROJECT_ROOT, loop_snapshot(), now)
+            run_id = summary["run_id"]
+            connection = consumer.open_read_only(state / observatory.STORE_NAME)
+            try:
+                rows = connection.execute("SELECT run_id, status, detail_code FROM runs ORDER BY run_id").fetchall()
+                self.assertEqual([(r["run_id"], r["status"], r["detail_code"]) for r in rows], [(run_id, "collected", "outputs_pending")])
+                self.assertEqual(consumer.generation(connection)["status"], "never-collected")
+                self.assertTrue(observatory.finish_run(state, run_id, "failure", "outputs_failed:schema_missing_projects"))
+                self.assertEqual(consumer.generation(connection)["status"], "never-collected")
+                failed = consumer.collection_view(connection)
+                self.assertEqual((failed["status"], failed["last_error"]), ("failure", "outputs_failed:schema_missing_projects"))
+                self.assertIsInstance(failed["observed_at"], str)
+                second, _ = observatory.collect_observatory(config, PROJECT_ROOT, loop_snapshot(), now + dt.timedelta(minutes=30))
+                self.assertTrue(observatory.finish_run(state, None, "success", "ok"))  # None finalizes the pending run
+                self.assertFalse(observatory.finish_run(state, None, "success", "ok"))  # nothing left pending
+                generation = consumer.generation(connection)
+                self.assertEqual((generation["run_id"], generation["status"]), (second["run_id"], "ok"))
+                self.assertEqual(consumer.collection_view(connection)["status"], "success")
+                self.assertEqual(connection.execute("SELECT status FROM runs WHERE run_id=?", (run_id,)).fetchone()[0], "failure")
+            finally:
+                connection.close()
+
+    def test_loop_history_survives_an_unavailable_and_uncached_loop_source(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            store = observatory.connect_store(Path(temporary) / "state" / "observatory.sqlite3")
+            try:
+                observatory.ingest_loop_snapshot(store, loop_snapshot())
+                tables = ("loop_rounds", "loop_specs", "test_runs", "publications", "incidents")
+                before = {table: [tuple(row) for row in store.execute(f"SELECT * FROM {table} ORDER BY 1")] for table in tables}
+                self.assertEqual(len(before["loop_rounds"]), 1)
+                absent = {
+                    "sources": {"suite_state": {"status": "absent", "available": False, "skips": [{"reason": "root_missing", "count": 1}]}},
+                    "metrics": {"ledger": {"rounds": [], "specs": []}, "overview": {}},
+                }
+                observatory.ingest_loop_snapshot(store, absent)
+                self.assertEqual({table: [tuple(row) for row in store.execute(f"SELECT * FROM {table} ORDER BY 1")] for table in tables}, before)
+                historical = {**loop_snapshot(), "sources": {"suite_state": {"status": "historical", "available": False, "skips": [{"reason": "cached_last_good", "count": 1}]}}}
+                observatory.ingest_loop_snapshot(store, historical)
+                self.assertEqual({table: [tuple(row) for row in store.execute(f"SELECT * FROM {table} ORDER BY 1")] for table in tables}, before)
+            finally:
+                store.close()
+
     def test_machine_layers_validate_manifest_reconcile_and_execute_join(self) -> None:
         # The desktop process points tempfile at DrvFS, whose permission bits
         # are synthetic; use the native Linux filesystem for this mode check.

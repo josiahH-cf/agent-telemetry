@@ -34,6 +34,9 @@ PRODUCER = "agent-telemetry"
 STALE_AFTER_SECONDS = 2 * 3600
 MAX_SESSIONS = 200
 MAX_ATTENTION_INTERVALS = 50
+PUBLICATION_STATUSES = {"success", "failure", "blocked", "pending"}
+COLLECTION_STATUSES = {"success", "failure"}
+UNKNOWN_COLLECTION = {"status": "unknown", "last_error": None, "observed_at": None}
 
 
 def utc_now() -> dt.datetime:
@@ -55,6 +58,50 @@ def generation(connection: sqlite3.Connection) -> dict[str, Any]:
     if row is None:
         return {"run_id": None, "finished_at": None, "digest": None, "status": "never-collected"}
     return {"run_id": int(row["run_id"]), "started_at": row["started_at"], "finished_at": row["finished_at"], "mode": row["mode"], "digest": row["semantic_digest"], "status": "ok"}
+
+
+def collection_view(connection: sqlite3.Connection) -> dict[str, Any]:
+    """The latest completed collection run, failed or not, so a broken run is visible at once.
+
+    A run counts as successful only after its public outputs were written; a run whose machine
+    layers or schema validation failed is reported here with its sanitized detail code.
+    """
+
+    row = connection.execute(
+        "SELECT status, detail_code, started_at, finished_at FROM runs WHERE status IN ('success','failure') ORDER BY run_id DESC LIMIT 1"
+    ).fetchone()
+    if row is None:
+        return dict(UNKNOWN_COLLECTION)
+    status = str(row["status"]) if row["status"] in COLLECTION_STATUSES else "unknown"
+    observed = usage.parse_timestamp(row["finished_at"]) or usage.parse_timestamp(row["started_at"])
+    return {
+        "status": status,
+        "last_error": (str(row["detail_code"]) if row["detail_code"] else "unknown") if status == "failure" else None,
+        "observed_at": _iso(observed),
+    }
+
+
+def publication_view(state_root: Path) -> dict[str, Any]:
+    """Publication health from the state root's publish-status record; never raises."""
+
+    unknown = {"status": "unknown", "last_success_at": None, "last_attempt_at": None, "reason": None, "detail": "no publish-status record in the telemetry state root"}
+    try:
+        value = json.loads((state_root / "publish-status.json").read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        return unknown
+    if not isinstance(value, dict):
+        return unknown
+    status = str(value.get("status") or "")
+    if status not in PUBLICATION_STATUSES:
+        status = "unknown"
+    reason = usage.safe_identifier(value.get("reason"), "") or None
+    last_success_at = _iso(usage.parse_timestamp(value.get("last_success_at")))
+    last_attempt_at = _iso(usage.parse_timestamp(value.get("last_attempt_at")))
+    detail = f"publication {status}" + (f" ({reason})" if reason else "")
+    detail += f"; last success {last_success_at}" if last_success_at else "; no successful publication recorded"
+    if last_attempt_at:
+        detail += f"; last attempt {last_attempt_at}"
+    return {"status": status, "last_success_at": last_success_at, "last_attempt_at": last_attempt_at, "reason": reason, "detail": detail}
 
 
 def _age_status(finished_at: str | None, now: dt.datetime) -> str:
@@ -206,7 +253,7 @@ def consumer_view(project_root: Path, state_root: Path, scope: dict[str, Any] | 
     store = state_root / observatory.STORE_NAME
     base = {"contract": CONTRACT, "producer": PRODUCER, "generated_at": _iso(now), "scope": scope}
     if not store.is_file():
-        return {**base, "status": "not-configured", "generation": {"status": "no-store"}, "projects": [], "sessions": [], "capacity": [], "coverage": {"roots": [], "missing": [{"source": "observatory", "status": "not-configured"}]}, "attention": attention_view(project_root, state_root, now)}
+        return {**base, "status": "not-configured", "generation": {"status": "no-store"}, "projects": [], "sessions": [], "capacity": [], "coverage": {"roots": [], "missing": [{"source": "observatory", "status": "not-configured"}]}, "attention": attention_view(project_root, state_root, now), "publication": publication_view(state_root), "collection": dict(UNKNOWN_COLLECTION)}
     connection = open_read_only(store)
     try:
         gen = generation(connection)
@@ -221,6 +268,8 @@ def consumer_view(project_root: Path, state_root: Path, scope: dict[str, Any] | 
             "coverage": coverage_view(connection, now),
             "attention": attention_view(project_root, state_root, now),
             "units": {"tokens": "provider-reported tokens (vendor-specific classes)", "api_equivalent_cost_usd": "recorded token classes priced against prices.json; not an invoice", "used_percent": "account window utilisation as the provider reported it"},
+            "publication": publication_view(state_root),
+            "collection": collection_view(connection),
         }
     finally:
         connection.close()

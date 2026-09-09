@@ -942,7 +942,22 @@ def regenerate_derived(
             )
 
 
+def loop_source_served(snapshot: dict[str, Any]) -> bool:
+    """True unless the snapshot names the retired suite_state source as unavailable and uncached.
+
+    A snapshot without a ``sources`` block (fixtures, the standalone CLI) is treated as live.
+    """
+
+    sources = snapshot.get("sources") if isinstance(snapshot.get("sources"), dict) else {}
+    suite = sources.get("suite_state") if isinstance(sources.get("suite_state"), dict) else None
+    if suite is None:
+        return True
+    return bool(suite.get("available")) or suite.get("status") == "historical"
+
+
 def ingest_loop_snapshot(connection: sqlite3.Connection, snapshot: dict[str, Any]) -> None:
+    if not loop_source_served(snapshot):
+        return  # retired loop history stays as last ingested; the public datasets never shrink to zero
     metrics = snapshot.get("metrics") if isinstance(snapshot.get("metrics"), dict) else {}
     ledger = metrics.get("ledger") if isinstance(metrics.get("ledger"), dict) else {}
     rounds = ledger.get("rounds") if isinstance(ledger.get("rounds"), list) else []
@@ -1628,8 +1643,11 @@ def _collect_into(
         ingest_loop_snapshot(connection, loop_snapshot)
         digest = semantic_digest(connection)
         with connection:
-            connection.execute("UPDATE runs SET finished_at=?,status='success',detail_code='ok',semantic_digest=? WHERE run_id=?", (iso(utc_now()), digest, run_id))
+            # The run becomes 'success' only through finish_run, after the machine layers, schema
+            # validation and page outputs have been written; consumers read only successful runs.
+            connection.execute("UPDATE runs SET finished_at=?,status='collected',detail_code='outputs_pending',semantic_digest=? WHERE run_id=?", (iso(utc_now()), digest, run_id))
         summary = public_summary(connection)
+        summary["run_id"] = int(run_id)
     except Exception:
         with contextlib.suppress(sqlite3.Error):
             connection.execute("UPDATE runs SET finished_at=?,status='failure',detail_code='collection_failed' WHERE run_id=?", (iso(utc_now()), run_id))
@@ -1638,6 +1656,34 @@ def _collect_into(
     finally:
         connection.close()
     return summary, root_results
+
+
+def finish_run(state_root: Path, run_id: int | None, status: str, detail_code: str) -> bool:
+    """Finalize a collected run once its outputs are written (success) or failed.
+
+    ``run_id`` None targets the newest run still awaiting outputs. Returns whether a run changed.
+    """
+
+    if status not in {"success", "failure"}:
+        raise ObservatoryError("run_status_invalid")
+    store = state_root / STORE_NAME
+    if not store.is_file():
+        return False
+    connection = connect_store(store)
+    try:
+        with connection:
+            if run_id is None:
+                row = connection.execute("SELECT run_id FROM runs WHERE status='collected' ORDER BY run_id DESC LIMIT 1").fetchone()
+                if row is None:
+                    return False
+                run_id = int(row[0])
+            cursor = connection.execute(
+                "UPDATE runs SET finished_at=?,status=?,detail_code=? WHERE run_id=? AND status='collected'",
+                (iso(utc_now()), status, detail_code, int(run_id)),
+            )
+            return cursor.rowcount == 1
+    finally:
+        connection.close()
 
 
 def collect_observatory(
@@ -1717,6 +1763,7 @@ def main(argv: list[str] | None = None) -> int:
         return 0
     snapshot = read_json(args.project_root / "data" / "telemetry.json")
     summary, roots = collect_observatory(config, args.project_root, snapshot, rebuild=args.rebuild)
+    finish_run(state_root, summary.get("run_id"), "success", "store_only")
     for root in roots:
         print(f"[{root['root_id']}] {root['status']}: files={root['files']} changed={root['changed']} reused={root['reused']} strategy={root['strategy']} seconds={root['seconds']}")
     print(f"[observatory] sessions={summary.get('totals',{}).get('sessions',0)} integrity={summary.get('store',{}).get('integrity','n/a')}")

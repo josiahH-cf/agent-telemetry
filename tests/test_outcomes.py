@@ -179,6 +179,45 @@ class OutcomeReceiptTests(unittest.TestCase):
 
 
 class ConsumerBoundaryTests(unittest.TestCase):
+    def test_consumer_view_reports_publication_and_collection_health_additively(self) -> None:
+        import consumer
+
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            state = root / "state"
+            store = observatory.connect_store(state / "observatory.sqlite3")
+            try:
+                with store:
+                    store.execute("INSERT INTO runs(started_at,finished_at,mode,status,detail_code,semantic_digest) VALUES(?,?,?,?,?,?)", ("2026-09-09T02:00:00+00:00", "2026-09-09T02:01:00+00:00", "incremental", "success", "ok", "gen-1"))
+                    store.execute("INSERT INTO runs(started_at,finished_at,mode,status,detail_code,semantic_digest) VALUES(?,?,?,?,?,?)", ("2026-09-09T03:30:00+00:00", "2026-09-09T03:31:00+00:00", "incremental", "failure", "outputs_failed:schema_validation_outcomes_enum:environment", "gen-2"))
+                    store.execute("INSERT INTO runs(started_at,mode,status,detail_code) VALUES(?,?,?,?)", ("2026-09-09T04:00:00+00:00", "incremental", "collected", "outputs_pending"))
+            finally:
+                store.close()
+            (root / "projects.json").write_text(json.dumps({"schema_version": 1, "projects": []}))
+            now = dt.datetime(2026, 9, 9, 4, 30, tzinfo=UTC)
+            without_record = consumer.consumer_view(root, state, {}, now=now)
+            (state / "publish-status.json").write_text(json.dumps({"schema_version": 2, "status": "failure", "reason": "collect_failed", "last_attempt_at": "2026-09-09T04:08:56+00:00", "last_success_at": "2026-09-08T08:18:46+00:00"}))
+            view = consumer.consumer_view(root, state, {}, now=now)
+            no_store = consumer.consumer_view(root, root / "missing-state", {}, now=now)
+            serialized = json.dumps(view)
+            self.assertNotIn(str(state), serialized)
+        baseline_keys = {"contract", "producer", "generated_at", "scope", "status", "generation", "projects", "sessions", "capacity", "coverage", "attention", "units"}
+        self.assertTrue(baseline_keys <= set(view))
+        self.assertEqual(view["generation"]["run_id"], 1)  # a failed or unfinished run never becomes the generation
+        self.assertEqual(view["status"], "stale")
+        self.assertEqual(view["collection"], {"status": "failure", "last_error": "outputs_failed:schema_validation_outcomes_enum:environment", "observed_at": "2026-09-09T03:31:00Z"})
+        publication = dict(view["publication"])
+        detail = publication.pop("detail")
+        self.assertEqual(publication, {"status": "failure", "last_success_at": "2026-09-08T08:18:46Z", "last_attempt_at": "2026-09-09T04:08:56Z", "reason": "collect_failed"})
+        self.assertIn("collect_failed", detail)
+        self.assertEqual(without_record["publication"]["status"], "unknown")
+        self.assertIsNone(without_record["publication"]["reason"])
+        self.assertIsNone(without_record["publication"]["last_success_at"])
+        self.assertIsInstance(without_record["publication"]["detail"], str)
+        self.assertEqual(no_store["status"], "not-configured")
+        self.assertEqual(no_store["collection"], {"status": "unknown", "last_error": None, "observed_at": None})
+        self.assertEqual(no_store["publication"]["status"], "unknown")
+
     def test_consumer_view_reports_generation_capacity_coverage_and_sessions_from_one_store(self) -> None:
         import consumer
 
