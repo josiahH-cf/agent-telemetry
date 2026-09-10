@@ -70,7 +70,7 @@ STATIC_TRACKED_PATHS = {
     "index.html",
     "git_guard.py",
     "observatory.py",
-    "outcomes.py",
+    "outcomes.py", "outcome_quality.py",
     "prices.json",
     "projects.json",
     "publish.py",

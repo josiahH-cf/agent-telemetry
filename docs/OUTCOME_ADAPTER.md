@@ -92,3 +92,26 @@ failed, and a failed run is visible immediately with a detail code such as
 present in the `not-configured` (no store) view as well, with `collection` set
 to `unknown`.
 
+
+
+## Refinement metadata (2026-09-10)
+
+The additive v1 receipt kinds `review.recorded`, `feedback.recorded`,
+`human.intervention` and `tool.observed` retain only explicit verdict/basis,
+stable references, command identity, tool-call digest and known tool status.
+Optional workflow identity, policy revision, actual model/effort and repair
+reference connect ordinary work to its measurements. Unknown extra fields are
+discarded before storage; feedback words remain with the producer. Historical
+reviews without a verdict remain unclassified. No provider parser is duplicated.
+
+`telemetry-consumer-v1.quality` returns comparable-class groups and at most 100
+recent outcome metadata rows; `outcomes_total` describes coverage. Cost is the
+sum of exclusively linked observed native sessions. A session shared by multiple
+outcomes remains `shared-session` with null per-outcome cost. No causal value,
+quality or universally best model is inferred from this comparison. Acceptance
+and effort definitions live in the metric catalog. Elapsed is the receipt span;
+closed waiting intervals are unioned and open waits counted separately. These
+are not operator attention. Public outcome rows retain their existing contract.
+
+Install this compatible consumer before a producer emits these additive kinds.
+No ledger reset, receipt rewrite, additional scan, or scheduler is required.

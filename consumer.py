@@ -25,6 +25,7 @@ import sys
 from pathlib import Path
 from typing import Any
 
+import outcome_quality
 import observatory
 import usage
 from tools import attention as attention_ledger
@@ -253,9 +254,10 @@ def consumer_view(project_root: Path, state_root: Path, scope: dict[str, Any] | 
     store = state_root / observatory.STORE_NAME
     base = {"contract": CONTRACT, "producer": PRODUCER, "generated_at": _iso(now), "scope": scope}
     if not store.is_file():
-        return {**base, "status": "not-configured", "generation": {"status": "no-store"}, "projects": [], "sessions": [], "capacity": [], "coverage": {"roots": [], "missing": [{"source": "observatory", "status": "not-configured"}]}, "attention": attention_view(project_root, state_root, now), "publication": publication_view(state_root), "collection": dict(UNKNOWN_COLLECTION)}
+        return {**base, "status": "not-configured", "generation": {"status": "no-store"}, "projects": [], "sessions": [], "capacity": [], "coverage": {"roots": [], "missing": [{"source": "observatory", "status": "not-configured"}]}, "attention": attention_view(project_root, state_root, now), "publication": publication_view(state_root), "collection": dict(UNKNOWN_COLLECTION), "quality":{"status":"not-observed","groups":[],"outcomes":[],"outcomes_total":0}}
     connection = open_read_only(store)
     try:
+        connection.execute("BEGIN")
         gen = generation(connection)
         pairs = [(str(v), str(s)) for v, s in (scope.get("sessions") or []) if isinstance((v, s), tuple) or True]
         view = {
@@ -270,6 +272,7 @@ def consumer_view(project_root: Path, state_root: Path, scope: dict[str, Any] | 
             "units": {"tokens": "provider-reported tokens (vendor-specific classes)", "api_equivalent_cost_usd": "recorded token classes priced against prices.json; not an invoice", "used_percent": "account window utilisation as the provider reported it"},
             "publication": publication_view(state_root),
             "collection": collection_view(connection),
+            "quality": outcome_quality.quality_view(connection, project_id=scope.get("outcome_project_id"), days=scope.get("days")),
         }
     finally:
         connection.close()

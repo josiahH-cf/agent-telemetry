@@ -31,6 +31,7 @@ LINKAGES = {"exact", "correlated", "unattributed"}
 KINDS = {
     "outcome.started", "phase.changed", "question.opened", "question.answered", "result.produced",
     "check.result", "publication.result", "update.result", "outcome.disposition", "usage.observed", "session.bound",
+    "review.recorded", "feedback.recorded", "tool.observed", "human.intervention",
 }
 RECEIPT_VENDORS = {"anthropic", "openai", "cursor"}
 ENVIRONMENTS = {"personal", "work"}
@@ -180,7 +181,19 @@ def _validate(record: Any, root: dict[str, Any]) -> tuple[dict[str, Any] | None,
         if environment not in ENVIRONMENTS:
             return None, "environment_unknown"
         record = {**record, "environment": environment}
-    return record, None
+    # Only defined metadata crosses this boundary, including into private
+    # record_json. Feedback words and arbitrary extra content stay with producer.
+    allowed = {'interface','producer','event_id','ledger_seq','kind','at','outcome_id','project_id','outcome_kind','evidence_digest','linkage','vendor','client','host_os','environment','native_session_id','native_turn_id','status','disposition','phase','source_version','route_id','question_id','question_kind','source','adopted','effect_id','effect_kind','detail_digest','destination_digest','reason_digest','commit','model','usage','workflow_identity','policy_revision','effort','measurement_version','verdict','acceptance_basis','feedback_id','repair_of','command_id','action','tool_call_digest','tool_status'}
+    clean = {k:v for k,v in record.items() if k in allowed}
+    if clean.get('verdict') not in (None, 'accepted', 'needs-changes'):
+        return None, 'verdict_invalid'
+    if clean.get('acceptance_basis') not in (None, 'human', 'review-recorded'):
+        return None, 'acceptance_basis_invalid'
+    if clean.get('tool_status') not in (None, 'started', 'succeeded', 'failed', 'unknown'):
+        return None, 'tool_status_invalid'
+    if clean.get('tool_call_digest') is not None and not re.fullmatch(r'[0-9a-f]{64}', str(clean['tool_call_digest'])):
+        return None, 'tool_identity_invalid'
+    return clean, None
 
 
 def _usage_row(file_id: str, record: dict[str, Any]) -> tuple[Any, ...] | None:
@@ -257,7 +270,7 @@ def ingest_receipt_root(connection: sqlite3.Connection, root: dict[str, Any], no
                         record["event_id"], root["root_id"], root["producer"], record["kind"], record.get("outcome_id"), record.get("project_id"), record.get("outcome_kind"),
                         usage.iso(usage.parse_timestamp(record.get("at"))), record.get("ledger_seq") if isinstance(record.get("ledger_seq"), int) else None, record["linkage"],
                         record.get("vendor"), record.get("client"), record.get("host_os"), record.get("environment") or root["environment"], record.get("native_session_id"), record.get("native_turn_id"),
-                        record.get("status") or record.get("disposition") or record.get("phase"), record["evidence_digest"], record.get("source_version"), json.dumps(raw, sort_keys=True, separators=(",", ":")), observed_at,
+                        record.get("status") or record.get("disposition") or record.get("phase"), record["evidence_digest"], record.get("source_version"), json.dumps({**record, "environment":raw.get("environment")}, sort_keys=True, separators=(",", ":")), observed_at,
                     )
                 )
                 usage_row = _usage_row(file_id, record)

@@ -58,6 +58,37 @@ class OutcomeReceiptTests(unittest.TestCase):
         self.store.close()
         self.temporary.cleanup()
 
+    def test_quality_uses_explicit_verdicts_deduplicates_tools_and_excludes_prose(self):
+        import outcome_quality
+        rows=[receipt(1,'outcome.started'), receipt(2,'outcome.disposition',disposition='satisfied'),
+            receipt(3,'review.recorded',verdict=None,acceptance_basis='review-recorded',note='CONTENT_SENTINEL'),
+            receipt(4,'feedback.recorded',feedback_id='ref-1',original_text='CONTENT_SENTINEL'),
+            receipt(5,'tool.observed',tool_call_digest='a'*64,tool_status='succeeded'),
+            receipt(6,'tool.observed',tool_call_digest='a'*64,tool_status='succeeded')]
+        write(self.receipts/'a.jsonl',rows)
+        outcomes.ingest_receipt_roots(self.store,self.config,NOW)
+        view=outcome_quality.quality_view(self.store)
+        item=view['outcomes'][0]
+        self.assertTrue(item['delivered'])
+        self.assertIsNone(item['verdict'])
+        self.assertEqual(item['tool_calls'],1)
+        self.assertIsNone(item['api_equivalent_cost_usd'])
+        self.assertNotIn('CONTENT_SENTINEL',json.dumps(view))
+        self.assertNotIn('CONTENT_SENTINEL',self.store.execute("SELECT group_concat(record_json) FROM outcome_events").fetchone()[0])
+        write(self.receipts/'b.jsonl',[receipt(7,'review.recorded',verdict='accepted',acceptance_basis='human')])
+        outcomes.ingest_receipt_roots(self.store,self.config,NOW)
+        current=outcome_quality.quality_view(self.store)
+        self.assertEqual(current['groups'][0]['human_accepted'],1)
+
+    def test_shared_session_cost_is_never_assigned_whole_to_each_outcome(self):
+        import outcome_quality
+        rows=[receipt(1,'outcome.started','one'),receipt(2,'outcome.disposition','one',disposition='satisfied'),receipt(3,'outcome.started','two')]
+        write(self.receipts/'a.jsonl',rows)
+        outcomes.ingest_receipt_roots(self.store,self.config,NOW)
+        items=outcome_quality.quality_view(self.store)['outcomes']
+        self.assertEqual(len(items),2)
+        self.assertTrue(all(i['usage_attribution']=='shared-session' and i['api_equivalent_cost_usd'] is None for i in items))
+
     def test_migration_two_adds_receipt_tables_without_touching_transcript_tables(self) -> None:
         tables = {row[0] for row in self.store.execute("SELECT name FROM sqlite_master WHERE type='table'")}
         self.assertTrue({"outcome_events", "receipt_roots", "receipt_cursors", "usage_observations", "sessions"} <= tables)

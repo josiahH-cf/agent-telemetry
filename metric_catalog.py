@@ -83,6 +83,14 @@ def _metric(
 
 
 CATALOG: tuple[dict[str, Any], ...] = (
+    _metric('successor_human_acceptance', 'Recorded human acceptance',
+        'Delivered successor outcomes whose latest explicit review verdict is accepted.',
+        'Group outcome_events by outcome identity; choose the latest review.recorded by timestamp and ledger sequence; count only verdict=accepted and acceptance_basis=human.',
+        ['outcomes', 'private outcome_events'], 'Delivery and historical reviewed-without-verdict records are not acceptance. This does not infer quality.', 'outcomes', 'machine-only', 'observed'),
+    _metric('successor_effort_and_repairs', 'Outcome effort and repairs',
+        'Usage attribution, recorded repairs, interventions, elapsed time and closed waiting intervals for comparable task and workflow classes.',
+        'Group private consumer outcome rows by outcome_kind and workflow identity. Sum exact exclusively linked native-session cost once; shared or missing attribution remains null. Count distinct repair references, feedback references, command identities and tool-call digests; elapsed is first-to-last receipt; waiting is the union of closed recorded wait intervals.',
+        ['sessions', 'private outcome_events'], 'API-equivalent dollars are not an invoice. No score proves value or model superiority. Missing observations remain null and coverage accompanies totals.', 'counts, seconds, API-equivalent USD', 'machine-only', 'derived'),
     _metric(
         "lifetime_sessions",
         "Deduplicated sessions",
