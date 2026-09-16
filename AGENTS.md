@@ -413,13 +413,14 @@ The two current-user Windows tasks are:
 
 | Task | Trigger | Sole action |
 |---|---|---|
-| `agent-telemetry-logon` | User logon | `wsl.exe -d Ubuntu -- $HOME/agent-telemetry/run-telemetry.sh catchup windows-task-logon` |
-| `agent-telemetry-continuity` | Every 30 minutes, offset from cron | `wsl.exe -d Ubuntu -- $HOME/agent-telemetry/run-telemetry.sh refresh windows-task-continuity` |
+| `agent-telemetry-logon` | User logon (S4U, headless) | `wsl.exe -d Ubuntu -- $HOME/agent-telemetry/run-telemetry.sh catchup windows-task-logon` |
+| `agent-telemetry-continuity` | Every 30 minutes, offset from cron (S4U, headless) | `wsl.exe -d Ubuntu -- $HOME/agent-telemetry/run-telemetry.sh refresh windows-task-continuity` |
 
 Both tasks are least-privilege/current-user, ignore overlapping instances, run
-on battery, and invoke no second program. The logon task catches up when Windows
-starts the WSL distribution; no collection can occur while the host is powered
-off.
+on battery, and invoke no second program. Both use an `S4U` logon (run whether
+logged on or not) so they run headless in session 0 with no console window; the
+logon task catches up when Windows starts the WSL distribution. No collection
+can occur while the host is powered off.
 
 Remove only the tagged WSL entries with:
 

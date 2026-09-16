@@ -162,6 +162,27 @@ class StabilityTests(unittest.TestCase):
         queried = [call.args[0][3] for call in complete.call_args_list]
         self.assertEqual(tuple(queried), stability.WINDOWS_TASK_NAMES)
 
+    def test_windows_task_check_accepts_s4u_headless_continuity(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            executable = Path(temporary) / "schtasks.exe"
+            executable.write_bytes(b"fixture")
+            xml = """<Task xmlns="http://schemas.microsoft.com/windows/2004/02/mit/task">
+<Triggers>{trigger}</Triggers><Principals><Principal><LogonType>{logon}</LogonType><RunLevel>LeastPrivilege</RunLevel></Principal></Principals><Settings><StartWhenAvailable>true</StartWhenAvailable><DisallowStartIfOnBatteries>false</DisallowStartIfOnBatteries><StopIfGoingOnBatteries>false</StopIfGoingOnBatteries><MultipleInstancesPolicy>IgnoreNew</MultipleInstancesPolicy></Settings>
+<Actions><Exec><Command>wsl.exe</Command><Arguments>-d Ubuntu -- /local/agent-telemetry/run-telemetry.sh {action}</Arguments></Exec></Actions></Task>"""
+
+            def query(args: list[str], **_kwargs: object) -> subprocess.CompletedProcess[str]:
+                logon = args[3] == "agent-telemetry-logon"
+                body = xml.format(
+                    trigger="<LogonTrigger />" if logon else "<TimeTrigger><Repetition><Interval>PT30M</Interval></Repetition></TimeTrigger>",
+                    logon="InteractiveToken" if logon else "S4U",
+                    action="catchup windows-task-logon" if logon else "refresh windows-task-continuity",
+                )
+                return subprocess.CompletedProcess(args, 0, stdout=body)
+
+            with mock.patch.object(stability, "WINDOWS_SCHTASKS", executable), mock.patch("stability.subprocess.run", side_effect=query):
+                status, detail = stability._windows_task_status()
+        self.assertEqual((status, detail), ("ok", "two_tasks_action_schedule_and_power_policy_ok"))
+
     def test_windows_task_check_rejects_default_battery_policy(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
             executable = Path(temporary) / "schtasks.exe"

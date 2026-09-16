@@ -416,7 +416,8 @@ def _windows_task_status() -> tuple[str, str]:
             return "warn", "task_availability_policy_mismatch"
         if text_at(root, ".//t:Settings/t:StartWhenAvailable").lower() != "true":
             return "warn", "task_availability_policy_mismatch"
-        if text_at(root, ".//t:Principals/t:Principal/t:LogonType") != "InteractiveToken":
+        # S4U lets the continuity task wake headless (session 0, no console flash); both stay least-privilege.
+        if text_at(root, ".//t:Principals/t:Principal/t:LogonType") not in ("InteractiveToken", "S4U"):
             return "warn", "task_principal_mismatch"
         if text_at(root, ".//t:Principals/t:Principal/t:RunLevel") == "HighestAvailable":
             return "warn", "task_principal_mismatch"
