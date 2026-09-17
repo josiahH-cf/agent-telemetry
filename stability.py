@@ -89,6 +89,7 @@ STATIC_TRACKED_PATHS = {
     "tests/test_outcomes.py",
     "tests/test_portfolio.py",
     "tests/test_workspace_accounting.py",
+    "tests/test_usage_insight_inputs.py",
     "tests/test_git_guard.py",
     "tests/test_guidance_spike.py",
     "tests/test_observatory.py",

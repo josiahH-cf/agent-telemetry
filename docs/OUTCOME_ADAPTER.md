@@ -144,3 +144,22 @@ limit up to 100) over the complete history. Definitions are the catalog rows
 `workspace_accounting_tokens`, `run_usage_allocation`, `contribution_share`,
 `review_acceptance_rate` and `cohort_tokens_per_delivered_outcome`. No public
 row, closed record or collection behavior changes.
+
+## Shared Usage inputs (2026-09-16)
+
+Three additive parts serve one first-party Usage experience across the Console's
+Usage, Now and Project views:
+
+- **Previous period.** For a 7-, 30- or 90-day period, `accounting` adds a
+  `previous` figure to each group, to `totals` and to `shared`, plus the
+  `previous_period` bounds. These cover the preceding equal-length window under the
+  same definitions. All history has no previous period.
+- **Run figures.** Scope `accounting_outcomes` (up to 200 outcome IDs) returns
+  `run_usage`: each bound run's attributed tokens, allocation and review facts. Only
+  a run made entirely of exclusive whole sessions carries API-equivalent dollars and
+  token classes, with a pricing state of `priced`, `partly-priced` or `unpriced`.
+  Exact portions read `not-split`. A shared session keeps only its session total.
+- **Daily history.** `history` accepts `days`, so its daily rows use the period's
+  own inclusive UTC bounds and add up to the period total.
+
+Opening a view never triggers collection.

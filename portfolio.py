@@ -718,6 +718,9 @@ def history_view(connection: sqlite3.Connection, scope: Any, now: dt.datetime) -
     scope = scope if isinstance(scope, dict) else {}
     to_day = scope.get("to") if isinstance(scope.get("to"), str) and DAY_RE.fullmatch(scope["to"]) else now.astimezone(dt.timezone.utc).date().isoformat()
     from_day = scope.get("from") if isinstance(scope.get("from"), str) and DAY_RE.fullmatch(scope["from"]) else None
+    bounds = period_bounds(scope.get("days"), now) if "days" in scope else None
+    if bounds is not None:  # the same inclusive UTC bounds as the period view, so a trend and its total agree
+        _, from_day, to_day = bounds
     identities = {item["source_key"]: item for item in _identities(connection, now)}
     buckets = _collect_buckets(connection, from_day, to_day, lambda row: [row["day_utc"], (row["day_utc"], identities.get(str(row["source_key"]), {}).get("environment"))])
     days = []

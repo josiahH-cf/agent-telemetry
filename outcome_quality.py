@@ -380,11 +380,45 @@ def _measures(items):
     }
 
 
-def accounting_view(connection, *, reporting=None, days=None, now=None, registry=None, attention=(), coverage=None, detail=None):
+MAX_RUN_USAGE = 200
+
+
+def _run_usage(items, sessions, requested):
+    """Run-scoped figures for the requested outcomes: a whole-session total never reads as a run's."""
+    wanted = {str(x) for x in list(requested or [])[:MAX_RUN_USAGE] if isinstance(x, str)}
+    out = {}
+    for item in items:
+        if item['outcome_id'] not in wanted or not item['sessions']:
+            continue
+        bound = [sessions.get((s['vendor'], s['session_id'])) or {} for s in item['sessions']]
+        observed = all(s.get('status') == 'observed' for s in bound)
+        entry = {k: item.get(k) for k in ('outcome_id', 'project_id', 'group', 'allocation', 'attempts', 'repair_of', 'delivered', 'verdict', 'acceptance_basis', 'feedback_count', 'repairs', 'human_interventions', 'last_at')}
+        entry.update(tokens=item['attributed_tokens'] if item['allocation'] in ('exact', 'partial') else None,
+                     session_tokens=sum(s['tokens'] for s in bound) if observed else None, sessions=item['sessions'],
+                     api_equivalent_cost_usd=None, unpriced_tokens=None, token_classes=None, pricing='unknown')
+        if item['allocation'] == 'exact' and observed and all(s.get('allocation') == 'exclusive-session' for s in bound):
+            classes = defaultdict(int)
+            for s in bound:
+                for rows in (s['rows'],):
+                    total = {key: 0 for key in observatory.TOKEN_COLUMNS}
+                    for row in rows:
+                        observatory.add_classes(total, row)
+                    for key, value in observatory.vendor_classes(s['vendor'], total).items():
+                        classes[key] += value
+            unpriced = sum(s['unpriced_tokens'] for s in bound)
+            entry.update(api_equivalent_cost_usd=round(sum(s['api_equivalent_cost_usd'] for s in bound), 6), unpriced_tokens=unpriced, token_classes=dict(classes),
+                         pricing='unpriced' if entry['tokens'] and unpriced >= entry['tokens'] else 'partly-priced' if unpriced else 'priced')
+        elif item['allocation'] in ('exact', 'partial'):
+            entry['pricing'] = 'not-split'
+        out[item['outcome_id']] = entry
+    return out
+
+
+def accounting_view(connection, *, reporting=None, days=None, now=None, registry=None, attention=(), coverage=None, detail=None, run_outcomes=None):
     import datetime as dt
     import portfolio
     now = now or dt.datetime.now(dt.timezone.utc)
-    base = {'status': 'unavailable', 'metrics': dict(ACCOUNTING_METRICS), 'groups': [], 'shared': None, 'totals': None, 'repositories': [], 'sessions': [], 'sessions_total': 0, 'outcomes': [], 'outcomes_total': 0,
+    base = {'status': 'unavailable', 'run_usage': {}, 'previous_period': None, 'metrics': dict(ACCOUNTING_METRICS), 'groups': [], 'shared': None, 'totals': None, 'repositories': [], 'sessions': [], 'sessions_total': 0, 'outcomes': [], 'outcomes_total': 0,
             'share_denominators': dict(SHARE_DENOMINATORS), 'basis': ACCOUNTING_BASIS, 'coverage_gaps': []}
     if not portfolio._table_exists(connection, 'portfolio_daily') or portfolio.period_bounds(days, now) is None:
         return {**base, 'detail_code': 'store_schema_before_portfolio' if portfolio.period_bounds(days, now) else 'unsupported_window'}
@@ -418,6 +452,8 @@ def accounting_view(connection, *, reporting=None, days=None, now=None, registry
     sessions = _managed_sessions(connection)
     period_cells, bounds = _cells(connection, days, now, sessions, repo_candidates, project_candidate)
     lifetime_cells = period_cells if bounds['from_day'] is None else _cells(connection, 'all', now, sessions, repo_candidates, project_candidate)[0]
+    # The preceding equal-length window, for change statements over the same definitions.
+    previous_cells, previous_bounds = (None, None) if bounds['from_day'] is None else _cells(connection, days, now - dt.timedelta(days=bounds['days']), sessions, repo_candidates, project_candidate)
     by_outcome, native_owners = _receipts(connection)
     items = _outcome_items(connection, by_outcome, native_owners)
     for item in items:
@@ -452,11 +488,11 @@ def accounting_view(connection, *, reporting=None, days=None, now=None, registry
         item['group'] = owner[1] if owner[0] == 'group' else None
 
     group_keys = set((reporting or {}).get('projects', {}).values()) | {g for entry in (reporting or {}).get('repositories', []) for g in entry['groups']}
-    group_keys |= {c['owner'][1] for c in period_cells + lifetime_cells if c['owner'][0] == 'group'}
+    group_keys |= {c['owner'][1] for c in period_cells + lifetime_cells + (previous_cells or []) if c['owner'][0] == 'group'}
     measured_ids = sorted(set(projects_rows) | {s['registry_id'] for s in sessions.values() if s['registry_id']})
     if reporting and reporting['unclaimed']:
         group_keys |= {repo_candidates(r)[0][1] for r in measured_ids if repo_candidates(r)[0][0] == 'group'}
-    totals = {'period': _metrics(period_cells), 'lifetime': _metrics(lifetime_cells)}
+    totals = {'period': _metrics(period_cells), 'lifetime': _metrics(lifetime_cells), 'previous': _metrics(previous_cells) if previous_cells is not None else None}
     attention_by_group = defaultdict(lambda: defaultdict(float))
     for interval in attention:
         day = interval.get('day')
@@ -472,6 +508,7 @@ def accounting_view(connection, *, reporting=None, days=None, now=None, registry
         members = [i for i in items if i['group'] == key]
         recorded = attention_by_group.get(key)
         groups.append({'key': key, 'period': _metrics(mine(period_cells), totals['period']), 'lifetime': _metrics(mine(lifetime_cells), totals['lifetime']),
+                       'previous': _metrics(mine(previous_cells), totals['previous']) if previous_cells is not None else None,
                        'outcomes': _measures(members),
                        'attention': {'recorded_seconds': round(sum(recorded.values()), 3), 'by_mode': dict(recorded), 'basis': 'explicitly recorded timer intervals joined at workspace level'} if recorded else None})
 
@@ -507,7 +544,9 @@ def accounting_view(connection, *, reporting=None, days=None, now=None, registry
     if unobserved:
         gaps.append({'source': 'managed-sessions', 'status': 'not-observed', 'count': unobserved, 'detail_code': 'bound_native_session_without_measurement'})
     return {**base, 'status': 'current', 'period': bounds, 'groups': groups,
-            'shared': {'period': shared(period_cells, totals['period']), 'lifetime': shared(lifetime_cells, totals['lifetime'])},
+            'shared': {'period': shared(period_cells, totals['period']), 'lifetime': shared(lifetime_cells, totals['lifetime']),
+                       'previous': shared(previous_cells, totals['previous']) if previous_cells is not None else None},
+            'previous_period': previous_bounds, 'run_usage': _run_usage(items, sessions, run_outcomes),
             'totals': totals, 'repositories': repositories,
             'sessions': [public_session(s) for s in related[offset:offset + limit]], 'sessions_total': len(related),
             'outcomes': chosen[offset:offset + limit], 'outcomes_total': len(chosen),

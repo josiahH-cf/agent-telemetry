@@ -316,7 +316,7 @@ def consumer_view(project_root: Path, state_root: Path, scope: dict[str, Any] | 
     store = state_root / observatory.STORE_NAME
     base = {"contract": CONTRACT, "producer": PRODUCER, "generated_at": _iso(now), "scope": scope}
     if not store.is_file():
-        return {**base, "status": "not-configured", "generation": {"status": "no-store"}, "projects": [], "sessions": [], "capacity": [], "coverage": {"roots": [], "missing": [{"source": "observatory", "status": "not-configured"}]}, "attention": attention_view(project_root, state_root, now), "publication": publication_view(state_root), "collection": dict(UNKNOWN_COLLECTION), "quality":{"status":"not-observed","groups":[],"outcomes":[],"outcomes_total":0}, "accounting": {"status": "not-configured", "groups": [], "shared": None, "totals": None, "repositories": [], "sessions": [], "sessions_total": 0, "outcomes": [], "outcomes_total": 0, "coverage_gaps": [{"source": "observatory", "status": "not-configured"}]}}
+        return {**base, "status": "not-configured", "generation": {"status": "no-store"}, "projects": [], "sessions": [], "capacity": [], "coverage": {"roots": [], "missing": [{"source": "observatory", "status": "not-configured"}]}, "attention": attention_view(project_root, state_root, now), "publication": publication_view(state_root), "collection": dict(UNKNOWN_COLLECTION), "quality":{"status":"not-observed","groups":[],"outcomes":[],"outcomes_total":0}, "accounting": {"status": "not-configured", "run_usage": {}, "previous_period": None, "groups": [], "shared": None, "totals": None, "repositories": [], "sessions": [], "sessions_total": 0, "outcomes": [], "outcomes_total": 0, "coverage_gaps": [{"source": "observatory", "status": "not-configured"}]}}
     connection = open_read_only(store)
     try:
         connection.execute("BEGIN")
@@ -342,7 +342,8 @@ def consumer_view(project_root: Path, state_root: Path, scope: dict[str, Any] | 
         view["accounting"] = outcome_quality.accounting_view(
             connection, reporting=scope.get("reporting"), days=scope.get("days", portfolio.DEFAULT_PERIOD_DAYS), now=now,
             registry=observatory.read_registry(project_root, state_root), attention=_attention_intervals(project_root, state_root, now),
-            coverage={"imports": view["coverage"].get("imports", []), "sources": view["sources"]}, detail=scope.get("accounting_detail"))
+            coverage={"imports": view["coverage"].get("imports", []), "sources": view["sources"]}, detail=scope.get("accounting_detail"),
+            run_outcomes=scope.get("accounting_outcomes") if isinstance(scope.get("accounting_outcomes"), list) else None)
         if "history" in scope:
             view["history"] = portfolio.history_view(connection, scope.get("history"), now)
     finally:
