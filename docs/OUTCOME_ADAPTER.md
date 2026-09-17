@@ -115,3 +115,32 @@ are not operator attention. Public outcome rows retain their existing contract.
 
 Install this compatible consumer before a producer emits these additive kinds.
 No ledger reset, receipt rewrite, additional scan, or scheduler is required.
+
+## Workspace accounting (2026-09-16)
+
+Receipts may carry `usage_scope` (`turn` or `cumulative`) on `usage.observed`
+and an opaque `attempt_id`; any other scope value is rejected as
+`usage_scope_invalid`. `telemetry-consumer-v1.accounting` is additive. A
+first-party consumer passes its explicit reporting map as scope `reporting`
+(`workspace-reporting-v1`: declared repository keys with their groups and
+checkout paths, canonical Project to group, and whether an unclaimed measured
+repository forms its own group). The consumer resolves checkout paths through the
+collector's own registry rules, read-only, and returns, for the selected period
+and all retained history:
+
+- group totals, and a Shared/Unassigned portion with a named basis per part,
+  which together equal the measured total;
+- exact run portions per native session, with the session remainder and
+  unknown or partial allocation;
+- outcome measures per group: delivered, reviewed, accepted, needs changes,
+  delivered-but-unreviewed, attempts, repairs, interventions, run waits and a
+  cost cohort;
+- recorded attention joined at group level;
+- measured repositories with their association (grouped, shared, conflict,
+  unclaimed, bucket) and coverage gaps.
+
+Outcome and session detail is paged with `accounting_detail` (group, offset,
+limit up to 100) over the complete history. Definitions are the catalog rows
+`workspace_accounting_tokens`, `run_usage_allocation`, `contribution_share`,
+`review_acceptance_rate` and `cohort_tokens_per_delivered_outcome`. No public
+row, closed record or collection behavior changes.

@@ -180,7 +180,7 @@ def relative_top(relative_path: str) -> str:
     return parts[0] if parts else ""
 
 
-def normalize_registry(config: dict[str, Any], project_root: Path, salt: str) -> dict[str, Any]:
+def _public_registry(project_root: Path) -> tuple[dict[str, dict[str, Any]], list[tuple[str, str]]]:
     public = read_json(project_root / "projects.json")
     public_rows = public.get("projects") if isinstance(public.get("projects"), list) else []
     public_by_id: dict[str, dict[str, Any]] = {}
@@ -202,7 +202,24 @@ def normalize_registry(config: dict[str, Any], project_root: Path, salt: str) ->
         for tail in raw.get("public_tail_matches", []):
             if isinstance(tail, str) and re.fullmatch(r"[A-Za-z0-9._-]+", tail):
                 tail_rules.append((tail.casefold(), project_id))
+    return public_by_id, tail_rules
 
+
+def read_registry(project_root: Path, state_root: Path) -> dict[str, Any]:
+    """The registry the last collection resolved with, read without writing anything.
+
+    Used to answer which measured repository a first-party consumer's declared
+    checkout path belongs to, through the same ``resolve_project`` rules.
+    """
+
+    public_by_id, tail_rules = _public_registry(project_root)
+    local = read_json(state_root / LOCAL_REGISTRY_NAME)
+    mappings = [row for row in local.get("projects", []) if isinstance(row, dict) and isinstance(row.get("canonical_path"), str) and isinstance(row.get("project_id"), str)] if isinstance(local.get("projects"), list) else []
+    return {"public": public_by_id, "mappings": mappings, "tail_rules": sorted(tail_rules)}
+
+
+def normalize_registry(config: dict[str, Any], project_root: Path, salt: str) -> dict[str, Any]:
+    public_by_id, tail_rules = _public_registry(project_root)
     obs_config = config.get("observatory") if isinstance(config.get("observatory"), dict) else {}
     local_rows = obs_config.get("registry_paths") if isinstance(obs_config.get("registry_paths"), list) else []
     mappings: list[dict[str, Any]] = []

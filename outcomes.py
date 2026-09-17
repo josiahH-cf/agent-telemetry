@@ -183,7 +183,7 @@ def _validate(record: Any, root: dict[str, Any]) -> tuple[dict[str, Any] | None,
         record = {**record, "environment": environment}
     # Only defined metadata crosses this boundary, including into private
     # record_json. Feedback words and arbitrary extra content stay with producer.
-    allowed = {'interface','producer','event_id','ledger_seq','kind','at','outcome_id','project_id','outcome_kind','evidence_digest','linkage','vendor','client','host_os','environment','native_session_id','native_turn_id','status','disposition','phase','source_version','route_id','question_id','question_kind','source','adopted','effect_id','effect_kind','detail_digest','destination_digest','reason_digest','commit','model','usage','workflow_identity','policy_revision','effort','measurement_version','verdict','acceptance_basis','feedback_id','repair_of','command_id','action','tool_call_digest','tool_status'}
+    allowed = {'interface','producer','event_id','ledger_seq','kind','at','outcome_id','project_id','outcome_kind','evidence_digest','linkage','vendor','client','host_os','environment','native_session_id','native_turn_id','status','disposition','phase','source_version','route_id','question_id','question_kind','source','adopted','effect_id','effect_kind','detail_digest','destination_digest','reason_digest','commit','model','usage','workflow_identity','policy_revision','effort','measurement_version','verdict','acceptance_basis','feedback_id','repair_of','command_id','action','tool_call_digest','tool_status','usage_scope','attempt_id'}
     clean = {k:v for k,v in record.items() if k in allowed}
     if clean.get('verdict') not in (None, 'accepted', 'needs-changes'):
         return None, 'verdict_invalid'
@@ -193,6 +193,10 @@ def _validate(record: Any, root: dict[str, Any]) -> tuple[dict[str, Any] | None,
         return None, 'tool_status_invalid'
     if clean.get('tool_call_digest') is not None and not re.fullmatch(r'[0-9a-f]{64}', str(clean['tool_call_digest'])):
         return None, 'tool_identity_invalid'
+    if clean.get('usage_scope') not in (None, 'turn', 'cumulative'):
+        return None, 'usage_scope_invalid'
+    if clean.get('attempt_id') is not None and not re.fullmatch(r'[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}', str(clean['attempt_id'])):
+        return None, 'attempt_identity_invalid'
     return clean, None
 
 

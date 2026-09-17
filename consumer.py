@@ -300,13 +300,23 @@ def attention_view(project_root: Path, state_root: Path, now: dt.datetime) -> di
     return view
 
 
+def _attention_intervals(project_root: Path, state_root: Path, now: dt.datetime) -> list[dict[str, Any]]:
+    """Every recorded interval (not the recent display cap) for workspace-level attention joins."""
+    try:
+        project_map = attention_ledger.load_public_project_map(project_root)
+        parsed = attention_ledger.parse_ledger(state_root, project_map, now=now)
+    except attention_ledger.AttentionError:
+        return []
+    return [{"project_id": i.project_id, "mode": i.mode, "attention_seconds": i.attention_seconds, "day": i.started_at.astimezone(dt.timezone.utc).date().isoformat()} for i in parsed.intervals]
+
+
 def consumer_view(project_root: Path, state_root: Path, scope: dict[str, Any] | None = None, *, now: dt.datetime | None = None) -> dict[str, Any]:
     now = now or utc_now()
     scope = dict(scope or {})
     store = state_root / observatory.STORE_NAME
     base = {"contract": CONTRACT, "producer": PRODUCER, "generated_at": _iso(now), "scope": scope}
     if not store.is_file():
-        return {**base, "status": "not-configured", "generation": {"status": "no-store"}, "projects": [], "sessions": [], "capacity": [], "coverage": {"roots": [], "missing": [{"source": "observatory", "status": "not-configured"}]}, "attention": attention_view(project_root, state_root, now), "publication": publication_view(state_root), "collection": dict(UNKNOWN_COLLECTION), "quality":{"status":"not-observed","groups":[],"outcomes":[],"outcomes_total":0}}
+        return {**base, "status": "not-configured", "generation": {"status": "no-store"}, "projects": [], "sessions": [], "capacity": [], "coverage": {"roots": [], "missing": [{"source": "observatory", "status": "not-configured"}]}, "attention": attention_view(project_root, state_root, now), "publication": publication_view(state_root), "collection": dict(UNKNOWN_COLLECTION), "quality":{"status":"not-observed","groups":[],"outcomes":[],"outcomes_total":0}, "accounting": {"status": "not-configured", "groups": [], "shared": None, "totals": None, "repositories": [], "sessions": [], "sessions_total": 0, "outcomes": [], "outcomes_total": 0, "coverage_gaps": [{"source": "observatory", "status": "not-configured"}]}}
     connection = open_read_only(store)
     try:
         connection.execute("BEGIN")
@@ -329,6 +339,10 @@ def consumer_view(project_root: Path, state_root: Path, scope: dict[str, Any] | 
             "collection": collection_view(connection),
             "quality": outcome_quality.quality_view(connection, project_id=scope.get("outcome_project_id"), days=scope.get("days") if isinstance(scope.get("days"), int) else None),
         }
+        view["accounting"] = outcome_quality.accounting_view(
+            connection, reporting=scope.get("reporting"), days=scope.get("days", portfolio.DEFAULT_PERIOD_DAYS), now=now,
+            registry=observatory.read_registry(project_root, state_root), attention=_attention_intervals(project_root, state_root, now),
+            coverage={"imports": view["coverage"].get("imports", []), "sources": view["sources"]}, detail=scope.get("accounting_detail"))
         if "history" in scope:
             view["history"] = portfolio.history_view(connection, scope.get("history"), now)
     finally:
