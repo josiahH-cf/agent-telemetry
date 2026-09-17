@@ -265,6 +265,25 @@ rates, effective date, source URL, and any explicit long-context threshold and
 multipliers; update top-level `verified_at`. Never infer a family price. Exercise
 both vendor cost fixtures and confirm the unpriced bucket before collecting.
 
+**Accounts, environments and Work imports.** Identity is never inferred from a
+vendor, model, label, or host OS. A root, a receipt root, or `claude_usage_capture`
+may carry an explicitly configured `environment` (`personal` or `work`), private
+`account_id`, optional `account_label`, and `host_id` in `sources.local.json`;
+unset values stay unknown. Give each installation an `observatory.producer_id`.
+Another host (for example the Work machine) collects its own roots and runs
+`python3 portfolio.py --export OUTBOX/FILE.json`, a metadata-only snapshot of its
+local usage events, source identity, coverage, and quota captures. Move that file
+with existing authenticated transport into a directory listed under
+`observatory.imports` (`import_id`, `path`, `environment`); do not add a broker,
+scheduler, or machine crawl. Collection imports accepted snapshots idempotently by
+event identity and producer generation, keeps a private retained copy for
+`--rebuild`, records event, identity, and generation conflicts instead of choosing,
+rejects older or unsupported snapshots with a named reason, and keeps last-good
+imported history while the import root is unavailable. Imported and per-source
+period data stay in the restricted store (`portfolio.py`) and never enter the
+public tier, the page, or closed history. `consumer.py` exposes them additively as
+`period`, `sources`, `conflicts`, `history`, and account-scoped `capacity`.
+
 **Subscriptions and Claude quota.** `subscriptions.local.json` may hold local
 monthly provider amounts; it must remain ignored and is never an API-price
 input. When `claude_usage_capture.enabled` is true, the locked scheduler runs

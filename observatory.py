@@ -29,7 +29,7 @@ import usage
 from tools import attention as attention_ledger
 
 
-STORE_SCHEMA_VERSION = 2
+STORE_SCHEMA_VERSION = 3
 PUBLIC_SCHEMA_VERSION = 1
 STORE_NAME = "observatory.sqlite3"
 SALT_NAME = "project-salt-v1"
@@ -520,6 +520,13 @@ def migrate(connection: sqlite3.Connection) -> None:
             connection.executescript(receipt_outcomes.MIGRATION_2)
             connection.execute("PRAGMA user_version=2")
             connection.execute("INSERT OR REPLACE INTO meta(key,value) VALUES('schema_version','2')")
+    if current < 3:
+        import portfolio
+
+        with connection:
+            connection.executescript(portfolio.MIGRATION_3)
+            connection.execute("PRAGMA user_version=3")
+            connection.execute("INSERT OR REPLACE INTO meta(key,value) VALUES('schema_version','3')")
 
 
 def store_integrity(connection: sqlite3.Connection) -> str:
@@ -777,7 +784,7 @@ def scan_one_root(
 
 DEDUP_QUERY = """
 SELECT * FROM (
-  SELECT o.*, f.raw_cwd, f.relative_path, f.first_ts AS file_first_ts, f.last_ts AS file_last_ts,
+  SELECT o.*, f.raw_cwd, f.relative_path, f.first_ts AS file_first_ts, f.last_ts AS file_last_ts, f.root_id AS source_root_id,
          row_number() OVER (PARTITION BY o.event_id ORDER BY o.file_id) AS duplicate_rank
   FROM usage_observations o JOIN source_files f ON f.file_id=o.file_id
 ) WHERE duplicate_rank=1
@@ -850,7 +857,7 @@ def regenerate_derived(
     salt: str,
     prices: dict[str, Any],
     now: dt.datetime,
-) -> None:
+) -> tuple[list[sqlite3.Row], dict[tuple[str, str], dict[str, Any]]]:
     rows = connection.execute(DEDUP_QUERY).fetchall()
     groups: dict[tuple[str, str], list[sqlite3.Row]] = collections.defaultdict(list)
     for row in rows:
@@ -940,6 +947,7 @@ def regenerate_derived(
                     *[classes[key] for key in TOKEN_COLUMNS], cost, unpriced,
                 ),
             )
+    return rows, session_resolutions
 
 
 def loop_source_served(snapshot: dict[str, Any]) -> bool:
@@ -1639,7 +1647,14 @@ def _collect_into(
 
         for receipt in receipt_outcomes.ingest_receipt_roots(connection, config, now):
             root_results.append({"root_id": receipt["root_id"], "status": receipt["status"], "files": receipt["files"], "changed": receipt["ingested"], "reused": 0, "strategy": "receipts", "seconds": 0.0})
-        regenerate_derived(connection, registry, salt, prices, now)
+        rows, resolutions = regenerate_derived(connection, registry, salt, prices, now)
+        import portfolio
+
+        # Private tier only: identities, imports and per-source period rows never touch public tables.
+        portfolio.record_local_identities(connection, config)
+        portfolio.ingest_imports(connection, config, state_root, now)
+        portfolio.regenerate(connection, rows, resolutions, prices)
+        del rows
         ingest_loop_snapshot(connection, loop_snapshot)
         digest = semantic_digest(connection)
         with connection:

@@ -92,7 +92,7 @@ class OutcomeReceiptTests(unittest.TestCase):
     def test_migration_two_adds_receipt_tables_without_touching_transcript_tables(self) -> None:
         tables = {row[0] for row in self.store.execute("SELECT name FROM sqlite_master WHERE type='table'")}
         self.assertTrue({"outcome_events", "receipt_roots", "receipt_cursors", "usage_observations", "sessions"} <= tables)
-        self.assertEqual(self.store.execute("PRAGMA user_version").fetchone()[0], 2)
+        self.assertEqual(self.store.execute("PRAGMA user_version").fetchone()[0], observatory.STORE_SCHEMA_VERSION)
 
     def test_ingest_is_idempotent_across_duplicate_files_and_replays(self) -> None:
         rows = [receipt(1, "outcome.started"), receipt(2, "question.opened", question_id="q-1"), receipt(3, "question.answered", question_id="q-1"), receipt(4, "check.result", status="passed"), receipt(5, "outcome.disposition", disposition="satisfied")]

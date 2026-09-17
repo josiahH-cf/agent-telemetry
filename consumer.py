@@ -13,6 +13,14 @@ Usage (from the repository root, read-only):
     python3 consumer.py --json                       # default scope: projects + capacity + coverage
     python3 consumer.py --json --scope '{"sessions": [["openai","<uuid>"]]}'
     python3 consumer.py --json --scope '{"project_id": "obsidian-agent", "days": 30}'
+    python3 consumer.py --json --scope '{"days": "all", "history": {"from": "2026-09-01", "to": "2026-09-16"}}'
+
+Additive private fields (OA-USAGE-001): ``period`` (inclusive UTC 7/30/90-day or all-history
+usage from per-source daily events, by environment, account and source, with the current day
+partial through its watermark), ``projects[].period``, ``sources`` (identity, provenance,
+coverage and current/partial/stale/unavailable/never-observed state), ``conflicts``,
+``coverage.imports``/``coverage.import_snapshots``, ``history`` when requested, and account
+identity on ``capacity`` rows. ``projects[].window`` keeps its whole-session meaning.
 """
 
 from __future__ import annotations
@@ -27,6 +35,7 @@ from typing import Any
 
 import outcome_quality
 import observatory
+import portfolio
 import usage
 from tools import attention as attention_ledger
 
@@ -119,11 +128,13 @@ def _tokens(vendor: str, tokens_json: str) -> int:
         return 0
 
 
-def projects_view(connection: sqlite3.Connection, *, days: int | None, project_id: str | None) -> list[dict[str, Any]]:
+def projects_view(connection: sqlite3.Connection, *, days: Any, project_id: str | None, now: dt.datetime | None = None) -> list[dict[str, Any]]:
     rows = []
     since = None
-    if days:
-        since = _iso(utc_now() - dt.timedelta(days=days))
+    now = now or utc_now()
+    periods = portfolio.project_periods(connection, portfolio.DEFAULT_PERIOD_DAYS if days is None else days, now)
+    if isinstance(days, int) and not isinstance(days, bool) and days > 0:
+        since = _iso(now - dt.timedelta(days=days))
     for row in connection.execute("SELECT * FROM projects ORDER BY cost_usd DESC, project_id"):
         public_id = row["public_label"] or row["project_code"]
         if project_id and project_id not in (public_id, row["project_id"], row["project_code"]):
@@ -141,6 +152,8 @@ def projects_view(connection: sqlite3.Connection, *, days: int | None, project_i
             "attribution": "correlated" if row["registered"] else "unattributed",
             "basis": "lifetime deduplicated provider usage; API-equivalent dollars price known token classes only",
         }
+        if periods:
+            item["period"] = periods.get(str(row["project_id"])) or {**next(iter(periods.values())), **{key: 0 for key in ("tokens", "unpriced_tokens", "sessions", "session_days")}, "api_equivalent_cost_usd": 0.0}
         if since:
             window = connection.execute(
                 "SELECT COUNT(DISTINCT vendor||':'||session_id) AS sessions, SUM(cost_usd) AS cost, SUM(unpriced_tokens) AS unpriced FROM sessions WHERE project_id=? AND last_ts>=?",
@@ -183,8 +196,38 @@ def sessions_view(connection: sqlite3.Connection, pairs: list[tuple[str, str]]) 
     return out
 
 
+def _reset_passed(window: dict[str, Any], now: dt.datetime) -> dict[str, Any]:
+    """A passed reset is not a renewal: keep the observed values and mark them stale until observed again."""
+
+    resets = usage.parse_timestamp(window.get("resets_at"))
+    observed = usage.parse_timestamp(window.get("observed_at"))
+    passed = bool(resets and resets.astimezone(dt.timezone.utc) <= now and (observed is None or observed.astimezone(dt.timezone.utc) < resets.astimezone(dt.timezone.utc)))
+    window["reset_passed"] = passed
+    if passed and window.get("used_percent") is not None:
+        window["status"] = "stale"
+        window["detail"] = "reset time passed; no newer observation, so the window is not assumed renewed"
+    return window
+
+
 def capacity_view(state_root: Path, connection: sqlite3.Connection, now: dt.datetime) -> list[dict[str, Any]]:
+    windows = [_reset_passed(window, now) for window in _capacity_rows(state_root, connection, now)]
+    newest: dict[tuple[str, str, str], dict[str, Any]] = {}
+    output = []
+    for window in windows:
+        key = (str(window.get("account_id") or ""), str(window.get("vendor") or ""), str(window.get("window") or ""))
+        if not key[0] or window.get("used_percent") is None:
+            output.append(window)
+            continue
+        prior = newest.get(key)
+        if prior is None or str(window.get("observed_at") or "") > str(prior.get("observed_at") or ""):
+            newest[key] = window
+    # One account seen through several copies is one allowance pool: its newest observation per window.
+    return output + [newest[key] for key in sorted(newest)]
+
+
+def _capacity_rows(state_root: Path, connection: sqlite3.Connection, now: dt.datetime) -> list[dict[str, Any]]:
     windows: list[dict[str, Any]] = []
+    claude_identity = portfolio.capacity_identity(connection, "capture:claude")
     claude_path = state_root / "claude-usage.json"
     if claude_path.is_file():
         try:
@@ -196,10 +239,10 @@ def capacity_view(state_root: Path, connection: sqlite3.Connection, now: dt.date
             for window in captured.get("quota_windows") or []:
                 if not isinstance(window, dict):
                     continue
-                windows.append({"account": "claude-code", "vendor": "anthropic", "window": window.get("window"), "used_percent": window.get("used_percent"), "remaining_percent": window.get("remaining_percent"), "resets_at": window.get("resets_at"), "observed_at": observed_at, "status": _age_status(observed_at, now), "source": captured.get("source")})
+                windows.append({"account": "claude-code", "vendor": "anthropic", "window": window.get("window"), "used_percent": window.get("used_percent"), "remaining_percent": window.get("remaining_percent"), "resets_at": window.get("resets_at"), "observed_at": observed_at, "status": _age_status(observed_at, now), "source": captured.get("source"), "origin": "local", **claude_identity})
     else:
-        windows.append({"account": "claude-code", "vendor": "anthropic", "window": None, "used_percent": None, "status": "unavailable", "detail": "no /usage capture on this host"})
-    row = connection.execute("SELECT parser_state_json, last_ts, host_os FROM source_files WHERE vendor='openai' AND parser_state_json LIKE '%rate_limits%' ORDER BY last_ts DESC LIMIT 1").fetchone()
+        windows.append({"account": "claude-code", "vendor": "anthropic", "window": None, "used_percent": None, "status": "unavailable", "detail": "no /usage capture on this host", "origin": "local", **claude_identity})
+    row = connection.execute("SELECT parser_state_json, last_ts, host_os, root_id FROM source_files WHERE vendor='openai' AND parser_state_json LIKE '%rate_limits%' ORDER BY last_ts DESC LIMIT 1").fetchone()
     if row is not None:
         try:
             limits = json.loads(row["parser_state_json"]).get("rate_limits") or {}
@@ -210,23 +253,32 @@ def capacity_view(state_root: Path, connection: sqlite3.Connection, now: dt.date
             window = limits.get(name) if isinstance(limits, dict) else None
             if not isinstance(window, dict) or window.get("used_percent") is None:
                 continue
-            windows.append({"account": "codex", "vendor": "openai", "window": f"{name} ({int(window.get('window_minutes') or 0) // 60}h)" if window.get("window_minutes") else name, "used_percent": window.get("used_percent"), "remaining_percent": window.get("remaining_percent"), "resets_at": window.get("resets_at"), "observed_at": observed_at, "status": _age_status(observed_at, now), "source": f"codex rate_limits event on {row['host_os']}"})
+            windows.append({"account": "codex", "vendor": "openai", "window": f"{name} ({int(window.get('window_minutes') or 0) // 60}h)" if window.get("window_minutes") else name, "used_percent": window.get("used_percent"), "remaining_percent": window.get("remaining_percent"), "resets_at": window.get("resets_at"), "observed_at": observed_at, "status": _age_status(observed_at, now), "source": f"codex rate_limits event on {row['host_os']}", "host_os": row["host_os"], "origin": "local", **portfolio.capacity_identity(connection, f"local:{row['root_id']}")})
     else:
-        windows.append({"account": "codex", "vendor": "openai", "window": None, "used_percent": None, "status": "unavailable", "detail": "no rate-limit event observed"})
-    windows.append({"account": "cursor", "vendor": "cursor", "window": None, "used_percent": None, "status": "not-configured", "detail": "no Cursor measurement root is configured on this host"})
+        windows.append({"account": "codex", "vendor": "openai", "window": None, "used_percent": None, "status": "unavailable", "detail": "no rate-limit event observed", "origin": "local", "account_status": "unknown", "environment": None})
+    for imported in portfolio.imported_capacity(connection):
+        windows.append({"account": {"anthropic": "claude-code", "openai": "codex"}.get(str(imported["vendor"]), str(imported["vendor"])), "vendor": imported["vendor"], "window": imported["window"], "used_percent": imported["used_percent"], "remaining_percent": imported["remaining_percent"], "resets_at": imported["resets_at"], "observed_at": imported["observed_at"], "status": _age_status(imported["observed_at"], now), "source": imported["source"], "host_os": imported["host_os"], "origin": "import", **{key: imported[key] for key in ("account_id", "account_key", "account_label", "account_status", "environment")}})
+    windows.append({"account": "cursor", "vendor": "cursor", "window": None, "used_percent": None, "status": "not-configured", "detail": "no Cursor measurement root is configured on this host", "account_status": "unknown", "environment": None})
     return windows
 
 
 def coverage_view(connection: sqlite3.Connection, now: dt.datetime) -> dict[str, Any]:
     roots = []
+    identities = {item["root_id"]: item for item in portfolio.sources_view(connection, now) if item["origin"] == "local"}
     for row in connection.execute("SELECT * FROM source_roots ORDER BY root_id"):
-        roots.append({"root_id": row["root_id"], "vendor": row["vendor"], "host_os": row["host_os"], "environment": (row["environment"] if "environment" in row.keys() else "personal"), "status": row["status"], "last_success_at": row["last_success_at"], "freshness": _age_status(row["last_success_at"], now), "files": int(row["files_seen"]), "partial_files": int(row["partial_files"]), "error_files": int(row["error_files"])})
+        # Environment is authoritative only when configured; an unconfigured root is unknown, not Personal.
+        environment = identities[row["root_id"]]["environment"] if row["root_id"] in identities else (row["environment"] if "environment" in row.keys() and not portfolio.has_identities(connection) else None)
+        roots.append({"root_id": row["root_id"], "vendor": row["vendor"], "host_os": row["host_os"], "environment": environment, "status": row["status"], "last_success_at": row["last_success_at"], "freshness": _age_status(row["last_success_at"], now), "files": int(row["files_seen"]), "partial_files": int(row["partial_files"]), "error_files": int(row["error_files"])})
     missing = []
     if not any(r["vendor"] == "cursor" for r in roots):
         missing.append({"source": "cursor", "status": "not-configured", "detail": "Cursor CLI measurement requires the work host; see W-* routes"})
-    if not any(r["environment"] == "work" for r in roots):
-        missing.append({"source": "work-host", "status": "not-configured", "detail": "no work-host roots registered"})
-    return {"roots": roots, "missing": missing, "unpriced_note": "unpriced_tokens are volumes whose model/price is unknown; they are never folded into dollars"}
+    additions = portfolio.coverage_additions(connection, now)
+    work_imports = [item for item in additions["imports"] if item["environment"] == "work"]
+    if not any(r["environment"] == "work" for r in roots) and not work_imports:
+        missing.append({"source": "work-host", "status": "not-configured", "detail": "no work-host roots or Work metadata imports configured"})
+    elif not any(r["environment"] == "work" for r in roots) and all(item["status"] == "never-observed" for item in work_imports):
+        missing.append({"source": "work-host", "status": "never-observed", "detail": "a Work metadata import is configured but no snapshot has been accepted"})
+    return {"roots": roots, "missing": missing, **additions, "unpriced_note": "unpriced_tokens are volumes whose model/price is unknown; they are never folded into dollars"}
 
 
 def attention_view(project_root: Path, state_root: Path, now: dt.datetime) -> dict[str, Any]:
@@ -264,7 +316,10 @@ def consumer_view(project_root: Path, state_root: Path, scope: dict[str, Any] | 
             **base,
             "status": _age_status(gen.get("finished_at"), now) if gen.get("status") == "ok" else "unavailable",
             "generation": gen,
-            "projects": projects_view(connection, days=scope.get("days"), project_id=scope.get("project_id")),
+            "projects": projects_view(connection, days=scope.get("days"), project_id=scope.get("project_id"), now=now),
+            "period": portfolio.period_view(connection, scope.get("days", portfolio.DEFAULT_PERIOD_DAYS), now),
+            "sources": portfolio.sources_view(connection, now),
+            "conflicts": portfolio.conflicts_view(connection),
             "sessions": sessions_view(connection, [(v, s) for v, s in pairs]) if pairs else [],
             "capacity": capacity_view(state_root, connection, now),
             "coverage": coverage_view(connection, now),
@@ -272,8 +327,10 @@ def consumer_view(project_root: Path, state_root: Path, scope: dict[str, Any] | 
             "units": {"tokens": "provider-reported tokens (vendor-specific classes)", "api_equivalent_cost_usd": "recorded token classes priced against prices.json; not an invoice", "used_percent": "account window utilisation as the provider reported it"},
             "publication": publication_view(state_root),
             "collection": collection_view(connection),
-            "quality": outcome_quality.quality_view(connection, project_id=scope.get("outcome_project_id"), days=scope.get("days")),
+            "quality": outcome_quality.quality_view(connection, project_id=scope.get("outcome_project_id"), days=scope.get("days") if isinstance(scope.get("days"), int) else None),
         }
+        if "history" in scope:
+            view["history"] = portfolio.history_view(connection, scope.get("history"), now)
     finally:
         connection.close()
     return view

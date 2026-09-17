@@ -4,6 +4,8 @@
   "cache_root": "<MACHINE_LOCAL_CACHE_ROOT>",
   "claude_usage_capture": {
     "enabled": false,
+    "account_id": "<OPTIONAL_PRIVATE_ACCOUNT_ID>",
+    "environment": "personal",
     "command": "~/.local/opt/node/bin/claude",
     "timeout_seconds": 30,
     "max_cache_age_seconds": 3600
@@ -13,8 +15,10 @@
   },
   "observatory": {
     "enabled": false,
+    "producer_id": "<OPTIONAL_PRIVATE_INSTALLATION_ID>",
+    "imports": [],
     "roots": [
-      {"root_id": "wsl_claude", "vendor": "anthropic", "host_os": "wsl", "path": "<WSL_CLAUDE_PROJECTS_DIR>"},
+      {"root_id": "wsl_claude", "vendor": "anthropic", "host_os": "wsl", "path": "<WSL_CLAUDE_PROJECTS_DIR>", "environment": "personal", "account_id": "<OPTIONAL_PRIVATE_ACCOUNT_ID>"},
       {"root_id": "wsl_codex", "vendor": "openai", "host_os": "wsl", "path": "<WSL_CODEX_SESSIONS_DIR>"},
       {"root_id": "windows_claude", "vendor": "anthropic", "host_os": "windows", "path": "<WINDOWS_CLAUDE_PROJECTS_DIR>"},
       {"root_id": "windows_codex", "vendor": "openai", "host_os": "windows", "path": "<WINDOWS_CODEX_SESSIONS_DIR>"}
