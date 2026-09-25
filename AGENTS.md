@@ -282,7 +282,8 @@ rejects older or unsupported snapshots with a named reason, and keeps last-good
 imported history while the import root is unavailable. Imported and per-source
 period data stay in the restricted store (`portfolio.py`) and never enter the
 public tier, the page, or closed history. `consumer.py` exposes them additively as
-`period`, `sources`, `conflicts`, `history`, and account-scoped `capacity`.
+`period`, `sources`, `conflicts`, `history`, and account-scoped `capacity`; `pricing`
+names each exact model id `prices.json` prices and its row's vendor, never a price.
 
 **Subscriptions and Claude quota.** `subscriptions.local.json` may hold local
 monthly provider amounts; it must remain ignored and is never an API-price

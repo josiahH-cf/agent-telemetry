@@ -281,6 +281,29 @@ class ConsumerBoundaryTests(unittest.TestCase):
         serialized = json.dumps(view)
         self.assertNotIn("/private", serialized)
 
+    def test_consumer_view_names_the_models_the_price_table_prices_per_vendor_additively(self) -> None:
+        import consumer
+
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            state = root / "state"
+            observatory.connect_store(state / "observatory.sqlite3").close()
+            (root / "projects.json").write_text(json.dumps({"schema_version": 1, "projects": []}))
+            (root / "prices.json").write_text(json.dumps({"verified_at": "2026-08-20", "models": {"a": {"vendor": "openai", "input": 1.25, "output": 10.0}, "b": {"vendor": "anthropic", "input": 3.0}, "note": "not a row"}}))
+            full = consumer.consumer_view(root, state, {}, now=NOW)
+            no_store = consumer.consumer_view(root, root / "missing-state", {}, now=NOW)
+            (root / "prices.json").write_text("{ not json")
+            invalid = consumer.consumer_view(root, root / "missing-state", {}, now=NOW)
+            (root / "prices.json").unlink()
+            missing = consumer.consumer_view(root, root / "missing-state", {}, now=NOW)
+        expected = {"status": "current", "verified_at": "2026-08-20", "models": {"a": "openai", "b": "anthropic"}}
+        self.assertEqual(full["pricing"], expected)
+        self.assertEqual(no_store["pricing"], expected)
+        self.assertEqual(full["contract"], "telemetry-consumer-v1")
+        self.assertNotIn("1.25", json.dumps(full["pricing"]))  # membership only: no price leaves Telemetry
+        self.assertEqual(invalid["pricing"], {"status": "unavailable", "models": {}})
+        self.assertEqual(missing["pricing"], {"status": "unavailable", "models": {}})
+
 
 if __name__ == "__main__":
     unittest.main()

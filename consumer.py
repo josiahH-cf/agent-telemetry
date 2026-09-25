@@ -310,11 +310,20 @@ def _attention_intervals(project_root: Path, state_root: Path, now: dt.datetime)
     return [{"project_id": i.project_id, "mode": i.mode, "attention_seconds": i.attention_seconds, "day": i.started_at.astimezone(dt.timezone.utc).date().isoformat()} for i in parsed.intervals]
 
 
+def pricing_view(project_root: Path) -> dict[str, Any]:
+    """Each exact model id prices.json prices, with the vendor its row prices it for; never a price."""
+    try:
+        prices = usage.load_prices(project_root / "prices.json")
+    except (OSError, ValueError):
+        return {"status": "unavailable", "models": {}}
+    return {"status": "current", "verified_at": prices.get("verified_at"), "models": {model: row.get("vendor") for model, row in prices["models"].items() if isinstance(row, dict)}}
+
+
 def consumer_view(project_root: Path, state_root: Path, scope: dict[str, Any] | None = None, *, now: dt.datetime | None = None) -> dict[str, Any]:
     now = now or utc_now()
     scope = dict(scope or {})
     store = state_root / observatory.STORE_NAME
-    base = {"contract": CONTRACT, "producer": PRODUCER, "generated_at": _iso(now), "scope": scope}
+    base = {"contract": CONTRACT, "producer": PRODUCER, "generated_at": _iso(now), "scope": scope, "pricing": pricing_view(project_root)}
     if not store.is_file():
         return {**base, "status": "not-configured", "generation": {"status": "no-store"}, "projects": [], "sessions": [], "capacity": [], "coverage": {"roots": [], "missing": [{"source": "observatory", "status": "not-configured"}]}, "attention": attention_view(project_root, state_root, now), "publication": publication_view(state_root), "collection": dict(UNKNOWN_COLLECTION), "quality":{"status":"not-observed","groups":[],"outcomes":[],"outcomes_total":0}, "accounting": {"status": "not-configured", "run_usage": {}, "previous_period": None, "groups": [], "shared": None, "totals": None, "repositories": [], "sessions": [], "sessions_total": 0, "outcomes": [], "outcomes_total": 0, "coverage_gaps": [{"source": "observatory", "status": "not-configured"}]}}
     connection = open_read_only(store)
