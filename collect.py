@@ -2224,6 +2224,8 @@ def combine_results(
     now: dt.datetime,
     usage_result: dict[str, Any] | None = None,
     publish_state: dict[str, Any] | None = None,
+    *,
+    capacity_as_of: dt.datetime | None = None,
 ) -> dict[str, Any]:
     usage_result = usage_result or {}
     publish_state = publish_state or {}
@@ -2326,7 +2328,7 @@ def combine_results(
                 "usage_left": build_usage_left(
                     provider,
                     usage_result,
-                    now=now,
+                    now=capacity_as_of or now,
                     claude_max_age_seconds=safe_float(usage_result.get("claude_quota_max_age_seconds"))
                     or CLAUDE_QUOTA_DEFAULT_MAX_AGE_SECONDS,
                 ),
@@ -3125,6 +3127,7 @@ def collect_snapshot(
     project_root: Path | None = None,
     *,
     rebuild_observatory: bool = False,
+    capacity_clock: Callable[[], dt.datetime] | None = None,
 ) -> tuple[dict[str, Any], dict[str, dict[str, Any]]]:
     now = now or utc_now()
     project_root = (project_root or Path(__file__).resolve().parent).resolve()
@@ -3198,7 +3201,12 @@ def collect_snapshot(
     if capture_state.get("status"):
         usage_result["claude_capture_status"] = capture_state["status"]
     usage_result["claude_quota_max_age_seconds"] = claude_max_age_seconds
-    snapshot = combine_results(results, now, usage_result, read_publish_state(cache_root))
+    # Quota observations can arrive during a scan, or have sub-second precision.
+    # Evaluate them after the adapters; keep UTC accounting anchored to `now`.
+    snapshot = combine_results(
+        results, now, usage_result, read_publish_state(cache_root),
+        capacity_as_of=capacity_clock() if capacity_clock else now,
+    )
     snapshot.setdefault("metrics", {})["loop_history"] = loop_history_view(results, loop_usage_status, now)
     snapshot.setdefault("metrics", {})["attention"] = collect_attention_metrics(
         config,
@@ -3466,7 +3474,10 @@ def main(argv: list[str] | None = None) -> int:
         run_id: int | None = None
         phase = "collection"
         try:
-            snapshot, results = collect_snapshot(config, now=now, project_root=project_root, rebuild_observatory=args.rebuild)
+            snapshot, results = collect_snapshot(
+                config, now=now, project_root=project_root, rebuild_observatory=args.rebuild,
+                capacity_clock=lambda: dt.datetime.now(dt.timezone.utc),
+            )
             run_id = snapshot.get("_observatory_run_id")
             for name in SOURCE_NAMES:
                 print(source_summary(name, results[name]))

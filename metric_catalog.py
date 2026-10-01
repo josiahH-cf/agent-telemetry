@@ -598,7 +598,7 @@ CATALOG: tuple[dict[str, Any], ...] = (
         "claude_quota_remaining_percent",
         "Claude usage-window remaining",
         "Latest normalized vendor-reported remaining percentages for each reported Claude usage window.",
-        "Normalize every reported Claude window independently with remaining percentage, reset, observation age, freshness, capture state, and source; the bounded page selects at most two deterministically, preferring five-hour then seven-day and otherwise shortest then longest duration; never merge windows or infer a provider-wide number.",
+        "Normalize every reported Claude window independently with remaining percentage, reset, observation age, freshness, capture state, and source; evaluate freshness after the source reads, independently of the rounded collection-start/accounting date; the bounded page selects at most two deterministically, preferring five-hour then seven-day and otherwise shortest then longest duration; never merge windows or infer a provider-wide number.",
         [
             "claude_slash_usage_local_snapshot",
             "provider_usage_snapshot",
@@ -613,7 +613,7 @@ CATALOG: tuple[dict[str, Any], ...] = (
         "openai_quota_remaining_percent",
         "Codex usage-window remaining",
         "Latest normalized vendor-reported remaining percentages for each reported Codex/OpenAI usage window.",
-        "Normalize every reported Codex/OpenAI window independently with remaining percentage, reset, duration, observation age, freshness, capture state, and source; the bounded page selects at most two deterministically, preferring primary then secondary and otherwise shortest then longest duration; never merge windows or fill null with a guess.",
+        "Normalize every reported Codex/OpenAI window independently with remaining percentage, reset, duration, observation age, freshness, capture state, and source; evaluate freshness after the source reads, independently of the rounded collection-start/accounting date; the bounded page selects at most two deterministically, preferring primary then secondary and otherwise shortest then longest duration; never merge windows or fill null with a guess.",
         ["rollout_token_count", "provider_usage_snapshot", "data/telemetry.json"],
         "The fixed Usage left sidebar shows each reported allowance window separately, with observation age and reset. These are account-wide rollout observations, not per-model balances, billing, remaining messages, or a promise of availability. Collection cannot create a newer provider observation; stale and retained values remain labelled.",
         "percent",

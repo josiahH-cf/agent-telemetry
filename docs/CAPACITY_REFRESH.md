@@ -37,6 +37,13 @@ passing, a failed capture or an old observation never implies a refill or zero.
 The public page exposes the existing sanitized provider snapshots; private
 account-scoped detail remains in the local consumer contract.
 
+Quota freshness is evaluated with a precise clock after the source adapters
+return. A just-captured fractional-second timestamp or an observation arriving
+during a scan must not be mistaken for a future observation merely because the
+collection's accounting timestamp came earlier. Truly future observations stay
+stale. The accounting date and generation timestamp retain their original
+collection-start meaning, separate from provider observation time.
+
 `cadence.py` owns the refresh policy. The compact envelope adds only
 `contract.refresh_policy`, with collection, publication and browser-check
 intervals in minutes. All existing public paths, schemas and metric ids remain.

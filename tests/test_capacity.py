@@ -13,6 +13,27 @@ class CapacityNormalizationTests(unittest.TestCase):
     def setUp(self) -> None:
         self.now = dt.datetime(2026, 8, 21, 12, 0, tzinfo=UTC)
 
+    def test_quota_freshness_uses_post_adapter_clock_without_changing_accounting_dates(self) -> None:
+        usage = {"claude_usage_snapshot": {
+            "source": "claude_slash_usage_local_snapshot",
+            "capture_status": "automatic_success",
+            "observed_at": "2026-08-21T12:00:00.279+00:00",
+            "quota_windows": [{"window": "five_hour", "remaining_percent": 92, "resets_at": "2026-08-21T17:00:00+00:00"}],
+        }, "rate_limits": {
+            "observed_at": "2026-08-21T12:00:48+00:00",
+            "primary": {"remaining_percent": 39, "window_minutes": 300},
+        }}
+        before = collect.combine_results({}, self.now, usage)
+        after = collect.combine_results({}, self.now, usage, capacity_as_of=self.now + dt.timedelta(minutes=1))
+        self.assertEqual(after["generated_at"], before["generated_at"])
+        self.assertEqual(after["collection"]["date"], before["collection"]["date"])
+        for provider in ("anthropic", "openai"):
+            self.assertEqual(before["metrics"]["cost"]["usage_left"][provider]["quota_status"], "stale")
+            self.assertEqual(after["metrics"]["cost"]["usage_left"][provider]["quota_status"], "available")
+        usage["rate_limits"]["observed_at"] = "2026-08-21T12:05:00+00:00"
+        future = collect.combine_results({}, self.now, usage, capacity_as_of=self.now + dt.timedelta(minutes=1))
+        self.assertEqual(future["metrics"]["cost"]["usage_left"]["openai"]["quota_status"], "stale")
+
     def test_claude_freshness_is_per_window_and_uses_configured_age(self) -> None:
         usage = {
             "claude_usage_snapshot": {

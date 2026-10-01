@@ -16,7 +16,7 @@
   the next publication. Marked log starts preserve the original 30-minute
   interpretation of earlier log history. This supersedes ST-45's browser cadence
   and the original half-hour/daily availability design below.
-- **Verification:** 271 standard-library/Node tests pass, including slot
+- **Verification:** 272 standard-library/Node tests pass, including slot
   boundaries, late completion, failure retention, scheduler inventory, legacy
   cadence and the bounded high-cardinality fixture. Required source probes,
   collection against isolated project-owned state, scrub, store/schema integrity
@@ -30,6 +30,16 @@
   a refill. The deployment schedule is verified separately on the production
   installation; isolated doctor warnings identify its absent cadence log and the
   then-current half-hour production schedulers rather than hiding those states.
+- **Live freshness repair:** quota observations captured in the same fractional
+  second as the rounded collection start, or during later adapter reads, could
+  be incorrectly marked future/stale. Production now evaluates capacity with a
+  precise post-adapter clock while preserving the original accounting date and
+  generated timestamp. The regression fixture reproduces both cases and still
+  rejects genuinely future observations. Capture failure and reset rules remain.
+- **Delivery evidence:** guarded production publication pushed `c1f9f607a1bb`;
+  the first installed five-minute cron tick pushed `efe7710a2a1c` at 16:12 UTC.
+  Live Pages served the new sidebar and minute-check copy. Integration preserved
+  all eleven concurrent generated files before production collection.
 - **Windows installation limit:** the existing continuity task's update returned
   Access is denied. Its 30-minute wake-up fallback is preserved, doctor reports
   the target mismatch, and the operator-only interval update is documented.
