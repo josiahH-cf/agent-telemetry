@@ -64,7 +64,9 @@ class StabilityTests(unittest.TestCase):
             (state / "publish-status.json").write_text(json.dumps(failure), encoding="utf-8")
             self.assertEqual(stability._publish_status(state, now), ("warn", "status_failure_reason_collect_failed_last_success_age_hours_1.7"))
             (state / "publish-status.json").write_text(json.dumps({**failure, "status": "success", "reason": "pushed"}), encoding="utf-8")
-            self.assertEqual(stability._publish_status(state, now), ("ok", "last_success_age_hours_1.7"))
+            self.assertEqual(stability._publish_status(state, now), ("warn", "last_success_age_hours_1.7"))
+            (state / "publish-status.json").write_text(json.dumps({**failure, "status": "success", "last_success_at": "2026-09-09T09:50:00+00:00"}), encoding="utf-8")
+            self.assertEqual(stability._publish_status(state, now), ("ok", "last_success_age_hours_0.2"))
             self.assertEqual(stability._collection_status(state), ("warn", "store_absent"))
             store = observatory.connect_store(state / stability.OBSERVATORY_STORE)
             try:
@@ -108,6 +110,33 @@ class StabilityTests(unittest.TestCase):
         self.assertGreaterEqual(result["missed_intervals"], 3)
         self.assertTrue(result["gaps"][-1]["open"])
 
+    def test_cadence_cutover_preserves_legacy_counts_and_measures_new_gaps(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            (root / "collect.log").write_text(
+                "2026-10-01T10:00:00Z mode=refresh trigger=cron start\n"
+                "2026-10-01T10:30:00Z mode=refresh trigger=cron start\n"
+                "2026-10-01T11:30:00Z mode=refresh trigger=cron cadence_minutes=5 start\n"
+                "2026-10-01T11:35:00Z mode=refresh trigger=cron cadence_minutes=5 start\n"
+                "2026-10-01T11:45:00Z mode=refresh trigger=cron cadence_minutes=5 start\n",
+                encoding="utf-8",
+            )
+            value = stability.parse_collection_log(root, dt.datetime(2026, 10, 1, 11, 45, tzinfo=UTC))
+        self.assertEqual(value["expected_interval_minutes"], 5)
+        self.assertEqual(value["missed_intervals"], 2)
+        self.assertEqual([row["expected_interval_minutes"] for row in value["gaps"]], [30, 5])
+        self.assertEqual(value["malformed_log_records"], 0)
+
+    def test_cron_contract_requires_five_minute_refresh_and_exact_tag_inventory(self) -> None:
+        lines = (
+            "*/5 * * * * nice ionice wrapper refresh cron # agent-telemetry-refresh\n"
+            "17 3 * * * nice ionice wrapper publish cron # agent-telemetry-publish\n"
+            "@reboot nice ionice wrapper catchup reboot # agent-telemetry-reboot\n"
+        )
+        for text, expected in ((lines, "ok"), (lines.replace("*/5", "*/30"), "warn"), (lines + lines.splitlines()[0] + "\n", "warn")):
+            with self.subTest(expected=expected), mock.patch("stability.subprocess.run", return_value=subprocess.CompletedProcess([], 0, stdout=text)):
+                self.assertEqual(stability._cron_status()[0], expected)
+
     def test_clock_watermark_blocks_backward_time_without_advancing_it(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary)
@@ -149,7 +178,7 @@ class StabilityTests(unittest.TestCase):
                     body = xml.format(trigger="<LogonTrigger />", battery="false", action="catchup windows-task-logon")
                 else:
                     body = xml.format(
-                        trigger="<TimeTrigger><Repetition><Interval>PT30M</Interval></Repetition></TimeTrigger>",
+                        trigger="<TimeTrigger><Repetition><Interval>PT5M</Interval></Repetition></TimeTrigger>",
                         battery="false",
                         action="refresh windows-task-continuity",
                     )
@@ -173,7 +202,7 @@ class StabilityTests(unittest.TestCase):
             def query(args: list[str], **_kwargs: object) -> subprocess.CompletedProcess[str]:
                 logon = args[3] == "agent-telemetry-logon"
                 body = xml.format(
-                    trigger="<LogonTrigger />" if logon else "<TimeTrigger><Repetition><Interval>PT30M</Interval></Repetition></TimeTrigger>",
+                    trigger="<LogonTrigger />" if logon else "<TimeTrigger><Repetition><Interval>PT5M</Interval></Repetition></TimeTrigger>",
                     logon="InteractiveToken" if logon else "S4U",
                     action="catchup windows-task-logon" if logon else "refresh windows-task-continuity",
                 )
@@ -194,7 +223,7 @@ class StabilityTests(unittest.TestCase):
             def query(args: list[str], **_kwargs: object) -> subprocess.CompletedProcess[str]:
                 logon = args[3] == "agent-telemetry-logon"
                 body = xml.format(
-                    trigger="<LogonTrigger />" if logon else "<TimeTrigger><Repetition><Interval>PT30M</Interval></Repetition></TimeTrigger>",
+                    trigger="<LogonTrigger />" if logon else "<TimeTrigger><Repetition><Interval>PT5M</Interval></Repetition></TimeTrigger>",
                     battery="false" if logon else "true",
                     action="catchup windows-task-logon" if logon else "refresh windows-task-continuity",
                 )
@@ -220,7 +249,7 @@ class StabilityTests(unittest.TestCase):
                         trigger=(
                             f"<LogonTrigger>{enabled}</LogonTrigger>"
                             if logon
-                            else f"<TimeTrigger>{enabled}<Repetition><Interval>PT30M</Interval></Repetition></TimeTrigger>"
+                            else f"<TimeTrigger>{enabled}<Repetition><Interval>PT5M</Interval></Repetition></TimeTrigger>"
                         ),
                         policy=policy,
                         action="catchup windows-task-logon" if logon else "refresh windows-task-continuity",
@@ -438,7 +467,7 @@ class StabilityTests(unittest.TestCase):
         script = (PROJECT_ROOT / "run-telemetry.sh").read_text(encoding="utf-8")
         supervisor = script.index('python3 "$PROJECT_ROOT/stability.py" --lock-run')
         pages = script.index('python3 "$PROJECT_ROOT/collect.py" --check-pages')
-        fresh_gate = script.index('--fresh-within-minutes 20')
+        fresh_gate = script.index('--fresh-within-minutes "$WINDOWS_FRESH_MINUTES"')
         capture = script.index('python3 "$PROJECT_ROOT/collect.py" --capture-claude-usage')
         collection = script.index('python3 "$PROJECT_ROOT/collect.py";', capture)
         self.assertLess(supervisor, pages)
@@ -446,7 +475,7 @@ class StabilityTests(unittest.TestCase):
         self.assertLess(capture, collection)
         self.assertNotIn('exec python3 "$PROJECT_ROOT/stability.py"', script)
         self.assertNotIn('--check-pages\n    )', script)
-        self.assertIn('--fresh-within-minutes 20', script)
+        self.assertIn('--fresh-within-minutes "$WINDOWS_FRESH_MINUTES"', script)
         self.assertIn('windows-task-*', script)
 
     def test_wrapper_catchup_respects_publish_due_and_due_bypasses_fresh_noop(self) -> None:
@@ -456,6 +485,7 @@ class StabilityTests(unittest.TestCase):
             trace = root / "trace"
             wrapper = root / "run-telemetry.sh"
             wrapper.write_bytes((PROJECT_ROOT / "run-telemetry.sh").read_bytes())
+            (root / "cadence.py").write_bytes((PROJECT_ROOT / "cadence.py").read_bytes())
             wrapper.chmod(0o755)
             (root / "collect.py").write_text(
                 """import os,sys
@@ -529,6 +559,7 @@ with open(os.environ['TRACE'], 'a', encoding='utf-8') as handle:
             state = root / "state"
             wrapper = root / "run-telemetry.sh"
             wrapper.write_bytes((PROJECT_ROOT / "run-telemetry.sh").read_bytes())
+            (root / "cadence.py").write_bytes((PROJECT_ROOT / "cadence.py").read_bytes())
             wrapper.chmod(0o755)
             (root / "stability.py").write_text("raise SystemExit(75)\n", encoding="utf-8")
             result = subprocess.run(

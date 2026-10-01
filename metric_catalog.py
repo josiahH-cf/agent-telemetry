@@ -16,6 +16,8 @@ import statistics
 from collections import defaultdict
 from typing import Any, Iterable
 
+import cadence
+
 
 CATALOG_SCHEMA_VERSION = 1
 PAGE_SCHEMA_VERSION = 1
@@ -373,8 +375,8 @@ CATALOG: tuple[dict[str, Any], ...] = (
     _metric(
         "missed_intervals",
         "Missed intervals",
-        "Estimated half-hour collection intervals absent from the observed wrapper log.",
-        "For each closed start gap over 45 minutes add MAX(1, FLOOR(gap_minutes / 30) - 1); for an open gap over 45 minutes add MAX(1, FLOOR(age_minutes / 30)).",
+        "Estimated scheduled collection intervals absent from the observed wrapper log, using the cadence recorded at each start.",
+        "For a gap use the preceding start's cadence_minutes (5 for the current wrapper; unmarked legacy starts retain 30). For each closed start gap over 1.5 x that interval add MAX(1, FLOOR(gap_minutes / interval) - 1); for an open gap over 1.5 x that interval add MAX(1, FLOOR(age_minutes / interval)).",
         ["data/telemetry.json"],
         "Only observed log coverage is assessed; powered-off periods before logging began cannot be reconstructed.",
         "intervals",
@@ -602,7 +604,7 @@ CATALOG: tuple[dict[str, Any], ...] = (
             "provider_usage_snapshot",
             "data/telemetry.json",
         ],
-        "This is an account-wide point-in-time capacity observation, not billing or an estimate of remaining messages; raw command output and account identifiers are never stored.",
+        "The fixed Usage left sidebar shows each account-wide allowance window separately, with observation age and reset. These percentages are shared capacity signals, not per-model balances, billing or remaining messages. Stale and retained values remain labelled; raw command output and account identifiers are never published.",
         "percent",
         "page",
         "observed",
@@ -613,7 +615,7 @@ CATALOG: tuple[dict[str, Any], ...] = (
         "Latest normalized vendor-reported remaining percentages for each reported Codex/OpenAI usage window.",
         "Normalize every reported Codex/OpenAI window independently with remaining percentage, reset, duration, observation age, freshness, capture state, and source; the bounded page selects at most two deterministically, preferring primary then secondary and otherwise shortest then longest duration; never merge windows or fill null with a guess.",
         ["rollout_token_count", "provider_usage_snapshot", "data/telemetry.json"],
-        "This is a point-in-time rollout observation, not a billing balance, invoice, token-to-message estimate, or promise of future availability.",
+        "The fixed Usage left sidebar shows each reported allowance window separately, with observation age and reset. These are account-wide rollout observations, not per-model balances, billing, remaining messages, or a promise of availability. Collection cannot create a newer provider observation; stale and retained values remain labelled.",
         "percent",
         "page",
         "observed",
@@ -1502,6 +1504,7 @@ def build_page_envelope(snapshot: dict[str, Any]) -> dict[str, Any]:
             "max_capacity_windows_per_provider": MAX_CAPACITY_WINDOWS_PER_PROVIDER,
             "attention_modes": list(ATTENTION_MODES),
             "window_keys": ["7", "30", "90", "all"],
+            "refresh_policy": cadence.page_policy(),
             "page_target_bytes": PAGE_TARGET_BYTES,
             "page_hard_limit_bytes": PAGE_HARD_LIMIT_BYTES,
             "complete_envelope": "data/telemetry.json",

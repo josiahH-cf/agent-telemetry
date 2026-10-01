@@ -23,8 +23,8 @@ Use the surface that matches the question:
 - The [page payload](data/telemetry.js) is the compact browser input. The
   [verbose envelope](data/telemetry.json) preserves broader generated views for
   inspection, but it is not a substitute for the versioned machine contract.
-  A visible open page checks that same-origin compact payload at minute 05 and
-  35 and adopts only a strictly newer compatible generation in place. Equal,
+  A visible open page checks that same-origin compact payload each minute and
+  adopts only a strictly newer compatible generation in place. Equal,
   older, invalid, unavailable, or timed-out checks retain last-good data. The
   check is a local file read or static Pages request, never a provider, model,
   API, or third-party call; the initial payload remains fully usable offline.
@@ -233,8 +233,17 @@ python3 -m unittest discover -s tests -v
 The local log is
 `${XDG_STATE_HOME:-$HOME/.local/state}/agent-telemetry/collect.log`. The wrapper
 holds one non-inheritable lock, rotates that log at 1 MiB, treats overlapping
-Windows starts as safe no-ops, and publishes when the daily slot arrives or the
-last successful push is at least 20 hours old.
+Windows starts as safe no-ops, and publishes in each new five-minute UTC slot,
+with the daily publication entry retained as a recovery backstop. Publication
+slots are independent of collection duration. Earlier unmarked collection-log
+entries retain their original 30-minute cadence interpretation.
+
+The fixed **Usage left · Claude & Codex** bubble shows the existing provider
+allowance windows, remaining percentages, resets and observation ages. Each
+window is an account-wide capacity signal shared across models; stale and
+retained values stay labelled, and absence is unknown. Historical activity and
+API-equivalent cost remain under the date selector. The full map, plan, cadence
+and operational limits are in [docs/CAPACITY_REFRESH.md](docs/CAPACITY_REFRESH.md).
 
 ### Local configuration and approved edits
 
@@ -438,7 +447,7 @@ The installed WSL crontab has exactly three tagged, reduced-priority entries;
 the installed file contains an expanded path, shown portably here as `$HOME`:
 
 ```cron
-*/30 * * * * /usr/bin/nice -n 10 /usr/bin/ionice -c 3 $HOME/agent-telemetry/run-telemetry.sh refresh cron # agent-telemetry-refresh
+*/5 * * * * /usr/bin/nice -n 10 /usr/bin/ionice -c 3 $HOME/agent-telemetry/run-telemetry.sh refresh cron # agent-telemetry-refresh
 17 3 * * * /usr/bin/nice -n 10 /usr/bin/ionice -c 3 $HOME/agent-telemetry/run-telemetry.sh publish cron # agent-telemetry-publish
 @reboot /usr/bin/nice -n 10 /usr/bin/ionice -c 3 $HOME/agent-telemetry/run-telemetry.sh catchup reboot # agent-telemetry-reboot
 ```
@@ -448,7 +457,7 @@ The two current-user Windows tasks are:
 | Task | Trigger | Sole action |
 |---|---|---|
 | `agent-telemetry-logon` | User logon (S4U, headless) | `wsl.exe -d Ubuntu -- $HOME/agent-telemetry/run-telemetry.sh catchup windows-task-logon` |
-| `agent-telemetry-continuity` | Every 30 minutes, offset from cron (S4U, headless) | `wsl.exe -d Ubuntu -- $HOME/agent-telemetry/run-telemetry.sh refresh windows-task-continuity` |
+| `agent-telemetry-continuity` | Every 5 minutes, offset two minutes from cron (S4U, headless) | `wsl.exe -d Ubuntu -- $HOME/agent-telemetry/run-telemetry.sh refresh windows-task-continuity` |
 
 Both tasks are least-privilege/current-user, ignore overlapping instances, run
 on battery, and invoke no second program. Both use an `S4U` logon (run whether

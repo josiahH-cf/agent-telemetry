@@ -574,10 +574,14 @@ class HistoryAndPrivacyTests(unittest.TestCase):
             now = dt.datetime(2026, 8, 20, 12, tzinfo=UTC)
             self.assertTrue(collect.publish_due(root, now))
             collect.record_publish_state(root, "success", "fixture", now)
-            self.assertFalse(collect.publish_due(root, now + dt.timedelta(hours=19, minutes=59)))
-            self.assertTrue(collect.publish_due(root, now + dt.timedelta(hours=20)))
+            self.assertFalse(collect.publish_due(root, now + dt.timedelta(minutes=4, seconds=59)))
+            self.assertTrue(collect.publish_due(root, now + dt.timedelta(minutes=5)))
+            # Completing late in one bucket must not skip the following slot.
+            collect.record_publish_state(root, "success", "fixture", now + dt.timedelta(minutes=3))
+            self.assertTrue(collect.publish_due(root, now + dt.timedelta(minutes=5)))
             collect.record_publish_state(root, "failure", "fixture_failure", now + dt.timedelta(hours=21))
-            self.assertEqual(collect.read_publish_state(root)["last_success_at"], "2026-08-20T12:00:00+00:00")
+            self.assertEqual(collect.read_publish_state(root)["last_success_at"], "2026-08-20T12:03:00+00:00")
+            self.assertTrue(collect.publish_due(root, now + dt.timedelta(hours=21, seconds=1)))
 
     def test_speculative_publish_state_is_due_and_rolls_back_on_failure(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:

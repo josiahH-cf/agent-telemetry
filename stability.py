@@ -25,12 +25,13 @@ from pathlib import Path
 from typing import Any, Iterable
 
 import claude_usage_capture
+import cadence
 from tools import attention as attention_ledger
 
 
 SCHEMA_VERSION = 2
-EXPECTED_INTERVAL_MINUTES = 30
-GAP_THRESHOLD_MINUTES = 45
+EXPECTED_INTERVAL_MINUTES = cadence.COLLECTION_INTERVAL_MINUTES
+GAP_THRESHOLD_MINUTES = cadence.GAP_THRESHOLD_MINUTES
 PRICE_WARNING_DAYS = 90
 CLOCK_FILE = "clock-watermark.json"
 DISK_FILE = "disk-snapshot.json"
@@ -49,6 +50,7 @@ STATIC_TRACKED_PATHS = {
     ".gitignore",
     "README.md",
     "claude_usage_capture.py",
+    "cadence.py",
     "collect.py",
     "consumer.py",
     "forecasting.py",
@@ -68,6 +70,7 @@ STATIC_TRACKED_PATHS = {
     "data/schema/tests.schema.json",
     "docs/OUTCOME_ADAPTER.md",
     "docs/FORECASTING.md",
+    "docs/CAPACITY_REFRESH.md",
     "docs/ATTENTION_GUIDANCE_SPIKE.md",
     "docs/STABILITY.md",
     "index.html",
@@ -112,7 +115,8 @@ GENERATED_TRACKED_RE = re.compile(
 )
 LOG_RE = re.compile(
     r"^(?P<timestamp>\S+)\s+mode=(?P<mode>refresh|publish|catchup|lock-probe)"
-    r"(?:\s+trigger=(?P<trigger>[A-Za-z0-9_.:+-]+))?\s+(?P<event>start|finish)(?:\s+exit=(?P<exit>\d+))?$"
+    r"(?:\s+trigger=(?P<trigger>[A-Za-z0-9_.:+-]+))?"
+    r"(?:\s+cadence_minutes=(?P<cadence>\d+))?\s+(?P<event>start|finish)(?:\s+exit=(?P<exit>\d+))?$"
 )
 SAFE_DETAIL_RE = re.compile(r"^[A-Za-z0-9][A-Za-z0-9_.:+-]{0,159}$")
 # Retired sources served from their last-good snapshot are not expected to be live.
@@ -286,6 +290,7 @@ def parse_collection_log(state_root: Path, now: dt.datetime) -> dict[str, Any]:
                     "trigger": match.group("trigger") or "legacy_unlabeled",
                     "event": match.group("event"),
                     "exit": safe_int(match.group("exit")) if match.group("exit") is not None else None,
+                    "interval_minutes": safe_int(match.group("cadence")) or cadence.LEGACY_INTERVAL_MINUTES,
                 })
     events.sort(key=lambda item: item["timestamp"])
     starts = [item for item in events if item["event"] == "start" and item["mode"] != "lock-probe"]
@@ -295,19 +300,21 @@ def parse_collection_log(state_root: Path, now: dt.datetime) -> dict[str, Any]:
     longest = 0.0
     for before, after in zip(starts, starts[1:]):
         minutes = (after["timestamp"] - before["timestamp"]).total_seconds() / 60
-        if minutes > GAP_THRESHOLD_MINUTES:
-            count = max(1, math.floor(minutes / EXPECTED_INTERVAL_MINUTES) - 1)
+        interval = before["interval_minutes"]
+        if minutes > interval * 1.5:
+            count = max(1, math.floor(minutes / interval) - 1)
             missed += count
             longest = max(longest, minutes)
-            gaps.append({"from": iso(before["timestamp"]), "to": iso(after["timestamp"]), "minutes": rounded(minutes, 1), "missed_intervals": count})
+            gaps.append({"from": iso(before["timestamp"]), "to": iso(after["timestamp"]), "minutes": rounded(minutes, 1), "missed_intervals": count, "expected_interval_minutes": interval})
     current_age = None
     if starts:
         current_age = max(0.0, (now.astimezone(dt.timezone.utc) - starts[-1]["timestamp"]).total_seconds() / 60)
-        if current_age > GAP_THRESHOLD_MINUTES:
-            count = max(1, math.floor(current_age / EXPECTED_INTERVAL_MINUTES))
+        interval = starts[-1]["interval_minutes"]
+        if current_age > interval * 1.5:
+            count = max(1, math.floor(current_age / interval))
             missed += count
             longest = max(longest, current_age)
-            gaps.append({"from": iso(starts[-1]["timestamp"]), "to": iso(now), "minutes": rounded(current_age, 1), "missed_intervals": count, "open": True})
+            gaps.append({"from": iso(starts[-1]["timestamp"]), "to": iso(now), "minutes": rounded(current_age, 1), "missed_intervals": count, "expected_interval_minutes": interval, "open": True})
     status = "unknown" if not starts else "gap" if gaps else "ok"
     failed_finishes = sum(item.get("exit") not in (None, 0) for item in finishes)
     return {
@@ -360,10 +367,22 @@ def _cron_status() -> tuple[str, str]:
     text = result.stdout
     tags = ("agent-telemetry-refresh", "agent-telemetry-publish", "agent-telemetry-reboot")
     present = sum(tag in text for tag in tags)
-    priority_lines = [line for line in text.splitlines() if "agent-telemetry-" in line]
+    priority_lines = [line.strip() for line in text.splitlines() if "# agent-telemetry-" in line and not line.lstrip().startswith("#")]
     prioritized = bool(priority_lines) and all("nice" in line and "ionice" in line for line in priority_lines)
-    if present == len(tags) and prioritized:
+    expected = {
+        "agent-telemetry-refresh": f"*/{EXPECTED_INTERVAL_MINUTES} * * * *",
+        "agent-telemetry-publish": "17 3 * * *",
+        "agent-telemetry-reboot": "@reboot",
+    }
+    schedule_ok = len(priority_lines) == len(tags) and all(
+        len(rows := [line for line in priority_lines if line.endswith(f"# {tag}")]) == 1
+        and rows[0].startswith(schedule + " ")
+        for tag, schedule in expected.items()
+    )
+    if present == len(tags) and prioritized and schedule_ok:
         return "ok", "three_entries_present_and_reduced_priority"
+    if present == len(tags) and prioritized:
+        return "warn", "schedule_or_tag_count_mismatch"
     return "warn", f"entries_{present}_of_{len(tags)}_priority_{'ok' if prioritized else 'missing'}"
 
 
@@ -440,7 +459,7 @@ def _windows_task_status() -> tuple[str, str]:
     continuity = task_xml["agent-telemetry-continuity"]
     if logon.find(".//t:LogonTrigger", namespace) is None:
         return "warn", "task_trigger_mismatch"
-    if text_at(continuity, ".//t:TimeTrigger/t:Repetition/t:Interval") != "PT30M":
+    if text_at(continuity, ".//t:TimeTrigger/t:Repetition/t:Interval") != f"PT{EXPECTED_INTERVAL_MINUTES}M":
         return "warn", "task_trigger_mismatch"
     return "ok", "two_tasks_action_schedule_and_power_policy_ok"
 
@@ -496,7 +515,7 @@ def _publish_status(state_root: Path, now: dt.datetime) -> tuple[str, str]:
     publish_state = str(value.get("status") or "")
     if publish_state in {"failure", "blocked"}:
         return "warn", f"status_{publish_state}_reason_{_safe_detail(value.get('reason'))}_{age_detail}"
-    status = "warn" if age > 28 else "ok"
+    status = "warn" if age * 60 > cadence.PUBLISH_STALE_MINUTES else "ok"
     return status, age_detail
 
 

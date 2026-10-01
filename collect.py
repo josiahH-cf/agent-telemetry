@@ -37,6 +37,7 @@ import stability as telemetry_stability
 import observatory as global_observatory
 import metric_catalog
 import claude_usage_capture
+import cadence
 from tools import attention as attention_ledger
 
 
@@ -3046,13 +3047,15 @@ def record_publish_state(cache_root: Path, status: str, reason: str, now: dt.dat
     return value
 
 
-def publish_due(cache_root: Path, now: dt.datetime | None = None, guard_hours: float = 20.0) -> bool:
+def publish_due(cache_root: Path, now: dt.datetime | None = None) -> bool:
+    """Publish once per UTC slot; collection duration must not delay the next slot."""
     now = now or utc_now()
     state = read_publish_state(cache_root)
     if state.get("reason") == "scheduled_push":
         return True
     last = parse_timestamp(state.get("last_success_at"))
-    return last is None or (now - last).total_seconds() >= guard_hours * 3600
+    interval_seconds = cadence.PUBLISH_INTERVAL_MINUTES * 60
+    return last is None or math.floor(now.timestamp() / interval_seconds) > math.floor(last.timestamp() / interval_seconds)
 
 
 def request_pages_check(cache_root: Path, commit: str, now: dt.datetime | None = None) -> dict[str, Any]:
@@ -3357,7 +3360,7 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--project-root", type=Path, help="output project root (primarily for fixture verification)")
     parser.add_argument("--scrub", action="store_true", help="scan the publishable repository tree and exit")
     parser.add_argument("--audit-history", action="store_true", help="scan every reachable Git blob and commit identity")
-    parser.add_argument("--publish-due", action="store_true", help="exit 0 when the 20-hour publish guard is due")
+    parser.add_argument("--publish-due", action="store_true", help="exit 0 when a new five-minute UTC publication slot is due")
     parser.add_argument("--record-publish", choices=("pending", "success", "failure", "blocked"), help="record machine-local publish state and exit")
     parser.add_argument("--publish-reason", default="scheduled", help="allowlisted reason used with --record-publish")
     parser.add_argument("--record-claude-usage", action="store_true", help="record percentage-only values transcribed from Claude /usage")

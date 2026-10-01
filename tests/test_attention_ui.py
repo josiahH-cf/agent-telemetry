@@ -46,23 +46,28 @@ class AttentionStructureTests(unittest.TestCase):
         for text in ("anonymized and aggregated", "prompts, messages, code, paths", "not subscription bills or invoices"):
             self.assertIn(text, body)
 
-    def test_overview_leads_and_capacity_is_a_secondary_bottom_disclosure(self) -> None:
+    def test_fixed_sidebar_shows_allowances_and_preserves_historical_activity(self) -> None:
         overview_index = INDEX.index('id="overview"')
         controls_index = INDEX.index('id="window-controls"')
         evidence_index = INDEX.index('id="evidence"')
         capacity_index = INDEX.index('id="capacity-now"')
         self.assertLess(overview_index, controls_index)
         self.assertLess(controls_index, evidence_index)
-        self.assertLess(evidence_index, capacity_index)
-        self.assertLess(capacity_index, INDEX.index("</main>"))
-        self.assertIn('<aside class="capacity" id="capacity-now"', INDEX)
-        self.assertIn('<details class="capacity-disclosure">', INDEX)
-        self.assertNotIn('<details class="capacity-disclosure" open', INDEX)
-        self.assertIn('href="#capacity-now">Provider capacity</a>', INDEX)
+        self.assertLess(capacity_index, overview_index)
+        sidebar = INDEX.split('id="usage-sidebar"', 1)[1].split("</aside>", 1)[0]
+        self.assertIn('id="capacity-now"', sidebar)
+        self.assertNotIn('id="activity"', sidebar)
+        self.assertNotIn('id="token-trend"', sidebar)
+        self.assertEqual(INDEX.count('id="capacity-now"'), 1)
+        self.assertIn('href="#capacity-now">Usage left</a>', INDEX)
+        self.assertIn('Toggle Claude and Codex usage left sidebar', INDEX)
+        self.assertIn('windows shared across models', INDEX)
+        self.assertLess(controls_index, INDEX.index('id="activity-history"'))
+        self.assertIn('Historical activity &amp; API-equivalent cost', INDEX)
         self.assertIn('id="capacity-providers"', INDEX)
-        self.assertIn('aria-label="Providers"', INDEX)
-        self.assertIn('aria-hidden="true">🟠</span>Claude', INDEX)
-        self.assertIn('aria-hidden="true">🟢</span>Codex', INDEX)
+        self.assertIn('$("usage-sidebar").open = true;', DASHBOARD)
+        self.assertIn('event.key === "Escape"', DASHBOARD)
+        self.assertIn('$("usage-sidebar").open = false;', DASHBOARD)
         self.assertIn('href="#attention"', INDEX)
         render_body = DASHBOARD.split("function render() {", 1)[1].split("document.querySelectorAll(\"[data-window]\")", 1)[0]
         self.assertNotIn("renderCapacity()", render_body)
@@ -194,9 +199,10 @@ class AttentionStructureTests(unittest.TestCase):
         self.assertIn('.mode-value { grid-column:1/-1; text-align:left; white-space:normal; overflow-wrap:anywhere; }', INDEX)
         self.assertIn('.capacity-window-head>div,.capacity-window-head h3 { min-width:0; overflow-wrap:anywhere; }', INDEX)
         self.assertIn('align-items:start; gap:10px; margin-top:11px;', INDEX)
-        self.assertIn('.capacity-summary-copy { grid-column:1; grid-row:1; }', INDEX)
-        self.assertIn('.capacity-chevron { grid-column:2; grid-row:1; }', INDEX)
-        self.assertIn('.capacity-summary-meta { grid-column:1/-1; grid-row:2; justify-content:space-between; }', INDEX)
+        self.assertIn('width:min(94vw,440px)', INDEX)
+        self.assertIn('overscroll-behavior:contain', INDEX)
+        self.assertIn('.capacity-windows { display:grid; grid-template-columns:repeat(2,minmax(0,1fr))', INDEX)
+        self.assertIn('data-capacity-state="stale"', INDEX)
 
     def test_pure_helpers_are_exposed_in_the_browser_test_hook(self) -> None:
         for helper in ("capacityProviderState", "capacityWindowState", "captureStatusFailed", "calculateScenario", "relativeDuration", "snapshotDecision", "telemetryRefreshUrl", "snapshotRefreshSlot", "nextSnapshotRefreshMillis"):
@@ -213,8 +219,8 @@ class AttentionStructureTests(unittest.TestCase):
         self.assertIn('let data = window.TELEMETRY || {};', DASHBOARD)
         self.assertIn('new URL("data/telemetry.js", baseURI)', DASHBOARD)
         self.assertIn('url.searchParams.set("refresh"', DASHBOARD)
-        self.assertIn('const snapshotRefreshIntervalMinutes = 30;', DASHBOARD)
-        self.assertIn('const snapshotRefreshOffsetMinutes = 5;', DASHBOARD)
+        self.assertIn('const snapshotRefreshIntervalMinutes = 1;', DASHBOARD)
+        self.assertIn('const snapshotRefreshOffsetMinutes = 0;', DASHBOARD)
         self.assertIn('document.visibilityState === "hidden"', DASHBOARD)
         self.assertIn('document.addEventListener("visibilitychange"', DASHBOARD)
         self.assertIn('window.addEventListener("focus"', DASHBOARD)
@@ -228,7 +234,7 @@ class AttentionStructureTests(unittest.TestCase):
         self.assertIn('restoreFocusState(focusState)', DASHBOARD)
         self.assertIn('focus({preventScroll:true})', DASHBOARD)
         self.assertIn('window.scrollTo(scrollX, scrollY)', DASHBOARD)
-        self.assertIn('same-origin telemetry checks at :05 and :35 while visible', DASHBOARD)
+        self.assertIn('same-origin telemetry checks every minute while visible', DASHBOARD)
         self.assertIn('no provider, API, model, or third-party requests from this page', DASHBOARD)
         for forbidden in ("fetch(", "XMLHttpRequest", "location.reload", "WebSocket", "EventSource", "import("):
             self.assertNotIn(forbidden, DASHBOARD)
@@ -295,26 +301,37 @@ class SnapshotRefreshHelperTests(unittest.TestCase):
         self.assertEqual(result["sameSlot"], result["pages"])
         self.assertEqual(result["nextSlot"], "https://example.test/agent-telemetry/data/telemetry.js?refresh=2")
 
-    def test_refresh_schedule_is_pinned_to_minute_five_and_thirty_five(self) -> None:
+    def test_refresh_schedule_is_pinned_to_each_minute_including_visibility_catchup(self) -> None:
         result = node_result(
-            "({beforeFirst:ui.nextSnapshotRefreshMillis(0,30,5),"
-            "justBeforeFirst:ui.nextSnapshotRefreshMillis(299999,30,5),"
-            "atFirst:ui.nextSnapshotRefreshMillis(300000,30,5),"
-            "justBeforeSecond:ui.nextSnapshotRefreshMillis(2099999,30,5),"
-            "slotBefore:ui.snapshotRefreshSlot(299999,30,5),"
-            "slotAt:ui.snapshotRefreshSlot(300000,30,5),"
+            "({beforeFirst:ui.nextSnapshotRefreshMillis(0),"
+            "justBeforeFirst:ui.nextSnapshotRefreshMillis(59999),"
+            "atFirst:ui.nextSnapshotRefreshMillis(60000),"
+            "justBeforeSecond:ui.nextSnapshotRefreshMillis(119999),"
+            "slotBefore:ui.snapshotRefreshSlot(59999),"
+            "slotAt:ui.snapshotRefreshSlot(60000),"
+            "returnedAfterSleep:ui.snapshotRefreshSlot(3600000),"
             "invalid:ui.nextSnapshotRefreshMillis(0,5,5)})"
         )
-        self.assertEqual(result["beforeFirst"], 300000)
-        self.assertEqual(result["justBeforeFirst"], 300000)
-        self.assertEqual(result["atFirst"], 2100000)
-        self.assertEqual(result["justBeforeSecond"], 2100000)
-        self.assertEqual(result["slotBefore"], -1)
-        self.assertEqual(result["slotAt"], 0)
+        self.assertEqual(result["beforeFirst"], 60000)
+        self.assertEqual(result["justBeforeFirst"], 60000)
+        self.assertEqual(result["atFirst"], 120000)
+        self.assertEqual(result["justBeforeSecond"], 120000)
+        self.assertEqual(result["slotBefore"], 0)
+        self.assertEqual(result["slotAt"], 1)
+        self.assertEqual(result["returnedAfterSleep"], 60)
         self.assertIsNone(result["invalid"])
 
 
 class CapacityHelperTests(unittest.TestCase):
+    def test_reported_durations_label_short_and_long_windows_without_model_balances(self) -> None:
+        result = node_result(
+            "[ui.capacityWindowLabel({window:'primary',window_minutes:300}),"
+            "ui.capacityWindowLabel({window:'secondary',window_minutes:10080}),"
+            "ui.capacityWindowLabel({display_label:'Five-hour window',window_minutes:null}),"
+            "ui.capacityWindowLabel({window:'other',window_minutes:90})]"
+        )
+        self.assertEqual(result, ["5-hour window", "7-day window", "Five-hour window", "90-minute window"])
+
     def test_browser_age_and_reset_boundaries_make_available_values_stale(self) -> None:
         result = node_result(
             "({fresh:ui.capacityWindowState({remaining_percent:60,freshness_status:'available',observed_at:'2026-08-21T10:00:00Z',resets_at:'2026-08-21T18:00:00Z'},Date.parse('2026-08-21T11:00:00Z'),2),"

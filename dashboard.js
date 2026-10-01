@@ -80,6 +80,17 @@ const AgentTelemetryUI = (() => {
     );
   }
 
+  function capacityWindowLabel(windowValue) {
+    const value = windowValue || {};
+    const minutes = numericValue(value.window_minutes);
+    if (Number.isFinite(minutes) && minutes > 0) {
+      if (minutes % 1440 === 0) return `${minutes / 1440}-day window`;
+      if (minutes % 60 === 0) return `${minutes / 60}-hour window`;
+      return `${minutes}-minute window`;
+    }
+    return value.display_label || value.window || "Reported window";
+  }
+
   function calculateScenario(input, project) {
     const assumptions = input && typeof input === "object" ? input : {};
     const selected = project && typeof project === "object" ? project : {};
@@ -167,7 +178,7 @@ const AgentTelemetryUI = (() => {
     return "older";
   }
 
-  function telemetryRefreshUrl(baseURI, nowMillis, intervalMinutes = 30) {
+  function telemetryRefreshUrl(baseURI, nowMillis, intervalMinutes = 1) {
     const interval = numericValue(intervalMinutes);
     if (!finiteNumber(nowMillis) || !Number.isFinite(interval) || interval <= 0) return null;
     try {
@@ -179,20 +190,20 @@ const AgentTelemetryUI = (() => {
     }
   }
 
-  function snapshotRefreshSlot(nowMillis, intervalMinutes = 30, offsetMinutes = 5) {
+  function snapshotRefreshSlot(nowMillis, intervalMinutes = 1, offsetMinutes = 0) {
     const interval = numericValue(intervalMinutes);
     const offset = numericValue(offsetMinutes);
     if (!finiteNumber(nowMillis) || !Number.isFinite(interval) || interval <= 0 || !Number.isFinite(offset) || offset < 0 || offset >= interval) return null;
     return Math.floor((nowMillis - offset * 60000) / (interval * 60000));
   }
 
-  function nextSnapshotRefreshMillis(nowMillis, intervalMinutes = 30, offsetMinutes = 5) {
+  function nextSnapshotRefreshMillis(nowMillis, intervalMinutes = 1, offsetMinutes = 0) {
     const slot = snapshotRefreshSlot(nowMillis, intervalMinutes, offsetMinutes);
     if (slot === null) return null;
     return (slot + 1) * intervalMinutes * 60000 + offsetMinutes * 60000;
   }
 
-  return Object.freeze({capacityProviderState, capacityWindowState, captureStatusFailed, calculateScenario, relativeDuration, snapshotDecision, telemetryRefreshUrl, snapshotRefreshSlot, nextSnapshotRefreshMillis});
+  return Object.freeze({capacityProviderState, capacityWindowState, capacityWindowLabel, captureStatusFailed, calculateScenario, relativeDuration, snapshotDecision, telemetryRefreshUrl, snapshotRefreshSlot, nextSnapshotRefreshMillis});
 })();
 
 if (typeof window !== "undefined") window.AgentTelemetryUI = AgentTelemetryUI;
@@ -214,10 +225,10 @@ if (typeof module === "object" && module.exports) module.exports = AgentTelemetr
   const money = new Intl.NumberFormat("en-US", {style:"currency", currency:"USD", maximumFractionDigits:2});
   const percentNumber = new Intl.NumberFormat("en-US", {maximumFractionDigits:1});
   const colors = ["#7bdcff", "#8ba9ff", "#75e6ad", "#ffd166", "#c4a7ff", "#ff8c9b", "#b8c5d3"];
-  const {capacityProviderState, capacityWindowState, calculateScenario, relativeDuration, snapshotDecision, telemetryRefreshUrl, snapshotRefreshSlot, nextSnapshotRefreshMillis} = AgentTelemetryUI;
+  const {capacityProviderState, capacityWindowState, capacityWindowLabel, calculateScenario, relativeDuration, snapshotDecision, telemetryRefreshUrl, snapshotRefreshSlot, nextSnapshotRefreshMillis} = AgentTelemetryUI;
   const focusableSelector = "button,summary,a[href],input,select,textarea,[tabindex]:not([tabindex='-1'])";
-  const snapshotRefreshIntervalMinutes = 30;
-  const snapshotRefreshOffsetMinutes = 5;
+  const snapshotRefreshIntervalMinutes = 1;
+  const snapshotRefreshOffsetMinutes = 0;
   const snapshotRefreshIntervalMs = snapshotRefreshIntervalMinutes * 60000;
   let catalog = new Map((data.catalog || []).map(row => [row.metric_id, row]));
   let windows = data.windows || {};
@@ -352,7 +363,7 @@ if (typeof module === "object" && module.exports) module.exports = AgentTelemetr
       ? "Snapshot updated automatically"
       : snapshotRefreshState === "failed-last-good"
         ? "Auto-check retrying · last-good retained"
-        : "Snapshot auto-check at :05 / :35";
+        : "Snapshot auto-check every minute";
     $("mast-meta").innerHTML = `<span data-metric-id="data_age_minutes">${finite(age) ? `${full.format(age)}m old` : "age n/a"} ${metricButton("data_age_minutes")}</span><br>Generated ${esc(when(data.generated_at))}<br><span class="refresh-note">${esc(refreshText)}</span>`;
   }
 
@@ -394,7 +405,7 @@ if (typeof module === "object" && module.exports) module.exports = AgentTelemetr
   function capacityWindowMarkup(windowValue, provider, index) {
     const freshnessMaxAgeHours = provider.freshness_max_age_hours;
     const evaluated = capacityWindowState(windowValue, Date.now(), freshnessMaxAgeHours);
-    const remaining = evaluated.hasValue ? `${percentNumber.format(evaluated.remainingPercent)}% remaining` : "Remaining unavailable";
+    const remaining = evaluated.hasValue ? `${percentNumber.format(evaluated.remainingPercent)}% left` : "Unknown";
     const usedPercent = numeric(windowValue.used_percent);
     const minutes = numeric(windowValue.window_minutes);
     const used = usedPercent !== null && usedPercent >= 0 && usedPercent <= 100
@@ -407,12 +418,15 @@ if (typeof module === "object" && module.exports) module.exports = AgentTelemetr
       ? "claude_quota_remaining_percent"
       : "openai_quota_remaining_percent";
     const progress = evaluated.hasValue
-      ? `<progress max="100" value="${evaluated.remainingPercent}" aria-label="${esc(windowValue.display_label || windowValue.window || `window ${index + 1}`)}: ${esc(remaining)}"></progress>`
+      ? `<progress max="100" value="${evaluated.remainingPercent}" aria-label="${esc(capacityWindowLabel(windowValue))}: ${esc(remaining)}; ${esc(evaluated.state.replace(/_/g, " "))}"></progress>`
       : "";
     const observedTime = windowValue.observed_at && Number.isFinite(Date.parse(windowValue.observed_at))
       ? ` · ${timeMarkup(windowValue.observed_at)}`
       : "";
-    return `<article class="capacity-window" data-capacity-state="${esc(evaluated.state)}" data-metric-id="${metricId}"><div class="capacity-window-head"><div><h3>${esc(windowValue.display_label || windowValue.window || `Window ${index + 1}`)}</h3><span class="detail">${esc(used)}${esc(windowMinutes)}</span></div><span>${evidenceBadge("observed")} ${metricButton(metricId)}</span></div><div class="capacity-remaining">${esc(remaining)}</div>${progress}<div class="capacity-times"><span>${capacityStateText(evaluated.state, windowValue)}${observedTime}</span><span>${resetDescription(windowValue.resets_at, windowValue.observed_at)}</span></div><details class="capacity-source"><summary>Source and capture</summary><p>Source: ${esc(windowValue.source || "not reported")} · capture: ${esc(windowValue.capture_status || "not reported")} · freshness at generation: ${esc(windowValue.freshness_status || "not reported")}. This is provider-reported capacity, not billing or an estimate of messages remaining.</p></details></article>`;
+    const stateLabel = {available:"Fresh", stale:"Stale · last reported", retained_last_good:"Last reported · capture failed", error:"Capture error", unavailable:"Unavailable"}[evaluated.state];
+    const reset = relativeDuration(windowValue.resets_at);
+    const resetBrief = reset ? `${reset.direction === "future" ? "Resets in" : "Reset passed"} ${reset.text}` : "Reset not reported";
+    return `<article class="capacity-window" data-capacity-state="${esc(evaluated.state)}" data-metric-id="${metricId}"><div class="capacity-window-head"><div><h3>${esc(capacityWindowLabel(windowValue))}</h3></div>${metricButton(metricId)}</div><div class="capacity-remaining">${esc(remaining)}</div><span class="capacity-state" data-state="${esc(evaluated.state)}">${esc(stateLabel)}</span>${progress}<div class="capacity-times"><span>${esc(relativeObservation(windowValue.observed_at, windowValue.age_hours))}</span><span>${esc(resetBrief)}</span></div><details class="capacity-source"><summary>Source and capture</summary><p>${evidenceBadge("observed")} ${esc(used)}${esc(windowMinutes)}. ${esc(windowValue.display_label || windowValue.window || `Window ${index + 1}`)}.</p><p>${capacityStateText(evaluated.state, windowValue)}${observedTime}<br>${resetDescription(windowValue.resets_at, windowValue.observed_at)}</p><p>Source: ${esc(windowValue.source || "not reported")} · capture: ${esc(windowValue.capture_status || "not reported")} · freshness at generation: ${esc(windowValue.freshness_status || "not reported")}. This is provider-reported capacity, not billing or an estimate of messages remaining.</p></details></article>`;
   }
 
   function capacityProviderEmptyMarkup(provider) {
@@ -446,7 +460,7 @@ if (typeof module === "object" && module.exports) module.exports = AgentTelemetr
       const windowMarkup = windowsForProvider.length
         ? windowsForProvider.map((windowValue, index) => capacityWindowMarkup(windowValue, provider, index)).join("")
         : capacityProviderEmptyMarkup(provider);
-      const additionalText = additional > 0 ? `${full.format(additional)} additional reported window${additional === 1 ? "" : "s"} omitted from this bounded page.` : "At most two windows are shown.";
+      const additionalText = additional > 0 ? `${full.format(additional)} additional reported window${additional === 1 ? "" : "s"} omitted from this bounded page.` : "";
       return `<article class="capacity-provider"><div class="capacity-provider-head"><div><h3 class="provider-heading"><span class="provider-emoji" aria-hidden="true">${providerEmoji(provider)}</span><span>${esc(provider.display_label || provider.provider || "Provider")}</span></h3><span class="detail">${esc(additionalText)}</span></div></div><div class="capacity-windows">${windowMarkup}</div></article>`;
     });
     $("capacity-providers").innerHTML = rows.join("") || '<p class="empty">Provider capacity is unavailable for this generated snapshot.</p>';
@@ -455,6 +469,8 @@ if (typeof module === "object" && module.exports) module.exports = AgentTelemetr
     const warning = renderedStates.some(value => ["stale", "retained_last_good", "unavailable"].includes(value)) || !renderedStates.length;
     check.className = `status ${bad ? "bad" : warning ? "warn" : "good"}`;
     check.textContent = bad ? "Capture error" : warning ? "Capacity partial" : "Capacity fresh";
+    const nextCheck = nextSnapshotRefreshMillis(Date.now(), snapshotRefreshIntervalMinutes, snapshotRefreshOffsetMinutes);
+    $("capacity-update").innerHTML = `Collection + publication: 5-minute UTC slots.<br>Page checks: every minute · next ${esc(new Date(nextCheck).toLocaleTimeString([], {hour:"2-digit", minute:"2-digit"}))}.<br>Snapshot generated ${esc(when(data.generated_at))}. Provider observation ages appear above.`;
   }
 
   function refreshCapacityPreservingInteraction() {
@@ -962,6 +978,7 @@ if (typeof module === "object" && module.exports) module.exports = AgentTelemetr
       },
       capacityProviderState,
       capacityWindowState,
+      capacityWindowLabel,
       capacityStateText,
       calculateScenario,
       relativeDuration,
@@ -986,7 +1003,7 @@ if (typeof module === "object" && module.exports) module.exports = AgentTelemetr
     renderOutcomes();
     renderReliability();
     renderEvidence();
-    $("generated-foot").textContent = `Generated ${when(data.generated_at)} · compact page is within its published budget · full envelope and all machine URLs retained · same-origin telemetry checks at :05 and :35 while visible · last-good data stays usable offline · no provider, API, model, or third-party requests from this page.`;
+    $("generated-foot").textContent = `Generated ${when(data.generated_at)} · compact page is within its published budget · full envelope and all machine URLs retained · same-origin telemetry checks every minute while visible · last-good data stays usable offline · no provider, API, model, or third-party requests from this page.`;
     updateTestHook();
   }
 
@@ -1006,8 +1023,20 @@ if (typeof module === "object" && module.exports) module.exports = AgentTelemetr
     updateTestHook();
   }));
   document.addEventListener("click", event => {
+    const capacityLink = event.target.closest && event.target.closest('a[href="#capacity-now"]');
+    if (capacityLink) {
+      event.preventDefault();
+      $("usage-sidebar").open = true;
+      $("usage-sidebar").querySelector("summary").focus({preventScroll:true});
+    }
     const button = event.target.closest && event.target.closest("[data-explain]");
     if (button) showMetric(button.dataset.explain);
+  });
+  document.addEventListener("keydown", event => {
+    if (event.key === "Escape" && $("usage-sidebar").open && !$("metric-dialog").open) {
+      $("usage-sidebar").open = false;
+      $("usage-sidebar").querySelector("summary").focus({preventScroll:true});
+    }
   });
   $("metric-dialog-close").addEventListener("click", () => $("metric-dialog").close());
   $("scenario-form").addEventListener("input", renderScenario);

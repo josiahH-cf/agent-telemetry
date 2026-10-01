@@ -7,6 +7,8 @@ LOG_PATH=$STATE_ROOT/collect.log
 LOCK_PATH=$STATE_ROOT/collect.lock
 MODE=${1:-refresh}
 TRIGGER=${2:-manual}
+INTERVAL_MINUTES=$(python3 "$PROJECT_ROOT/cadence.py" --interval-minutes) || exit 64
+WINDOWS_FRESH_MINUTES=$(python3 "$PROJECT_ROOT/cadence.py" --windows-fresh-minutes) || exit 64
 
 mkdir -p "$STATE_ROOT"
 
@@ -15,7 +17,7 @@ if [ "${AGENT_TELEMETRY_LOCKED:-0}" != "1" ]; then
         mv -f "$LOG_PATH" "$LOG_PATH.1"
     fi
     exec >>"$LOG_PATH" 2>&1
-    printf '%s mode=%s trigger=%s start\n' "$(date -u +%Y-%m-%dT%H:%M:%SZ)" "$MODE" "$TRIGGER"
+    printf '%s mode=%s trigger=%s cadence_minutes=%s start\n' "$(date -u +%Y-%m-%dT%H:%M:%SZ)" "$MODE" "$TRIGGER" "$INTERVAL_MINUTES"
     case "$TRIGGER" in
         windows-task-*)
             /usr/bin/nice -n 10 /usr/bin/ionice -c 3 python3 "$PROJECT_ROOT/stability.py" --lock-run "$LOCK_PATH" -- "$0" "$MODE" "$TRIGGER"
@@ -69,7 +71,7 @@ esac
 
 case "$TRIGGER" in
     windows-task-*)
-        if [ "$PUBLISH" -eq 0 ] && python3 "$PROJECT_ROOT/stability.py" --state-root "$STATE_ROOT" --fresh-within-minutes 20; then
+        if [ "$PUBLISH" -eq 0 ] && python3 "$PROJECT_ROOT/stability.py" --state-root "$STATE_ROOT" --fresh-within-minutes "$WINDOWS_FRESH_MINUTES"; then
             printf '%s trigger=%s state=fresh_noop\n' "$(date -u +%Y-%m-%dT%H:%M:%SZ)" "$TRIGGER"
             printf '%s mode=%s trigger=%s finish exit=0\n' "$(date -u +%Y-%m-%dT%H:%M:%SZ)" "$MODE" "$TRIGGER"
             exit 0

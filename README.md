@@ -6,9 +6,11 @@ API-equivalent cost, collection health, historical governed-loop outcomes, and
 successor outcome receipts without publishing prompts, messages, code, working
 directories, or private project mappings.
 
-The dashboard also has a collapsed point-in-time provider-capacity disclosure
-and an optional attention-economics ledger. Capacity uses already captured
-vendor-reported windows; it never estimates messages from tokens. Human
+The fixed **Usage left · Claude & Codex** bubble opens current provider allowance
+windows, remaining percentages, resets and observation ages. An optional
+attention-economics ledger remains in the main page. Capacity uses already
+captured vendor-reported windows shared across models, with stale or retained
+values labelled; it never estimates messages from tokens. Human
 attention is recorded only by the explicit local timer, never inferred from
 sessions, prompts, agent runtime, or response latency.
 
@@ -24,10 +26,15 @@ python3 -m unittest discover -s tests -v
 Open `index.html` directly or from the published site. The page works without a
 server and offers 7-, 30-, 90-day, and all-time views; machine-readable files
 are under `data/machine/`. While visible, an open page checks the same-origin
-bounded snapshot at minute 05 and 35, adopts only a newer compatible generation,
+bounded snapshot each minute, adopts only a newer compatible generation,
 and retains last-good data on an unavailable or invalid check. This is a static
 file read locally and a static Pages request when published; it never calls a
 provider, model, API, or third party.
+
+The existing collection and guarded publication path targets five-minute UTC
+slots. Host availability, source observations and Pages deployment can still
+delay freshness. [The mapped plan and operational limits](docs/CAPACITY_REFRESH.md)
+describe both the sidebar and refresh changes.
 
 ## Optional recorded attention
 

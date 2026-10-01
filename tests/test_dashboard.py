@@ -99,7 +99,27 @@ def synthetic_snapshot(projects: int = 50, days: int = 365, models: int = 12, sp
                 "reconciliation": {"status": "ok"},
                 "store": {"integrity": "ok"},
             },
-            "cost": {"daily": cost_daily},
+            "cost": {
+                "daily": cost_daily,
+                "usage_left": {
+                    provider: {
+                        "source": "fixture_metadata",
+                        "freshness_status": "available",
+                        "freshness_max_age_hours": 1,
+                        "capture_status": "manual_recorded",
+                        "observed_at": "2026-08-20T11:59:00+00:00",
+                        "quota_windows": [
+                            {"window": name, "remaining_percent": remaining, "window_minutes": minutes, "resets_at": "2026-08-27T12:00:00+00:00"}
+                            for name, remaining, minutes in [
+                                ("five_hour" if provider == "anthropic" else "primary", 0, 300),
+                                ("seven_day" if provider == "anthropic" else "secondary", 80, 10080),
+                                *[(f"extra_{index}", None, (index + 1) * 60) for index in range(10)],
+                            ]
+                        ],
+                    }
+                    for provider in ("anthropic", "openai")
+                },
+            },
             "ledger": {"rounds": rounds},
             "time_v2": {"anomalies": 0},
             "measurement": {"daily": measurement_daily},
@@ -235,6 +255,16 @@ class DashboardEnvelopeTests(unittest.TestCase):
         self.assertEqual(len(large_page["windows"]["30"]["top_projects"]), metric_catalog.TOP_N + 1)
         self.assertEqual(len(large_page["point_in_time"]["top_models"]), metric_catalog.TOP_N + 1)
         self.assertEqual(len(large_page["windows"]["30"]["recent_specs"]), metric_catalog.TOP_N)
+        self.assertEqual(large_page["contract"]["refresh_policy"], {
+            "collection_interval_minutes": 5,
+            "publication_interval_minutes": 5,
+            "browser_check_interval_minutes": 1,
+        })
+        for provider in large_page["capacity_now"]["providers"]:
+            self.assertEqual(len(provider["windows"]), 2)
+            self.assertEqual(provider["additional_windows"], 10)
+            self.assertEqual(provider["windows"][0]["remaining_percent"], 0)
+            self.assertEqual(provider["windows"][1]["remaining_percent"], 80)
 
     def test_catalog_pins_provider_cost_and_duration_traps(self) -> None:
         rows = {row["metric_id"]: row for row in metric_catalog.catalog_rows()}

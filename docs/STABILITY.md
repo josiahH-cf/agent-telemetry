@@ -1,5 +1,36 @@
 # Stability pass findings and retention report
 
+## ST-46 / ST-47 — Usage-left sidebar and five-minute publication (2026-10-01)
+
+- **Mapped plan:** [CAPACITY_REFRESH.md](CAPACITY_REFRESH.md) records the two
+  tasks, the collection/publication/browser dependencies and operational limits.
+- **ST-46 action:** the fixed Usage left bubble now displays the existing
+  Claude/Codex quota metrics in a compact panel. Short and long allowance windows
+  remain distinct, with reset countdowns, observation ages, source disclosures
+  and labelled stale/retained/unknown states. Historical activity and exact
+  API-equivalent cost remain under the main-page UTC selector.
+- **ST-47 action:** existing schedulers target five-minute collection/publication
+  slots; visible browsers check each minute. The shared lock, low priority,
+  zero-inference Claude capture, metadata privacy and guarded fast-forward
+  publication remain. Slot comparison prevents collection duration from skipping
+  the next publication. Marked log starts preserve the original 30-minute
+  interpretation of earlier log history. This supersedes ST-45's browser cadence
+  and the original half-hour/daily availability design below.
+- **Verification:** 271 standard-library/Node tests pass, including slot
+  boundaries, late completion, failure retention, scheduler inventory, legacy
+  cadence and the bounded high-cardinality fixture. Required source probes,
+  collection against isolated project-owned state, scrub, store/schema integrity
+  and machine reconciliation pass. Only current-day history differs. Real-browser
+  checks at 390 and 1,440 px show no horizontal overflow; observed zero and
+  unknown are distinct, and all four bounded allowance windows fit. A newer
+  generated payload was adopted by the natural minute timer with sidebar
+  disclosure and quota-help focus preserved. Escape restores toggle focus, the
+  navigation link reopens the panel, and date selection leaves capacity intact.
+  Source age and reset crossing independently change freshness without inventing
+  a refill. The deployment schedule is verified separately on the production
+  installation; isolated doctor warnings identify its absent cadence log and the
+  then-current half-hour production schedulers rather than hiding those states.
+
 ## FORECAST-001 — Selected-phase consumption and immutable calibration (2026-10-01)
 
 - **Observation:** the local consumer exposed measured usage, outcome accounting
