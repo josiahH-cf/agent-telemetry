@@ -457,13 +457,19 @@ The two current-user Windows tasks are:
 | Task | Trigger | Sole action |
 |---|---|---|
 | `agent-telemetry-logon` | User logon (S4U, headless) | `wsl.exe -d Ubuntu -- $HOME/agent-telemetry/run-telemetry.sh catchup windows-task-logon` |
-| `agent-telemetry-continuity` | Every 5 minutes, offset two minutes from cron (S4U, headless) | `wsl.exe -d Ubuntu -- $HOME/agent-telemetry/run-telemetry.sh refresh windows-task-continuity` |
+| `agent-telemetry-continuity` | Every 30 minutes (S4U, headless); five-minute target awaits an elevated task update | `wsl.exe -d Ubuntu -- $HOME/agent-telemetry/run-telemetry.sh refresh windows-task-continuity` |
 
 Both tasks are least-privilege/current-user, ignore overlapping instances, run
 on battery, and invoke no second program. Both use an `S4U` logon (run whether
 logged on or not) so they run headless in session 0 with no console window; the
 logon task catches up when Windows starts the WSL distribution. No collection
 can occur while the host is powered off.
+
+WSL's five-minute refresh runs while the distribution is active. The existing
+Windows continuity registration currently denies changes to this unelevated
+process; it retains its 30-minute fallback. Doctor reports the mismatch against
+the five-minute target. Updating that task requires an elevated operator action,
+without changing its principal, sole action, power policy or overlap policy.
 
 Remove only the tagged WSL entries with:
 

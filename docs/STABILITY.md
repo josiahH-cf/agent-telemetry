@@ -30,6 +30,10 @@
   a refill. The deployment schedule is verified separately on the production
   installation; isolated doctor warnings identify its absent cadence log and the
   then-current half-hour production schedulers rather than hiding those states.
+- **Windows installation limit:** the existing continuity task's update returned
+  Access is denied. Its 30-minute wake-up fallback is preserved, doctor reports
+  the target mismatch, and the operator-only interval update is documented.
+  Five-minute WSL refresh/publication does not depend on changing that task.
 
 ## FORECAST-001 — Selected-phase consumption and immutable calibration (2026-10-01)
 

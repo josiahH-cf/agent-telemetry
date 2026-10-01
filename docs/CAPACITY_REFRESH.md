@@ -62,10 +62,28 @@ Offline, failed, older or invalid responses retain last-good data.
 ## Installed schedule and operational limits
 
 The tagged WSL refresh entry runs at `*/5`; the publication and reboot entries
-retain their existing schedules. Windows `agent-telemetry-continuity` repeats
-every five minutes, offset two minutes from cron; `agent-telemetry-logon` retains
-its logon trigger. Both retain S4U headless operation, their one WSL action,
-least privilege, battery policy and overlap policy. No new job is created.
+retain their existing schedules. The Windows continuity target is five minutes,
+offset two minutes from cron. Its installed task remains at 30 minutes: changing
+the existing registration returned Access is denied to the unelevated process.
+Doctor exposes that mismatch. WSL still supplies five-minute collection and
+publication while active; Windows retains its existing wake-up fallback.
+`agent-telemetry-logon` retains its logon trigger. Both Windows tasks retain S4U
+headless operation, their one WSL action, least privilege, battery policy and
+overlap policy. No new job is created or security policy weakened.
+
+An operator can complete the pending interval change from an elevated PowerShell
+session after reviewing this exact task-only command:
+
+```powershell
+$continuityTask = Get-ScheduledTask -TaskName 'agent-telemetry-continuity'
+$continuityTriggers = $continuityTask.Triggers
+$continuityTriggers[0].Repetition.Interval = 'PT5M'
+Set-ScheduledTask -TaskName 'agent-telemetry-continuity' -Trigger $continuityTriggers
+```
+
+The existing start time is already offset two minutes from five-minute cron
+slots, so its boundary does not need modification. Verify doctor after updating;
+do not create a replacement task or change its principal to bypass access.
 
 Only the already configured, authenticated Claude built-in `/usage` capture is
 refreshed. Its zero-turn/token/cost guard and metadata allowlist remain intact.
