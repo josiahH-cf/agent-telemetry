@@ -357,6 +357,9 @@ def public_rows(connection: sqlite3.Connection) -> tuple[list[dict[str, Any]], l
     by_outcome: dict[str, list[sqlite3.Row]] = {}
     for row in connection.execute("SELECT * FROM outcome_events WHERE outcome_id IS NOT NULL ORDER BY outcome_id, at, event_id"):
         by_outcome.setdefault(str(row["outcome_id"]), []).append(row)
+    import economics
+
+    economic_fields = economics.outcome_fields(connection)
     for outcome_id, rows in sorted(by_outcome.items()):
         kinds: dict[str, int] = {}
         for row in rows:
@@ -392,8 +395,9 @@ def public_rows(connection: sqlite3.Connection) -> tuple[list[dict[str, Any]], l
             "linkage": linkage,
             "vendors": sorted({str(r["vendor"]) for r in rows if r["vendor"]}),
         }
+        item.update(economic_fields.get(outcome_id, {}))
         public.append(item)
-        local.append({**item, "internal_outcome_id": outcome_id, "project_id": rows[0]["project_id"], "native_session_ids": sorted({str(r["native_session_id"]) for r in rows if r["native_session_id"]})})
+        local.append({**item, "internal_outcome_id": outcome_id, "project_id": rows[0]["project_id"], "public_project_code": item.get('project_id'), "native_session_ids": sorted({str(r["native_session_id"]) for r in rows if r["native_session_id"]})})
     return public, local
 
 

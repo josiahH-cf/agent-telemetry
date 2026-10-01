@@ -32,7 +32,7 @@ Use the surface that matches the question:
   is the catalog for the complete public tier. It names each JSONL path, schema,
   row count, coverage bound, semantics, and SHA-256. The public datasets are
   `projects`, `sessions`, `days`, `attention_days`, `rounds`, `specs`, `tests`,
-  `publications`, `incidents`, `outcomes`, and `metrics`; schemas live under `data/schema/`.
+  `publications`, `incidents`, `outcomes`, `code_changes`, and `metrics`; schemas live under `data/schema/`.
 - The [metric catalog](data/machine/metrics.jsonl) is the only authority for a
   metric's stable id, display label, definition, exact derivation, source,
   caveats, unit, and `page` versus `machine-only` surface decision. Dashboard
@@ -61,6 +61,11 @@ hard-coding the current list.
 - `sessions.session_id` is a one-way public identifier, not a provider UUID.
 - `metrics.metric_id` is the stable key for definitions and dashboard metric
   disclosures.
+- `code_changes.project_id` and the additive nullable `outcomes.project_id`
+  join `projects.project_code`. Outcome `project_attribution` distinguishes
+  explicit mapping/full-revision evidence (`exact`), native-session repository
+  association (`correlated`), conflicting projects (`shared`), and absent
+  association (`unattributed`). Do not invent a project for a null key.
 - `tests`, `publications`, and `incidents` are independently identified
   observations; do not invent a project join when their schemas provide none.
 - `host_os` is where the provider process ran (`wsl` or `windows`), not the
@@ -115,6 +120,10 @@ PY
 - Dashboard windows are inclusive UTC windows ending on the generated date.
   They are exactly 7, 30, 90, or all retained days. For an arbitrary range,
   filter `days.jsonl` by `date`; do not reinterpret the date in local time.
+- The additive Attention Economics report prints its own latest closed UTC
+  dates ending yesterday, so timer aggregates and investment/results use the
+  same dates. Its preceding equal-length window is qualified by source bounds,
+  capture health and missing evidence. Existing activity windows stay unchanged.
 - The dashboard is deliberately aggregated. Its `other` slices and collapsed
   detail do not imply missing collection; use the public JSONL tier for
   exhaustive rows.
@@ -372,6 +381,16 @@ and hooks report only path and reason, never the matched text. After changing it
 run both `python3 collect.py --scrub` and the tests before any commit.
 
 ### Extension contracts
+
+Attention Economics uses the restricted append-only context/cash ledger and
+explicit read-only `observatory.code_roots` described in
+[docs/ATTENTION_ECONOMICS.md](docs/ATTENTION_ECONOMICS.md). Project goals, status,
+private provenance and prose never enter a public report or portfolio export.
+Later context revisions cannot replace immutable local daily report archives
+or admitted forecasts. Actual cash, dated subscription estimates, API-equivalent
+dollars, summed receipt elapsed time and recorded human attention are separate.
+Code sources retain last-good metadata and never collect content, filenames,
+authors or commit messages. No Console write, new scheduler or probe is implied.
 
 - Add or change a metric in `metric_catalog.py` first. Give it a stable id,
   exact derivation with filters/clamps/units, sources, caveats, and an explicit

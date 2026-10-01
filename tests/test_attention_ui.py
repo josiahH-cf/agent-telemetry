@@ -108,7 +108,7 @@ class AttentionStructureTests(unittest.TestCase):
         self.assertNotIn("const observed = parsedMillis(observedAt);", DASHBOARD)
 
     def test_attention_section_uses_exact_payload_contract_and_evidence_classes(self) -> None:
-        self.assertEqual(INDEX.count("<section "), 7)
+        self.assertEqual(INDEX.count("<section "), 8)
         self.assertIn('<section id="attention"', INDEX)
         for metric_id in (
             "recorded_operator_attention_hours",

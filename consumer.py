@@ -35,6 +35,7 @@ from typing import Any
 
 import outcome_quality
 import forecasting
+import economics
 import observatory
 import portfolio
 import usage
@@ -308,7 +309,8 @@ def _attention_intervals(project_root: Path, state_root: Path, now: dt.datetime)
         parsed = attention_ledger.parse_ledger(state_root, project_map, now=now)
     except attention_ledger.AttentionError:
         return []
-    return [{"project_id": i.project_id, "mode": i.mode, "attention_seconds": i.attention_seconds, "day": i.started_at.astimezone(dt.timezone.utc).date().isoformat()} for i in parsed.intervals]
+    return [{"project_id": s.project_id, "mode": s.mode, "attention_seconds": s.attention_seconds, "day": s.date}
+            for i in parsed.intervals for s in attention_ledger.split_interval_utc(i)]
 
 
 def pricing_view(project_root: Path) -> dict[str, Any]:
@@ -326,6 +328,7 @@ def consumer_view(project_root: Path, state_root: Path, scope: dict[str, Any] | 
     store = state_root / observatory.STORE_NAME
     base = {"contract": CONTRACT, "producer": PRODUCER, "generated_at": _iso(now), "scope": forecasting.consumer_scope(scope), "pricing": pricing_view(project_root),
         "forecasting": forecasting.view(None, scope, capacity=[], generation={}, now=now)}
+    base['economics'] = economics.consumer_view(None, project_root, state_root, scope, now, {}, None, None, [])
     if not store.is_file():
         return {**base, "status": "not-configured", "generation": {"status": "no-store"}, "projects": [], "sessions": [], "capacity": [], "coverage": {"roots": [], "missing": [{"source": "observatory", "status": "not-configured"}]}, "attention": attention_view(project_root, state_root, now), "publication": publication_view(state_root), "collection": dict(UNKNOWN_COLLECTION), "quality":{"status":"not-observed","groups":[],"outcomes":[],"outcomes_total":0}, "accounting": {"status": "not-configured", "run_usage": {}, "previous_period": None, "groups": [], "shared": None, "totals": None, "repositories": [], "sessions": [], "sessions_total": 0, "outcomes": [], "outcomes_total": 0, "coverage_gaps": [{"source": "observatory", "status": "not-configured"}]}}
     connection = open_read_only(store)
@@ -356,6 +359,8 @@ def consumer_view(project_root: Path, state_root: Path, scope: dict[str, Any] | 
             registry=observatory.read_registry(project_root, state_root), attention=_attention_intervals(project_root, state_root, now),
             coverage={"imports": view["coverage"].get("imports", []), "sources": view["sources"]}, detail=scope.get("accounting_detail"),
             run_outcomes=scope.get("accounting_outcomes") if isinstance(scope.get("accounting_outcomes"), list) else None)
+        view['economics'] = economics.consumer_view(connection, project_root, state_root, scope, now, gen, view['accounting'],
+            observatory.read_registry(project_root, state_root), _attention_intervals(project_root, state_root, now))
         if "history" in scope:
             view["history"] = portfolio.history_view(connection, scope.get("history"), now)
     finally:

@@ -1,0 +1,18 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "agent-telemetry/code-changes-record-v1",
+  "title": "Read-only first-parent code-change metadata",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["change_id", "project_id", "at", "date", "files_changed", "insertions", "deletions", "source"],
+  "properties": {
+    "change_id": {"type": "string", "pattern": "chg-[0-9a-f]{24}"},
+    "project_id": {"type": "string", "description": "Stable projects.project_code; no private name or path."},
+    "at": {"type": "string"},
+    "date": {"type": "string", "pattern": "[0-9]{4}-[0-9]{2}-[0-9]{2}"},
+    "files_changed": {"type": ["integer", "null"], "minimum": 0},
+    "insertions": {"type": ["integer", "null"], "minimum": 0},
+    "deletions": {"type": ["integer", "null"], "minimum": 0},
+    "source": {"type": "string", "const": "read_only_git_first_parent"}
+  }
+}

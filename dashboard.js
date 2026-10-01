@@ -644,6 +644,49 @@ if (typeof module === "object" && module.exports) module.exports = AgentTelemetr
     populateScenarioProjects(ledger);
   }
 
+  function economicsChange(change, key, kind = "number") {
+    const value = numeric((change && change.values || {})[key]);
+    const observed = numeric((change && change.observed_values || {})[key]);
+    if (!finite(value) && finite(observed)) return `Recorded Δ ${observed > 0 ? "+" : observed < 0 ? "−" : "↔ "}${fmt(Math.abs(observed), kind)} · partial coverage`;
+    return finite(value) ? `${value > 0 ? "+" : value < 0 ? "−" : "↔ "}${fmt(Math.abs(value), kind)} vs prior closed period`
+      : "Comparison unavailable · coverage incomplete";
+  }
+
+  function economicsName(row) {
+    return row.other_count ? `other (${full.format(row.other_count)} projects)` : row.project_id || "Shared/Unassigned";
+  }
+
+  function renderEconomics() {
+    $("investment").dataset.metricId = "economics_investment_results";
+    const report = active.investment_results || {};
+    const totals = report.totals || {};
+    const results = totals.results || {};
+    const period = report.period || {};
+    const prior = report.previous_period || {};
+    $("economics-period").textContent = period.from ? `${period.from} → ${period.to} · closed UTC dates${prior.from ? ` · prior ${prior.from} → ${prior.to}` : " · all-history has no previous period"}` : "Economics evidence unavailable";
+    $("economics-cards").innerHTML = [
+      card("economics_attention_hours", attentionHours(numeric(totals.recorded_attention_hours)), "Five explicit timer modes; missing time stays unknown", economicsChange(report.change, "recorded_attention_hours"), "observed"),
+      card("economics_api_equivalent_usd", fmt(numeric(totals.api_equivalent_cost_usd), "money"), "API-equivalent investment · includes ordinary attempts and repair", economicsChange(report.change, "api_equivalent_cost_usd", "money")),
+      card("economics_delivered", fmt(numeric(results.delivered)), "Producer-recorded satisfied outcomes", economicsChange(report.change, "delivered")),
+      card("economics_accepted", fmt(numeric(results.human_accepted)), "Delivered + latest explicit human acceptance", economicsChange(report.change, "human_accepted")),
+    ].join("");
+    $("economics-results").innerHTML = `<span data-metric-id="economics_verified"><strong>${fmt(numeric(results.verified_delivered))}</strong> delivered with passing checks and no recorded failed checks ${metricButton("economics_verified")}</span> · ${fmt(numeric(results.reviewed))} reviewed / ${fmt(numeric(results.outcomes))} recorded outcomes · ${fmt(numeric(results.delivered_unreviewed))} delivered without a verdict. <span data-metric-id="economics_code_changes">${fmt(numeric((totals.code || {}).revisions))} code revisions ${metricButton("economics_code_changes")}</span>. <span data-metric-id="economics_period_change">${metricButton("economics_period_change")} Comparisons use the same closed UTC dates and definitions; work scope and capture completeness may differ.</span>`;
+    const subscription = report.subscription || {};
+    const cash = report.actual_cash || {};
+    $("economics-money").innerHTML = `<span data-metric-id="economics_subscription_estimate">${metricButton("economics_subscription_estimate")} <strong>Subscriptions:</strong> ${fmt(numeric(subscription.current_monthly_usd), "money", "no configured current rate")}/month configured; ${fmt(numeric(subscription.estimate_usd), "money", "no complete dated rate coverage")} period estimate. ${esc(subscription.status || "not configured")}${subscription.covered_vendor_days ? ` · ${full.format(subscription.covered_vendor_days)} covered vendor-days; ${full.format(subscription.missing_vendor_days || 0)} missing` : ""}.</span> <strong>Actual cash:</strong> ${fmt(numeric(cash.amount_usd), "money", cash.status === "not-published" ? "private or not recorded" : "not recorded")}. These amounts are separate; a rate estimate is not a payment. Unpriced usage: ${fmt(numeric(totals.unpriced_tokens), "tokens")}.`;
+    const rows = (report.projects || []).slice(0, 7).map(row => {
+      const facts = row.results || {};
+      return `<tr><td>${esc(economicsName(row))}<br><small>${esc(economicsChange(row.change, "api_equivalent_cost_usd", "money"))}</small></td><td class="num">${attentionHours(numeric(row.recorded_attention_hours))}</td><td class="num">${fmt(numeric(row.api_equivalent_cost_usd), "money")}</td><td class="num">${fmt(numeric(facts.delivered))}</td><td class="num">${fmt(numeric(facts.human_accepted))}</td><td class="num">${fmt(numeric(facts.verified_delivered))}</td><td class="num">${fmt(numeric((row.code || {}).revisions))}</td></tr>`;
+    });
+    $("economics-projects").innerHTML = rows.length ? table([["Project / exact tail", false], ["Recorded h", true, "economics_attention_hours"], ["API-equivalent USD", true, "economics_api_equivalent_usd"], ["Delivered", true, "economics_delivered"], ["Human accepted", true, "economics_accepted"], ["Passing checks", true, "economics_verified"], ["Code revisions", true, "economics_code_changes"]], rows) : '<p class="empty">No recorded project evidence in this closed period.</p>';
+    const shared = report.shared;
+    $("economics-shared").innerHTML = shared ? `<strong>Shared / Unassigned remains visible:</strong> ${fmt(numeric(shared.api_equivalent_cost_usd), "money")} API-equivalent · ${attentionHours(numeric(shared.recorded_attention_hours))} recorded attention · ${fmt(numeric((shared.results || {}).outcomes))} outcomes, ${fmt(numeric((shared.results || {}).delivered))} delivered, ${fmt(numeric((shared.results || {}).human_accepted))} human accepted. Counts by linkage: ${["exact", "correlated", "shared", "unattributed"].map(key => `${esc(key)} ${full.format((shared.attribution || {})[key] || 0)}`).join(" · ")}.` : "No Shared/Unassigned observations in this period. Missing evidence is still unknown.";
+    const coverage = report.coverage || {};
+    $("economics-coverage").textContent = Object.entries(coverage).map(([family, value]) => `${family}: ${value.status || "unknown"}, ${value.from || "unknown start"} → ${value.to || "unknown end"}`).join(" · ") + " · Timer use and refinement capture are incomplete. Native-session repository joins are correlated; explicit project mappings and full receipt revisions matched to configured Git evidence are exact; conflicting links stay shared. Loop history remains a separate frozen cohort.";
+    refreshLazy("economics-detail");
+    refreshLazy("economics-trend");
+  }
+
   function scenarioInputValue(id) {
     const value = $(id).value;
     return value.trim() === "" ? null : value;
@@ -793,6 +836,18 @@ if (typeof module === "object" && module.exports) module.exports = AgentTelemetr
     } else if (detailId === "ledger-detail") {
       const rows = (active.recent_specs || []).map(row => `<tr><td>${esc(row.spec)}</td><td>${esc(row.outcome)}</td><td class="num">${fmt(row.rounds)}</td><td class="num">${fmt(row.tokens, "tokens")}</td><td class="num">${fmt(row.cost_usd, "money")}</td><td class="num">${fmt(row.findings)}</td><td>${esc(when(row.latest_at))}</td></tr>`);
       body.innerHTML = table([["Feature",false],["Outcome",false,"recent_spec_ledger"],["Rounds",true,"recent_spec_ledger"],["Tokens",true,"recent_spec_ledger"],["Exact USD",true,"recent_spec_ledger"],["Findings",true,"recent_spec_ledger"],["Latest",false,"recent_spec_ledger"]], rows);
+    } else if (detailId === "economics-detail") {
+      const report = active.investment_results || {};
+      const list = [{...(report.totals || {}), project_id:"All recorded investment / results"}, ...(report.projects || []).slice(0, 7), ...(report.shared ? [report.shared] : [])];
+      const rows = list.map(row => {
+        const facts = row.results || {}, code = row.code || {};
+        return `<tr><td>${esc(economicsName(row))}</td><td class="num">${fmt(numeric(facts.attempts))}</td><td class="num">${fmt(numeric(facts.repairs))}</td><td class="num">${fmt(numeric(facts.human_interventions))}</td><td class="num">${fmt(numeric(facts.needs_changes))}</td><td class="num">${fmt(numeric(facts.checks_passed))} / ${fmt(numeric(facts.checks_failed))}</td><td class="num">${fmt(numeric(facts.refinement_complete))} / ${fmt(numeric(facts.outcomes))}</td><td class="num">${fmt(numeric(facts.elapsed_seconds))} / ${fmt(numeric(facts.closed_waiting_seconds))}</td><td class="num">${fmt(numeric(code.files_changed))}</td><td class="num">+${fmt(numeric(code.insertions))} / −${fmt(numeric(code.deletions))}</td></tr>`;
+      });
+      const modes = (report.totals || {}).mode_seconds || {};
+      body.innerHTML = `<p class="economics-copy" data-metric-id="economics_effort_results">${metricButton("economics_effort_results")} Attempts use explicit attempt identities or recorded session bindings. Repairs count distinct repair references; absent capture is unknown. Pass/fail counts are recorded checks. Summed receipt spans and closed waits are seconds and can overlap, separate from human attention. Text lines and revisions are metadata, not a score. Shared sessions are charged once in project usage; per-outcome dollars remain unknown when allocation is shared.</p><p class="economics-copy">Recorded closed-period modes: ${["plan", "guide", "review", "rework", "direct"].map(mode => `${esc(mode)} ${attentionHours(numeric(modes[mode]) === null ? null : modes[mode] / 3600)}`).join(" · ")}. Outcome association counts: ${["exact", "correlated", "shared", "unattributed"].map(key => `${esc(key)} ${full.format(((report.totals || {}).attribution || {})[key] || 0)}`).join(" · ")}.</p>${table([["Project", false], ["Attempts", true], ["Repairs", true], ["Interventions", true], ["Needs changes", true], ["Pass / fail checks", true], ["Complete refinement / outcomes", true], ["Summed elapsed / wait seconds", true], ["Changed file touches", true, "economics_code_changes"], ["Text additions / deletions", true]], rows)}`;
+    } else if (detailId === "economics-trend") {
+      const rows = ((active.investment_results || {}).trend || []).slice(0, 48).map(row => `<tr><td>${esc(row.from)} → ${esc(row.to)}</td><td class="num">${attentionHours(numeric(row.attention_hours))}</td><td class="num">${fmt(numeric(row.api_equivalent_cost_usd), "money")}</td><td class="num">${fmt(numeric(row.delivered))}</td><td class="num">${fmt(numeric(row.human_accepted))}</td><td class="num">${fmt(numeric(row.code_revisions))}</td></tr>`);
+      body.innerHTML = `<p class="economics-copy">Consecutive UTC buckets use separate units. Unknown attention remains unknown. Outcome cohorts use their last receipt date; subsequent receipts can move a whole outcome to a later cohort. Immutable local report archives preserve earlier snapshots.</p>${table([["UTC bucket", false], ["Recorded hours", true], ["API-equivalent USD", true], ["Delivered", true], ["Human accepted", true], ["Code revisions", true]], rows)}`;
     }
     body.dataset.built = "true";
   }
@@ -1000,6 +1055,7 @@ if (typeof module === "object" && module.exports) module.exports = AgentTelemetr
     renderActivity();
     renderMix();
     renderAttention();
+    renderEconomics();
     renderOutcomes();
     renderReliability();
     renderEvidence();

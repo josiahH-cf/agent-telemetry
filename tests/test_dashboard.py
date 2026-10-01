@@ -243,11 +243,25 @@ class DashboardEnvelopeTests(unittest.TestCase):
         # Frozen governed-loop history can leave the current 30-day window empty.
         # Compare exhaustive retained shapes and require bounded current detail;
         # do not require invented live rounds to fill retired-history slots.
-        self.assertEqual(metric_catalog.surface_signature(real_page, "all"), metric_catalog.surface_signature(large_page, "all"))
+        real_all = metric_catalog.surface_signature(real_page, 'all')
+        large_all = metric_catalog.surface_signature(large_page, 'all')
+        self.assertLessEqual(real_all.pop('attention_ledger_rows'), 7)
+        self.assertLessEqual(large_all.pop('attention_ledger_rows'), 7)
+        self.assertLessEqual(real_all.pop('economics_project_rows'), 7)
+        self.assertLessEqual(large_all.pop('economics_project_rows'), 7)
+        self.assertLessEqual(real_all.pop('economics_trend_buckets'), 48)
+        self.assertLessEqual(large_all.pop('economics_trend_buckets'), 48)
+        self.assertEqual(real_all, large_all)
         real_shape = metric_catalog.surface_signature(real_page)
         large_shape = metric_catalog.surface_signature(large_page)
         for key in real_shape:
-            if key in {"spec_rank_rows", "ledger_preview_rows"}:
+            if key in ('attention_ledger_rows', 'economics_project_rows'):
+                self.assertLessEqual(real_shape[key], 7)
+                self.assertLessEqual(large_shape[key], 7)
+            elif key == 'economics_trend_buckets':
+                self.assertLessEqual(real_shape[key], 48)
+                self.assertLessEqual(large_shape[key], 48)
+            elif key in {"spec_rank_rows", "ledger_preview_rows"}:
                 self.assertLessEqual(real_shape[key], large_shape[key])
             else:
                 self.assertEqual(real_shape[key], large_shape[key], key)

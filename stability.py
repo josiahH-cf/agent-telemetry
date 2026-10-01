@@ -38,7 +38,7 @@ DISK_FILE = "disk-snapshot.json"
 PAGES_FILE = "pages-status.json"
 CLAUDE_USAGE_CAPTURE_FILE = "claude-usage-capture.json"
 OBSERVATORY_STORE = "observatory.sqlite3"
-OBSERVATORY_STORE_SCHEMA_VERSION = 4  # observatory.STORE_SCHEMA_VERSION: private forecast events and capacity evidence
+OBSERVATORY_STORE_SCHEMA_VERSION = 5  # additive bounded code evidence; forecasts unchanged
 WINDOWS_TASK_NAMES = ("agent-telemetry-logon", "agent-telemetry-continuity")
 WINDOWS_SCHTASKS = Path("/") / "mnt" / "c" / "Windows" / "System32" / "schtasks.exe"
 
@@ -54,6 +54,8 @@ STATIC_TRACKED_PATHS = {
     "collect.py",
     "consumer.py",
     "forecasting.py",
+    "economics.py",
+    "code_evidence.py",
     "metric_catalog.py",
     "dashboard.js",
     "data/schema/attention_days.schema.json",
@@ -62,6 +64,7 @@ STATIC_TRACKED_PATHS = {
     "data/schema/metrics.schema.json",
     "data/schema/forecasting.schema.json",
     "data/schema/outcomes.schema.json",
+    "data/schema/code_changes.schema.json",
     "data/schema/projects.schema.json",
     "data/schema/publications.schema.json",
     "data/schema/rounds.schema.json",
@@ -72,6 +75,7 @@ STATIC_TRACKED_PATHS = {
     "docs/FORECASTING.md",
     "docs/CAPACITY_REFRESH.md",
     "docs/ATTENTION_GUIDANCE_SPIKE.md",
+    "docs/ATTENTION_ECONOMICS.md",
     "docs/STABILITY.md",
     "index.html",
     "git_guard.py",
@@ -89,6 +93,7 @@ STATIC_TRACKED_PATHS = {
     "tests/test_attention_collect.py",
     "tests/test_attention_catalog.py",
     "tests/test_attention_ui.py",
+    "tests/test_economics.py",
     "tests/test_capacity.py",
     "tests/test_claude_usage_capture.py",
     "tests/test_dashboard.py",
@@ -106,12 +111,13 @@ STATIC_TRACKED_PATHS = {
     "tests/test_usage.py",
     "tools/retention.py",
     "tools/attention.py",
+    "tools/economics.py",
     "usage.py",
 }
 GENERATED_TRACKED_RE = re.compile(
     r"^data/(?:telemetry\.(?:json|js)|rounds\.json|"
     r"history/(?:cost|daily|measurement|global)-\d{4}-\d{2}-\d{2}\.json|"
-    r"machine/(?:MANIFEST\.json|(?:attention_days|days|incidents|metrics|outcomes|projects|publications|rounds|sessions|specs|tests)\.jsonl))$"
+    r"machine/(?:MANIFEST\.json|(?:attention_days|code_changes|days|incidents|metrics|outcomes|projects|publications|rounds|sessions|specs|tests)\.jsonl))$"
 )
 LOG_RE = re.compile(
     r"^(?P<timestamp>\S+)\s+mode=(?P<mode>refresh|publish|catchup|lock-probe)"
@@ -729,7 +735,9 @@ def _machine_manifest_status(project_root: Path) -> tuple[str, str]:
             invalid += 1
             continue
         invalid += int(digest != entry.get("sha256") or rows != safe_int(entry.get("rows"), -1))
-    expected = {"projects", "sessions", "days", "attention_days", "rounds", "specs", "tests", "publications", "incidents", "outcomes", "metrics"}
+    import observatory
+
+    expected = set(observatory.DATASET_NAMES)
     observed = {str(entry.get("dataset")) for entry in datasets if isinstance(entry, dict)}
     status = "ok" if observed == expected and invalid == 0 else "fail"
     return status, f"datasets_{len(datasets)}_invalid_{invalid}"

@@ -17,6 +17,7 @@ from collections import defaultdict
 from typing import Any, Iterable
 
 import cadence
+import economics
 
 
 CATALOG_SCHEMA_VERSION = 1
@@ -85,6 +86,55 @@ def _metric(
 
 
 CATALOG: tuple[dict[str, Any], ...] = (
+    _metric('economics_attention_hours', 'Recorded operator attention',
+        'Explicit completed operator timer attention in the economics report closed UTC period.',
+        'SUM attention_days.attention_seconds / 3600 in the displayed latest closed 7/30/90-day or all-history period; null without timer rows. The five mode totals use the same dates.',
+        ['attention_days'], 'Unrecorded attention remains unknown. Closed-date economics periods differ from the existing inclusive-current-day activity selector bounds, and are printed beside the report.', 'hours', 'page', 'observed'),
+    _metric('economics_api_equivalent_usd', 'API-equivalent investment',
+        'Exact-model API-list-price-equivalent dollars in the economics report closed UTC period.',
+        'SUM days.api_equivalent_cost_usd by displayed closed UTC dates. All observed ordinary attempts, repair and unattributed provider activity stay included; shared native sessions enter once. Unpriced tokens are separate.',
+        ['days', 'prices.json'], 'This is not actual spending, a subscription bill or an estimate of cash savings. Native-session costs on outcomes overlap these investment totals and must never be added to them.', 'API-equivalent USD', 'page', 'derived'),
+    _metric('economics_investment_results', 'Investment and recorded results',
+        'Recorded human attention and exact API-equivalent investment beside successor outcomes and code-change evidence, by registered project.',
+        'Use latest closed inclusive UTC 7/30/90-day windows (all retained closed dates for all-time); join attention by projects.project_code and usage by projects.project_id. Outcome project association is exact for an explicit registered mapping or full receipt revision matched to configured Git metadata, correlated for one observed native-session project, shared for conflicting projects, otherwise unattributed. Count each outcome once. Aggregate code_changes once by change_id. Rank six projects by API-equivalent cost then stable code; exact other and Shared/Unassigned keep all totals visible.',
+        ['attention_days', 'days', 'projects', 'outcomes', 'code_changes'],
+        'Attention completeness depends on timer use. Outcome last_at selects whole outcomes; this is a snapshot of recorded results, not causal value or a quality/productivity score. Loop history is a separate frozen cohort. Project prose and goals stay private.', 'mixed explicit units', 'page', 'derived'),
+    _metric('economics_delivered', 'Delivered outcomes',
+        'Distinct successor outcomes with a recorded satisfied disposition in the selected last-receipt cohort.',
+        'COUNT unique outcomes with delivered=true WHERE last_at UTC date is in the reporting period; delivered is any satisfied disposition. Null before receipt coverage or when the adapter has never observed outcomes.',
+        ['outcomes'], 'Producer-recorded delivery is not proof of acceptance, correctness or goal attainment; active or reopened outcomes can retain earlier delivery evidence.', 'outcomes', 'page', 'derived'),
+    _metric('economics_accepted', 'Delivered and human accepted',
+        'Delivered outcomes whose latest explicit review is accepted on a human basis.',
+        'COUNT delivered=true AND review_verdict=accepted AND acceptance_basis=human. Display reviewed and delivered_unreviewed denominators separately; latest explicit verdict owns review classification.',
+        ['outcomes'], 'Missing reviews are unknown, never rejection or acceptance. Human acceptance is explicit evidence, not a universal quality judgment.', 'outcomes', 'page', 'derived'),
+    _metric('economics_verified', 'Delivered with passing checks',
+        'Delivered outcomes with passing checks and no recorded failed checks in their retained receipt cohort.',
+        'COUNT delivered=true AND checks_passed>0 AND checks_failed=0; display outcomes with verification_observed and all pass/fail receipt counts beside it.',
+        ['outcomes'], 'Checks are producer observations, not a complete test suite. Earlier failed checks remain visible; a repaired outcome may therefore be delivered without entering this conservative passing-check cohort.', 'outcomes', 'page', 'derived'),
+    _metric('economics_code_changes', 'Recorded code changes',
+        'First-parent revisions and numeric change metadata from explicitly configured read-only Git sources.',
+        'COUNT unique code_changes.change_id in UTC at window; SUM known files_changed, insertions and deletions separately. Public identity hashes stable project code and native revision. Merge shortstats without evidence remain null. Sources backfill at most their configured bounded batch each collection.',
+        ['code_changes'], 'No code, filename, author or message is collected. Text line counts exclude binary content. Commits and lines are change metadata, never productivity, code quality or delivered outcomes.', 'revisions and text lines', 'page', 'observed'),
+    _metric('economics_effort_results', 'Attempts, repair and verification evidence',
+        'Recorded attempts, repairs, interventions, checks and receipt spans beside the same last-receipt outcome cohort.',
+        'Per outcome count distinct explicit attempt_id values, otherwise distinct session.bound event identities, otherwise zero only for complete refinement capture and null when unobserved. Repairs and human interventions use existing distinct reference/feedback unions, zero only where refinement measurement_since supports observation. Sum known values and show measured/complete outcome denominators. Sum recorded check.result pass/fail counts; receipt elapsed is last_at-first_at and closed waiting_seconds is the union of closed wait intervals. Sum per-outcome spans without calling them wall-clock duration.',
+        ['outcomes', 'private outcome_events'], 'Partial attempt/reference capture is a lower bound; absent evidence is unknown. Spans can overlap across outcomes. Checks, interventions and repair counts do not score quality, difficulty or human effort.', 'counts and summed receipt seconds', 'page', 'derived'),
+    _metric('economics_period_change', 'Change across comparable periods',
+        'Signed differences between the latest closed UTC reporting window and the immediately preceding equal-length window.',
+        'For each investment/result field subtract previous from current only when both are observed and both windows lie within that evidence family coverage; values require healthy capture. When those dates are covered but capture is partial, separately labelled observed_values show the difference in retained observations and values remains null. All-time has no previous period. Goals and context never modify measured values.',
+        ['attention_days', 'days', 'outcomes', 'code_changes'], 'Comparable dates do not ensure equal work scope, complete timer use or unchanged source capture. Mixed outcomes and incomplete refinement capture remain descriptive and explicitly qualified.', 'same unit as compared field', 'page', 'derived'),
+    _metric('economics_actual_cash', 'Recorded actual cash spending',
+        'Explicit USD cash entries, independently recorded from API-equivalent pricing and subscription rate estimates.',
+        'SUM latest immutable cash-entry revisions whose booked UTC date lies inside the period. Deduplicate by operator-supplied entry_id; a recorded zero is zero, no entry is null. Project allocations require an explicit registered project code; unassigned entries remain separate.',
+        ['private economics ledger'], 'Entry coverage is not a complete invoice ledger. Cash entries may include subscription payments; never add subscription estimates to them. Private by default; public aggregation needs explicit configuration.', 'actual USD', 'machine-only', 'self-reported'),
+    _metric('economics_subscription_estimate', 'Configured subscription estimate',
+        'Calendar-day allocation of explicitly dated configured monthly subscriptions, separate from recorded payments.',
+        'For each vendor and UTC date covered by exactly one subscriptions.local.json periods row, monthly_usd / calendar days in that month. Sum covered dates; expose covered vendor-days and missing vendor-days. Undated monthly_usd is a current rate only and supplies no historical estimate.',
+        ['subscriptions.local.json'], 'A configured rate is not a billed payment. No project allocation or cash saving is inferred; legacy subscription_amortization keeps its existing meaning.', 'estimated USD', 'page', 'self-reported'),
+    _metric('economics_project_context', 'Dated project context',
+        'Operator-supplied goals, status and context with effective dates, recorded dates and provenance, kept restricted.',
+        'Select latest effective context per registered project with effective_at<=period end and recorded_at<=report as_of. Evaluate only an explicitly named goal metric and target; retain version identity. Immutable daily local report archives preserve the first generated closed-date report; later context cannot replace it.',
+        ['private economics ledger', 'private economics report archive'], 'Context is interpretation, never a measurement adjustment. No default hourly value, opportunity cost, counterfactual or worth judgment is inferred.', 'context revision', 'machine-only', 'self-reported'),
     _metric('phase_forecast_tokens', 'Selected phase token forecast',
         'Prospective provider tokens for the selected phase; implementation covers the whole milestone, features, verification and ordinary repair.',
         'Recompute the median of qualified completed phase unions with the same phase, scope kind, provider/account choices, exact requested model/effort, workflow and optional feature count. Prefer a project cohort with at least three samples, otherwise disclose a cross-project cohort. Each observation revision and attributed usage unit enters once. Earlier research/planning is excluded. Bounds are the empirical minimum and maximum with at least two samples, never a confidence interval.',
@@ -1354,6 +1404,7 @@ def _window(
         "recent_specs": recent_specs[:TOP_N],
         "measurement": _measurement(snapshot, from_day, to_day),
         "attention_economics": _attention_economics(snapshot, key, from_day, to_day, raw_rows),
+        "investment_results": economics.report(snapshot, key) if key in ('7', '30', '90', 'all') else None,
     }
 
 
@@ -1545,4 +1596,6 @@ def surface_signature(page: dict[str, Any], window_key: str = "30") -> dict[str,
         "capacity_window_limit": _integer(capacity.get("provider_count")) * _integer(capacity.get("max_windows_per_provider")),
         "attention_mode_slots": len(attention.get("mode_composition", [])),
         "attention_ledger_rows": len(attention.get("project_ledger", [])),
+        "economics_project_rows": len(window.get('investment_results', {}).get('projects', [])),
+        "economics_trend_buckets": len(window.get('investment_results', {}).get('trend', [])),
     }

@@ -8,7 +8,12 @@ directories, or private project mappings.
 
 The fixed **Usage left · Claude & Codex** bubble opens current provider allowance
 windows, remaining percentages, resets and observation ages. An optional
-attention-economics ledger remains in the main page. Capacity uses already
+attention-economics ledger remains in the main page. The investment report adds
+closed-period comparisons of recorded attention, API-equivalent cost, delivery,
+explicit review, repair, checks and configured Git change metadata. Dated private
+goals and cash entries remain separate from measurements; see
+[Attention Economics and its local interface](docs/ATTENTION_ECONOMICS.md).
+Capacity uses already
 captured vendor-reported windows shared across models, with stale or retained
 values labelled; it never estimates messages from tokens. Human
 attention is recorded only by the explicit local timer, never inferred from

@@ -669,24 +669,46 @@ def accounting_view(connection, *, reporting=None, days=None, now=None, registry
     if reporting and reporting['unclaimed']:
         group_keys |= {repo_candidates(r)[0][1] for r in measured_ids if repo_candidates(r)[0][0] == 'group'}
     totals = {'period': _metrics(period_cells), 'lifetime': _metrics(lifetime_cells), 'previous': _metrics(previous_cells) if previous_cells is not None else None}
-    attention_by_group = defaultdict(lambda: defaultdict(float))
+    attention_by_owner = defaultdict(list)
     for interval in attention:
-        day = interval.get('day')
-        if not day or (bounds['from_day'] is not None and day < bounds['from_day']) or day > bounds['to_day']:
-            continue
         candidates = repo_candidates(interval['project_id']) if interval['project_id'] in keys_by_measured or interval['project_id'] in projects_rows else [project_candidate(interval['project_id'])]
         owner = _owner(candidates, 'attention')
+        attention_by_owner[owner].append(interval)
         if owner[0] == 'group':
-            attention_by_group[owner[1]][interval['mode']] += interval['attention_seconds']
+            group_keys.add(owner[1])
+
+    def in_period(day, period):
+        return day and period and (period['from_day'] is None or day >= period['from_day']) and day <= period['to_day']
+
+    def period_measures(members, period):
+        return _measures([i for i in members if in_period(i['last_at'][:10], period)]) if period else None
+
+    def timed(intervals, period):
+        selected_intervals = [i for i in intervals if in_period(i.get('day'), period)]
+        if not selected_intervals:
+            return None
+        modes = {mode: sum(i['attention_seconds'] for i in selected_intervals if i['mode'] == mode)
+                 for mode in ('plan', 'guide', 'review', 'rework', 'direct')}
+        return {'recorded_seconds': sum(modes.values()), 'by_mode': modes,
+                'basis': 'explicit completed timer intervals split into their exact UTC dates; missing timer use is unknown'}
+
+    lifetime_bounds = {'from_day': None, 'to_day': bounds['to_day']}
+    totals['outcomes'] = {'period': period_measures(items, bounds), 'previous': period_measures(items, previous_bounds),
+                          'lifetime': period_measures(items, lifetime_bounds)}
+    totals['attention'] = {'period': timed(attention, bounds), 'previous': timed(attention, previous_bounds),
+                           'lifetime': timed(attention, lifetime_bounds)}
     groups = []
     for key in sorted(group_keys) if reporting else []:
         mine = lambda cells: [c for c in cells if c['owner'] == ('group', key)]
         members = [i for i in items if i['group'] == key]
-        recorded = attention_by_group.get(key)
+        recorded = attention_by_owner.get(('group', key), [])
         groups.append({'key': key, 'period': _metrics(mine(period_cells), totals['period']), 'lifetime': _metrics(mine(lifetime_cells), totals['lifetime']),
                        'previous': _metrics(mine(previous_cells), totals['previous']) if previous_cells is not None else None,
                        'outcomes': _measures(members),
-                       'attention': {'recorded_seconds': round(sum(recorded.values()), 3), 'by_mode': dict(recorded), 'basis': 'explicitly recorded timer intervals joined at workspace level'} if recorded else None})
+                       'outcomes_period': period_measures(members, bounds),
+                       'outcomes_previous': period_measures(members, previous_bounds),
+                       'attention': timed(recorded, bounds), 'attention_previous': timed(recorded, previous_bounds),
+                       'attention_lifetime': timed(recorded, lifetime_bounds)})
 
     def shared(cells, scope_totals):
         rest = [c for c in cells if c['owner'][0] != 'group']
@@ -719,9 +741,15 @@ def accounting_view(connection, *, reporting=None, days=None, now=None, registry
     unobserved = sum(s['status'] != 'observed' for s in sessions.values())
     if unobserved:
         gaps.append({'source': 'managed-sessions', 'status': 'not-observed', 'count': unobserved, 'detail_code': 'bound_native_session_without_measurement'})
+    shared_items = [i for i in items if i['group'] is None]
+    shared_attention = [i for owner, intervals in attention_by_owner.items() if owner[0] != 'group' for i in intervals]
     return {**base, 'status': 'current', 'period': bounds, 'groups': groups,
             'shared': {'period': shared(period_cells, totals['period']), 'lifetime': shared(lifetime_cells, totals['lifetime']),
-                       'previous': shared(previous_cells, totals['previous']) if previous_cells is not None else None},
+                       'previous': shared(previous_cells, totals['previous']) if previous_cells is not None else None,
+                       'outcomes_period': period_measures(shared_items, bounds), 'outcomes_previous': period_measures(shared_items, previous_bounds),
+                       'outcomes_lifetime': period_measures(shared_items, lifetime_bounds),
+                       'attention': timed(shared_attention, bounds), 'attention_previous': timed(shared_attention, previous_bounds),
+                       'attention_lifetime': timed(shared_attention, lifetime_bounds)},
             'previous_period': previous_bounds, 'run_usage': _run_usage(items, sessions, run_outcomes),
             'totals': totals, 'repositories': repositories,
             'sessions': [public_session(s) for s in related[offset:offset + limit]], 'sessions_total': len(related),

@@ -1405,12 +1405,14 @@ def spec_corpus_with_last_good(result: dict[str, Any], cache_root: Path, now: dt
     return source_with_last_good("spec_corpus", result, cache_root, now)
 
 
-def loop_usage_with_last_good(usage_result: dict[str, Any], cache_root: Path, now: dt.datetime, *, serve_cached: bool = True) -> tuple[dict[str, Any], dict[str, Any]]:
+def loop_usage_with_last_good(usage_result: dict[str, Any], cache_root: Path, now: dt.datetime, *, serve_cached: bool = True, refresh_live: bool = True) -> tuple[dict[str, Any], dict[str, Any]]:
     """Freeze the usage-derived loop attribution (rounds, row timing, driver time) the same way.
 
     Returns the usage result plus how the loop part was served: ``live`` (snapshot refreshed),
     ``last_good`` (cached rounds served because the live read had none or fewer) or ``none``.
     ``serve_cached`` is false when the operator disabled the suite-state source.
+    ``refresh_live`` is false for retained historical suite evidence: newly
+    scanned provider metadata must not reprice or reattribute that frozen loop.
     """
     path = last_good_path(cache_root, "loop_usage")
     rounds = usage_result.get("rounds") if isinstance(usage_result.get("rounds"), list) else []
@@ -1419,7 +1421,7 @@ def loop_usage_with_last_good(usage_result: dict[str, Any], cache_root: Path, no
     cached = read_last_good(path)
     cached_meta = cached.get("meta") if isinstance(cached.get("meta"), dict) else {}
     cached_counts = cached_meta.get("ingested") if isinstance(cached_meta.get("ingested"), dict) else {}
-    if rounds and not counts_shrunk(live_counts, cached_counts):
+    if rounds and not counts_shrunk(live_counts, cached_counts) and (refresh_live or not cached):
         value = {
             "schema_version": SCHEMA_VERSION,
             "recorded_at": iso(now),
@@ -3193,7 +3195,9 @@ def collect_snapshot(
             if usage_enabled[name]:
                 results[name] = unavailable_result("absent", "scope_root_unconfigured")
     usage_result, loop_usage_status = loop_usage_with_last_good(
-        usage_result, cache_root, now, serve_cached=results["suite_state"].get("meta", {}).get("status") != "disabled"
+        usage_result, cache_root, now,
+        serve_cached=results["suite_state"].get("meta", {}).get("status") != "disabled",
+        refresh_live=results["suite_state"].get("meta", {}).get("status") != "historical",
     )
     if local_claude_usage:
         usage_result["claude_usage_snapshot"] = local_claude_usage
@@ -3223,6 +3227,9 @@ def collect_snapshot(
     )
     snapshot["_observatory_run_id"] = observatory_summary.pop("run_id", None)
     snapshot.setdefault("metrics", {})["observatory"] = observatory_summary
+    import economics
+
+    economics.collect_facts(project_root, cache_root, config, snapshot)
     snapshot["_observatory_scan_results"] = observatory_roots
     snapshot["_observatory_state_root"] = str(cache_root)
     snapshot.setdefault("metrics", {})["reliability"] = telemetry_stability.run_doctor(
@@ -3498,6 +3505,12 @@ def main(argv: list[str] | None = None) -> int:
             global_observatory.finish_run(cache_root, run_id, "failure", failure_detail_code(phase, exc))
             raise
         global_observatory.finish_run(cache_root, run_id, "success", "ok")
+        import economics
+
+        try:
+            economics.archive_reports(project_root, cache_root, snapshot)
+        except (OSError, ValueError):
+            print('[economics] archive_unavailable; public measurements retained')
         telemetry_stability.record_clock_success(cache_root, now)
         print(f"wrote data/telemetry.json and {len(snapshot['history'])} daily history files")
         if args.commit:

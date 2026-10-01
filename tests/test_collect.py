@@ -449,7 +449,7 @@ class HistoryAndPrivacyTests(unittest.TestCase):
         self.assertIn('<link rel="icon" href="data:,">', text)
         for section in ("overview", "activity", "mix", "attention", "outcomes", "reliability", "evidence"):
             self.assertIn(f'id="{section}"', text)
-        self.assertEqual(text.count("<section "), 7)
+        self.assertEqual(text.count("<section "), 8)
         for check in ("overview", "reliability", "evidence"):
             self.assertIn(f'id="{check}-check"', text)
         self.assertIn('id="metric-dialog"', text)
@@ -628,6 +628,23 @@ def machine_bytes(out: Path) -> dict[str, bytes]:
 
 
 class RetiredLoopHistoryTests(unittest.TestCase):
+    def test_historical_loop_attribution_does_not_change_with_new_provider_metadata(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            state = Path(temporary)
+            at = dt.datetime(2026, 9, 9, 10, tzinfo=UTC)
+            first = {'rounds': [{'spec': 'fixture', 'round': 1, 'usd': 12}],
+                     'row_time': {'fixture': {'seconds': 60}}, 'time': {'seconds': 60}, 'totals': {'tokens': 10}}
+            collect.loop_usage_with_last_good(first, state, at)
+            path = collect.last_good_path(state, 'loop_usage')
+            before = path.read_bytes()
+            latest = {**first, 'rounds': [{'spec': 'fixture', 'round': 1, 'usd': 99}],
+                      'totals': {'tokens': 20}}
+            served, status = collect.loop_usage_with_last_good(latest, state, at+dt.timedelta(days=1), refresh_live=False)
+            self.assertEqual(served['rounds'], first['rounds'])
+            self.assertEqual(served['totals'], latest['totals'])
+            self.assertEqual(status['served_from'], 'last_good')
+            self.assertEqual(path.read_bytes(), before)
+
     def test_retired_loop_sources_serve_last_good_when_their_roots_disappear(self) -> None:
         with tempfile.TemporaryDirectory(dir="/tmp") as temporary:
             root = Path(temporary)

@@ -192,3 +192,16 @@ admitted forecasts or closed history. Unknown extra fields, including nested
 usage prose, are discarded before private storage; existing supported counters
 retain their semantics. This interface supplies information, never execution
 authority. Console integration and live accuracy evidence remain separate work.
+
+## Attention Economics (2026-10-01)
+
+Store schema 5 adds bounded configured Git metadata and the read-only
+`telemetry-consumer-v1.economics` capability. Public outcomes gain optional
+registered project association and descriptive review/refinement/span fields;
+existing required fields and semantics remain unchanged. Native-session,
+explicit mapping and full-revision joins retain their different linkage bases.
+Shared dollars and missing measurement stay unknown rather than being split or
+inferred. The public `code_changes` dataset joins stable project codes, never
+private receipt project IDs. See [ATTENTION_ECONOMICS.md](ATTENTION_ECONOMICS.md)
+for configuration, private context/cash revisions, closed reporting periods,
+consumer fields, producer requirements and interpretation limits.

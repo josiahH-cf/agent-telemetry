@@ -29,7 +29,7 @@ import usage
 from tools import attention as attention_ledger
 
 
-STORE_SCHEMA_VERSION = 4
+STORE_SCHEMA_VERSION = 5
 PUBLIC_SCHEMA_VERSION = 1
 STORE_NAME = "observatory.sqlite3"
 SALT_NAME = "project-salt-v1"
@@ -551,6 +551,13 @@ def migrate(connection: sqlite3.Connection) -> None:
             connection.executescript(forecasting.MIGRATION_4)
             connection.execute("PRAGMA user_version=4")
             connection.execute("INSERT OR REPLACE INTO meta(key,value) VALUES('schema_version','4')")
+    if current < 5:
+        import code_evidence
+
+        with connection:
+            connection.executescript(code_evidence.MIGRATION_5)
+            connection.execute("PRAGMA user_version=5")
+            connection.execute("INSERT OR REPLACE INTO meta(key,value) VALUES('schema_version','5')")
 
 
 def store_integrity(connection: sqlite3.Connection) -> str:
@@ -1044,6 +1051,9 @@ def semantic_digest(connection: sqlite3.Connection) -> str:
         "rounds": stable_table_rows(connection, "loop_rounds", "record_id,record_json"),
         "specs": stable_table_rows(connection, "loop_specs", "record_id,record_json"),
         "tests": stable_table_rows(connection, "test_runs", "record_id,record_json"),
+        "outcomes": stable_table_rows(connection, "outcome_events", "event_id,evidence_digest,record_json"),
+        "code_changes": stable_table_rows(connection, "code_observations", "change_id,at,files_changed,insertions,deletions")
+        if connection.execute("SELECT 1 FROM sqlite_master WHERE type='table' AND name='code_observations'").fetchone() else [],
     }
     return hashlib.sha256(json_text(payload).encode()).hexdigest()
 
@@ -1180,7 +1190,7 @@ def public_summary(connection: sqlite3.Connection) -> dict[str, Any]:
     }
 
 
-STORE_DATASET_NAMES = ("projects", "sessions", "days", "rounds", "specs", "tests", "publications", "incidents", "outcomes")
+STORE_DATASET_NAMES = ("projects", "sessions", "days", "rounds", "specs", "tests", "publications", "incidents", "outcomes", "code_changes")
 DATASET_NAMES = STORE_DATASET_NAMES + ("attention_days", "metrics")
 
 
@@ -1353,6 +1363,10 @@ def machine_datasets(connection: sqlite3.Connection) -> tuple[dict[str, list[dic
     import outcomes as receipt_outcomes
 
     public["outcomes"], local["outcomes"] = receipt_outcomes.public_rows(connection)
+    import code_evidence
+
+    public["code_changes"] = code_evidence.public_rows(connection)
+    local["code_changes"] = [dict(row) for row in public["code_changes"]]
     return public, local
 
 
@@ -1563,6 +1577,10 @@ def write_machine_layers(
     project_codes = {str(row.get("project_code")) for row in public["projects"]}
     if any(str(row.get("project_id")) not in project_codes for row in public["attention_days"]):
         raise ObservatoryError("attention_project_join_failed")
+    if any(str(row.get("project_id")) not in project_codes for row in public["code_changes"]):
+        raise ObservatoryError("code_project_join_failed")
+    if any(row.get("project_id") is not None and row['project_id'] not in project_codes for row in public['outcomes']):
+        raise ObservatoryError('outcome_project_join_failed')
     generated_at = str(snapshot.get("generated_at") or iso(utc_now()))
     machine_root = project_root / "data" / "machine"
     local_root = state_root / "machine"
@@ -1583,6 +1601,7 @@ def write_machine_layers(
         "attention_days": "Explicitly opted-in UTC operator-timer aggregates by stable projects.project_code; completeness depends on operator timer use, and absent rows are not observed zero attention.",
         "metrics": "Definitions, exact derivations, sources, caveats, units, and page-versus-machine surface decisions.",
         "outcomes": "Successor outcome receipts (Obsidian Agent console rebuild): per-outcome counts, dispositions, check/publication/update statuses and native linkage strength; no titles, prompts or paths.",
+        "code_changes": "Deduplicated explicitly configured read-only Git first-parent revisions and numeric shortstat, joined by projects.project_code. No filenames, code, author, message or native revision; never a quality or productivity score.",
     }
     for name in DATASET_NAMES:
         path = machine_root / f"{name}.jsonl"
@@ -1627,6 +1646,10 @@ def write_machine_layers(
         "cost_usd": abs(float(envelope.get("cost_usd") or 0) - machine_totals["cost_usd"]) < 0.01 and abs(float(store_summary["totals"]["cost_usd"]) - machine_totals["cost_usd"]) < 0.01,
         "attention_seconds": machine_totals["attention_seconds"] == sum(safe_int(row.get("attention_seconds")) for row in attention_rows),
     }
+    economics_facts = snapshot.get('metrics', {}).get('economics')
+    if economics_facts is not None:
+        comparisons['outcome_economics'] = public['outcomes'] == economics_facts.get('outcomes', [])
+        comparisons['code_changes'] = public['code_changes'] == economics_facts.get('code_changes', [])
     reconciliation = {"status": "ok" if all(comparisons.values()) else "fail", "store_envelope_machine": comparisons, "machine_totals": machine_totals}
     snapshot.setdefault("metrics", {}).setdefault("observatory", {})["reconciliation"] = reconciliation
     if reconciliation["status"] != "ok":
@@ -1660,6 +1683,10 @@ def _collect_into(
     registry = normalize_registry(config, project_root, salt)
     prices = usage.load_prices(project_root / "prices.json")
     connection = connect_store(store_path)
+    if rebuild:
+        import code_evidence
+
+        code_evidence.preserve_rebuild_history(state_root / STORE_NAME, connection)
     started_at = iso(now) or ""
     run_id = connection.execute("INSERT INTO runs(started_at,mode,status) VALUES(?,?,?)", (started_at, "rebuild" if rebuild else "incremental", "running")).lastrowid
     connection.commit()
@@ -1681,6 +1708,12 @@ def _collect_into(
         import forecasting
 
         forecasting.retain_capacity(connection, state_root, now)
+        import economics
+        import code_evidence
+
+        economics.retain_configuration(connection, registry, config)
+        code_evidence.collect(connection, config, registry, salt, now)
+        economics.ensure_evidence_projects(connection, registry, loop_snapshot)
         del rows
         ingest_loop_snapshot(connection, loop_snapshot)
         digest = semantic_digest(connection)

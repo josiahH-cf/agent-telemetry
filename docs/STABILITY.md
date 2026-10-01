@@ -1,5 +1,54 @@
 # Stability pass findings and retention report
 
+## AE-01 — Attention Economics (2026-10-01)
+
+- **Plan and interface:** [ATTENTION_ECONOMICS.md](ATTENTION_ECONOMICS.md) maps
+  existing evidence, missing history, metrics, joins, context, reports and checks,
+  and specifies the additive private consumer/producer interface.
+- **Action:** collection now relates recorded five-mode human attention and
+  exact API-equivalent investment to delivery, explicit human acceptance,
+  conservative passing-check evidence, attempts/repairs/interventions and
+  configured first-parent Git metadata. Equal closed UTC periods have coverage
+  and qualified changes. Explicit cash, dated subscription estimates, receipt
+  spans and human attention remain separate. Private append-only context/cash
+  revisions and an offline report preserve provenance and effective dates;
+  immutable daily report archives preserve earlier interpretations.
+- **Privacy and attribution:** public project codes/approved labels and existing
+  workspace joins retain exact/correlated/shared/unattributed distinctions.
+  Session, outcome and revision unions deduplicate shared/copy evidence and keep
+  Shared/Unassigned visible. Code scans are bounded and read-only; no content,
+  filenames, authors or messages are collected. Private prose, identity, cash
+  allocation, native revisions and source paths stay outside Git and exports.
+- **Verification:** 295 standard-library/Node tests pass, with 22 economics
+  cases covering missing/zero, partial comparisons, shared cost/remainders,
+  cross-midnight attention, code-only projects, full-revision joins, duplicate
+  checkouts, rewritten/offline sources, bounded backfill/rebuild retention,
+  old-store read-only consumers, cash/subscription separation, context revisions,
+  HTML escaping and immutable report archives. Source check, isolated normal
+  collection, scrub, schema/store integrity, twelve-dataset manifest and seven
+  reconciliation checks pass. All 204 pre-existing closed daily files retain
+  their bytes; all five frozen machine datasets retain their bytes across
+  repeated collection. A related repair prevents fresh provider metadata from
+  repricing the retained historical loop attribution.
+- **Browser checks:** real and 1,000-project fixture pages at 390 and 1,440 px
+  have no page-level horizontal overflow. Project detail remains at most six
+  plus other, trends at most 48, and drilldowns start collapsed. Metric help
+  opens by keyboard, traps focus and restores it on Escape; table regions are
+  keyboard scrollable. All four windows render and no browser errors occur.
+  Muted text measures 8.16:1 against the lightest section background. The
+  isolated real page is about 204 KB and the scale fixture about 163 KB, below
+  the 500 KB target and 1 MB hard cap. Existing allowance, activity, frozen-loop
+  and scenario features are preserved.
+- **Evidence limits:** the inventory has no eligible completed attention
+  intervals; one cancelled record cannot establish historical human hours.
+  Usage starts in February, successor receipts in September, and configured
+  code metadata in November of the prior year. Most receipts lack an approved
+  project association or complete review/refinement capture. Undated configured
+  subscription rates are not historical payments. Six private README context
+  snapshots explain purpose, not operator priorities or present status. One
+  configured Git source is unavailable. These limitations remain visible;
+  available evidence cannot establish project worth, quality or productivity.
+
 ## ST-46 / ST-47 — Usage-left sidebar and five-minute publication (2026-10-01)
 
 - **Mapped plan:** [CAPACITY_REFRESH.md](CAPACITY_REFRESH.md) records the two
