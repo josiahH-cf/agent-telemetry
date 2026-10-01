@@ -6,6 +6,7 @@ An exact session join is insufficient to divide a shared session's lifetime cost
 from __future__ import annotations
 
 import json
+import hashlib
 from collections import defaultdict
 
 import usage
@@ -49,18 +50,18 @@ def _receipts(connection):
     return by_outcome, native_owners
 
 
-def quality_view(connection, *, project_id=None, days=None):
+def quality_view(connection, *, project_id=None, days=None, now=None):
     """One receipt-backed row per outcome, plus compact comparable-class totals.
 
 No scan, provider call, prompt body or source path is returned. The receipt
 range bounds elapsed/wait evidence; it is not a human-attention measurement.
 """
     by_outcome, native_owners = _receipts(connection)
-    items=_outcome_items(connection, by_outcome, native_owners, project_id=project_id, days=days)
+    items=_outcome_items(connection, by_outcome, native_owners, project_id=project_id, days=days, now=now)
     return _quality(items)
 
 
-def _outcome_items(connection, by_outcome, native_owners, *, project_id=None, days=None):
+def _outcome_items(connection, by_outcome, native_owners, *, project_id=None, days=None, now=None):
     items=[]
     for oid, rows in by_outcome.items():
         project=next((r.get('project_id') for r in rows if r.get('project_id')),None)
@@ -71,7 +72,7 @@ def _outcome_items(connection, by_outcome, native_owners, *, project_id=None, da
         if days:
             import datetime as dt
             last=usage.parse_timestamp(rows[-1]['at'])
-            if last and last < dt.datetime.now(dt.timezone.utc)-dt.timedelta(days=int(days)):
+            if last and last < (now or dt.datetime.now(dt.timezone.utc))-dt.timedelta(days=int(days)):
                 continue
         latest=lambda key: next((r.get(key) for r in reversed(rows) if r.get(key) is not None),None)
         comparable=lambda key: next(iter(values)) if len(values := {r[key] for r in rows if r.get(key) is not None}) == 1 else 'mixed' if values else None
@@ -253,6 +254,181 @@ def _managed_sessions(connection):
             item['portions'] = []
         out[(vendor, sid)] = item
     return out
+
+
+def _union_portions(vendor, records, selected, started_at=None, finished_at=None):
+    """Union explicit usage units, including parent/child copies of one native turn.
+
+    This stricter phase helper leaves the existing workspace accounting unchanged.
+    A conflicting unit, counter reset or shared ownership stays qualified partial.
+    """
+    rows = [r for r in records if r['kind'] == 'usage.observed']
+    scopes = {r.get('usage_scope') for r in rows}
+    if len(scopes) != 1 or not scopes <= {'turn', 'cumulative'}:
+        return None
+    scope = scopes.pop()
+    units, partial = {}, False
+    for r in rows:
+        key = r.get('native_turn_id') or r['event_id']
+        total = _receipt_tokens(vendor, r.get('usage'))
+        unit = units.setdefault(key, {'row': r, 'owners': set(), 'total': total, 'conflict': False})
+        unit['owners'].add(r['outcome_id'])
+        if unit['total'] != total or unit['row'].get('model') != r.get('model'):
+            unit['conflict'] = True
+        if r.get('linkage') != 'exact':
+            unit['conflict'] = True
+    bound = next((r for r in records if r['kind'] == 'session.bound'), None)
+    zero_baseline = bool(bound and bound.get('adopted') is False)
+    previous, previous_at, count, found = None, None, 0, False
+    start, end = usage.parse_timestamp(started_at), usage.parse_timestamp(finished_at)
+    used, models, efforts = set(), set(), set()
+    for key, unit in sorted(units.items(), key=lambda pair: (pair[1]['row']['at'], pair[0])):
+        r, total = unit['row'], unit['total']
+        stamp = usage.parse_timestamp(r['at'])
+        ours = bool(unit['owners'] & selected) and (start is None or stamp >= start) and (end is None or stamp <= end)
+        if total is None or unit['conflict']:
+            partial = True
+            if scope == 'cumulative':
+                previous = None
+                previous_at = None
+                zero_baseline = False
+            continue
+        if scope == 'turn':
+            portion = total
+        elif previous is None:
+            portion = total if zero_baseline and bound['at'] <= r['at'] and (start is None or usage.parse_timestamp(bound['at']) >= start) else None
+            previous = total
+            previous_at = stamp
+            if portion is None:
+                partial = True
+                continue
+        elif total >= previous:
+            portion, previous = total - previous, total
+            if ours and start is not None and previous_at < start:
+                partial = True
+                previous_at = stamp
+                continue
+            previous_at = stamp
+        else:
+            partial, previous = True, total
+            previous_at = stamp
+            continue
+        if not ours:
+            continue
+        if not unit['owners'] <= selected:
+            partial = True
+            continue
+        found = True
+        count += portion
+        used.add(hashlib.sha256(f"{vendor}:{r['native_session_id']}:{scope}:{key}".encode()).hexdigest())
+        models.add(r.get('model'))
+        if r.get('effort') is not None:
+            efforts.add(usage.safe_identifier(r.get('effort'), 'unknown'))
+    return {'tokens': count if found else None, 'partial': partial, 'units': used, 'models': models, 'efforts': efforts}
+
+
+def phase_usage_union(connection, outcome_ids, *, started_at=None, finished_at=None, managed=None, receipts=None):
+    """Private union of attributed phase consumption; never sum run/session totals.
+
+    Exact whole sessions retain their existing price and token semantics. Explicit
+    portions retain tokens only. Unknown amounts, accounts and unallocated remainders
+    stay separate. Bounds prevent lifetime session usage from absorbing earlier work.
+    """
+    selected = set(outcome_ids)
+    by_outcome, _ = receipts if receipts is not None else _receipts(connection)
+    sessions = managed if managed is not None else _managed_sessions(connection)
+    observed = selected & set(by_outcome)
+    reasons = set()
+    if observed != selected:
+        reasons.add('outcomes_not_observed')
+    pairs = {(r['vendor'], r['native_session_id']) for oid in observed for r in by_outcome[oid]
+             if r.get('vendor') in ('anthropic', 'openai') and r.get('native_session_id')}
+    unbound = [oid for oid in observed if not any(r.get('native_session_id') and r.get('vendor') in ('anthropic', 'openai') for r in by_outcome[oid])]
+    if unbound or not pairs:
+        reasons.add('usage_not_bound')
+    all_rows = {}
+    for rows in by_outcome.values():
+        for r in rows:
+            if r.get('native_session_id') and r.get('vendor'):
+                all_rows.setdefault((r['vendor'], r['native_session_id']), []).append(r)
+    identity_table = connection.execute("SELECT 1 FROM sqlite_master WHERE type='table' AND name='source_identities'").fetchone()
+    components = {}
+    for vendor, sid in sorted(pairs):
+        s = sessions.get((vendor, sid)) or {}
+        identities = set()
+        if identity_table:
+            identities = {(r['account_id'], r['environment']) for r in connection.execute(
+                "SELECT DISTINCT i.account_id,i.environment FROM usage_observations u JOIN source_files f ON f.file_id=u.file_id LEFT JOIN source_identities i ON i.source_key='local:'||f.root_id WHERE u.vendor=? AND u.session_id=?", (vendor, sid))}
+        account, environment = next(iter(identities)) if len(identities) == 1 else (None, None)
+        key = vendor, account, environment
+        c = components.setdefault(key, {'vendor': vendor, 'account_id': account, 'environment': environment,
+            'tokens': None, 'api_equivalent_cost_usd': 0.0, 'unpriced_tokens': 0,
+            'models': set(), 'efforts': set(), 'evidence_units': set(), 'sessions_bound': 0, 'sessions_observed': 0,
+            'evidence_sessions': {},
+            'shared_session_tokens': 0, 'unallocated_session_tokens': 0, 'status': 'exact', 'pricing': 'whole-session'})
+        c['sessions_bound'] += 1
+        if len(identities) > 1:
+            reasons.add('account_identity_conflict')
+            c['status'] = 'partial'
+        if s.get('status') != 'observed':
+            reasons.add('sessions_not_observed')
+            c['status'], c['pricing'] = 'partial', 'unknown'
+            c['api_equivalent_cost_usd'], c['unpriced_tokens'] = None, None
+            continue
+        c['sessions_observed'] += 1
+        records = sorted(all_rows.get((vendor, sid), []), key=lambda r: (r['at'], r.get('ledger_seq') or 0, r['event_id']))
+        split = _union_portions(vendor, records, selected, started_at, finished_at) if any(r['kind'] == 'usage.observed' for r in records) else None
+        exact_links = all(r.get('linkage') == 'exact' for r in records if r['outcome_id'] in selected and r.get('native_session_id'))
+        if split is not None:
+            amount = split['tokens']
+            if amount is not None and amount > s['tokens']:
+                amount = None
+                split['partial'] = True
+                reasons.add('portions_exceed_session')
+            if split['partial'] or amount is None or not exact_links:
+                c['status'] = 'partial'
+                reasons.add('partial_usage')
+            if amount is not None:
+                c['tokens'] = (c['tokens'] or 0) + amount
+                c['unallocated_session_tokens' if split['partial'] else 'shared_session_tokens'] += s['tokens'] - amount
+            c['models'].update(split['models'])
+            c['efforts'].update(split['efforts'])
+            c['evidence_units'].update(split['units'])
+            c['evidence_sessions'][hashlib.sha256(f'{vendor}:{sid}'.encode()).hexdigest()] = sorted(split['units'])
+            c['pricing'] = 'not-split'
+            c['api_equivalent_cost_usd'], c['unpriced_tokens'] = None, None
+            continue
+        # No trustworthy explicit split: only a fully contained whole session whose
+        # complete set of owners is selected can contribute a whole-session amount.
+        stored = connection.execute('SELECT first_ts,last_ts,models_json FROM sessions WHERE vendor=? AND session_id=?', (vendor, sid)).fetchone()
+        lo, hi = usage.parse_timestamp(stored['first_ts']), usage.parse_timestamp(stored['last_ts'])
+        start, end = usage.parse_timestamp(started_at), usage.parse_timestamp(finished_at)
+        bounded = (started_at is None or (lo is not None and start is not None and lo >= start)) and (finished_at is None or (hi is not None and end is not None and hi <= end))
+        if not any(r['kind'] == 'usage.observed' for r in records) and set(s['outcomes']) <= selected and exact_links and bounded:
+            c['tokens'] = (c['tokens'] or 0) + s['tokens']
+            if c['api_equivalent_cost_usd'] is not None:
+                c['api_equivalent_cost_usd'] += s['api_equivalent_cost_usd']
+                c['unpriced_tokens'] += s['unpriced_tokens']
+            c['models'].update(json.loads(stored['models_json']))
+            c['efforts'].update(usage.safe_identifier(r.get('effort'), 'unknown') for r in records if r['outcome_id'] in selected and r.get('effort') is not None)
+            c['evidence_units'].add(hashlib.sha256(f'{vendor}:{sid}:whole'.encode()).hexdigest())
+            c['evidence_sessions'][hashlib.sha256(f'{vendor}:{sid}'.encode()).hexdigest()] = 'whole'
+        else:
+            reasons.add('shared_or_unbounded_session')
+            c['status'], c['pricing'] = 'partial', 'unknown'
+            c['unallocated_session_tokens'] += s['tokens']
+            c['api_equivalent_cost_usd'], c['unpriced_tokens'] = None, None
+    output = []
+    for key in sorted(components, key=lambda key: tuple(str(x or '') for x in key)):
+        c = components[key]
+        c['models'] = sorted(c['models'], key=lambda x: str(x or ''))
+        c['efforts'] = sorted(c['efforts'], key=lambda x: str(x or ''))
+        c['evidence_units'] = sorted(c['evidence_units'])
+        if c['api_equivalent_cost_usd'] is not None:
+            c['api_equivalent_cost_usd'] = round(c['api_equivalent_cost_usd'], 6)
+        output.append(c)
+    return {'status': 'exact' if output and not reasons and all(c['status'] == 'exact' for c in output) else 'partial' if output else 'unavailable',
+        'components': output, 'outcomes_requested': len(selected), 'outcomes_observed': len(observed), 'reasons': sorted(reasons)}
 
 
 def _in_range(session, from_day, to_day):

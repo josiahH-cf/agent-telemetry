@@ -285,6 +285,20 @@ public tier, the page, or closed history. `consumer.py` exposes them additively 
 `period`, `sources`, `conflicts`, `history`, and account-scoped `capacity`; `pricing`
 names each exact model id `prices.json` prices and its row's vendor, never a price.
 
+**Selected-phase forecasts.** `consumer.py` adds the restricted local
+`telemetry-forecasting-v1` capability described in [docs/FORECASTING.md](docs/FORECASTING.md).
+Implementation forecasts cover the whole milestone, its features, verification
+and ordinary repair; earlier research/planning spending stays separate. The
+consumer fits completed comparable phase unions without collecting or writing.
+Configured receipt roots accept private `forecast.admitted` and
+`forecast.observed` metadata: immutable admitted predictions, append-only
+observation revisions, exact usage unions and qualified calibration. Allowance
+estimates use retained account/window observations and remain inferential;
+account-wide quota movement is never exact run consumption. Unknown is not zero.
+Forecasts, fitted samples and capacity history stay outside every public dataset
+and portfolio export. Console owns Go and display; absence/uncertainty never gates
+execution. No new provider probe, scheduler or endpoint is authorized by this contract.
+
 **Subscriptions and Claude quota.** `subscriptions.local.json` may hold local
 monthly provider amounts; it must remain ignored and is never an API-price
 input. When `claude_usage_capture.enabled` is true, the locked scheduler runs

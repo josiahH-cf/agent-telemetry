@@ -37,7 +37,7 @@ DISK_FILE = "disk-snapshot.json"
 PAGES_FILE = "pages-status.json"
 CLAUDE_USAGE_CAPTURE_FILE = "claude-usage-capture.json"
 OBSERVATORY_STORE = "observatory.sqlite3"
-OBSERVATORY_STORE_SCHEMA_VERSION = 2  # observatory.STORE_SCHEMA_VERSION: receipt tables, cursor vendor, environment on roots
+OBSERVATORY_STORE_SCHEMA_VERSION = 4  # observatory.STORE_SCHEMA_VERSION: private forecast events and capacity evidence
 WINDOWS_TASK_NAMES = ("agent-telemetry-logon", "agent-telemetry-continuity")
 WINDOWS_SCHTASKS = Path("/") / "mnt" / "c" / "Windows" / "System32" / "schtasks.exe"
 
@@ -51,12 +51,14 @@ STATIC_TRACKED_PATHS = {
     "claude_usage_capture.py",
     "collect.py",
     "consumer.py",
+    "forecasting.py",
     "metric_catalog.py",
     "dashboard.js",
     "data/schema/attention_days.schema.json",
     "data/schema/days.schema.json",
     "data/schema/incidents.schema.json",
     "data/schema/metrics.schema.json",
+    "data/schema/forecasting.schema.json",
     "data/schema/outcomes.schema.json",
     "data/schema/projects.schema.json",
     "data/schema/publications.schema.json",
@@ -65,6 +67,7 @@ STATIC_TRACKED_PATHS = {
     "data/schema/specs.schema.json",
     "data/schema/tests.schema.json",
     "docs/OUTCOME_ADAPTER.md",
+    "docs/FORECASTING.md",
     "docs/ATTENTION_GUIDANCE_SPIKE.md",
     "docs/STABILITY.md",
     "index.html",
@@ -87,6 +90,7 @@ STATIC_TRACKED_PATHS = {
     "tests/test_claude_usage_capture.py",
     "tests/test_dashboard.py",
     "tests/test_outcomes.py",
+    "tests/test_forecasting.py",
     "tests/test_portfolio.py",
     "tests/test_workspace_accounting.py",
     "tests/test_usage_insight_inputs.py",

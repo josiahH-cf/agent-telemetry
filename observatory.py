@@ -29,7 +29,7 @@ import usage
 from tools import attention as attention_ledger
 
 
-STORE_SCHEMA_VERSION = 3
+STORE_SCHEMA_VERSION = 4
 PUBLIC_SCHEMA_VERSION = 1
 STORE_NAME = "observatory.sqlite3"
 SALT_NAME = "project-salt-v1"
@@ -544,6 +544,13 @@ def migrate(connection: sqlite3.Connection) -> None:
             connection.executescript(portfolio.MIGRATION_3)
             connection.execute("PRAGMA user_version=3")
             connection.execute("INSERT OR REPLACE INTO meta(key,value) VALUES('schema_version','3')")
+    if current < 4:
+        import forecasting
+
+        with connection:
+            connection.executescript(forecasting.MIGRATION_4)
+            connection.execute("PRAGMA user_version=4")
+            connection.execute("INSERT OR REPLACE INTO meta(key,value) VALUES('schema_version','4')")
 
 
 def store_integrity(connection: sqlite3.Connection) -> str:
@@ -1671,6 +1678,9 @@ def _collect_into(
         portfolio.record_local_identities(connection, config)
         portfolio.ingest_imports(connection, config, state_root, now)
         portfolio.regenerate(connection, rows, resolutions, prices)
+        import forecasting
+
+        forecasting.retain_capacity(connection, state_root, now)
         del rows
         ingest_loop_snapshot(connection, loop_snapshot)
         digest = semantic_digest(connection)
@@ -1747,6 +1757,9 @@ def collect_observatory(
         summary, roots = _collect_into(temporary, config, project_root, now, loop_snapshot, rebuild=True, allow_legacy_import=False)
         check = connect_store(temporary)
         try:
+            import forecasting
+
+            forecasting.preserve_rebuild_history(canonical, check)
             if store_integrity(check) != "ok":
                 raise ObservatoryError("rebuilt_store_integrity_failed")
         finally:

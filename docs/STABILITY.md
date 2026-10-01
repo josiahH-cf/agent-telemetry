@@ -1,5 +1,45 @@
 # Stability pass findings and retention report
 
+## FORECAST-001 — Selected-phase consumption and immutable calibration (2026-10-01)
+
+- **Observation:** the local consumer exposed measured usage, outcome accounting
+  and capacity, but no selected-phase forecast or preserved admission comparison.
+  Legacy outcome history does not establish the complete scope of a milestone.
+- **Action:** added the restricted `telemetry-forecasting-v1` capability, executable
+  nested metadata schema, and a completed-phase median estimator. Implementation
+  means the full milestone, features, verification and ordinary repair. Earlier
+  research/planning is a separate union. Five machine-only catalog definitions
+  own token, API-equivalent, unpriced, full-window allowance and error semantics.
+- **Evidence preservation:** private `forecast.admitted`/`forecast.observed`
+  receipts and retained quota observations use store schema 4. Frozen predictions
+  are content-addressed; corrections append observation revisions. Native usage
+  unions deduplicate parent/child turns and sessions and include attempts/repairs.
+  Partial, correlated, stopped, changed, conflicting and overlapping evidence is
+  excluded from completed calibration. Quota movement remains estimated even
+  when an isolated same-account/window pair qualifies. Known competing local or
+  imported usage disqualifies allowance attribution. Private rows never enter
+  public outcome counts, page/machine values, closed history or portfolio exports.
+- **Verification:** 268 standard-library/Node tests pass, including 23 forecasting
+  cases covering later fitting changes with frozen earlier predictions, signed
+  errors, revisions/replay/conflicts, zero versus absent, unpriced models, native
+  union/repair, counter and quota resets, concurrency/imports, privacy sentinels,
+  read-only/old-store consumers and rebuild retention. Node checks use the existing
+  installed runtime; no dependency was installed. Source probe, an incremental
+  collection against isolated project-owned validation state, scrub, schema/store
+  integrity and machine reconciliation pass. Its compact payload is 109,533 bytes;
+  only current-UTC-day history files changed. Doctor has no failing checks after
+  migration; the isolated state has no collection-log cadence history.
+- **Related repairs:** quality-window filtering now honors the consumer's supplied
+  observation time. The scale fixture checks retained all-history shapes and
+  bounded empty recent windows, so retired loop history is not required to invent
+  current rounds. Existing numeric accounting and public contracts are preserved.
+- **Delivery boundary:** [FORECASTING.md](FORECASTING.md) specifies the Console
+  request, freeze-at-Go, participant union, result/revision and allowance-reference
+  interface. Console producer/display integration is separate. The inspected live
+  data has no phase observations/admissions or explicit account bindings on quota
+  windows: the real consumer returns a named unavailable forecast, not a fabricated
+  estimate. Fixture comparisons establish behavior, not live predictive accuracy.
+
 ## V5 finishing-pass register
 
 ### ST-39 — Cardinality made the dashboard and browser payload grow without bound

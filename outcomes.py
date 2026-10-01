@@ -32,6 +32,7 @@ KINDS = {
     "outcome.started", "phase.changed", "question.opened", "question.answered", "result.produced",
     "check.result", "publication.result", "update.result", "outcome.disposition", "usage.observed", "session.bound",
     "review.recorded", "feedback.recorded", "tool.observed", "human.intervention",
+    "forecast.admitted", "forecast.observed",
 }
 RECEIPT_VENDORS = {"anthropic", "openai", "cursor"}
 ENVIRONMENTS = {"personal", "work"}
@@ -181,10 +182,27 @@ def _validate(record: Any, root: dict[str, Any]) -> tuple[dict[str, Any] | None,
         if environment not in ENVIRONMENTS:
             return None, "environment_unknown"
         record = {**record, "environment": environment}
+    if kind in {"forecast.admitted", "forecast.observed"}:
+        import forecasting
+
+        try:
+            return forecasting.receipt_metadata(record), None
+        except (forecasting.MetadataError, TypeError, ValueError):
+            return None, "forecast_metadata_invalid"
     # Only defined metadata crosses this boundary, including into private
     # record_json. Feedback words and arbitrary extra content stay with producer.
     allowed = {'interface','producer','event_id','ledger_seq','kind','at','outcome_id','project_id','outcome_kind','evidence_digest','linkage','vendor','client','host_os','environment','native_session_id','native_turn_id','status','disposition','phase','source_version','route_id','question_id','question_kind','source','adopted','effect_id','effect_kind','detail_digest','destination_digest','reason_digest','commit','model','usage','workflow_identity','policy_revision','effort','measurement_version','verdict','acceptance_basis','feedback_id','repair_of','command_id','action','tool_call_digest','tool_status','usage_scope','attempt_id'}
     clean = {k:v for k,v in record.items() if k in allowed}
+    if 'usage' in clean and clean['usage'] is not None:
+        if not isinstance(clean['usage'], dict):
+            return None, 'usage_metadata_invalid'
+        counters = {'input_tokens', 'cached_input_tokens', 'cache_creation_input_tokens', 'cache_read_input_tokens',
+                    'cache_write_5m_tokens', 'cache_write_1h_tokens', 'cache_read_tokens', 'cache_write_tokens',
+                    'output_tokens', 'reasoning_output_tokens', 'total_tokens'}
+        usage_metadata = {k:v for k,v in clean['usage'].items() if k in counters}
+        if any(not isinstance(v, int) or isinstance(v, bool) or v < 0 for v in usage_metadata.values()):
+            return None, 'usage_metadata_invalid'
+        clean['usage'] = usage_metadata
     if clean.get('verdict') not in (None, 'accepted', 'needs-changes'):
         return None, 'verdict_invalid'
     if clean.get('acceptance_basis') not in (None, 'human', 'review-recorded'):
@@ -244,6 +262,7 @@ def ingest_receipt_root(connection: sqlite3.Connection, root: dict[str, Any], no
                     offset = 0  # rewritten or truncated: re-read from the start; ids keep it idempotent
             handle.seek(offset)
             rows: list[tuple[Any, ...]] = []
+            forecast_rows: list[dict[str, Any]] = []
             usage_rows: list[tuple[Any, ...]] = []
             consumed = offset
             file_id = make_file_id(root["root_id"], relative)
@@ -269,6 +288,9 @@ def ingest_receipt_root(connection: sqlite3.Connection, root: dict[str, Any], no
                     rejected += 1
                     rejections[problem or "invalid"] = rejections.get(problem or "invalid", 0) + 1
                     continue
+                if record["kind"] in {"forecast.admitted", "forecast.observed"}:
+                    forecast_rows.append(record)
+                    continue
                 rows.append(
                     (
                         record["event_id"], root["root_id"], root["producer"], record["kind"], record.get("outcome_id"), record.get("project_id"), record.get("outcome_kind"),
@@ -283,6 +305,16 @@ def ingest_receipt_root(connection: sqlite3.Connection, root: dict[str, Any], no
             handle.seek(max(0, consumed - 64))
             tail_digest = hashlib.sha256(handle.read(min(64, consumed))).hexdigest() if consumed else None
         with connection:
+            if forecast_rows:
+                import forecasting
+
+                for record in forecast_rows:
+                    result = forecasting.ingest_event(connection, root["root_id"], record, observed_at)
+                    if result == "inserted":
+                        ingested += 1
+                    elif result == "conflict":
+                        rejected += 1
+                        rejections["forecast_event_conflict"] = rejections.get("forecast_event_conflict", 0) + 1
             if usage_rows:
                 connection.execute(
                     "INSERT OR IGNORE INTO source_roots(root_id,vendor,host_os,root_path,status,environment) VALUES(?,?,?,?,?,?)",

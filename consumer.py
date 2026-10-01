@@ -34,6 +34,7 @@ from pathlib import Path
 from typing import Any
 
 import outcome_quality
+import forecasting
 import observatory
 import portfolio
 import usage
@@ -323,7 +324,8 @@ def consumer_view(project_root: Path, state_root: Path, scope: dict[str, Any] | 
     now = now or utc_now()
     scope = dict(scope or {})
     store = state_root / observatory.STORE_NAME
-    base = {"contract": CONTRACT, "producer": PRODUCER, "generated_at": _iso(now), "scope": scope, "pricing": pricing_view(project_root)}
+    base = {"contract": CONTRACT, "producer": PRODUCER, "generated_at": _iso(now), "scope": forecasting.consumer_scope(scope), "pricing": pricing_view(project_root),
+        "forecasting": forecasting.view(None, scope, capacity=[], generation={}, now=now)}
     if not store.is_file():
         return {**base, "status": "not-configured", "generation": {"status": "no-store"}, "projects": [], "sessions": [], "capacity": [], "coverage": {"roots": [], "missing": [{"source": "observatory", "status": "not-configured"}]}, "attention": attention_view(project_root, state_root, now), "publication": publication_view(state_root), "collection": dict(UNKNOWN_COLLECTION), "quality":{"status":"not-observed","groups":[],"outcomes":[],"outcomes_total":0}, "accounting": {"status": "not-configured", "run_usage": {}, "previous_period": None, "groups": [], "shared": None, "totals": None, "repositories": [], "sessions": [], "sessions_total": 0, "outcomes": [], "outcomes_total": 0, "coverage_gaps": [{"source": "observatory", "status": "not-configured"}]}}
     connection = open_read_only(store)
@@ -340,14 +342,15 @@ def consumer_view(project_root: Path, state_root: Path, scope: dict[str, Any] | 
             "sources": portfolio.sources_view(connection, now),
             "conflicts": portfolio.conflicts_view(connection),
             "sessions": sessions_view(connection, [(v, s) for v, s in pairs]) if pairs else [],
-            "capacity": capacity_view(state_root, connection, now),
+            "capacity": forecasting.capacity_references(connection, capacity_view(state_root, connection, now)),
             "coverage": coverage_view(connection, now),
             "attention": attention_view(project_root, state_root, now),
             "units": {"tokens": "provider-reported tokens (vendor-specific classes)", "api_equivalent_cost_usd": "recorded token classes priced against prices.json; not an invoice", "used_percent": "account window utilisation as the provider reported it"},
             "publication": publication_view(state_root),
             "collection": collection_view(connection),
-            "quality": outcome_quality.quality_view(connection, project_id=scope.get("outcome_project_id"), days=scope.get("days") if isinstance(scope.get("days"), int) else None),
+            "quality": outcome_quality.quality_view(connection, project_id=scope.get("outcome_project_id"), days=scope.get("days") if isinstance(scope.get("days"), int) else None, now=now),
         }
+        view["forecasting"] = forecasting.view(connection, scope, capacity=view["capacity"], generation=gen, now=now)
         view["accounting"] = outcome_quality.accounting_view(
             connection, reporting=scope.get("reporting"), days=scope.get("days", portfolio.DEFAULT_PERIOD_DAYS), now=now,
             registry=observatory.read_registry(project_root, state_root), attention=_attention_intervals(project_root, state_root, now),

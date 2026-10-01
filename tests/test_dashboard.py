@@ -220,7 +220,17 @@ class DashboardEnvelopeTests(unittest.TestCase):
     def test_high_cardinality_fixture_has_same_at_rest_shape_and_small_payload(self) -> None:
         real_page = metric_catalog.build_page_envelope(self.snapshot)
         large_page = metric_catalog.build_page_envelope(synthetic_snapshot())
-        self.assertEqual(metric_catalog.surface_signature(real_page), metric_catalog.surface_signature(large_page))
+        # Frozen governed-loop history can leave the current 30-day window empty.
+        # Compare exhaustive retained shapes and require bounded current detail;
+        # do not require invented live rounds to fill retired-history slots.
+        self.assertEqual(metric_catalog.surface_signature(real_page, "all"), metric_catalog.surface_signature(large_page, "all"))
+        real_shape = metric_catalog.surface_signature(real_page)
+        large_shape = metric_catalog.surface_signature(large_page)
+        for key in real_shape:
+            if key in {"spec_rank_rows", "ledger_preview_rows"}:
+                self.assertLessEqual(real_shape[key], large_shape[key])
+            else:
+                self.assertEqual(real_shape[key], large_shape[key], key)
         self.assertLess(len(metric_catalog.page_payload_text(large_page).encode("utf-8")), metric_catalog.PAGE_TARGET_BYTES)
         self.assertEqual(len(large_page["windows"]["30"]["top_projects"]), metric_catalog.TOP_N + 1)
         self.assertEqual(len(large_page["point_in_time"]["top_models"]), metric_catalog.TOP_N + 1)

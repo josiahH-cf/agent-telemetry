@@ -82,3 +82,11 @@ interval.
 Read [AGENTS.md](AGENTS.md) for the authoritative data contract, metric catalog,
 privacy and interpretation rules, maintainer runbook, automation removal,
 repository guardrails, and extension contracts.
+
+Local first-party consumers can request selected-phase consumption forecasts
+through the additive read-only consumer. Complete implementation forecasts cover
+the milestone, verification and ordinary repair, with earlier planning spending
+separate. Frozen predictions, attributed actuals and qualified later observations
+support calibration; account/window allowance estimates remain explicitly
+inferential. See [the Console interface](docs/FORECASTING.md). Inputs and results
+stay in the restricted local tier; the public dashboard remains passive.

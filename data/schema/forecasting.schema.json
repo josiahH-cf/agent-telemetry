@@ -1,0 +1,109 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "telemetry-forecasting-v1",
+  "title": "Restricted local phase forecasting metadata; no public dataset",
+  "$defs": {
+    "id": {"type": "string", "pattern": "[A-Za-z0-9][A-Za-z0-9._:-]{0,127}"},
+    "digest": {"type": "string", "pattern": "[0-9a-f]{64}"},
+    "forecast_id": {"type": "string", "pattern": "fc-[0-9a-f]{64}"},
+    "time": {"type": "string", "pattern": "[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z"},
+    "nullable_time": {"type": ["string", "null"], "pattern": "[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z"},
+    "choice": {
+      "type": "object", "additionalProperties": false, "required": ["vendor"],
+      "properties": {
+        "vendor": {"type": "string", "enum": ["anthropic", "openai"]},
+        "account_id": {"type": ["string", "null"], "pattern": "[A-Za-z0-9][A-Za-z0-9._:-]{0,79}"},
+        "environment": {"type": ["string", "null"], "enum": ["personal", "work", null]},
+        "model": {"type": ["string", "null"], "pattern": "[A-Za-z0-9][A-Za-z0-9._:-]{0,127}"},
+        "effort": {"type": ["string", "null"], "pattern": "[A-Za-z0-9][A-Za-z0-9._:-]{0,39}"}
+      }
+    },
+    "request": {
+      "type": "object", "additionalProperties": false,
+      "required": ["interface", "scope_id", "scope_revision", "phase", "scope_kind", "choices"],
+      "properties": {
+        "interface": {"type": "string", "const": "telemetry-phase-request-v1"},
+        "scope_id": {"$ref": "#/$defs/id"},
+        "scope_revision": {"$ref": "#/$defs/digest"},
+        "phase": {"type": "string", "enum": ["research", "context", "definition", "planning", "implementation", "verification", "review"]},
+        "scope_kind": {"type": "string", "enum": ["milestone", "feature", "phase"]},
+        "project_id": {"type": ["string", "null"], "pattern": "[A-Za-z0-9][A-Za-z0-9._:-]{0,127}"},
+        "workflow_id": {"type": ["string", "null"], "pattern": "[A-Za-z0-9][A-Za-z0-9._:-]{0,127}"},
+        "feature_count": {"type": ["integer", "null"], "minimum": 1, "maximum": 10000},
+        "choices": {"type": "array", "minItems": 1, "maxItems": 8, "items": {"$ref": "#/$defs/choice"}}
+      }
+    },
+    "basis": {
+      "type": "object", "additionalProperties": false,
+      "required": ["sample_count", "sample_digest", "cohort", "observed_from", "observed_to"],
+      "properties": {
+        "sample_count": {"type": "integer", "minimum": 0},
+        "sample_digest": {"$ref": "#/$defs/digest"},
+        "cohort": {"type": "string", "enum": ["project", "cross-project", "none"]},
+        "observed_from": {"$ref": "#/$defs/nullable_time"},
+        "observed_to": {"$ref": "#/$defs/nullable_time"}
+      }
+    },
+    "prediction": {
+      "type": "object", "additionalProperties": false,
+      "required": ["choice_index", "metric_id", "unit", "window", "capacity_observation_id", "estimate", "lower", "upper", "status", "reason", "uncertainty", "basis"],
+      "properties": {
+        "choice_index": {"type": "integer", "minimum": 0, "maximum": 7},
+        "metric_id": {"type": "string", "enum": ["phase_forecast_tokens", "phase_forecast_api_equivalent_usd", "phase_forecast_unpriced_tokens", "phase_forecast_allowance"]},
+        "unit": {"type": "string", "enum": ["tokens", "API-equivalent USD", "percentage points of full allowance window"]},
+        "window": {"type": ["string", "null"], "pattern": "[A-Za-z0-9][A-Za-z0-9 ._():-]{0,79}"},
+        "capacity_observation_id": {"type": ["string", "null"], "pattern": "[0-9a-f]{64}"},
+        "estimate": {"type": ["number", "null"], "minimum": 0},
+        "lower": {"type": ["number", "null"], "minimum": 0},
+        "upper": {"type": ["number", "null"], "minimum": 0},
+        "status": {"type": "string", "enum": ["estimated", "unavailable"]},
+        "reason": {"type": ["string", "null"], "pattern": "[a-z][a-z0-9_]{0,79}"},
+        "uncertainty": {"type": "string", "enum": ["unavailable", "single-sample", "empirical-range"]},
+        "basis": {"$ref": "#/$defs/basis"}
+      }
+    },
+    "forecast": {
+      "type": "object", "additionalProperties": false,
+      "required": ["interface", "forecast_id", "estimator", "created_at", "basis_run_id", "basis_finished_at", "request", "includes", "status", "predictions"],
+      "properties": {
+        "interface": {"type": "string", "const": "telemetry-phase-forecast-v1"},
+        "forecast_id": {"$ref": "#/$defs/forecast_id"},
+        "estimator": {"type": "string", "const": "completed-phase-median-v1"},
+        "created_at": {"$ref": "#/$defs/time"},
+        "basis_run_id": {"type": ["integer", "null"], "minimum": 1},
+        "basis_finished_at": {"$ref": "#/$defs/nullable_time"},
+        "request": {"$ref": "#/$defs/request"},
+        "includes": {"type": "array", "minItems": 1, "maxItems": 3, "items": {"type": "string", "enum": ["selected-phase", "features", "verification", "ordinary-repair"]}},
+        "status": {"type": "string", "enum": ["estimated", "partial", "unavailable"]},
+        "predictions": {"type": "array", "minItems": 3, "maxItems": 64, "items": {"$ref": "#/$defs/prediction"}}
+      }
+    },
+    "allowance_pair": {
+      "type": "object", "additionalProperties": false,
+      "required": ["before_id", "after_id", "account_activity"],
+      "properties": {
+        "before_id": {"$ref": "#/$defs/digest"},
+        "after_id": {"$ref": "#/$defs/digest"},
+        "account_activity": {"type": "string", "enum": ["isolated", "concurrent", "unknown"]}
+      }
+    },
+    "observation": {
+      "type": "object", "additionalProperties": false,
+      "required": ["interface", "observation_id", "revision", "request", "outcome_ids", "started_at", "finished_at", "finish", "coverage", "includes"],
+      "properties": {
+        "interface": {"type": "string", "const": "telemetry-phase-observation-v1"},
+        "observation_id": {"$ref": "#/$defs/id"},
+        "revision": {"type": "integer", "minimum": 1, "maximum": 1000000},
+        "forecast_id": {"type": ["string", "null"], "pattern": "fc-[0-9a-f]{64}"},
+        "request": {"$ref": "#/$defs/request"},
+        "outcome_ids": {"type": "array", "minItems": 1, "maxItems": 200, "items": {"$ref": "#/$defs/id"}},
+        "started_at": {"$ref": "#/$defs/time"},
+        "finished_at": {"$ref": "#/$defs/time"},
+        "finish": {"type": "string", "enum": ["completed", "stopped", "unfinished"]},
+        "coverage": {"type": "string", "enum": ["complete", "partial", "unknown"]},
+        "includes": {"type": "array", "minItems": 1, "maxItems": 3, "items": {"type": "string", "enum": ["selected-phase", "features", "verification", "ordinary-repair"]}},
+        "allowance_pairs": {"type": "array", "maxItems": 16, "items": {"$ref": "#/$defs/allowance_pair"}}
+      }
+    }
+  }
+}

@@ -163,3 +163,32 @@ Usage, Now and Project views:
   own inclusive UTC bounds and add up to the period total.
 
 Opening a view never triggers collection.
+
+## Selected-phase forecasting (2026-10-01)
+
+The additive restricted local `forecast.admitted` and `forecast.observed` receipt
+kinds are accepted under `outcome-receipts-v1`, with recursively allowlisted
+versioned metadata defined by
+[`FORECASTING.md`](FORECASTING.md) and
+[`forecasting.schema.json`](../data/schema/forecasting.schema.json).
+They enter separate private `forecast_events`, never public outcome event
+counts or rows. Store schema 4 also retains already-observed quota metadata in
+private `forecast_capacity`. No provider source is written or newly probed.
+
+`telemetry-consumer-v1.forecasting` produces whole selected-phase predictions,
+immutable admission comparisons, separately attributed earlier spending and
+qualified calibration. Complete implementation means the full milestone,
+including features, verification and ordinary repair. Usage comes from native
+session/explicit counter unions; duplicated parent/child turns need the same
+native turn ID. Incomplete, changed or overlapping evidence cannot become exact
+training data. Capacity deltas remain inferential and account/window-specific.
+`capacity[].observation_id` refers only to a retained allowlisted observation.
+
+Install this adapter before Console emits the new kinds. The producer owns the
+participant list, scope revision, finish/completeness declarations and the
+forecast shown at Go; it must not send raw plans or re-create Telemetry's fitting
+logic. Higher observation revisions append correction evidence without altering
+admitted forecasts or closed history. Unknown extra fields, including nested
+usage prose, are discarded before private storage; existing supported counters
+retain their semantics. This interface supplies information, never execution
+authority. Console integration and live accuracy evidence remain separate work.
