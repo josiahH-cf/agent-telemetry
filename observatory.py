@@ -1541,6 +1541,9 @@ def write_machine_layers(
     try:
         public, local = machine_datasets(connection)
         store_summary = public_summary(connection)
+        import code_evidence
+
+        code_coverage = code_evidence.coverage(connection)
     finally:
         connection.close()
     add_registry_only_projects(project_root, public, local)
@@ -1620,6 +1623,7 @@ def write_machine_layers(
                 "sha256": digest,
                 "coverage": dataset_coverage(public[name]),
                 "semantics": semantics[name],
+                **({'source_coverage': code_coverage} if name == 'code_changes' else {}),
             }
         )
         local_path = local_root / f"{name}.jsonl"

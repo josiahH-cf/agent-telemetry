@@ -318,6 +318,14 @@ class GitEvidenceTests(unittest.TestCase):
         self.assertEqual(code_evidence.public_rows(self.con), [])
         self.assertEqual(code_evidence.coverage(self.con)['status'], 'not-configured')
 
+    def test_rejected_private_project_identity_never_enters_public_coverage(self):
+        self.config['observatory']['code_roots'][0]['project_id'] = 'PRIVATE_PROJECT_SENTINEL'
+        code_evidence.collect(self.con, self.config, self.registry, '', NOW)
+        coverage = code_evidence.coverage(self.con)
+        self.assertNotIn('PRIVATE_PROJECT_SENTINEL', json.dumps(coverage))
+        self.assertEqual(coverage['states']['unavailable'], 1)
+        self.assertEqual(coverage['by_project'], {})
+
 
 class NativeAccountingTests(unittest.TestCase):
     def setUp(self):

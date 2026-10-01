@@ -175,8 +175,12 @@ def coverage(connection):
     counts = {state: sum(r['status'] == state for r in rows) for state in ('current', 'partial', 'retained-last-good', 'unavailable', 'disabled')}
     rejection_row = connection.execute("SELECT value FROM meta WHERE key='code_adapter_rejections'").fetchone()
     rejections = json.loads(rejection_row[0]) if rejection_row else []
+    project_row = connection.execute("SELECT value FROM meta WHERE key='economics_projects'").fetchone()
+    approved = set(json.loads(project_row[0])) if project_row else set()
+    approved |= {r[0] for r in connection.execute('SELECT project_code FROM projects WHERE registered=1')}
+    approved |= {r[0] for r in connection.execute('SELECT DISTINCT project_id FROM code_observations')}
     by_project = {}
-    for pid in {r['project_id'] for r in rows}:
+    for pid in {r['project_id'] for r in rows} & approved:
         sources = [r for r in rows if r['project_id'] == pid]
         complete = all(r['status'] == 'current' for r in sources)
         by_project[pid] = {'status': 'current' if complete else 'partial',

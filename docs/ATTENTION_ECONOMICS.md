@@ -83,7 +83,9 @@ the consumer or dashboard never scans a repository or provider. The existing
 scheduler and publication wrapper remain the only update path.
 
 The public `code_changes` dataset is additive; discover it through the machine
-manifest. Its `project_id` joins `projects.project_code`. Stable change identity
+manifest. Its additive `source_coverage` names capture states independently of
+the observed rows' date bounds; rejected private configuration keys are never
+published. Its `project_id` joins `projects.project_code`. Stable change identity
 deduplicates copies of the same registered project/revision. `files_changed`
 counts file touches per revision, not unique files across a period; insertions
 and deletions are numeric text shortstats. Missing merge statistics stay null.
@@ -246,7 +248,7 @@ authorized or necessary for this Telemetry implementation.
 
 ## Completed validation
 
-The isolated implementation passed all 295 repository tests, source probes,
+The isolated implementation passed all 296 repository tests, source probes,
 normal collection, scrub, schema/store integrity, twelve-dataset manifest and
 seven machine reconciliation checks. All 204 pre-existing closed daily files
 and five frozen machine datasets kept their bytes across repeated collections.

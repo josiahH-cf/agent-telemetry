@@ -19,7 +19,7 @@
   Shared/Unassigned visible. Code scans are bounded and read-only; no content,
   filenames, authors or messages are collected. Private prose, identity, cash
   allocation, native revisions and source paths stay outside Git and exports.
-- **Verification:** 295 standard-library/Node tests pass, with 22 economics
+- **Verification:** 296 standard-library/Node tests pass, with 23 economics
   cases covering missing/zero, partial comparisons, shared cost/remainders,
   cross-midnight attention, code-only projects, full-revision joins, duplicate
   checkouts, rewritten/offline sources, bounded backfill/rebuild retention,

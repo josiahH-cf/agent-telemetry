@@ -113,7 +113,7 @@ CATALOG: tuple[dict[str, Any], ...] = (
         ['outcomes'], 'Checks are producer observations, not a complete test suite. Earlier failed checks remain visible; a repaired outcome may therefore be delivered without entering this conservative passing-check cohort.', 'outcomes', 'page', 'derived'),
     _metric('economics_code_changes', 'Recorded code changes',
         'First-parent revisions and numeric change metadata from explicitly configured read-only Git sources.',
-        'COUNT unique code_changes.change_id in UTC at window; SUM known files_changed, insertions and deletions separately. Public identity hashes stable project code and native revision. Merge shortstats without evidence remain null. Sources backfill at most their configured bounded batch each collection.',
+        'COUNT unique code_changes.change_id in UTC at window; SUM known files_changed, insertions and deletions separately. Public identity hashes stable project code and native revision. Merge shortstats without evidence remain null. Sources backfill at most their configured bounded batch each collection; MANIFEST source_coverage identifies partial, missing, disabled or retained sources independently of observed row-date coverage.',
         ['code_changes'], 'No code, filename, author or message is collected. Text line counts exclude binary content. Commits and lines are change metadata, never productivity, code quality or delivered outcomes.', 'revisions and text lines', 'page', 'observed'),
     _metric('economics_effort_results', 'Attempts, repair and verification evidence',
         'Recorded attempts, repairs, interventions, checks and receipt spans beside the same last-receipt outcome cohort.',
