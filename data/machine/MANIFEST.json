@@ -3,26 +3,26 @@
     {
       "coverage": {
         "from": "2026-02-28T12:19:02+00:00",
-        "to": "2026-10-01T19:50:44+00:00"
+        "to": "2026-10-01T19:55:30+00:00"
       },
       "dataset": "projects",
       "path": "data/machine/projects.jsonl",
       "rows": 13,
       "schema": "data/schema/projects.schema.json",
       "semantics": "One public project identity or bulk bucket with lifetime totals and per-OS coverage.",
-      "sha256": "2f7d4a40d0ba928ed9d4778682660059030d435975428dc375c91308d979e3e7"
+      "sha256": "57a045412a839149b03b864144c762ae3f1d2c1dd6e9da4067bbeb7886413737"
     },
     {
       "coverage": {
         "from": "2026-02-28T12:19:02+00:00",
-        "to": "2026-10-01T19:50:44+00:00"
+        "to": "2026-10-01T19:55:30+00:00"
       },
       "dataset": "sessions",
       "path": "data/machine/sessions.jsonl",
       "rows": 13726,
       "schema": "data/schema/sessions.schema.json",
       "semantics": "One provider session after cross-source event deduplication; working directories are excluded.",
-      "sha256": "b030faeaa0d8349eb432d70a20a96761183a02280f8018cead71cad89f512c7e"
+      "sha256": "6262fd7a71c0596501b84f5378c9c0237d3e4ea84e918da204db2f3ca238fcbd"
     },
     {
       "coverage": {
@@ -34,7 +34,7 @@
       "rows": 457,
       "schema": "data/schema/days.schema.json",
       "semantics": "UTC daily usage by public project identity, vendor, and host operating system.",
-      "sha256": "b80dd09d55e04fbd8185f8df495634e12f39b63b561a73e6334480c74c8622ed"
+      "sha256": "13f4e459623c59e749c615dfaec02dae75dbb06eceadbdd5156f27b59105c55a"
     },
     {
       "coverage": {
@@ -115,10 +115,10 @@
       },
       "dataset": "code_changes",
       "path": "data/machine/code_changes.jsonl",
-      "rows": 970,
+      "rows": 1178,
       "schema": "data/schema/code_changes.schema.json",
       "semantics": "Deduplicated explicitly configured read-only Git first-parent revisions and numeric shortstat, joined by projects.project_code. No filenames, code, author, message or native revision; never a quality or productivity score.",
-      "sha256": "aee330dd38c0414df68839c76f8b1713d34738adee592a046ad46b1b454a9b2a"
+      "sha256": "e2975104f6d3bd5906815f7adc6e33f873f5b20e0017f8a8ba623844ec3d0658"
     },
     {
       "coverage": {
@@ -145,6 +145,6 @@
       "sha256": "372709f097cace51279acbb4d429c3d39bef8f5c459f367b00fb91c450549e29"
     }
   ],
-  "generated_at": "2026-10-01T19:50:05+00:00",
+  "generated_at": "2026-10-01T19:55:05+00:00",
   "schema_version": 1
 }
