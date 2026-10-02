@@ -38,8 +38,14 @@
   absent, recorded zeros remain, and default health tables are unmaterialized.
   Keyboard help restores focus on Escape; chart arrow/End navigation exposes
   exact values. The inspected default desktop page fell from about 6,157 px to
-  2,264 px, with visible n/a occurrences falling from 74 to zero. Collection-age,
+  2,294 px, with visible n/a occurrences falling from 74 to zero. Collection-age,
   cadence and the pre-existing Windows task mismatch remain honest named states.
+- **Live delivery:** source commit `8a90b9b` and production snapshot `9cd25c4`
+  reached main by guarded fast-forward publication. Pages serves the revised
+  charts and masked rankings. All four live windows at 390 and 1,440 px have no
+  overflow or visible n/a placeholders, and no browser errors. The natural minute
+  refresh adopted a newer snapshot while retaining the selected 30-day window,
+  open health disclosure and focused final chart bucket with its new exact value.
 
 ## AE-01 — Attention Economics (2026-10-01)
 
