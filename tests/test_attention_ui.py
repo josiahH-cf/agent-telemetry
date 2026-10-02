@@ -30,223 +30,110 @@ def node_result(expression: str) -> object:
     return json.loads(completed.stdout)
 
 
-class AttentionStructureTests(unittest.TestCase):
-    def test_exact_semantic_quote_and_native_measurement_disclosure(self) -> None:
-        quote = "The price of anything is the amount of life you exchange for it"
-        self.assertEqual(INDEX.count("<blockquote"), 1)
-        self.assertIn(f'<blockquote class="life-quote">{quote}</blockquote>', INDEX)
-        self.assertNotIn("<cite", INDEX)
-        disclosure = re.search(
-            r'<details class="mast-explainer"><summary>What this observatory measures\.</summary>(.*?)</details>',
-            INDEX,
-            re.DOTALL,
-        )
-        self.assertIsNotNone(disclosure)
-        body = disclosure.group(1) if disclosure else ""
-        for text in ("anonymized and aggregated", "prompts, messages, code, paths", "not subscription bills or invoices"):
-            self.assertIn(text, body)
+class DashboardPresentationTests(unittest.TestCase):
+    def test_activity_is_visible_before_optional_evidence_and_lifetime_totals(self) -> None:
+        self.assertLess(INDEX.index('id="window-controls"'), INDEX.index('id="activity"'))
+        self.assertLess(INDEX.index('id="activity"'), INDEX.index('id="investment"'))
+        self.assertLess(INDEX.index('id="investment"'), INDEX.index('id="overview"'))
+        self.assertNotIn('class="historical-activity"', INDEX)
+        self.assertIn('id="activity-history"', INDEX)
+        self.assertIn('id="evidence"', INDEX)
+        for name in ('investment', 'attention', 'outcomes'):
+            self.assertRegex(INDEX, rf'<section[^>]+id="{name}"[^>]+hidden>')
+        self.assertIn('link.hidden = !show', DASHBOARD)
+        self.assertIn('[hidden] { display:none!important; }', INDEX)
 
-    def test_fixed_sidebar_shows_allowances_and_preserves_historical_activity(self) -> None:
-        overview_index = INDEX.index('id="overview"')
-        controls_index = INDEX.index('id="window-controls"')
-        evidence_index = INDEX.index('id="evidence"')
-        capacity_index = INDEX.index('id="capacity-now"')
-        self.assertLess(overview_index, controls_index)
-        self.assertLess(controls_index, evidence_index)
-        self.assertLess(capacity_index, overview_index)
-        sidebar = INDEX.split('id="usage-sidebar"', 1)[1].split("</aside>", 1)[0]
-        self.assertIn('id="capacity-now"', sidebar)
-        self.assertNotIn('id="activity"', sidebar)
-        self.assertNotIn('id="token-trend"', sidebar)
-        self.assertEqual(INDEX.count('id="capacity-now"'), 1)
-        self.assertIn('href="#capacity-now">Usage left</a>', INDEX)
+    def test_duplicate_tables_scenario_form_and_repeated_explanations_are_removed(self) -> None:
+        for marker in ('<form', 'mast-explainer', 'life-quote', 'economics-projects', 'project-detail', 'spec-detail', 'attention-ledger', 'evidence-key'):
+            self.assertNotIn(marker, INDEX)
+        self.assertEqual(INDEX.count('class="health-disclosure"'), 1)
+        self.assertNotIn('esc(row.detail)', DASHBOARD)
+        self.assertNotIn('$("scenario-form")', DASHBOARD)
+        self.assertIn('tokens unpriced', DASHBOARD)
+        self.assertIn('API-equivalent dollars are not invoices', INDEX)
+
+    def test_display_masking_covers_project_and_feature_charts_without_changing_keys(self) -> None:
+        self.assertIn('label:displayAlias(row, projectAliases)', DASHBOARD)
+        self.assertIn('label:displayAlias(row, featureAliases, "features")', DASHBOARD)
+        self.assertNotIn('esc(row.spec)', DASHBOARD)
+        self.assertIn('public datasets retain their approved identities', INDEX)
+        self.assertNotIn('data-project-id=', DASHBOARD)
+        self.assertNotIn('data-feature-id=', DASHBOARD)
+
+    def test_chart_units_gaps_and_keyboard_inspection_are_explicit_and_bounded(self) -> None:
+        self.assertIn('rows = rows.slice(0, 48)', DASHBOARD)
+        self.assertIn('rows = rows.slice(0, 7)', DASHBOARD)
+        self.assertIn('trendSegments(rows, item.key)', DASHBOARD)
+        self.assertIn('axisFormatter:', DASHBOARD)
+        self.assertIn('chart-tooltip', INDEX + DASHBOARD)
+        self.assertIn('["ArrowLeft", "ArrowRight", "Home", "End"]', DASHBOARD)
+        self.assertIn('point.index === firstIndex ? 0 : -1', DASHBOARD)
+        self.assertIn('role="group"', DASHBOARD)
+
+    def test_capacity_preserves_honest_states_and_native_keyboard_controls(self) -> None:
         self.assertIn('Toggle Claude and Codex usage left sidebar', INDEX)
         self.assertIn('windows shared across models', INDEX)
-        self.assertLess(controls_index, INDEX.index('id="activity-history"'))
-        self.assertIn('Historical activity &amp; API-equivalent cost', INDEX)
-        self.assertIn('id="capacity-providers"', INDEX)
-        self.assertIn('$("usage-sidebar").open = true;', DASHBOARD)
+        self.assertIn('provider.windows.slice(0, 2)', DASHBOARD)
+        self.assertIn('provider.freshness_max_age_hours', DASHBOARD)
+        for phrase in ('Stale — last', 'latest capture failed', 'Unavailable — no valid value', 'Capture error —', 'Reset not reported.', 'Source and capture', 'not billing or an estimate of messages remaining'):
+            self.assertIn(phrase, DASHBOARD)
+        self.assertIn('$("usage-sidebar").open = true', DASHBOARD)
+        self.assertIn('$("usage-sidebar").open = false', DASHBOARD)
         self.assertIn('event.key === "Escape"', DASHBOARD)
-        self.assertIn('$("usage-sidebar").open = false;', DASHBOARD)
-        self.assertIn('href="#attention"', INDEX)
-        render_body = DASHBOARD.split("function render() {", 1)[1].split("document.querySelectorAll(\"[data-window]\")", 1)[0]
-        self.assertNotIn("renderCapacity()", render_body)
-        self.assertIn("renderCapacity();\n  render();", DASHBOARD)
-        self.assertIn("provider.windows.slice(0, 2)", DASHBOARD)
-        self.assertIn("provider.freshness_max_age_hours", DASHBOARD)
-        self.assertIn('<time datetime="${esc(value)}">', DASHBOARD)
-        self.assertIn('capacityRoot.contains(document.activeElement)', DASHBOARD)
         self.assertIn('capacityRoot.querySelectorAll("details")', DASHBOARD)
-        self.assertIn("detail.open ? index : -1", DASHBOARD)
-        self.assertIn("focus({preventScroll:true})", DASHBOARD)
-        self.assertIn("refreshCapacityPreservingInteraction()", DASHBOARD)
-        self.assertIn('return "🟠";', DASHBOARD)
-        self.assertIn('return "🟢";', DASHBOARD)
-        self.assertIn('return "⚪";', DASHBOARD)
-        self.assertIn('class="provider-heading"', DASHBOARD)
-        self.assertIn('<span>${esc(provider.display_label || provider.provider || "Provider")}</span>', DASHBOARD)
-        overview_body = DASHBOARD.split("function renderOverview() {", 1)[1].split("function renderActivity()", 1)[0]
-        self.assertLess(overview_body.index('card("lifetime_tokens"'), overview_body.index('card("lifetime_sessions"'))
-        self.assertLess(overview_body.index('card("lifetime_cost_usd"'), overview_body.index('card("lifetime_sessions"'))
 
-    def test_capacity_has_all_honest_text_states_and_source_disclosure(self) -> None:
-        for text in (
-            "Fresh —",
-            "Stale — last",
-            "latest capture failed",
-            "Unavailable — no valid value has ever been observed.",
-            "Capture error — latest capture failed and no usable last-good value exists.",
-            "Stale — last reported",
-            "Reset not reported.",
-            "Source and capture",
-            "not billing or an estimate of messages remaining",
-        ):
-            self.assertIn(text, DASHBOARD)
-        self.assertIn("Reset passed", DASHBOARD)
-        self.assertIn("Resets in", DASHBOARD)
-        self.assertIn("const observed = Date.parse(observedAt);", DASHBOARD)
-        self.assertNotIn("const observed = parsedMillis(observedAt);", DASHBOARD)
+    def test_catalog_help_responsiveness_and_reduced_motion_remain(self) -> None:
+        for marker in ('@media (max-width:440px)', '@media (max-width:680px)', '@media (prefers-reduced-motion:reduce)', ':focus-visible', '.table-wrap:focus-visible', 'overscroll-behavior:contain'):
+            self.assertIn(marker, INDEX)
+        self.assertIn('catalog.get(metricId)', DASHBOARD)
+        self.assertIn('metric.derivation', DASHBOARD)
+        self.assertIn('metric.caveats', DASHBOARD)
+        self.assertIn('showModal()', DASHBOARD)
+        self.assertIn('tabindex="0" role="region"', DASHBOARD)
 
-    def test_attention_section_uses_exact_payload_contract_and_evidence_classes(self) -> None:
-        self.assertEqual(INDEX.count("<section "), 8)
-        self.assertIn('<section id="attention"', INDEX)
-        for metric_id in (
-            "recorded_operator_attention_hours",
-            "recorded_stewardship_attention_hours",
-            "recorded_rework_attention_hours",
-            "recorded_rework_share",
-            "recorded_project_transitions",
-            "attention_top_project_share",
-            "recorded_attention_dropoff_projects",
-            "attention_mode_composition",
-            "attention_project_ledger",
-        ):
-            self.assertIn(metric_id, DASHBOARD)
-        for payload_access in (
-            "totals.recorded_attention_hours",
-            "totals.stewardship_attention_hours",
-            "totals.rework_attention_hours",
-            "totals.rework_share",
-            "totals.recorded_project_transitions",
-            "totals.top_project_share",
-            "totals.dropoff_projects",
-            "attention.mode_composition",
-            "attention.project_ledger",
-        ):
-            self.assertIn(payload_access, DASHBOARD)
-        for invented_alias in (
-            "totals.recorded_operator_attention_hours",
-            "totals.recorded_stewardship_attention_hours",
-            "totals.recorded_rework_attention_hours",
-            "totals.recorded_rework_share",
-            "totals.attention_top_project_share",
-            "totals.recorded_attention_dropoff_projects",
-            "attention.attention_mode_composition",
-            "attention.attention_project_ledger",
-        ):
-            self.assertNotIn(invented_alias, DASHBOARD)
-        for label in ("Observed", "Derived", "Self-reported", "Scenario", "Unknowable here"):
-            self.assertIn(label, INDEX)
-        for mode in ("plan", "guide", "review", "rework", "direct"):
-            self.assertIn(f'"{mode}"', DASHBOARD)
-
-    def test_empty_failure_and_interpretation_copy_are_explicit(self) -> None:
-        for text in (
-            "Attention publication is disabled.",
-            "No recorded attention in this window.",
-            "Recorded attention is unavailable because the attention source could not be read.",
-            "Last recorded attention retained; the latest attention-source read failed.",
-            "Missing timer use is not inferred as zero attention.",
-            "Session span is not human attention.",
-            "Agent elapsed time is not time saved.",
-            "API-equivalent cost is not an invoice.",
-            "Recorded project transitions are counts, not a fixed time or cognitive penalty.",
-        ):
-            self.assertIn(text, INDEX + DASHBOARD)
-
-    def test_scenario_form_is_blank_bounded_nonpersistent_and_accessible(self) -> None:
-        for element_id in (
-            "scenario-project",
-            "scenario-manual-hours",
-            "scenario-value-hour",
-            "scenario-cash-basis",
-            "scenario-actual-cash",
-            "scenario-alternative-name",
-            "scenario-displaced-share",
-            "scenario-alternative-value",
-            "scenario-clear",
-            "scenario-result",
-        ):
-            self.assertIn(f'id="{element_id}"', INDEX)
-        scenario_inputs = re.findall(r'<input id="scenario-[^>]+>', INDEX)
-        self.assertTrue(scenario_inputs)
-        self.assertTrue(all(not re.search(r'\svalue=', item) for item in scenario_inputs))
-        self.assertIn('aria-live="polite"', INDEX)
-        self.assertIn('maxlength="120"', INDEX)
-        self.assertIn("!row.other_count", DASHBOARD)
-        self.assertIn("$(\"scenario-form\").reset()", DASHBOARD)
-        self.assertIn("${esc(result.alternativeName)}", DASHBOARD)
-        for forbidden in ("localStorage", "sessionStorage", "document.cookie", "fetch(", "XMLHttpRequest"):
+    def test_snapshot_refresh_remains_same_origin_and_preserves_interaction(self) -> None:
+        for marker in ('new URL("data/telemetry.js", baseURI)', 'const snapshotRefreshIntervalMinutes = 1;', 'document.visibilityState === "hidden"', 'document.addEventListener("visibilitychange"', 'window.addEventListener("focus"', 'window.addEventListener("pageshow"', 'snapshotRefreshInFlight', 'settle("failed-last-good"), 15000)', 'script.remove()', 'window.TELEMETRY = data', 'captureFocusState()', 'restoreFocusState(focusState)', 'window.scrollTo(scrollX, scrollY)', 'series:element.dataset.series', 'bucket:element.dataset.bucket'):
+            self.assertIn(marker, DASHBOARD)
+        for forbidden in ('fetch(', 'XMLHttpRequest', 'location.reload', 'WebSocket', 'EventSource', 'import(', 'localStorage', 'sessionStorage', 'document.cookie'):
             self.assertNotIn(forbidden, DASHBOARD)
 
-    def test_responsive_scroller_focus_and_reduced_motion_are_present(self) -> None:
-        self.assertIn('@media (max-width:440px)', INDEX)
-        self.assertIn('@media (max-width:680px)', INDEX)
-        self.assertIn('@media (prefers-reduced-motion:reduce)', INDEX)
-        self.assertIn('max-width:100%; overflow-x:auto', INDEX)
-        self.assertIn('tabindex="0" role="region" aria-label="Scrollable project attention and cost resource ledger"', DASHBOARD)
-        self.assertIn('.table-wrap:focus-visible', INDEX)
-        self.assertIn('.mode-value { grid-column:1/-1; text-align:left; white-space:normal; overflow-wrap:anywhere; }', INDEX)
-        self.assertIn('.capacity-window-head>div,.capacity-window-head h3 { min-width:0; overflow-wrap:anywhere; }', INDEX)
-        self.assertIn('align-items:start; gap:10px; margin-top:11px;', INDEX)
-        self.assertIn('width:min(94vw,440px)', INDEX)
-        self.assertIn('overscroll-behavior:contain', INDEX)
-        self.assertIn('.capacity-windows { display:grid; grid-template-columns:repeat(2,minmax(0,1fr))', INDEX)
-        self.assertIn('data-capacity-state="stale"', INDEX)
 
-    def test_pure_helpers_are_exposed_in_the_browser_test_hook(self) -> None:
-        for helper in ("capacityProviderState", "capacityWindowState", "captureStatusFailed", "calculateScenario", "relativeDuration", "snapshotDecision", "telemetryRefreshUrl", "snapshotRefreshSlot", "nextSnapshotRefreshMillis"):
-            self.assertIn(helper, DASHBOARD)
-        self.assertIn("capacitySignature:JSON.stringify(data.capacity_now || {})", DASHBOARD)
-        for metric_id in (
-            "scenario_attention_delta_hours",
-            "scenario_attention_equivalent_hours",
-            "scenario_opportunity_cost_usd",
-        ):
-            self.assertIn(f'metricButton("{metric_id}")', DASHBOARD)
+class PresentationHelperTests(unittest.TestCase):
+    def test_visibility_distinguishes_missing_disabled_error_observed_zero_and_dropoff(self) -> None:
+        result = node_result("(()=>{const f=(a)=>ui.sectionVisibility({attention_economics:a}).attention;return {missing:f({}),empty:f({has_records:false,totals:{recorded_attention_hours:null,dropoff_projects:0}}),disabled:f({publication_enabled:false,has_records:true,totals:{recorded_attention_hours:1}}),error:f({status:'error',has_records:true,totals:{recorded_attention_hours:1}}),zero:f({has_records:true,totals:{recorded_attention_hours:0}}),dropoff:f({has_records:false,totals:{recorded_attention_hours:null,dropoff_projects:2}}),retained:f({status:'source_error_retained_last_good',has_records:true,totals:{recorded_attention_hours:1}})}})()")
+        self.assertEqual(result, dict(missing=False, empty=False, disabled=False, error=False, zero=True, dropoff=True, retained=True))
 
-    def test_snapshot_refresh_is_bounded_same_origin_and_interaction_safe(self) -> None:
-        self.assertIn('let data = window.TELEMETRY || {};', DASHBOARD)
-        self.assertIn('new URL("data/telemetry.js", baseURI)', DASHBOARD)
-        self.assertIn('url.searchParams.set("refresh"', DASHBOARD)
-        self.assertIn('const snapshotRefreshIntervalMinutes = 1;', DASHBOARD)
-        self.assertIn('const snapshotRefreshOffsetMinutes = 0;', DASHBOARD)
-        self.assertIn('document.visibilityState === "hidden"', DASHBOARD)
-        self.assertIn('document.addEventListener("visibilitychange"', DASHBOARD)
-        self.assertIn('window.addEventListener("focus"', DASHBOARD)
-        self.assertIn('window.addEventListener("pageshow"', DASHBOARD)
-        self.assertIn('snapshotRefreshInFlight', DASHBOARD)
-        self.assertIn('timeout = window.setTimeout(() => settle("failed-last-good"), 15000);', DASHBOARD)
-        self.assertIn('script.remove();', DASHBOARD)
-        self.assertIn('window.TELEMETRY = data;', DASHBOARD)
-        self.assertIn('selectedProject.project_id || selectedProject.label', DASHBOARD)
-        self.assertIn('captureFocusState()', DASHBOARD)
-        self.assertIn('restoreFocusState(focusState)', DASHBOARD)
-        self.assertIn('focus({preventScroll:true})', DASHBOARD)
-        self.assertIn('window.scrollTo(scrollX, scrollY)', DASHBOARD)
-        self.assertIn('same-origin telemetry checks every minute while visible', DASHBOARD)
-        self.assertIn('no provider, API, model, or third-party requests from this page', DASHBOARD)
-        for forbidden in ("fetch(", "XMLHttpRequest", "location.reload", "WebSocket", "EventSource", "import("):
-            self.assertNotIn(forbidden, DASHBOARD)
+    def test_results_and_frozen_history_have_independent_evidence_gates(self) -> None:
+        result = node_result("({empty:ui.sectionVisibility({}),receipts:ui.sectionVisibility({investment_results:{totals:{results:{outcomes:2}}}}),code:ui.sectionVisibility({investment_results:{totals:{code:{revisions:3}}}}),loop:ui.sectionVisibility({outcomes:{rounds:1}})})")
+        self.assertEqual(result['empty'], dict(attention=False, results=False, loop=False))
+        self.assertEqual(result['receipts'], dict(attention=False, results=True, loop=False))
+        self.assertEqual(result['code'], dict(attention=False, results=True, loop=False))
+        self.assertEqual(result['loop'], dict(attention=False, results=False, loop=True))
 
-    def test_dropoff_only_evidence_keeps_headline_cards_visible(self) -> None:
-        self.assertIn("const hasDropoffEvidence = finite(dropoffProjects);", DASHBOARD)
-        self.assertIn("The prior-window drop-off comparison remains available.", DASHBOARD)
-        no_records_branch = DASHBOARD.split("const hasRecordedAttention", 1)[1].split(
-            '$("attention-cards").innerHTML', 1
-        )[0]
-        self.assertNotIn("return;", no_records_branch)
-        self.assertIn("The current UTC date is withheld until it closes.", DASHBOARD)
+    def test_aliases_mask_all_labels_and_keep_other_and_bulk_bucket_semantics(self) -> None:
+        result = node_result("(()=>{const w={'7':{top_projects:[{label:'PRIVATE_LABEL'},{label:'proj-private-code'},{label:'ad-hoc'},{label:'remote'},{label:'other',other_count:8}],top_specs:[{label:'PRIVATE_FEATURE'}]}};const a=ui.displayAliases(w);const f=ui.displayAliases(w,'features');return {projects:w['7'].top_projects.map(r=>ui.displayAlias(r,a)),feature:ui.displayAlias(w['7'].top_specs[0],f,'features')}})()")
+        self.assertEqual(result['projects'], ['Project 01', 'Project 02', 'Ad hoc', 'Remote', 'Other'])
+        self.assertEqual(result['feature'], 'Feature 01')
+        self.assertNotIn('PRIVATE', json.dumps(result))
+        self.assertNotIn('proj-', json.dumps(result))
+
+    def test_aliases_stay_consistent_across_windows_and_refresh_without_retaining_history(self) -> None:
+        result = node_result("(()=>{const before=ui.displayAliases({'7':{top_projects:[{label:'B'}]},'30':{top_projects:[{label:'C'}]}});const after=ui.displayAliases({'7':{top_projects:[{label:'A'},{label:'C'}]}},'projects',before);return {old:ui.displayAlias({label:'C'},before),updated:ui.displayAlias({label:'C'},after),added:ui.displayAlias({label:'A'},after),keys:Object.keys(after)}})()")
+        self.assertEqual(result['old'], result['updated'])
+        self.assertNotEqual(result['added'], result['updated'])
+        self.assertEqual(result['keys'], ['A', 'C'])
+
+    def test_chart_scale_and_missing_segments_keep_observed_zero(self) -> None:
+        result = node_result("({scale:ui.chartScale([null,0,2400000000]),empty:ui.chartScale([null,NaN]),finite:Number.isFinite(ui.chartScale([Number.MAX_VALUE])),segments:ui.trendSegments([{v:1},{v:null},{v:0},{},{v:2}], 'v')})")
+        self.assertEqual(result['scale'], 2500000000)
+        self.assertEqual(result['empty'], 1)
+        self.assertTrue(result['finite'])
+        self.assertEqual(result['segments'], [[dict(index=0, value=1)], [dict(index=2, value=0)], [dict(index=4, value=2)]])
+
+    def test_high_cardinality_and_repeated_refresh_keep_alias_memory_bounded(self) -> None:
+        result = node_result("(()=>{let a={};for(let generation=0;generation<100;generation++){const rows=Array.from({length:1000},(_,i)=>({label:'project-'+generation+'-'+i}));a=ui.displayAliases({'7':{top_projects:rows},extra:{top_projects:rows}},'projects',a)}return {aliases:Object.keys(a).length,labels:Object.keys(a).map(key=>ui.displayAlias({label:key},a))}})()")
+        self.assertEqual(result['aliases'], 7)
+        self.assertTrue(all(label.startswith('Project ') for label in result['labels']))
 
 
 class SnapshotRefreshHelperTests(unittest.TestCase):

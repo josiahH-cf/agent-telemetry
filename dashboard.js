@@ -137,6 +137,81 @@ const AgentTelemetryUI = (() => {
     };
   }
 
+  function sectionVisibility(windowValue) {
+    const value = windowValue || {};
+    const attention = value.attention_economics || {};
+    const totals = attention.totals || {};
+    const blocked = attention.publication_enabled === false
+      || ["disabled", "error", "capture_error", "invalid"].includes(attention.status);
+    const hasRecords = attention.has_records !== false
+      && Number.isFinite(numericValue(totals.recorded_attention_hours));
+    const hasDropoff = numericValue(totals.dropoff_projects) > 0;
+    const report = value.investment_results || {};
+    return {
+      attention:!blocked && (hasRecords || hasDropoff),
+      results:numericValue((report.totals || {}).results?.outcomes) > 0
+        || numericValue((report.totals || {}).code?.revisions) > 0,
+      loop:numericValue((value.outcomes || {}).rounds) > 0
+        || (Array.isArray(value.top_specs) && value.top_specs.length > 0),
+    };
+  }
+
+  function displayAliases(windowValues, family = "projects", previous = {}) {
+    const aliases = Object.create(null);
+    const identities = new Set();
+    ["7", "30", "90", "all"].forEach(windowKey => {
+      const value = (windowValues || {})[windowKey];
+      if (!value) return;
+      const rows = family === "features"
+        ? [...(value.top_specs || []).slice(0, 7), ...(value.recent_specs || []).slice(0, 6).map(row => ({label:row.spec}))]
+        : [...(value.top_projects || []).slice(0, 7), ...(value.attention_economics?.project_ledger || []).slice(0, 7), ...(value.investment_results?.projects || []).slice(0, 7)];
+      rows.forEach(row => {
+        const key = String(row.project_id || row.label || "");
+        if (key && !row.other_count && !["other", "ad-hoc", "remote", "Shared/Unassigned"].includes(key)) identities.add(key);
+      });
+    });
+    let next = Math.max(0, ...Object.values(previous)) + 1;
+    [...identities].sort().forEach(key => {
+      aliases[key] = Object.prototype.hasOwnProperty.call(previous, key) ? previous[key] : next++;
+    });
+    return aliases;
+  }
+
+  function displayAlias(row, aliases, family = "projects") {
+    const key = String(row.project_id || row.label || "");
+    if (row.other_count || key === "other") return "Other";
+    if (family === "projects" && key === "ad-hoc") return "Ad hoc";
+    if (family === "projects" && key === "remote") return "Remote";
+    if (family === "projects" && key === "Shared/Unassigned") return "Shared / unassigned";
+    const prefix = family === "features" ? "Feature" : "Project";
+    return aliases[key] ? `${prefix} ${String(aliases[key]).padStart(2, "0")}` : prefix;
+  }
+
+  function chartScale(values) {
+    const highest = Math.max(0, ...values.filter(finiteNumber));
+    if (!highest) return 1;
+    const power = 10 ** Math.floor(Math.log10(highest));
+    const normalized = highest / power;
+    const ceiling = (normalized <= 1 ? 1 : normalized <= 2 ? 2 : normalized <= 2.5 ? 2.5 : normalized <= 5 ? 5 : 10) * power;
+    return Number.isFinite(ceiling) ? ceiling : highest;
+  }
+
+  function trendSegments(rows, key) {
+    const segments = [];
+    let current = [];
+    rows.forEach((row, index) => {
+      const value = row[key];
+      if (finiteNumber(value)) {
+        current.push({index, value});
+      } else if (current.length) {
+        segments.push(current);
+        current = [];
+      }
+    });
+    if (current.length) segments.push(current);
+    return segments;
+  }
+
   function snapshotDecision(currentValue, candidateValue) {
     const current = currentValue && typeof currentValue === "object" ? currentValue : {};
     const candidate = candidateValue && typeof candidateValue === "object" ? candidateValue : {};
@@ -203,7 +278,7 @@ const AgentTelemetryUI = (() => {
     return (slot + 1) * intervalMinutes * 60000 + offsetMinutes * 60000;
   }
 
-  return Object.freeze({capacityProviderState, capacityWindowState, capacityWindowLabel, captureStatusFailed, calculateScenario, relativeDuration, snapshotDecision, telemetryRefreshUrl, snapshotRefreshSlot, nextSnapshotRefreshMillis});
+  return Object.freeze({capacityProviderState, capacityWindowState, capacityWindowLabel, captureStatusFailed, calculateScenario, relativeDuration, sectionVisibility, displayAliases, displayAlias, chartScale, trendSegments, snapshotDecision, telemetryRefreshUrl, snapshotRefreshSlot, nextSnapshotRefreshMillis});
 })();
 
 if (typeof window !== "undefined") window.AgentTelemetryUI = AgentTelemetryUI;
@@ -221,11 +296,12 @@ if (typeof module === "object" && module.exports) module.exports = AgentTelemetr
   const numeric = value => typeof value === "number" && Number.isFinite(value) ? value : typeof value === "string" && value.trim() !== "" && Number.isFinite(Number(value)) ? Number(value) : null;
   const sum = values => values.reduce((total, value) => total + (finite(value) ? value : 0), 0);
   const compact = new Intl.NumberFormat("en-US", {maximumFractionDigits:1, notation:"compact"});
+  const axisCompact = new Intl.NumberFormat("en-US", {maximumFractionDigits:2, notation:"compact"});
   const full = new Intl.NumberFormat("en-US", {maximumFractionDigits:2});
   const money = new Intl.NumberFormat("en-US", {style:"currency", currency:"USD", maximumFractionDigits:2});
   const percentNumber = new Intl.NumberFormat("en-US", {maximumFractionDigits:1});
   const colors = ["#7bdcff", "#8ba9ff", "#75e6ad", "#ffd166", "#c4a7ff", "#ff8c9b", "#b8c5d3"];
-  const {capacityProviderState, capacityWindowState, capacityWindowLabel, calculateScenario, relativeDuration, snapshotDecision, telemetryRefreshUrl, snapshotRefreshSlot, nextSnapshotRefreshMillis} = AgentTelemetryUI;
+  const {capacityProviderState, capacityWindowState, capacityWindowLabel, relativeDuration, sectionVisibility, displayAliases, displayAlias, chartScale, trendSegments, snapshotDecision, telemetryRefreshUrl, snapshotRefreshSlot, nextSnapshotRefreshMillis} = AgentTelemetryUI;
   const focusableSelector = "button,summary,a[href],input,select,textarea,[tabindex]:not([tabindex='-1'])";
   const snapshotRefreshIntervalMinutes = 1;
   const snapshotRefreshOffsetMinutes = 0;
@@ -236,12 +312,14 @@ if (typeof module === "object" && module.exports) module.exports = AgentTelemetr
   const params = new URLSearchParams(window.location.search);
   let activeKey = validWindows.includes(params.get("window")) ? params.get("window") : data.default_window || "30";
   let active = windows[activeKey] || Object.values(windows)[0] || {};
-  let scenarioProjects = [];
+  let projectAliases = displayAliases(windows);
+  let featureAliases = displayAliases(windows, "features");
   let snapshotRefreshTimer = null;
   let snapshotRefreshInFlight = false;
   let snapshotRefreshLastSlot = snapshotRefreshSlot(Date.now(), snapshotRefreshIntervalMinutes, snapshotRefreshOffsetMinutes);
   let snapshotRefreshState = "scheduled";
   let snapshotRefreshCheckedAt = null;
+  let metricReturnFocus = null;
 
   function fmt(value, kind = "number", reason = "not observed") {
     if (!finite(value)) return `<span class="empty">n/a · ${esc(reason)}</span>`;
@@ -276,19 +354,19 @@ if (typeof module === "object" && module.exports) module.exports = AgentTelemetr
     return `<button class="metric-help" type="button" data-explain="${esc(metricId)}" aria-label="Explain ${esc(label)}">i</button>`;
   }
 
-  function card(metricId, value, detail, delta = "", evidenceOverride = "") {
+  function card(metricId, value, detail = "", delta = "") {
     const metric = catalog.get(metricId) || {display_label:metricId};
-    const evidence = evidenceOverride || metric.evidence_class;
-    return `<article class="card" data-metric-id="${esc(metricId)}"><div class="metric-head"><span class="metric-label-group"><span class="label">${esc(metric.display_label)}</span>${evidence ? evidenceBadge(evidence, evidence === "observed" && metricId === "recorded_operator_attention_hours" ? "Recorded" : "") : ""}</span>${metricButton(metricId)}</div><span class="value">${value}</span><span class="detail">${detail}</span>${delta ? `<span class="delta">${delta}</span>` : ""}</article>`;
+    if (value.includes('class="empty"')) return "";
+    return `<article class="card" data-metric-id="${esc(metricId)}"><div class="metric-head"><span class="label">${esc(metric.display_label)}</span>${metricButton(metricId)}</div><span class="value">${value}</span>${detail ? `<span class="detail">${detail}</span>` : ""}${delta ? `<span class="delta" title="Change from the preceding equal UTC window" aria-label="Change from the preceding equal UTC window: ${esc(delta)}">${delta}</span>` : ""}</article>`;
   }
 
   function deltaText(current, previous, kind = "number") {
-    if (!finite(current) || !finite(previous)) return "↔ prior equal window unavailable";
+    if (!finite(current) || !finite(previous)) return "";
     const delta = current - previous;
     const arrow = delta > 0 ? "↑" : delta < 0 ? "↓" : "↔";
     const magnitude = Math.abs(delta);
     const value = kind === "money" ? money.format(magnitude) : kind === "percent" ? `${full.format(magnitude * 100)} pp` : kind === "tokens" ? compact.format(magnitude) : kind === "minutes" ? `${full.format(magnitude)}m` : full.format(magnitude);
-    return `${arrow} ${delta > 0 ? "+" : delta < 0 ? "−" : ""}${value} vs prior equal window`;
+    return `${arrow} ${delta > 0 ? "+" : delta < 0 ? "−" : ""}${value}`;
   }
 
   function chartHeader(metricId, subtitle) {
@@ -298,13 +376,15 @@ if (typeof module === "object" && module.exports) module.exports = AgentTelemetr
 
   function donut(targetId, metricId, rows, valueKey, subtitle, formatter = value => fmt(value, "tokens")) {
     const target = $(targetId);
-    const clean = rows.filter(row => finite(Number(row[valueKey])) && Number(row[valueKey]) >= 0);
+    const clean = rows.filter(row => finite(row[valueKey]) && row[valueKey] >= 0);
+    target.hidden = !clean.length;
+    if (target.hidden) { target.replaceChildren(); return; }
     const total = sum(clean.map(row => Number(row[valueKey])));
     const circumference = 2 * Math.PI * 44;
     let offset = 0;
     const circles = clean.map((row, index) => {
       const length = total ? Number(row[valueKey]) / total * circumference : 0;
-      const circle = `<circle cx="50" cy="50" r="44" stroke="${colors[index % colors.length]}" stroke-dasharray="${length} ${circumference}" stroke-dashoffset="${-offset}"></circle>`;
+      const circle = `<circle cx="50" cy="50" r="44" stroke="${colors[index % colors.length]}" stroke-dasharray="${length} ${circumference}" stroke-dashoffset="${-offset}"><title>${esc(row.label)}: ${esc(formatter(row[valueKey]))}</title></circle>`;
       offset += length;
       return circle;
     }).join("");
@@ -318,32 +398,52 @@ if (typeof module === "object" && module.exports) module.exports = AgentTelemetr
 
   function lineChart(targetId, metricId, rows, series, subtitle) {
     const target = $(targetId);
-    const maximum = Math.max(1, ...rows.flatMap(row => series.map(item => Number(row[item.key]) || 0)));
+    rows = rows.slice(0, 48);
+    target.hidden = !rows.some(row => series.some(item => finite(row[item.key])));
+    if (target.hidden) { target.replaceChildren(); return; }
+    const maximum = chartScale(rows.flatMap(row => series.map(item => row[item.key])));
+    const x = index => rows.length <= 1 ? 50 : 4 + index / (rows.length - 1) * 92;
+    const y = value => 92 - value / maximum * 84;
+    const dateLabel = row => row.from && row.to && row.from !== row.to ? `${row.from} → ${row.to}` : row.from || row.date;
+    const format = series[0].axisFormatter || series[0].formatter || (value => full.format(value));
     const polylines = series.map((item, index) => {
-      const points = rows.map((row, pointIndex) => {
-        const x = rows.length <= 1 ? 50 : 4 + pointIndex / (rows.length - 1) * 92;
-        const y = 92 - (Number(row[item.key]) || 0) / maximum * 82;
-        return `${x.toFixed(2)},${y.toFixed(2)}`;
-      }).join(" ");
-      return `<polyline points="${points}" stroke="${item.color || colors[index]}"></polyline>`;
+      const color = item.color || colors[index];
+      const formatPoint = item.formatter || format;
+      return trendSegments(rows, item.key).map(segment => {
+        const points = segment.map(point => `${x(point.index).toFixed(2)},${y(point.value).toFixed(2)}`).join(" ");
+        const firstX = x(segment[0].index).toFixed(2);
+        const lastX = x(segment[segment.length - 1].index).toFixed(2);
+        const firstIndex = rows.findIndex(row => finite(row[item.key]));
+        const markers = segment.map(point => {
+          const label = `${dateLabel(rows[point.index])} · ${item.label}: ${formatPoint(point.value)}`;
+          return `<circle class="plot-point${segment.length === 1 ? " single-point" : ""}" cx="${x(point.index).toFixed(2)}" cy="${y(point.value).toFixed(2)}" r="1.5" stroke="${color}" tabindex="${point.index === firstIndex ? 0 : -1}" role="img" aria-label="${esc(label)}" data-point-label="${esc(label)}" data-series="${index}" data-bucket="${point.index}"><title>${esc(label)}</title></circle>`;
+        }).join("");
+        return `<polygon class="area" points="${firstX},92 ${points} ${lastX},92" fill="${color}"></polygon><polyline points="${points}" stroke="${color}"></polyline>${markers}`;
+      }).join("");
     }).join("");
     const first = rows[0];
     const last = rows[rows.length - 1];
-    const labels = rows.length ? `<div class="plot-labels"><span>${esc(first.from || first.date)}</span><span>${esc(last.to || last.date)}</span></div>` : "";
+    const labels = `<div class="plot-labels"><span>${esc(first.from || first.date)}</span><span>${esc(last.to || last.date)}</span></div>`;
     const key = series.map((item, index) => `<span><b style="color:${item.color || colors[index]}">— ${esc(item.label)}</b></span>`).join("");
+    const grid = [8, 50, 92].map(position => `<line class="grid" x1="4" y1="${position}" x2="96" y2="${position}"></line>`).join("");
+    const scale = [maximum, maximum / 2, 0].map(value => `<span>${esc(format(value))}</span>`).join("");
     target.dataset.metricId = metricId;
-    target.innerHTML = `${chartHeader(metricId, subtitle)}<div class="chart-body">${rows.length ? `<svg class="plot" viewBox="0 0 100 100" preserveAspectRatio="none" role="img" aria-label="${esc(subtitle)}"><line class="axis" x1="4" y1="92" x2="96" y2="92"></line>${polylines}</svg>${labels}<div class="series-key">${key}</div>` : '<span class="empty">n/a · no points in this window</span>'}</div>`;
+    target.innerHTML = `${chartHeader(metricId, subtitle)}<div class="chart-body"><div class="plot-wrap"><div class="plot-scale" aria-hidden="true">${scale}</div><div><svg class="plot" viewBox="0 0 100 100" preserveAspectRatio="none" role="group" aria-label="${esc(subtitle)}" aria-description="Use left and right arrow keys to inspect values, or Home and End for the first and last bucket.">${grid}${polylines}</svg>${labels}</div></div><div class="series-key">${key}</div><div class="chart-tooltip" aria-live="polite"></div></div>`;
   }
 
   function ranked(targetId, metricId, rows, valueKey, subtitle, formatter, color = colors[0]) {
     const target = $(targetId);
+    rows = rows.slice(0, 7);
+    target.hidden = !rows.some(row => finite(row[valueKey]));
+    if (target.hidden) { target.replaceChildren(); return; }
     const maximum = Math.max(1, ...rows.map(row => Number(row[valueKey]) || 0));
     const body = rows.map(row => {
-      const label = row.other_count ? `other (${row.other_count} more)` : row.label;
-      return `<div class="rank-row"><span class="rank-name" title="${esc(label)}">${esc(label)}</span><span class="track" aria-hidden="true"><span class="fill" style="width:${(Number(row[valueKey]) || 0) / maximum * 100}%;background:${color}"></span></span><span class="rank-value">${formatter(Number(row[valueKey]) || 0)}</span></div>`;
+      const label = row.other_count ? "Other" : row.label;
+      const other = row.other_count || label === "Other";
+      return `<div class="rank-row${other ? " other-row" : ""}"><span class="rank-name" title="${esc(label)}">${esc(label)}</span><span class="track" aria-hidden="true"><span class="fill" style="width:${(Number(row[valueKey]) || 0) / maximum * 100}%;background:${other ? colors[6] : color}"></span></span><span class="rank-value">${formatter(Number(row[valueKey]) || 0)}</span></div>`;
     }).join("");
     target.dataset.metricId = metricId;
-    target.innerHTML = `${chartHeader(metricId, subtitle)}<div class="chart-body ranked">${body || '<span class="empty">n/a · no ranked records</span>'}</div>`;
+    target.innerHTML = `${chartHeader(metricId, subtitle)}<div class="chart-body ranked">${body}</div>`;
   }
 
   function status(targetId, ok, goodText, badText, warning = false) {
@@ -352,19 +452,14 @@ if (typeof module === "object" && module.exports) module.exports = AgentTelemetr
     target.textContent = ok ? goodText : badText;
   }
 
-  function ageMinutes() {
-    const generated = Date.parse(data.generated_at);
-    return Number.isFinite(generated) ? Math.max(0, (Date.now() - generated) / 60000) : null;
-  }
-
   function renderMasthead() {
-    const age = ageMinutes();
     const refreshText = snapshotRefreshState === "updated"
       ? "Snapshot updated automatically"
       : snapshotRefreshState === "failed-last-good"
         ? "Auto-check retrying · last-good retained"
-        : "Snapshot auto-check every minute";
-    $("mast-meta").innerHTML = `<span data-metric-id="data_age_minutes">${finite(age) ? `${full.format(age)}m old` : "age n/a"} ${metricButton("data_age_minutes")}</span><br>Generated ${esc(when(data.generated_at))}<br><span class="refresh-note">${esc(refreshText)}</span>`;
+        : "";
+    const relative = relativeDuration(data.generated_at);
+    $("mast-meta").innerHTML = `<span data-metric-id="data_age_minutes">Updated ${relative ? `${esc(relative.text)} ago` : "at an unknown time"} ${metricButton("data_age_minutes")}</span>${snapshotRefreshState === "failed-last-good" ? `<span class="refresh-note">${esc(refreshText)}</span>` : ""}`;
   }
 
   function relativeObservation(value, ageHours = null) {
@@ -469,8 +564,7 @@ if (typeof module === "object" && module.exports) module.exports = AgentTelemetr
     const warning = renderedStates.some(value => ["stale", "retained_last_good", "unavailable"].includes(value)) || !renderedStates.length;
     check.className = `status ${bad ? "bad" : warning ? "warn" : "good"}`;
     check.textContent = bad ? "Capture error" : warning ? "Capacity partial" : "Capacity fresh";
-    const nextCheck = nextSnapshotRefreshMillis(Date.now(), snapshotRefreshIntervalMinutes, snapshotRefreshOffsetMinutes);
-    $("capacity-update").innerHTML = `Collection + publication: 5-minute UTC slots.<br>Page checks: every minute · next ${esc(new Date(nextCheck).toLocaleTimeString([], {hour:"2-digit", minute:"2-digit"}))}.<br>Snapshot generated ${esc(when(data.generated_at))}. Provider observation ages appear above.`;
+    $("capacity-update").textContent = "Refreshes automatically · provider observation ages shown above.";
   }
 
   function refreshCapacityPreservingInteraction() {
@@ -495,325 +589,137 @@ if (typeof module === "object" && module.exports) module.exports = AgentTelemetr
     const point = data.point_in_time || {};
     const totals = point.totals || {};
     $("overview-cards").innerHTML = [
-      card("lifetime_tokens", fmt(totals.tokens, "tokens"), "Provider-correct lifetime total"),
-      card("lifetime_cost_usd", fmt(totals.cost_usd, "money"), "Exact observed models only"),
-      card("lifetime_unpriced_tokens", fmt(totals.unpriced_tokens, "tokens"), "Counted, never silently priced"),
-      card("lifetime_sessions", fmt(totals.sessions), "Across both providers and host operating systems"),
+      card("lifetime_tokens", fmt(totals.tokens, "tokens")),
+      card("lifetime_cost_usd", fmt(totals.cost_usd, "money")),
+      card("lifetime_unpriced_tokens", fmt(totals.unpriced_tokens, "tokens")),
+      card("lifetime_sessions", fmt(totals.sessions)),
     ].join("");
-    donut("vendor-chart", "tokens_by_vendor", point.by_vendor || [], "tokens", "Lifetime · Anthropic vs OpenAI");
-    donut("host-chart", "tokens_by_host_os", point.by_host_os || [], "tokens", "Lifetime · WSL-hosted vs Windows-hosted");
-    status("overview-check", point.reconciliation === "ok" && point.store_integrity === "ok", "Store · page · machine agree", "Reconciliation needs attention");
+    donut("vendor-chart", "tokens_by_vendor", point.by_vendor || [], "tokens", "All-time");
+    donut("host-chart", "tokens_by_host_os", point.by_host_os || [], "tokens", "All-time");
+    status("overview-check", point.reconciliation === "ok" && point.store_integrity === "ok", "Reconciled", "Totals need attention");
   }
 
   function renderActivity() {
     const summary = active.summary || {};
     const prior = (active.comparison || {}).summary || {};
     $("activity-cards").innerHTML = [
-      card("window_tokens", fmt(summary.tokens, "tokens"), `${esc(active.from)} through ${esc(active.to)} UTC`, deltaText(summary.tokens, prior.tokens, "tokens")),
-      card("window_cost_usd", fmt(summary.cost_usd, "money"), "Unpriced usage remains separate", deltaText(summary.cost_usd, prior.cost_usd, "money")),
-      card("window_session_days", fmt(summary.session_days), "Daily session presences, not unique sessions", deltaText(summary.session_days, prior.session_days)),
-      card("window_active_days", fmt(summary.active_days), "Non-zero daily rollups", deltaText(summary.active_days, prior.active_days)),
+      card("window_tokens", fmt(summary.tokens, "tokens"), "", deltaText(summary.tokens, prior.tokens, "tokens")),
+      card("window_cost_usd", fmt(summary.cost_usd, "money"), summary.unpriced_tokens > 0 ? `${fmt(summary.unpriced_tokens, "tokens")} tokens unpriced` : "", deltaText(summary.cost_usd, prior.cost_usd, "money")),
+      card("window_session_days", fmt(summary.session_days), "", deltaText(summary.session_days, prior.session_days)),
+      card("window_active_days", fmt(summary.active_days), "", deltaText(summary.active_days, prior.active_days)),
     ].join("");
-    lineChart("token-trend", "daily_tokens", active.daily || [], [{key:"tokens", label:"tokens per bucket", color:colors[0]}], `${active.from} → ${active.to} · exact total, ≤48 buckets`);
-    lineChart("cost-trend", "daily_cost_usd", active.daily || [], [{key:"cost_usd", label:"exact USD per bucket", color:colors[1]}], `${active.from} → ${active.to} · API-equivalent USD`);
+    lineChart("token-trend", "daily_tokens", active.daily || [], [{key:"tokens", label:"tokens per bucket", color:colors[0], formatter:value => full.format(value), axisFormatter:value => axisCompact.format(value)}], "UTC bucket totals");
+    lineChart("cost-trend", "daily_cost_usd", active.daily || [], [{key:"cost_usd", label:"exact USD per bucket", color:colors[1], formatter:value => money.format(value), axisFormatter:value => `$${axisCompact.format(value)}`}], "API-equivalent USD · UTC bucket totals");
   }
 
   function renderMix() {
     const point = data.point_in_time || {};
-    const projectRows = active.top_projects || [];
-    const buckets = active.bucket_tokens || {};
-    const prior = active.comparison || {};
-    const priorBuckets = prior.bucket_tokens || {};
-    $("mix-cards").innerHTML = [
-      card("window_project_identities", fmt(active.project_count), "Distinct identities active in the exact window", deltaText(active.project_count, prior.project_count)),
-      card("window_ad_hoc_tokens", fmt(buckets["ad-hoc"] || 0, "tokens"), "Explicit non-project bulk bucket", deltaText(buckets["ad-hoc"] || 0, priorBuckets["ad-hoc"], "tokens")),
-      card("window_remote_tokens", fmt(buckets["remote"] || 0, "tokens"), "Explicit remote bulk bucket", deltaText(buckets["remote"] || 0, priorBuckets["remote"], "tokens")),
-      card("unregistered_candidates", fmt(point.unregistered_candidates), "Current anonymous clusters · point-in-time"),
-    ].join("");
-    donut("project-chart", "tokens_by_project", projectRows, "tokens", `${active.from} → ${active.to} · top 6 + exact other`);
-    ranked("model-chart", "tokens_by_model", point.top_models || [], "tokens", "Lifetime · observed session-model buckets", value => fmt(value, "tokens"), colors[1]);
-    refreshLazy("project-detail");
+    const rows = (active.top_projects || []).map(row => ({...row, label:displayAlias(row, projectAliases)}));
+    ranked("project-chart", "tokens_by_project", rows, "tokens", "Selected window · top six + Other", value => fmt(value, "tokens"));
+    ranked("model-chart", "tokens_by_model", point.top_models || [], "tokens", "All-time · top six + Other", value => fmt(value, "tokens"), colors[1]);
   }
 
-  function attentionHours(value, reason = "no recorded attention") {
-    return finite(value) ? `${full.format(value)}h` : `<span class="empty">n/a · ${esc(reason)}</span>`;
-  }
-
-  function setAttentionEmpty(message) {
-    $("attention-state").textContent = message;
-    const reason = message === "Attention publication is disabled." ? "publication disabled" : "attention unavailable";
-    $("attention-cards").innerHTML = [
-      card("recorded_operator_attention_hours", attentionHours(null, reason), "Completed operator-started timer intervals", "", "observed"),
-      card("recorded_stewardship_attention_hours", attentionHours(null, reason), "Guide + review + rework modes", "", "derived"),
-      card("recorded_project_transitions", fmt(null, "number", reason), "Recorded destination changes; no time penalty attached", "", "derived"),
-      card("recorded_attention_dropoff_projects", fmt(null, "number", reason), "Previously attended projects with no recorded attention.", "", "derived"),
-    ].join("");
-    $("attention-secondary").innerHTML = `<span data-metric-id="recorded_rework_attention_hours"><strong>Recorded rework:</strong> ${attentionHours(null, reason)} ${metricButton("recorded_rework_attention_hours")} ${evidenceBadge("derived")}</span><span data-metric-id="recorded_rework_share"><strong>Rework share:</strong> ${fmt(null, "percent", reason)} ${metricButton("recorded_rework_share")} ${evidenceBadge("derived")}</span><span data-metric-id="attention_top_project_share"><strong>Top-project attention share:</strong> ${fmt(null, "percent", reason)} ${metricButton("attention_top_project_share")} ${evidenceBadge("derived")}</span>`;
-    $("attention-modes").parentElement.dataset.metricId = "attention_mode_composition";
-    $("attention-modes").innerHTML = modeCompositionMarkup([]);
-    $("attention-ledger").parentElement.dataset.metricId = "attention_project_ledger";
-    $("attention-ledger").innerHTML = '<p class="empty">No project resource rows are available for this window.</p>';
-    populateScenarioProjects([]);
+  function attentionHours(value) {
+    return finite(value) ? `${full.format(value)}h` : '<span class="empty">n/a</span>';
   }
 
   function modeCompositionMarkup(rows) {
-    const byMode = new Map((Array.isArray(rows) ? rows : []).filter(row => row && typeof row === "object").map(row => [String(row.mode), row]));
-    return ["plan", "guide", "review", "rework", "direct"].map(mode => {
-      const row = byMode.get(mode) || {};
-      const seconds = numeric(row.seconds);
-      const hours = numeric(row.hours);
+    return (Array.isArray(rows) ? rows : []).filter(row => finite(row.seconds)).slice(0, 5).map(row => {
       const share = numeric(row.share);
-      const width = share === null ? 0 : Math.max(0, Math.min(100, share * 100));
-      const text = seconds === null
-        ? "n/a"
-        : `${full.format(seconds)}s · ${hours === null ? full.format(seconds / 3600) : full.format(hours)}h · ${share === null ? "share n/a" : `${percentNumber.format(share * 100)}%`}`;
-      return `<div class="mode-row"><span class="mode-name">${esc(mode)}</span><span class="mode-track" aria-hidden="true"><span class="mode-fill" style="width:${width}%"></span></span><span class="mode-value">${esc(text)}</span></div>`;
+      const width = share === null ? 0 : Math.max(0, Math.min(1, share)) * 100;
+      return `<div class="mode-row"><span class="mode-name">${esc(row.mode)}</span><span class="mode-track" aria-hidden="true"><span class="mode-fill" style="width:${width}%"></span></span><span class="mode-value">${full.format(row.seconds / 3600)}h${share === null ? "" : ` · ${percentNumber.format(share * 100)}%`}</span></div>`;
     }).join("");
-  }
-
-  function attentionLedgerMarkup(rows) {
-    if (!rows.length) return '<p class="empty">No project resource rows are available for this window.</p>';
-    const body = rows.map(row => {
-      const name = row.other_count ? `other (${full.format(row.other_count)} projects)` : row.label || row.project_id || "unknown";
-      return `<tr><td>${esc(name)}</td><td class="num">${attentionHours(numeric(row.recorded_attention_hours))}</td><td class="num">${attentionHours(numeric(row.stewardship_hours))}</td><td class="num">${attentionHours(numeric(row.rework_hours))}</td><td class="num">${fmt(numeric(row.transitions_in))}</td><td class="num">${fmt(numeric(row.api_equivalent_cost_usd), "money")}</td><td class="num">${fmt(numeric(row.unpriced_tokens), "tokens")}</td></tr>`;
-    }).join("");
-    return `<div class="table-wrap" tabindex="0" role="region" aria-label="Scrollable project attention and cost resource ledger"><table><thead><tr><th>Project / tail</th><th class="num">Recorded attention (h) ${evidenceBadge("observed", "Recorded")}</th><th class="num">Stewardship (h) ${evidenceBadge("derived")}</th><th class="num">Rework (h) ${evidenceBadge("derived")}</th><th class="num">Transitions in ${evidenceBadge("derived")}</th><th class="num">API-equivalent USD ${evidenceBadge("derived")}</th><th class="num">Unpriced tokens ${evidenceBadge("observed")}</th></tr></thead><tbody>${body}</tbody></table></div>`;
-  }
-
-  function populateScenarioProjects(rows) {
-    const select = $("scenario-project");
-    const selectedIndex = Number.parseInt(select.value, 10);
-    const selectedProject = Number.isInteger(selectedIndex) ? scenarioProjects[selectedIndex] : null;
-    const selectedIdentity = selectedProject ? String(selectedProject.project_id || selectedProject.label || "") : "";
-    scenarioProjects = rows.filter(row => {
-      const label = String(row.label || row.project_id || "").toLowerCase();
-      return !row.other_count && label !== "other" && finite(numeric(row.recorded_attention_hours)) && numeric(row.recorded_attention_hours) > 0;
-    });
-    select.innerHTML = '<option value="">Choose a displayed project</option>' + scenarioProjects.map((row, index) => `<option value="${index}">${esc(row.label || row.project_id || `Project ${index + 1}`)}</option>`).join("");
-    if (selectedIdentity) {
-      const replacement = scenarioProjects.findIndex(row => String(row.project_id || row.label || "") === selectedIdentity);
-      if (replacement >= 0) select.value = String(replacement);
-    }
   }
 
   function renderAttention() {
-    const attention = active.attention_economics && typeof active.attention_economics === "object" ? active.attention_economics : null;
-    if (!attention) {
-      setAttentionEmpty("Recorded attention is unavailable for this generated snapshot.");
+    const attention = active.attention_economics || {};
+    const totals = attention.totals || {};
+    if (!sectionVisibility(active).attention) {
+      $("attention-cards").replaceChildren();
+      $("attention-modes").replaceChildren();
+      $("attention-projects").replaceChildren();
       return;
     }
-    const attentionStatus = String(attention.status || "unknown").toLowerCase();
-    if (attention.publication_enabled === false || attentionStatus === "disabled") {
-      setAttentionEmpty("Attention publication is disabled.");
-      return;
+    const comparison = attention.dropoff_comparison || {};
+    let closedTo = active.to;
+    if (attention.finalization_status === "current_date_pending_utc_close") {
+      const date = new Date(`${active.to}T00:00:00Z`);
+      if (Number.isFinite(date.valueOf())) {
+        date.setUTCDate(date.getUTCDate() - 1);
+        closedTo = date.toISOString().slice(0, 10);
+      }
     }
-    if (["error", "capture_error", "invalid"].includes(attentionStatus)) {
-      setAttentionEmpty("Recorded attention is unavailable because the attention source could not be read.");
-      return;
-    }
-    const totals = attention.totals && typeof attention.totals === "object" ? attention.totals : {};
-    const recordedAttention = numeric(totals.recorded_attention_hours);
-    const dropoffProjects = numeric(totals.dropoff_projects);
-    const hasRecordedAttention = attention.has_records !== false && finite(recordedAttention);
-    const hasDropoffEvidence = finite(dropoffProjects);
-    const retainedAfterSourceError = attentionStatus === "source_error_retained_last_good";
-    const coverage = attention.coverage && typeof attention.coverage === "object" ? attention.coverage : {};
-    const coverageText = coverage.from && coverage.to ? ` Recorded coverage: ${coverage.from} through ${coverage.to} UTC.` : "";
-    const finalizationText = attention.finalization_status === "current_date_pending_utc_close"
-      ? " The current UTC date is withheld until it closes."
-      : "";
-    const comparison = attention.dropoff_comparison && typeof attention.dropoff_comparison === "object" ? attention.dropoff_comparison : {};
-    const dropoffPeriod = comparison.from && comparison.to ? `Comparison: ${comparison.from} through ${comparison.to} UTC.` : "";
-    $("attention-state").textContent = retainedAfterSourceError
-      ? `Last recorded attention retained; the latest attention-source read failed.${coverageText}${finalizationText} Missing timer use is not inferred as zero attention.`
-      : hasRecordedAttention
-        ? `Only explicitly timed, completed intervals are included.${coverageText}${finalizationText} Missing timer use is not inferred as zero attention.`
-        : `No recorded attention in this window.${hasDropoffEvidence ? " The prior-window drop-off comparison remains available." : ""}${coverageText}${finalizationText} Missing timer use is not inferred as zero attention.`;
+    $("attention-state").textContent = `${active.from} → ${closedTo} UTC${attention.status === "source_error_retained_last_good" ? " · source unavailable; last recorded values" : ""}`;
     $("attention-cards").innerHTML = [
-      card("recorded_operator_attention_hours", attentionHours(recordedAttention), "Completed operator-started timer intervals", "", "observed"),
-      card("recorded_stewardship_attention_hours", attentionHours(numeric(totals.stewardship_attention_hours)), "Guide + review + rework modes", "", "derived"),
-      card("recorded_project_transitions", fmt(numeric(totals.recorded_project_transitions), "number", "no recorded attention"), "Recorded destination changes; no time penalty attached", "", "derived"),
-      card("recorded_attention_dropoff_projects", fmt(dropoffProjects, "number", activeKey === "all" ? "not applicable to all-time" : "prior comparison unavailable"), `Previously attended projects with no recorded attention.${dropoffPeriod ? ` ${dropoffPeriod}` : ""}`, "", "derived"),
+      card("recorded_operator_attention_hours", attentionHours(numeric(totals.recorded_attention_hours))),
+      card("recorded_stewardship_attention_hours", attentionHours(numeric(totals.stewardship_attention_hours))),
+      card("recorded_project_transitions", fmt(numeric(totals.recorded_project_transitions))),
+      card("recorded_attention_dropoff_projects", fmt(numeric(totals.dropoff_projects)), comparison.from && comparison.to ? `${esc(comparison.from)} → ${esc(comparison.to)} UTC` : ""),
     ].join("");
-    $("attention-secondary").innerHTML = `<span data-metric-id="recorded_rework_attention_hours"><strong>Recorded rework:</strong> ${attentionHours(numeric(totals.rework_attention_hours))} ${metricButton("recorded_rework_attention_hours")} ${evidenceBadge("derived")}</span><span data-metric-id="recorded_rework_share"><strong>Rework share:</strong> ${fmt(numeric(totals.rework_share), "percent", "no recorded attention")} ${metricButton("recorded_rework_share")} ${evidenceBadge("derived")}</span><span data-metric-id="attention_top_project_share"><strong>Top-project attention share:</strong> ${fmt(numeric(totals.top_project_share), "percent", "no recorded attention")} ${metricButton("attention_top_project_share")} ${evidenceBadge("derived")}</span>`;
-    $("attention-modes").parentElement.dataset.metricId = "attention_mode_composition";
     $("attention-modes").innerHTML = modeCompositionMarkup(attention.mode_composition);
-    const ledger = Array.isArray(attention.project_ledger) ? attention.project_ledger.slice(0, 7) : [];
-    $("attention-ledger").parentElement.dataset.metricId = "attention_project_ledger";
-    $("attention-ledger").innerHTML = attentionLedgerMarkup(ledger);
-    populateScenarioProjects(ledger);
-  }
-
-  function economicsChange(change, key, kind = "number") {
-    const value = numeric((change && change.values || {})[key]);
-    const observed = numeric((change && change.observed_values || {})[key]);
-    if (!finite(value) && finite(observed)) return `Recorded Δ ${observed > 0 ? "+" : observed < 0 ? "−" : "↔ "}${fmt(Math.abs(observed), kind)} · partial coverage`;
-    return finite(value) ? `${value > 0 ? "+" : value < 0 ? "−" : "↔ "}${fmt(Math.abs(value), kind)} vs prior closed period`
-      : "Comparison unavailable · coverage incomplete";
-  }
-
-  function economicsName(row) {
-    return row.other_count ? `other (${full.format(row.other_count)} projects)` : row.project_id || "Shared/Unassigned";
+    $("attention-modes").closest(".chart-card").hidden = !$("attention-modes").children.length;
+    const rows = (attention.project_ledger || []).filter(row => finite(row.recorded_attention_hours)).slice(0, 7)
+      .map(row => ({...row, label:displayAlias(row, projectAliases)}));
+    ranked("attention-projects", "attention_project_ledger", rows, "recorded_attention_hours", "Recorded hours · top six + Other", attentionHours, colors[2]);
   }
 
   function renderEconomics() {
-    $("investment").dataset.metricId = "economics_investment_results";
+    if (!sectionVisibility(active).results) {
+      $("economics-cards").replaceChildren();
+      return;
+    }
     const report = active.investment_results || {};
     const totals = report.totals || {};
     const results = totals.results || {};
     const period = report.period || {};
-    const prior = report.previous_period || {};
-    $("economics-period").textContent = period.from ? `${period.from} → ${period.to} · closed UTC dates${prior.from ? ` · prior ${prior.from} → ${prior.to}` : " · all-history has no previous period"}` : "Economics evidence unavailable";
+    $("economics-period").textContent = `${period.from} → ${period.to} · closed UTC dates`;
     $("economics-cards").innerHTML = [
-      card("economics_attention_hours", attentionHours(numeric(totals.recorded_attention_hours)), "Five explicit timer modes; missing time stays unknown", economicsChange(report.change, "recorded_attention_hours"), "observed"),
-      card("economics_api_equivalent_usd", fmt(numeric(totals.api_equivalent_cost_usd), "money"), "API-equivalent investment · includes ordinary attempts and repair", economicsChange(report.change, "api_equivalent_cost_usd", "money")),
-      card("economics_delivered", fmt(numeric(results.delivered)), "Producer-recorded satisfied outcomes", economicsChange(report.change, "delivered")),
-      card("economics_accepted", fmt(numeric(results.human_accepted)), "Delivered + latest explicit human acceptance", economicsChange(report.change, "human_accepted")),
+      card("economics_delivered", fmt(numeric(results.delivered))),
+      numeric(results.reviewed) > 0 ? card("economics_accepted", fmt(numeric(results.human_accepted))) : "",
+      numeric(results.checks_passed) + numeric(results.checks_failed) > 0 ? card("economics_verified", fmt(numeric(results.verified_delivered))) : "",
+      card("economics_code_changes", fmt(numeric((totals.code || {}).revisions))),
     ].join("");
-    $("economics-results").innerHTML = `<span data-metric-id="economics_verified"><strong>${fmt(numeric(results.verified_delivered))}</strong> delivered with passing checks and no recorded failed checks ${metricButton("economics_verified")}</span> · ${fmt(numeric(results.reviewed))} reviewed / ${fmt(numeric(results.outcomes))} recorded outcomes · ${fmt(numeric(results.delivered_unreviewed))} delivered without a verdict. <span data-metric-id="economics_code_changes">${fmt(numeric((totals.code || {}).revisions))} code revisions ${metricButton("economics_code_changes")}</span>. <span data-metric-id="economics_period_change">${metricButton("economics_period_change")} Comparisons use the same closed UTC dates and definitions; work scope and capture completeness may differ.</span>`;
-    const subscription = report.subscription || {};
-    const cash = report.actual_cash || {};
-    $("economics-money").innerHTML = `<span data-metric-id="economics_subscription_estimate">${metricButton("economics_subscription_estimate")} <strong>Subscriptions:</strong> ${fmt(numeric(subscription.current_monthly_usd), "money", "no configured current rate")}/month configured; ${fmt(numeric(subscription.estimate_usd), "money", "no complete dated rate coverage")} period estimate. ${esc(subscription.status || "not configured")}${subscription.covered_vendor_days ? ` · ${full.format(subscription.covered_vendor_days)} covered vendor-days; ${full.format(subscription.missing_vendor_days || 0)} missing` : ""}.</span> <strong>Actual cash:</strong> ${fmt(numeric(cash.amount_usd), "money", cash.status === "not-published" ? "private or not recorded" : "not recorded")}. These amounts are separate; a rate estimate is not a payment. Unpriced usage: ${fmt(numeric(totals.unpriced_tokens), "tokens")}.`;
-    const rows = (report.projects || []).slice(0, 7).map(row => {
-      const facts = row.results || {};
-      return `<tr><td>${esc(economicsName(row))}<br><small>${esc(economicsChange(row.change, "api_equivalent_cost_usd", "money"))}</small></td><td class="num">${attentionHours(numeric(row.recorded_attention_hours))}</td><td class="num">${fmt(numeric(row.api_equivalent_cost_usd), "money")}</td><td class="num">${fmt(numeric(facts.delivered))}</td><td class="num">${fmt(numeric(facts.human_accepted))}</td><td class="num">${fmt(numeric(facts.verified_delivered))}</td><td class="num">${fmt(numeric((row.code || {}).revisions))}</td></tr>`;
-    });
-    $("economics-projects").innerHTML = rows.length ? table([["Project / exact tail", false], ["Recorded h", true, "economics_attention_hours"], ["API-equivalent USD", true, "economics_api_equivalent_usd"], ["Delivered", true, "economics_delivered"], ["Human accepted", true, "economics_accepted"], ["Passing checks", true, "economics_verified"], ["Code revisions", true, "economics_code_changes"]], rows) : '<p class="empty">No recorded project evidence in this closed period.</p>';
-    const shared = report.shared;
-    $("economics-shared").innerHTML = shared ? `<strong>Shared / Unassigned remains visible:</strong> ${fmt(numeric(shared.api_equivalent_cost_usd), "money")} API-equivalent · ${attentionHours(numeric(shared.recorded_attention_hours))} recorded attention · ${fmt(numeric((shared.results || {}).outcomes))} outcomes, ${fmt(numeric((shared.results || {}).delivered))} delivered, ${fmt(numeric((shared.results || {}).human_accepted))} human accepted. Counts by linkage: ${["exact", "correlated", "shared", "unattributed"].map(key => `${esc(key)} ${full.format((shared.attribution || {})[key] || 0)}`).join(" · ")}.` : "No Shared/Unassigned observations in this period. Missing evidence is still unknown.";
-    const coverage = report.coverage || {};
-    $("economics-coverage").textContent = Object.entries(coverage).map(([family, value]) => `${family}: ${value.status || "unknown"}, ${value.from || "unknown start"} → ${value.to || "unknown end"}`).join(" · ") + " · Timer use and refinement capture are incomplete. Native-session repository joins are correlated; explicit project mappings and full receipt revisions matched to configured Git evidence are exact; conflicting links stay shared. Loop history remains a separate frozen cohort.";
-    refreshLazy("economics-detail");
-    refreshLazy("economics-trend");
-  }
-
-  function scenarioInputValue(id) {
-    const value = $(id).value;
-    return value.trim() === "" ? null : value;
-  }
-
-  function toggleActualCash() {
-    const actual = $("scenario-cash-basis").value === "actual_cash";
-    $("scenario-actual-field").hidden = !actual;
-    $("scenario-actual-cash").disabled = !actual;
-    if (!actual) $("scenario-actual-cash").value = "";
-  }
-
-  function signedHours(value) {
-    const sign = value > 0 ? "+" : value < 0 ? "−" : "";
-    return `${sign}${full.format(Math.abs(value))}h`;
-  }
-
-  function renderScenario() {
-    toggleActualCash();
-    const projectIndex = numeric($("scenario-project").value);
-    const project = projectIndex === null ? null : scenarioProjects[projectIndex];
-    const result = calculateScenario(
-      {
-        counterfactual_manual_hours:scenarioInputValue("scenario-manual-hours"),
-        value_of_attention_usd_per_hour:scenarioInputValue("scenario-value-hour"),
-        cash_basis:$("scenario-cash-basis").value,
-        actual_cash_usd:scenarioInputValue("scenario-actual-cash"),
-        alternative_name:$("scenario-alternative-name").value,
-        displaced_share_percent:scenarioInputValue("scenario-displaced-share"),
-        alternative_value_usd_per_hour:scenarioInputValue("scenario-alternative-value"),
-      },
-      project,
-    );
-    if (!result.valid) {
-      renderScenarioEmpty("Complete every required assumption with a valid value to see scenario results. Nothing is stored or sent.");
-      return;
-    }
-    const cashText = result.cashBasis === "none"
-      ? "no cash basis"
-      : result.cashBasis === "api_equivalent"
-        ? `${money.format(result.cashUsd)} exact API-list-price equivalent (not an invoice)`
-        : `${money.format(result.cashUsd)} browser-entered actual cash`;
-    const deltaMeaning = result.attentionDeltaHours > 0 ? "attention returned" : result.attentionDeltaHours < 0 ? "additional attention required" : "no attention difference";
-    $("scenario-result").innerHTML = `<div class="scenario-output"><div class="scenario-output-item" data-metric-id="recorded_operator_attention_hours"><span>Recorded attention</span><strong>${full.format(result.recordedAttentionHours)}h</strong>${evidenceBadge("observed", "Recorded")} ${metricButton("recorded_operator_attention_hours")}</div><div class="scenario-output-item" data-metric-id="scenario_attention_delta_hours"><span>Scenario attention delta</span><strong>${signedHours(result.attentionDeltaHours)}</strong>${evidenceBadge("scenario")} ${metricButton("scenario_attention_delta_hours")}</div><div class="scenario-output-item" data-metric-id="scenario_attention_equivalent_hours"><span>Attention-equivalent total</span><strong>${full.format(result.attentionEquivalentHours)}h</strong>${evidenceBadge("scenario")} ${metricButton("scenario_attention_equivalent_hours")}</div><div class="scenario-output-item" data-metric-id="scenario_opportunity_cost_usd"><span>Scenario opportunity cost</span><strong>${money.format(result.opportunityCostUsd)}</strong>${evidenceBadge("scenario")} ${metricButton("scenario_opportunity_cost_usd")}</div></div><p class="scenario-assumption">Assumes ${full.format(result.recordedAttentionHours)} recorded hours for ${esc(project.label || project.project_id)}, ${cashText}, and that ${full.format(result.displacedSharePercent)}% of recorded attention displaces “${esc(result.alternativeName)}” valued at ${money.format(result.alternativeValueUsdPerHour)}/hour; the signed delta means ${esc(deltaMeaning)}.</p>`;
-    updateTestHook();
-  }
-
-  function renderScenarioEmpty(message) {
-    const items = [
-      ["scenario_attention_delta_hours", "Scenario attention delta"],
-      ["scenario_attention_equivalent_hours", "Attention-equivalent total"],
-      ["scenario_opportunity_cost_usd", "Scenario opportunity cost"],
-    ].map(([metricId, label]) => `<div class="scenario-output-item" data-metric-id="${metricId}"><span>${label}</span><strong class="empty">n/a · assumptions incomplete</strong>${evidenceBadge("scenario")} ${metricButton(metricId)}</div>`).join("");
-    $("scenario-result").innerHTML = `<p class="scenario-assumption">${esc(message)}</p><div class="scenario-output">${items}</div>`;
-    updateTestHook();
-  }
-
-  function clearScenario() {
-    $("scenario-form").reset();
-    toggleActualCash();
-    renderScenarioEmpty("Complete every assumption to see scenario results. Nothing is stored or sent.");
   }
 
   function loopHistoryNote() {
     const history = (data.point_in_time || {}).loop_history || {};
     if (history.status !== "historical") return "";
     const collected = typeof history.last_collected_at === "string" && history.last_collected_at.length >= 10 ? history.last_collected_at.slice(0, 10) : "unknown";
-    return `historical (loop retired ${history.retired_on || "2026-09-08"}; last collected ${collected})`;
+    return `Historical · retired ${history.retired_on || "2026-09-08"} · last collected ${collected}`;
   }
 
   function renderLoopHistoryNotes() {
-    const note = loopHistoryNote();
-    $("outcomes-note").textContent = note ? `${note} · UTC completion window` : "Historical governed-loop evidence (loop retired 2026-09-08) · UTC completion window";
-    $("evidence-note").textContent = note || "Historical governed-loop evidence (loop retired 2026-09-08)";
+    $("outcomes-note").textContent = loopHistoryNote() || "Historical · loop retired 2026-09-08";
   }
 
   function renderOutcomes() {
     const outcome = active.outcomes || {};
     const prior = (active.comparison || {}).outcomes || {};
     renderLoopHistoryNotes();
+    if (!sectionVisibility(active).loop) {
+      ["outcome-cards", "round-outcome-chart", "spec-cost-chart"].forEach(id => $(id).replaceChildren());
+      return;
+    }
     $("outcome-cards").innerHTML = [
-      card("accepted_features", fmt(outcome.accepted_features), "Distinct accepted specs", deltaText(outcome.accepted_features, prior.accepted_features)),
-      card("acceptance_efficiency", fmt(outcome.acceptance_efficiency, "percent", "no specs in window"), "Accepted specs / represented specs", deltaText(outcome.acceptance_efficiency, prior.acceptance_efficiency, "percent")),
-      card("mean_cost_per_accepted", fmt(outcome.mean_cost_per_accepted, "money", "no accepted feature in window"), "Loop exact cost / accepted feature", deltaText(outcome.mean_cost_per_accepted, prior.mean_cost_per_accepted, "money")),
-      card("median_round_minutes", fmt(outcome.median_round_minutes, "minutes", "no complete rounds"), "Clamp anomalies remain counted in the full envelope", deltaText(outcome.median_round_minutes, prior.median_round_minutes, "minutes")),
+      card("accepted_features", fmt(outcome.accepted_features), "", deltaText(outcome.accepted_features, prior.accepted_features)),
+      card("acceptance_efficiency", fmt(outcome.acceptance_efficiency, "percent", "no specs in window"), "", deltaText(outcome.acceptance_efficiency, prior.acceptance_efficiency, "percent")),
+      card("mean_cost_per_accepted", fmt(outcome.mean_cost_per_accepted, "money", "no accepted feature in window"), "", deltaText(outcome.mean_cost_per_accepted, prior.mean_cost_per_accepted, "money")),
+      card("median_round_minutes", fmt(outcome.median_round_minutes, "minutes", "no complete rounds"), "", deltaText(outcome.median_round_minutes, prior.median_round_minutes, "minutes")),
     ].join("");
     lineChart("round-outcome-chart", "rounds_by_day", active.rounds_by_day || [], [
       {key:"accepted", label:"accepted rounds", color:colors[2]},
       {key:"not_accepted", label:"non-accepted rounds", color:colors[3]},
-    ], `${active.from} → ${active.to} · completion date`);
-    ranked("spec-cost-chart", "spec_cost_rank", active.top_specs || [], "cost_usd", `${active.from} → ${active.to} · top 6 + exact other`, value => fmt(value, "money"), colors[2]);
-    refreshLazy("spec-detail");
+    ], "UTC completion buckets");
+    ranked("spec-cost-chart", "spec_cost_rank", (active.top_specs || []).map(row => ({...row, label:displayAlias(row, featureAliases, "features")})), "cost_usd", "Selected window · top six + Other", value => fmt(value, "money"), colors[2]);
+
   }
 
   function renderReliability() {
     const point = data.point_in_time || {};
-    const cadence = point.cadence || {};
-    const disk = point.disk || {};
     const doctor = point.doctor || {};
-    const measurement = active.measurement || {};
-    $("reliability-cards").innerHTML = [
-      card("data_age_minutes", fmt(ageMinutes(), "minutes", "generation timestamp missing"), "Age and metrics update when the generated snapshot advances"),
-      card("doctor_status", esc(doctor.status || "unknown"), "Latest self-check result"),
-      card("missed_intervals", fmt(cadence.missed_intervals), "Derived from observed wrapper starts"),
-      card("disk_runway_years", fmt(disk.runway_years, "years", "disk snapshot unavailable"), "Shorter conservative drive bound"),
-    ].join("");
-    const roots = point.roots || [];
-    const complete = roots.filter(root => root.status === "ok" && !root.file_errors).length;
-    donut("root-chart", "source_root_status", [{label:"complete", roots:complete}, {label:"partial / other", roots:Math.max(0, roots.length - complete)}], "roots", "Current completeness · usable partial roots stay explicit", value => `${fmt(value)} roots`);
-    ranked("probe-chart", "measurement_probe_health", [{label:"healthy", probes:measurement.healthy || 0}, {label:"other", probes:Math.max(0, (measurement.total || 0) - (measurement.healthy || 0))}], "probes", `${active.from} → ${active.to} · observed collection probes`, value => fmt(value), colors[2]);
-    status("reliability-check", doctor.status !== "fail", doctor.status === "ok" ? "Doctor green" : "Doctor warning", "Doctor failed", doctor.status === "warn");
-    refreshLazy("diagnostic-detail");
-  }
-
-  function renderEvidence() {
-    const outcome = active.outcomes || {};
-    const prior = (active.comparison || {}).outcomes || {};
-    $("evidence-cards").innerHTML = [
-      card("window_rounds", fmt(outcome.rounds), "Complete judge rounds in the exact window", deltaText(outcome.rounds, prior.rounds)),
-      card("window_accepted_rounds", fmt(outcome.accepted_rounds), "Acceptance verdicts at round level", deltaText(outcome.accepted_rounds, prior.accepted_rounds)),
-      card("window_findings", fmt(outcome.findings), "Structured blocking findings", deltaText(outcome.findings, prior.findings)),
-      card("window_loop_cost_usd", fmt(outcome.cost_usd, "money"), "Unpriced loop usage remains separate", deltaText(outcome.cost_usd, prior.cost_usd, "money")),
-    ].join("");
-    lineChart("duration-chart", "round_duration_trend", active.rounds_by_day || [], [{key:"median_round_minutes", label:"median minutes", color:colors[4]}], `${active.from} → ${active.to} · wall clock incl. queue idle`);
-    ranked("recent-chart", "recent_spec_ledger", (active.recent_specs || []).map(row => ({label:row.spec, rounds:row.rounds})), "rounds", `${active.from} → ${active.to} · six most recently completed specs`, value => `${fmt(value)} rounds`, colors[4]);
-    status("evidence-check", (outcome.accepted_rounds || 0) <= (outcome.rounds || 0) && (active.recent_specs || []).length <= 6, "Window joins reconcile", "Evidence totals differ");
-    refreshLazy("ledger-detail");
+    const known = ["ok", "warn", "fail"].includes(doctor.status);
+    status("reliability-check", doctor.status !== "fail", doctor.status === "ok" ? "Healthy" : known ? "Warning" : "Unknown", "Failed", doctor.status !== "ok");
+    refreshLazy("health-detail");
   }
 
   function table(headers, rows) {
@@ -821,40 +727,23 @@ if (typeof module === "object" && module.exports) module.exports = AgentTelemetr
   }
 
   function lazyBody(detailId) {
+    if (detailId !== "health-detail") return;
+    const point = data.point_in_time || {};
     const body = $(detailId).querySelector("[data-lazy-body]");
-    if (detailId === "project-detail") {
-      const rows = (active.top_projects || []).map(row => `<tr><td>${esc(row.label)}${row.other_count ? ` (${fmt(row.other_count)} more)` : ""}</td><td class="num">${fmt(row.tokens, "tokens")}</td></tr>`);
-      body.innerHTML = table([["Identity",false],["Tokens",true,"tokens_by_project"]], rows);
-    } else if (detailId === "spec-detail") {
-      const rows = (active.top_specs || []).map(row => `<tr><td>${esc(row.label)}${row.other_count ? ` (${fmt(row.other_count)} more)` : ""}</td><td class="num">${fmt(row.cost_usd, "money")}</td></tr>`);
-      body.innerHTML = table([["Feature / tail",false],["Exact USD",true,"spec_cost_rank"]], rows);
-    } else if (detailId === "diagnostic-detail") {
-      const point = data.point_in_time || {};
-      const checks = ((point.doctor || {}).checks || []).map(row => `<tr><td>${esc(row.name)}</td><td>${esc(row.status)}</td><td>${esc(row.detail)}</td></tr>`);
-      const roots = (point.roots || []).map(row => `<tr><td>${esc(row.root_id)}</td><td>${esc(row.status)}</td><td>${esc(when(row.last_success_at))}</td></tr>`);
-      body.innerHTML = `<h3>Doctor checks</h3>${table([["Check",false],["Status",false,"doctor_status"],["Sanitized detail",false]], checks)}<h3 style="margin-top:14px">Provider roots</h3>${table([["Root",false],["Status",false,"source_root_status"],["Last successful scan",false,"source_root_status"]], roots)}`;
-    } else if (detailId === "ledger-detail") {
-      const rows = (active.recent_specs || []).map(row => `<tr><td>${esc(row.spec)}</td><td>${esc(row.outcome)}</td><td class="num">${fmt(row.rounds)}</td><td class="num">${fmt(row.tokens, "tokens")}</td><td class="num">${fmt(row.cost_usd, "money")}</td><td class="num">${fmt(row.findings)}</td><td>${esc(when(row.latest_at))}</td></tr>`);
-      body.innerHTML = table([["Feature",false],["Outcome",false,"recent_spec_ledger"],["Rounds",true,"recent_spec_ledger"],["Tokens",true,"recent_spec_ledger"],["Exact USD",true,"recent_spec_ledger"],["Findings",true,"recent_spec_ledger"],["Latest",false,"recent_spec_ledger"]], rows);
-    } else if (detailId === "economics-detail") {
-      const report = active.investment_results || {};
-      const list = [{...(report.totals || {}), project_id:"All recorded investment / results"}, ...(report.projects || []).slice(0, 7), ...(report.shared ? [report.shared] : [])];
-      const rows = list.map(row => {
-        const facts = row.results || {}, code = row.code || {};
-        return `<tr><td>${esc(economicsName(row))}</td><td class="num">${fmt(numeric(facts.attempts))}</td><td class="num">${fmt(numeric(facts.repairs))}</td><td class="num">${fmt(numeric(facts.human_interventions))}</td><td class="num">${fmt(numeric(facts.needs_changes))}</td><td class="num">${fmt(numeric(facts.checks_passed))} / ${fmt(numeric(facts.checks_failed))}</td><td class="num">${fmt(numeric(facts.refinement_complete))} / ${fmt(numeric(facts.outcomes))}</td><td class="num">${fmt(numeric(facts.elapsed_seconds))} / ${fmt(numeric(facts.closed_waiting_seconds))}</td><td class="num">${fmt(numeric(code.files_changed))}</td><td class="num">+${fmt(numeric(code.insertions))} / −${fmt(numeric(code.deletions))}</td></tr>`;
-      });
-      const modes = (report.totals || {}).mode_seconds || {};
-      body.innerHTML = `<p class="economics-copy" data-metric-id="economics_effort_results">${metricButton("economics_effort_results")} Attempts use explicit attempt identities or recorded session bindings. Repairs count distinct repair references; absent capture is unknown. Pass/fail counts are recorded checks. Summed receipt spans and closed waits are seconds and can overlap, separate from human attention. Text lines and revisions are metadata, not a score. Shared sessions are charged once in project usage; per-outcome dollars remain unknown when allocation is shared.</p><p class="economics-copy">Recorded closed-period modes: ${["plan", "guide", "review", "rework", "direct"].map(mode => `${esc(mode)} ${attentionHours(numeric(modes[mode]) === null ? null : modes[mode] / 3600)}`).join(" · ")}. Outcome association counts: ${["exact", "correlated", "shared", "unattributed"].map(key => `${esc(key)} ${full.format(((report.totals || {}).attribution || {})[key] || 0)}`).join(" · ")}.</p>${table([["Project", false], ["Attempts", true], ["Repairs", true], ["Interventions", true], ["Needs changes", true], ["Pass / fail checks", true], ["Complete refinement / outcomes", true], ["Summed elapsed / wait seconds", true], ["Changed file touches", true, "economics_code_changes"], ["Text additions / deletions", true]], rows)}`;
-    } else if (detailId === "economics-trend") {
-      const rows = ((active.investment_results || {}).trend || []).slice(0, 48).map(row => `<tr><td>${esc(row.from)} → ${esc(row.to)}</td><td class="num">${attentionHours(numeric(row.attention_hours))}</td><td class="num">${fmt(numeric(row.api_equivalent_cost_usd), "money")}</td><td class="num">${fmt(numeric(row.delivered))}</td><td class="num">${fmt(numeric(row.human_accepted))}</td><td class="num">${fmt(numeric(row.code_revisions))}</td></tr>`);
-      body.innerHTML = `<p class="economics-copy">Consecutive UTC buckets use separate units. Unknown attention remains unknown. Outcome cohorts use their last receipt date; subsequent receipts can move a whole outcome to a later cohort. Immutable local report archives preserve earlier snapshots.</p>${table([["UTC bucket", false], ["Recorded hours", true], ["API-equivalent USD", true], ["Delivered", true], ["Human accepted", true], ["Code revisions", true]], rows)}`;
-    }
+    $("reliability-cards").innerHTML = [
+      card("missed_intervals", fmt((point.cadence || {}).missed_intervals)),
+      card("disk_runway_years", fmt((point.disk || {}).runway_years, "years")),
+    ].join("");
+    const checks = ((point.doctor || {}).checks || []).slice(0, 48).map(row => `<tr><td>${esc(row.name)}</td><td>${esc(row.status)}</td></tr>`);
+    const roots = (point.roots || []).slice(0, 4).map(row => `<tr><td>${esc(row.root_id)}</td><td>${esc(row.status)}</td><td>${esc(when(row.last_success_at))}</td></tr>`);
+    body.innerHTML = `<h3>Doctor checks</h3>${table([["Check",false],["Status",false,"doctor_status"]], checks)}<h3 style="margin-top:14px">Provider roots</h3>${table([["Root",false],["Status",false,"source_root_status"],["Last successful scan",false,"source_root_status"]], roots)}`;
     body.dataset.built = "true";
   }
 
   function refreshLazy(detailId) {
     const detail = $(detailId);
     const body = detail.querySelector("[data-lazy-body]");
+    $("reliability-cards").replaceChildren();
     body.replaceChildren();
     body.dataset.built = "false";
     if (detail.open) lazyBody(detailId);
@@ -866,13 +755,22 @@ if (typeof module === "object" && module.exports) module.exports = AgentTelemetr
     const container = element.closest && element.closest("[id]");
     if (!container) return {element, containerId:null, index:-1};
     const focusables = [...container.querySelectorAll(focusableSelector)];
-    return {element, containerId:container.id, index:focusables.indexOf(element)};
+    return {element, containerId:container.id, index:focusables.indexOf(element), series:element.dataset.series, bucket:element.dataset.bucket};
   }
 
   function restoreFocusState(state) {
     if (!state || (state.element && state.element.isConnected)) return;
     const container = state.containerId ? $(state.containerId) : null;
     if (!container || state.index < 0) return;
+    if (state.series !== undefined && state.bucket !== undefined) {
+      const point = [...container.querySelectorAll("[data-point-label]")].find(node => node.dataset.series === state.series && node.dataset.bucket === state.bucket);
+      if (point) {
+        container.querySelectorAll(`[data-series="${state.series}"]`).forEach(node => { node.tabIndex = -1; });
+        point.tabIndex = 0;
+        point.focus({preventScroll:true});
+        return;
+      }
+    }
     const focusables = [...container.querySelectorAll(focusableSelector)];
     if (focusables[state.index]) focusables[state.index].focus({preventScroll:true});
   }
@@ -893,6 +791,8 @@ if (typeof module === "object" && module.exports) module.exports = AgentTelemetr
       window.history.replaceState({}, "", url);
     }
     active = windows[activeKey] || Object.values(windows)[0] || {};
+    projectAliases = displayAliases(windows, "projects", projectAliases);
+    featureAliases = displayAliases(windows, "features", featureAliases);
   }
 
   function adoptSnapshot(candidate) {
@@ -900,23 +800,21 @@ if (typeof module === "object" && module.exports) module.exports = AgentTelemetr
     const focusState = captureFocusState();
     const scrollX = window.scrollX;
     const scrollY = window.scrollY;
-    const previous = {data, catalog, windows, validWindows, activeKey, active};
+    const previous = {data, catalog, windows, validWindows, activeKey, active, projectAliases, featureAliases};
     try {
       bindSnapshot(candidate);
       snapshotRefreshState = "updated";
       refreshCapacityPreservingInteraction();
       render();
-      renderScenario();
       window.scrollTo(scrollX, scrollY);
       restoreFocusState(focusState);
       return true;
     } catch (_error) {
-      ({data, catalog, windows, validWindows, activeKey, active} = previous);
+      ({data, catalog, windows, validWindows, activeKey, active, projectAliases, featureAliases} = previous);
       window.TELEMETRY = data;
       snapshotRefreshState = "failed-last-good";
       refreshCapacityPreservingInteraction();
       render();
-      renderScenario();
       window.scrollTo(scrollX, scrollY);
       restoreFocusState(focusState);
       return false;
@@ -995,14 +893,13 @@ if (typeof module === "object" && module.exports) module.exports = AgentTelemetr
   function refreshClientTime() {
     renderMasthead();
     refreshCapacityPreservingInteraction();
-    const cardNode = document.querySelector('[data-metric-id="data_age_minutes"] .value');
-    if (cardNode) cardNode.innerHTML = fmt(ageMinutes(), "minutes");
     updateTestHook();
   }
 
   function showMetric(metricId) {
     const metric = catalog.get(metricId);
     if (!metric) return;
+    metricReturnFocus = captureFocusState();
     $("metric-dialog-title").textContent = metric.display_label;
     $("metric-dialog-body").innerHTML = `<p>${metric.evidence_class ? evidenceBadge(metric.evidence_class) : ""}</p><p>${esc(metric.definition)}</p><div class="formula">${esc(metric.derivation)}</div><p class="catalog-meta"><strong>Unit:</strong> ${esc(metric.unit)}<br><strong>Source:</strong> ${metric.sources.map(esc).join(" · ")}<br><strong>Caveat:</strong> ${esc(metric.caveats)}<br><strong>Catalog id:</strong> ${esc(metric.metric_id)}</p>`;
     $("metric-dialog").showModal();
@@ -1016,8 +913,8 @@ if (typeof module === "object" && module.exports) module.exports = AgentTelemetr
       catalogPageMetricIds: (data.catalog || []).filter(row => row.surface === "page").map(row => row.metric_id).sort(),
       atRest: {
         totalElements: document.querySelectorAll("body *").length,
-        openDrilldowns: document.querySelectorAll("details.drill[open]").length,
-        materializedRows: document.querySelectorAll("details.drill tbody tr").length,
+        openDrilldowns: document.querySelectorAll("details.health-disclosure[open]").length,
+        materializedRows: document.querySelectorAll("details.health-disclosure tbody tr").length,
         trendPolylines: document.querySelectorAll(".plot polyline").length,
         rankRows: document.querySelectorAll(".rank-row").length,
       },
@@ -1035,7 +932,11 @@ if (typeof module === "object" && module.exports) module.exports = AgentTelemetr
       capacityWindowState,
       capacityWindowLabel,
       capacityStateText,
-      calculateScenario,
+      sectionVisibility,
+      displayAliases,
+      displayAlias,
+      chartScale,
+      trendSegments,
       relativeDuration,
       snapshotDecision,
       telemetryRefreshUrl,
@@ -1049,7 +950,8 @@ if (typeof module === "object" && module.exports) module.exports = AgentTelemetr
   function render() {
     active = windows[activeKey] || active;
     document.querySelectorAll("[data-window]").forEach(button => button.setAttribute("aria-pressed", button.dataset.window === activeKey ? "true" : "false"));
-    $("window-summary").textContent = `${active.from} → ${active.to} · ${active.inclusive_days} inclusive UTC days · exact precomputed ${activeKey === "all" ? "all-history" : `${activeKey}-day`} view`;
+    $("window-summary").textContent = `${active.from} → ${active.to} UTC`;
+    $("comparison-note").textContent = active.comparison?.summary ? `Changes vs preceding ${active.inclusive_days} days` : "";
     renderMasthead();
     renderOverview();
     renderActivity();
@@ -1058,14 +960,18 @@ if (typeof module === "object" && module.exports) module.exports = AgentTelemetr
     renderEconomics();
     renderOutcomes();
     renderReliability();
-    renderEvidence();
-    $("generated-foot").textContent = `Generated ${when(data.generated_at)} · compact page is within its published budget · full envelope and all machine URLs retained · same-origin telemetry checks every minute while visible · last-good data stays usable offline · no provider, API, model, or third-party requests from this page.`;
+    const visible = sectionVisibility(active);
+    [["investment", visible.results], ["attention", visible.attention], ["outcomes", visible.loop]].forEach(([id, show]) => {
+      $(id).hidden = !show;
+      const link = document.querySelector(`nav a[href="#${id}"]`);
+      if (link) link.hidden = !show;
+    });
+    $("generated-foot").textContent = `Generated ${when(data.generated_at)}`;
     updateTestHook();
   }
 
   document.querySelectorAll("[data-window]").forEach(button => button.addEventListener("click", () => {
     activeKey = button.dataset.window;
-    clearScenario();
     const url = new URL(window.location.href);
     url.searchParams.delete("from");
     url.searchParams.delete("to");
@@ -1073,7 +979,7 @@ if (typeof module === "object" && module.exports) module.exports = AgentTelemetr
     window.history.replaceState({}, "", url);
     render();
   }));
-  document.querySelectorAll("details.drill").forEach(detail => detail.addEventListener("toggle", () => {
+  document.querySelectorAll("details.health-disclosure").forEach(detail => detail.addEventListener("toggle", () => {
     const body = detail.querySelector("[data-lazy-body]");
     if (body && detail.open && body.dataset.built !== "true") lazyBody(detail.id);
     updateTestHook();
@@ -1089,16 +995,42 @@ if (typeof module === "object" && module.exports) module.exports = AgentTelemetr
     if (button) showMetric(button.dataset.explain);
   });
   document.addEventListener("keydown", event => {
+    const point = event.target.closest && event.target.closest("[data-point-label]");
+    if (point && ["ArrowLeft", "ArrowRight", "Home", "End"].includes(event.key)) {
+      event.preventDefault();
+      const points = [...point.closest("svg").querySelectorAll(`[data-series="${point.dataset.series}"]`)];
+      const index = points.indexOf(point);
+      const next = event.key === "Home" ? 0 : event.key === "End" ? points.length - 1
+        : Math.max(0, Math.min(points.length - 1, index + (event.key === "ArrowRight" ? 1 : -1)));
+      point.tabIndex = -1;
+      points[next].tabIndex = 0;
+      points[next].focus({preventScroll:true});
+    }
     if (event.key === "Escape" && $("usage-sidebar").open && !$("metric-dialog").open) {
       $("usage-sidebar").open = false;
       $("usage-sidebar").querySelector("summary").focus({preventScroll:true});
     }
   });
+  const showPoint = event => {
+    const point = event.target.closest && event.target.closest("[data-point-label]");
+    if (point) point.closest(".chart-card").querySelector(".chart-tooltip").textContent = point.dataset.pointLabel;
+  };
+  const clearPoint = event => {
+    const chart = event.target.closest && event.target.closest(".chart-card");
+    if (chart && !chart.contains(event.relatedTarget)) {
+      const tooltip = chart.querySelector(".chart-tooltip");
+      if (tooltip) tooltip.textContent = "";
+    }
+  };
+  document.addEventListener("pointerover", showPoint);
+  document.addEventListener("focusin", showPoint);
+  document.addEventListener("pointerout", clearPoint);
+  document.addEventListener("focusout", clearPoint);
   $("metric-dialog-close").addEventListener("click", () => $("metric-dialog").close());
-  $("scenario-form").addEventListener("input", renderScenario);
-  $("scenario-form").addEventListener("change", renderScenario);
-  $("scenario-form").addEventListener("submit", event => event.preventDefault());
-  $("scenario-clear").addEventListener("click", clearScenario);
+  $("metric-dialog").addEventListener("close", () => {
+    restoreFocusState(metricReturnFocus);
+    metricReturnFocus = null;
+  });
   const refreshAfterVisibilityReturn = () => {
     refreshClientTime();
     checkForNewSnapshot();
@@ -1112,7 +1044,6 @@ if (typeof module === "object" && module.exports) module.exports = AgentTelemetr
   }
   renderCapacity();
   render();
-  renderScenario();
   scheduleSnapshotRefresh();
   window.setInterval(refreshClientTime, 60000);
 })();

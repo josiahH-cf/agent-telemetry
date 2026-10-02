@@ -1,5 +1,46 @@
 # Stability pass findings and retention report
 
+## ST-48 — Dashboard clutter and exposed display identities (2026-10-02)
+
+- **Live review:** the default page foregrounded investment tables and an
+  entirely unobserved attention panel, while activity charts were collapsed.
+  Approved project names and anonymous codes repeated across charts and tables.
+  Empty frozen-loop charts, per-card explanations, evidence legends, blank
+  scenario inputs and repeated reconciliation badges added little value.
+- **Presentation:** activity and exact API-equivalent cost now lead the page.
+  Null cards, empty rankings, attention without timer/drop-off evidence, and loop
+  history without records are omitted. Recorded successor results use a compact
+  row, with their own closed UTC dates. A single lazy collection-health panel
+  retains named checks and provider-root states. In-place minute refresh,
+  allowance freshness, catalog help, UTC windows and dark-only styling remain.
+- **Charts:** project and feature rankings use neutral aliases in labels,
+  tooltips and accessibility text. Six rows plus the exact Other rollup remain.
+  Trends retain at most 48 buckets, now with unit scales, grid lines and exact
+  pointer/keyboard value inspection. Unknown values break a line; observed zero
+  remains zero. Arrow/Home/End inspection uses one tab stop per series.
+- **Consumer compatibility:** the collector, connectors, private configuration,
+  pricing, public keys, schemas, catalog rows, payload contract and all machine
+  dataset URLs remain unchanged. Display masking does not remove approved
+  identities from those public surfaces. The scenario calculator's exported
+  arithmetic remains available; its blank dashboard form is removed. Existing
+  activity/evidence anchor URLs remain as aliases to the consolidated panels.
+- **Recovery:** fifteen zero-byte Git objects, including the current commit,
+  were reconstructed from the matching remote objects only after their Git
+  hashes were verified. Empty originals and the recovery snapshot stay locally
+  outside the tracked tree. No branch reset, history rewrite or hook bypass was
+  used; Git integrity succeeds.
+- **Verification:** all 299 standard-library/Node tests pass; source check,
+  scrub, schema/store integrity and twelve-dataset reconciliation pass. All 208
+  pre-existing closed history files and five frozen loop datasets retain their
+  exact bytes. Real and 1,000-project pages at 390 and 1,440 px fit without page
+  overflow; all four windows keep bounded rankings and at most 48 trend buckets.
+  The scale payload is about 215 KB, below the 500 KB target. Empty cards stay
+  absent, recorded zeros remain, and default health tables are unmaterialized.
+  Keyboard help restores focus on Escape; chart arrow/End navigation exposes
+  exact values. The inspected default desktop page fell from about 6,157 px to
+  2,264 px, with visible n/a occurrences falling from 74 to zero. Collection-age,
+  cadence and the pre-existing Windows task mismatch remain honest named states.
+
 ## AE-01 — Attention Economics (2026-10-01)
 
 - **Plan and interface:** [ATTENTION_ECONOMICS.md](ATTENTION_ECONOMICS.md) maps

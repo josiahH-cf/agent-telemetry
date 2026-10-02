@@ -449,8 +449,8 @@ class HistoryAndPrivacyTests(unittest.TestCase):
         self.assertIn('<link rel="icon" href="data:,">', text)
         for section in ("overview", "activity", "mix", "attention", "outcomes", "reliability", "evidence"):
             self.assertIn(f'id="{section}"', text)
-        self.assertEqual(text.count("<section "), 8)
-        for check in ("overview", "reliability", "evidence"):
+        self.assertEqual(text.count("<section "), 7)
+        for check in ("overview", "reliability"):
             self.assertIn(f'id="{check}-check"', text)
         self.assertIn('id="metric-dialog"', text)
         self.assertIn('data-lazy-body', text)

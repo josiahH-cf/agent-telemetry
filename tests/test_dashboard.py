@@ -147,8 +147,13 @@ class DashboardEnvelopeTests(unittest.TestCase):
             {row["metric_id"] for row in page["catalog"] if row["surface"] == "page"},
             metric_catalog.PAGE_METRIC_IDS,
         )
-        for metric_id in metric_catalog.PAGE_METRIC_IDS:
-            self.assertIn(f'"{metric_id}"', script, metric_id)
+        # Catalog rows and payload fields remain available to consumers even
+        # when the dashboard omits unsupported or duplicate presentations.
+        import re
+        displayed = set(re.findall(r'card\("([a-z_]+)"', script))
+        displayed.update(re.findall(r'(?:donut|ranked|lineChart)\("[a-z-]+", "([a-z_]+)"', script))
+        self.assertTrue(displayed)
+        self.assertLessEqual(displayed, metric_catalog.PAGE_METRIC_IDS)
         for row in page["catalog"]:
             self.assertTrue(row["definition"])
             self.assertTrue(row["derivation"])
@@ -239,7 +244,7 @@ class DashboardEnvelopeTests(unittest.TestCase):
 
     def test_high_cardinality_fixture_has_same_at_rest_shape_and_small_payload(self) -> None:
         real_page = metric_catalog.build_page_envelope(self.snapshot)
-        large_page = metric_catalog.build_page_envelope(synthetic_snapshot())
+        large_page = metric_catalog.build_page_envelope(synthetic_snapshot(projects=1000))
         # Frozen governed-loop history can leave the current 30-day window empty.
         # Compare exhaustive retained shapes and require bounded current detail;
         # do not require invented live rounds to fill retired-history slots.
@@ -302,7 +307,7 @@ class DashboardEnvelopeTests(unittest.TestCase):
         self.assertNotIn("item.formatter(seriesMaximum)", script)
         self.assertNotIn("bucket max", script)
         self.assertIn("tokens per bucket", script)
-        self.assertIn("median minutes", script)
+        self.assertIn("non-accepted rounds", script)
         self.assertIn("Last successful scan", script)
         self.assertNotIn('["Last successful scan",false]', script)
         self.assertNotIn('["Latest",false]]', script)
@@ -317,7 +322,7 @@ class DashboardEnvelopeTests(unittest.TestCase):
         self.assertEqual(bare["point_in_time"]["loop_history"]["status"], "unknown")
         self.assertEqual(set(bare["point_in_time"]["loop_history"]), set(history))
         html = (PROJECT_ROOT / "index.html").read_text(encoding="utf-8")
-        for marker in ('id="outcomes-note"', 'id="evidence-note"', "loop retired 2026-09-08"):
+        for marker in ('id="outcomes-note"', "loop retired 2026-09-08"):
             self.assertIn(marker, html)
         script = (PROJECT_ROOT / "dashboard.js").read_text(encoding="utf-8")
         self.assertIn("loop_history", script)
@@ -336,7 +341,9 @@ class DashboardEnvelopeTests(unittest.TestCase):
         )
         script = (PROJECT_ROOT / "dashboard.js").read_text(encoding="utf-8")
         self.assertIn("(point.doctor || {}).checks", script)
-        self.assertIn("esc(row.detail)", script)
+        self.assertIn("esc(row.name)", script)
+        self.assertIn("esc(row.status)", script)
+        self.assertNotIn("esc(row.detail)", script)
 
     def test_generated_page_reconciles_with_machine_days_rounds_and_sessions(self) -> None:
         text = (PROJECT_ROOT / "data" / "telemetry.js").read_text(encoding="utf-8")

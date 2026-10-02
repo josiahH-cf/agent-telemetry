@@ -20,6 +20,12 @@ Use the surface that matches the question:
   snapshot. Rankings show six rows plus an exact `other` rollup, and trends
   contain at most 48 buckets, so neither the payload nor the at-rest page grows
   with history.
+- The dashboard masks project and feature labels with neutral display aliases;
+  these are presentation labels, not replacement join keys. Existing approved
+  public identities remain in the published datasets and browser payload.
+  Activity charts stay visible. Optional attention, recorded results, and frozen
+  loop panels appear only when the selected window has their evidence; null
+  cards and empty rankings are omitted. Definitions remain in the metric catalog.
 - The [page payload](data/telemetry.js) is the compact browser input. The
   [verbose envelope](data/telemetry.json) preserves broader generated views for
   inspection, but it is not a substitute for the versioned machine contract.
@@ -138,8 +144,9 @@ PY
   governed-loop history. The loop was retired on 2026-09-08; once a live loop
   source is gone or would shrink, its last-good snapshot is served (source
   status `historical`, skip `cached_last_good`), so these datasets never shrink
-  and the page marks sections 05 and 07 as historical with the last collected
-  date. `outcomes` is the successor receipt dataset.
+  and the page marks the consolidated Loop history panel as historical with the
+  last collected date whenever its selected window contains records. `outcomes`
+  is the successor receipt dataset.
 - Session counts are deduplicated provider sessions. `days.sessions` is
   session-days, so a session active on two UTC dates contributes twice there.
 - Governed-round duration is verdict time minus dispatch time for the same row
