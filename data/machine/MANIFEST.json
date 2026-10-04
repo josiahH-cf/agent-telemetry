@@ -3,26 +3,26 @@
     {
       "coverage": {
         "from": "2026-02-28T12:19:02+00:00",
-        "to": "2026-10-04T11:15:36+00:00"
+        "to": "2026-10-04T11:20:57+00:00"
       },
       "dataset": "projects",
       "path": "data/machine/projects.jsonl",
       "rows": 13,
       "schema": "data/schema/projects.schema.json",
       "semantics": "One public project identity or bulk bucket with lifetime totals and per-OS coverage.",
-      "sha256": "6dc6a95cf99dd87c951c439fc66683f1b6b34d12dd64d33ad342394ebbdf45cc"
+      "sha256": "ca9d7d4966304b59b93289068b4e5ea3e6648255f52f481e69c5cf23d4e2bc3b"
     },
     {
       "coverage": {
         "from": "2026-02-28T12:19:02+00:00",
-        "to": "2026-10-04T11:15:36+00:00"
+        "to": "2026-10-04T11:20:57+00:00"
       },
       "dataset": "sessions",
       "path": "data/machine/sessions.jsonl",
       "rows": 13814,
       "schema": "data/schema/sessions.schema.json",
       "semantics": "One provider session after cross-source event deduplication; working directories are excluded.",
-      "sha256": "f8c0920be35cad672fbd81199d398dd82127d9f5abb6ab7e4f85672feac1bdd7"
+      "sha256": "2db3b61d8649e0f52bd9b63d2756541e8cfeb837a9d5faaa9f6dc949dd975a24"
     },
     {
       "coverage": {
@@ -34,7 +34,7 @@
       "rows": 476,
       "schema": "data/schema/days.schema.json",
       "semantics": "UTC daily usage by public project identity, vendor, and host operating system.",
-      "sha256": "42eea8ccfdd92e38f6d82899266fcb31f350cf3f5ef57673cc6b4f909015a745"
+      "sha256": "2184831cab4a93159c50a7162b43b0b5521e9e2513dc4f5d9cefbe0f2d85dacb"
     },
     {
       "coverage": {
@@ -126,8 +126,8 @@
             "status": "current"
           },
           "proj-02a9b771": {
-            "from": "1970-01-01",
-            "status": "current"
+            "from": null,
+            "status": "partial"
           },
           "proj-5a93629a": {
             "from": "1970-01-01",
@@ -148,14 +148,15 @@
         },
         "from": null,
         "reasons": [
+          "code_history_rewritten",
           "git_read_failed"
         ],
         "sources": 7,
         "states": {
-          "current": 6,
+          "current": 5,
           "disabled": 0,
           "partial": 0,
-          "retained-last-good": 0,
+          "retained-last-good": 1,
           "unavailable": 1
         },
         "status": "partial",
@@ -187,6 +188,6 @@
       "sha256": "237818530acd2825d650ca7c59ada89849fd6eac6e03cf99aab26e7801d2b753"
     }
   ],
-  "generated_at": "2026-10-04T11:15:03+00:00",
+  "generated_at": "2026-10-04T11:20:04+00:00",
   "schema_version": 1
 }
