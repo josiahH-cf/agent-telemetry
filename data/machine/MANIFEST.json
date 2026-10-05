@@ -3,26 +3,26 @@
     {
       "coverage": {
         "from": "2026-02-28T12:19:02+00:00",
-        "to": "2026-10-05T10:05:28+00:00"
+        "to": "2026-10-05T10:10:51+00:00"
       },
       "dataset": "projects",
       "path": "data/machine/projects.jsonl",
       "rows": 13,
       "schema": "data/schema/projects.schema.json",
       "semantics": "One public project identity or bulk bucket with lifetime totals and per-OS coverage.",
-      "sha256": "bb50b6042241352eca711f690eb6f54f6d20bc5db4b70f2bf02f8c2f81e4c6bb"
+      "sha256": "f5155fd547fee09a188dcfeba4980d7d2a3870bce4754011160e909d1aa13098"
     },
     {
       "coverage": {
         "from": "2026-02-28T12:19:02+00:00",
-        "to": "2026-10-05T10:05:28+00:00"
+        "to": "2026-10-05T10:10:51+00:00"
       },
       "dataset": "sessions",
       "path": "data/machine/sessions.jsonl",
       "rows": 13827,
       "schema": "data/schema/sessions.schema.json",
       "semantics": "One provider session after cross-source event deduplication; working directories are excluded.",
-      "sha256": "fb54b5e747f99307cb2ca2ae973908044f14a74647e942d38fd177a218e8559a"
+      "sha256": "09c5a32b6488af606341e156665137f30c9d06788f3a585b0d46c1644a86fdcd"
     },
     {
       "coverage": {
@@ -34,7 +34,7 @@
       "rows": 484,
       "schema": "data/schema/days.schema.json",
       "semantics": "UTC daily usage by public project identity, vendor, and host operating system.",
-      "sha256": "8848526c7a3fd964461c94e19af804610d92b79b8ae1883ead0fa4f82102b265"
+      "sha256": "008c088754a0a890eed92200050d71edffd0f679d31789eedc9373dbccd33b37"
     },
     {
       "coverage": {
@@ -99,14 +99,14 @@
     {
       "coverage": {
         "from": "2026-09-09T03:18:25+00:00",
-        "to": "2026-10-05T10:05:44+00:00"
+        "to": "2026-10-05T10:10:47+00:00"
       },
       "dataset": "outcomes",
       "path": "data/machine/outcomes.jsonl",
       "rows": 393,
       "schema": "data/schema/outcomes.schema.json",
       "semantics": "Successor outcome receipts (Obsidian Agent console rebuild): per-outcome counts, dispositions, check/publication/update statuses and native linkage strength; no titles, prompts or paths.",
-      "sha256": "3d547b1d3ad3e49acd499f3c496de5a98d1dd2c2e7f540d1551727e5855c90cc"
+      "sha256": "07468c7891c793b3203e27623e6858f4b719dbe9ce0df5d1b912ea4f57fc05fc"
     },
     {
       "coverage": {
@@ -142,8 +142,8 @@
             "status": "partial"
           },
           "proj-f2d91d0e": {
-            "from": "1970-01-01",
-            "status": "current"
+            "from": null,
+            "status": "partial"
           }
         },
         "from": null,
@@ -153,10 +153,10 @@
         ],
         "sources": 7,
         "states": {
-          "current": 5,
+          "current": 4,
           "disabled": 0,
           "partial": 0,
-          "retained-last-good": 1,
+          "retained-last-good": 2,
           "unavailable": 1
         },
         "status": "partial",
@@ -188,6 +188,6 @@
       "sha256": "237818530acd2825d650ca7c59ada89849fd6eac6e03cf99aab26e7801d2b753"
     }
   ],
-  "generated_at": "2026-10-05T10:05:04+00:00",
+  "generated_at": "2026-10-05T10:10:03+00:00",
   "schema_version": 1
 }
