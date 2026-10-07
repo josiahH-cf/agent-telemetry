@@ -3,26 +3,26 @@
     {
       "coverage": {
         "from": "2026-02-28T12:19:02+00:00",
-        "to": "2026-10-07T11:10:32+00:00"
+        "to": "2026-10-07T11:16:15+00:00"
       },
       "dataset": "projects",
       "path": "data/machine/projects.jsonl",
       "rows": 13,
       "schema": "data/schema/projects.schema.json",
       "semantics": "One public project identity or bulk bucket with lifetime totals and per-OS coverage.",
-      "sha256": "41e2e43cee2e5afb5dfe236458a65dd72572c25d69881d6ed09531ed63de4829"
+      "sha256": "99d3396d41b334fac9545f93a32db4eccc56f6f2d6d65f6e3bb89a6e0b3e8ddf"
     },
     {
       "coverage": {
         "from": "2026-02-28T12:19:02+00:00",
-        "to": "2026-10-07T11:10:32+00:00"
+        "to": "2026-10-07T11:16:15+00:00"
       },
       "dataset": "sessions",
       "path": "data/machine/sessions.jsonl",
-      "rows": 13998,
+      "rows": 14003,
       "schema": "data/schema/sessions.schema.json",
       "semantics": "One provider session after cross-source event deduplication; working directories are excluded.",
-      "sha256": "7ff797ae61a107c9c494d7c1a7b0c45c174a7a6b30c6a783cb38ea8ecdb07236"
+      "sha256": "3cd4c3428f60b52efc4ea53f10a69d47bee14a772fe19a681f5ec695d5815ece"
     },
     {
       "coverage": {
@@ -31,10 +31,10 @@
       },
       "dataset": "days",
       "path": "data/machine/days.jsonl",
-      "rows": 499,
+      "rows": 500,
       "schema": "data/schema/days.schema.json",
       "semantics": "UTC daily usage by public project identity, vendor, and host operating system.",
-      "sha256": "f456283bfc5562cd753bed96a3cf09f6fefcd2748badf8e297bc495437ff9e84"
+      "sha256": "56141c999bf0d39e07ec0354662fcd1af35f646837df2c6ef806928ccd7f17ac"
     },
     {
       "coverage": {
@@ -122,8 +122,8 @@
       "source_coverage": {
         "by_project": {
           "obsidian-agent": {
-            "from": "1970-01-01",
-            "status": "current"
+            "from": null,
+            "status": "partial"
           },
           "proj-02a9b771": {
             "from": null,
@@ -153,10 +153,10 @@
         ],
         "sources": 7,
         "states": {
-          "current": 5,
+          "current": 4,
           "disabled": 0,
           "partial": 0,
-          "retained-last-good": 1,
+          "retained-last-good": 2,
           "unavailable": 1
         },
         "status": "partial",
@@ -188,6 +188,6 @@
       "sha256": "237818530acd2825d650ca7c59ada89849fd6eac6e03cf99aab26e7801d2b753"
     }
   ],
-  "generated_at": "2026-10-07T11:10:02+00:00",
+  "generated_at": "2026-10-07T11:15:03+00:00",
   "schema_version": 1
 }
