@@ -3,26 +3,26 @@
     {
       "coverage": {
         "from": "2026-02-28T12:19:02+00:00",
-        "to": "2026-10-07T16:00:53+00:00"
+        "to": "2026-10-07T16:05:56+00:00"
       },
       "dataset": "projects",
       "path": "data/machine/projects.jsonl",
       "rows": 13,
       "schema": "data/schema/projects.schema.json",
       "semantics": "One public project identity or bulk bucket with lifetime totals and per-OS coverage.",
-      "sha256": "61203d15c4ae0e31fba7e3b698e288ce27ec8aea0f0251eff00e2c24bf566174"
+      "sha256": "3b5a1bd23e3e4839b3a680af3d4a55a46473a043400e9a9be2d6d210f596e410"
     },
     {
       "coverage": {
         "from": "2026-02-28T12:19:02+00:00",
-        "to": "2026-10-07T16:00:53+00:00"
+        "to": "2026-10-07T16:05:56+00:00"
       },
       "dataset": "sessions",
       "path": "data/machine/sessions.jsonl",
-      "rows": 14028,
+      "rows": 14029,
       "schema": "data/schema/sessions.schema.json",
       "semantics": "One provider session after cross-source event deduplication; working directories are excluded.",
-      "sha256": "d18ac85cb8be2494238ec531bce7c76f2af47bff1b7aa6cf3d46c426cbded187"
+      "sha256": "f1226982a4ed9bc5b31c3d48fdefd792703fbf31b300f2c4f6461d349edace4e"
     },
     {
       "coverage": {
@@ -34,7 +34,7 @@
       "rows": 502,
       "schema": "data/schema/days.schema.json",
       "semantics": "UTC daily usage by public project identity, vendor, and host operating system.",
-      "sha256": "c3f7d7dbee7fe4a4cbf7911de7c80b555e8db9461364062b39557a83d1b7c987"
+      "sha256": "e4a2624aa44a51375e237c9bf3ad75d091b93651cb98b701876f00bc8cde4329"
     },
     {
       "coverage": {
@@ -99,14 +99,14 @@
     {
       "coverage": {
         "from": "2026-09-09T03:18:25+00:00",
-        "to": "2026-10-07T16:00:47+00:00"
+        "to": "2026-10-07T16:02:07+00:00"
       },
       "dataset": "outcomes",
       "path": "data/machine/outcomes.jsonl",
       "rows": 465,
       "schema": "data/schema/outcomes.schema.json",
       "semantics": "Successor outcome receipts (Obsidian Agent console rebuild): per-outcome counts, dispositions, check/publication/update statuses and native linkage strength; no titles, prompts or paths.",
-      "sha256": "7043bd9fd99cb513e5369688601d6e9d789688cca5c3c32deccaea7ed4acf738"
+      "sha256": "44c7843802292ca6dfbd1ce3bbc35f7e8f1e91f177db43aca35a88670350670e"
     },
     {
       "coverage": {
@@ -122,8 +122,8 @@
       "source_coverage": {
         "by_project": {
           "obsidian-agent": {
-            "from": "1970-01-01",
-            "status": "current"
+            "from": null,
+            "status": "partial"
           },
           "proj-02a9b771": {
             "from": null,
@@ -153,10 +153,10 @@
         ],
         "sources": 7,
         "states": {
-          "current": 4,
+          "current": 3,
           "disabled": 0,
           "partial": 0,
-          "retained-last-good": 2,
+          "retained-last-good": 3,
           "unavailable": 1
         },
         "status": "partial",
@@ -188,6 +188,6 @@
       "sha256": "237818530acd2825d650ca7c59ada89849fd6eac6e03cf99aab26e7801d2b753"
     }
   ],
-  "generated_at": "2026-10-07T16:00:05+00:00",
+  "generated_at": "2026-10-07T16:05:05+00:00",
   "schema_version": 1
 }
