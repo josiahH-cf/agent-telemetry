@@ -3,26 +3,26 @@
     {
       "coverage": {
         "from": "2026-02-28T12:19:02+00:00",
-        "to": "2026-10-08T08:31:08+00:00"
+        "to": "2026-10-08T08:40:03+00:00"
       },
       "dataset": "projects",
       "path": "data/machine/projects.jsonl",
       "rows": 13,
       "schema": "data/schema/projects.schema.json",
       "semantics": "One public project identity or bulk bucket with lifetime totals and per-OS coverage.",
-      "sha256": "313a34091b4374ae85c10d66ce0ad65adaa84141e31869bd3d0242d4e9b3146c"
+      "sha256": "76af482b20ae018103067fa499f43bca3fccf73bc2837522acfd785709f1b71b"
     },
     {
       "coverage": {
         "from": "2026-02-28T12:19:02+00:00",
-        "to": "2026-10-08T08:31:08+00:00"
+        "to": "2026-10-08T08:40:03+00:00"
       },
       "dataset": "sessions",
       "path": "data/machine/sessions.jsonl",
       "rows": 14063,
       "schema": "data/schema/sessions.schema.json",
       "semantics": "One provider session after cross-source event deduplication; working directories are excluded.",
-      "sha256": "73c0454e160800d15bf2732c060327e1dfb1a16dadb1791421cafa9f987e5bd3"
+      "sha256": "178d62f892d7e69b3f727317dda429a51823a73c164fce7e3ea1853d0db9c3da"
     },
     {
       "coverage": {
@@ -34,7 +34,7 @@
       "rows": 507,
       "schema": "data/schema/days.schema.json",
       "semantics": "UTC daily usage by public project identity, vendor, and host operating system.",
-      "sha256": "fde44f394a62c871b26411ddb903c6621a91bcb487bfd54693204af38ec46a3e"
+      "sha256": "54a900f0f6220ea66b1dd39add394bbfc2da3197fe936897e1e5ce4bd50ffc6c"
     },
     {
       "coverage": {
@@ -142,8 +142,8 @@
             "status": "partial"
           },
           "proj-f2d91d0e": {
-            "from": "1970-01-01",
-            "status": "current"
+            "from": null,
+            "status": "partial"
           }
         },
         "from": null,
@@ -153,10 +153,10 @@
         ],
         "sources": 7,
         "states": {
-          "current": 4,
+          "current": 3,
           "disabled": 0,
           "partial": 0,
-          "retained-last-good": 2,
+          "retained-last-good": 3,
           "unavailable": 1
         },
         "status": "partial",
@@ -188,6 +188,6 @@
       "sha256": "237818530acd2825d650ca7c59ada89849fd6eac6e03cf99aab26e7801d2b753"
     }
   ],
-  "generated_at": "2026-10-08T08:35:03+00:00",
+  "generated_at": "2026-10-08T08:40:03+00:00",
   "schema_version": 1
 }
