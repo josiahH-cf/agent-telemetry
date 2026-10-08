@@ -361,7 +361,7 @@
     "sources_available": 2,
     "sources_enabled": 5
   },
-  "generated_at": "2026-10-08T06:45:02+00:00",
+  "generated_at": "2026-10-08T06:50:02+00:00",
   "history": [
     {
       "accept_commits": 7,
@@ -15724,7 +15724,7 @@
       "accept_commits": 0,
       "accepted_steps": 0,
       "builder_models": {},
-      "collected_at": "2026-10-08T06:45:02+00:00",
+      "collected_at": "2026-10-08T06:50:02+00:00",
       "coverage_corrections": [
         {
           "date": "2026-08-02",
@@ -34848,7 +34848,7 @@
               "unattributed": 0
             }
           },
-          "collected_at": "2026-10-08T06:45:02+00:00",
+          "collected_at": "2026-10-08T06:50:02+00:00",
           "date": "2026-10-08",
           "schema_version": 2,
           "vendors": {
@@ -34877,6 +34877,19 @@
                   "tokens": 7281,
                   "unpriced_tokens": 0,
                   "usd": 0.07286
+                },
+                "claude-sonnet-5": {
+                  "best_effort_estimate": null,
+                  "classes": {
+                    "cache_read_tokens": 36482,
+                    "cache_write_1h_tokens": 84760,
+                    "cache_write_5m_tokens": 0,
+                    "input_tokens": 6,
+                    "output_tokens": 1347
+                  },
+                  "tokens": 122595,
+                  "unpriced_tokens": 0,
+                  "usd": 0.359818
                 }
               },
               "by_scope": {
@@ -34929,23 +34942,36 @@
                       "tokens": 7281,
                       "unpriced_tokens": 0,
                       "usd": 0.07286
+                    },
+                    "claude-sonnet-5": {
+                      "best_effort_estimate": null,
+                      "classes": {
+                        "cache_read_tokens": 36482,
+                        "cache_write_1h_tokens": 84760,
+                        "cache_write_5m_tokens": 0,
+                        "input_tokens": 6,
+                        "output_tokens": 1347
+                      },
+                      "tokens": 122595,
+                      "unpriced_tokens": 0,
+                      "usd": 0.359818
                     }
                   },
                   "classes": {
-                    "cache_read_tokens": 0,
-                    "cache_write_1h_tokens": 7275,
+                    "cache_read_tokens": 36482,
+                    "cache_write_1h_tokens": 92035,
                     "cache_write_5m_tokens": 0,
-                    "input_tokens": 2,
-                    "output_tokens": 4
+                    "input_tokens": 8,
+                    "output_tokens": 1351
                   },
-                  "tokens": 7281,
+                  "tokens": 129876,
                   "unpriced_tokens": 0,
-                  "usd": 0.07286
+                  "usd": 0.432678
                 }
               },
-              "tokens": 7281,
+              "tokens": 129876,
               "unpriced_tokens": 0,
-              "usd": 0.07286
+              "usd": 0.432678
             },
             "openai": {
               "best_effort_estimate": {
@@ -35095,7 +35121,7 @@
             "unattributed": 4
           },
           "judge_tokens": 789192360,
-          "sessions_found": 8634,
+          "sessions_found": 8637,
           "unpriced_tokens": 0,
           "usd_computed": 10078.14254
         },
@@ -35143,36 +35169,36 @@
       },
       "usage_left": {
         "anthropic": {
-          "age_hours": 0.1,
+          "age_hours": 0.0,
           "capture_status": "automatic_success",
           "freshness_max_age_hours": 1.0,
-          "observed_at": "2026-10-08T06:40:01.805000+00:00",
+          "observed_at": "2026-10-08T06:50:01.582000+00:00",
           "provider": "anthropic",
           "quota_status": "available",
           "quota_windows": [
             {
-              "age_hours": 0.1,
+              "age_hours": 0.0,
               "capture_status": "automatic_success",
               "display_label": "Five-hour window",
               "freshness_status": "available",
-              "observed_at": "2026-10-08T06:40:01.805000+00:00",
+              "observed_at": "2026-10-08T06:50:01.582000+00:00",
               "provider": "anthropic",
-              "remaining_percent": 99.0,
-              "resets_at": "2026-10-08T11:29:59.508386+00:00",
+              "remaining_percent": 98.0,
+              "resets_at": "2026-10-08T11:30:00.308737+00:00",
               "source": "claude_slash_usage_local_snapshot",
-              "used_percent": 1.0,
+              "used_percent": 2.0,
               "window": "five_hour",
               "window_minutes": null
             },
             {
-              "age_hours": 0.1,
+              "age_hours": 0.0,
               "capture_status": "automatic_success",
               "display_label": "Seven-day window",
               "freshness_status": "available",
-              "observed_at": "2026-10-08T06:40:01.805000+00:00",
+              "observed_at": "2026-10-08T06:50:01.582000+00:00",
               "provider": "anthropic",
               "remaining_percent": 64.0,
-              "resets_at": "2026-10-13T16:59:59.508410+00:00",
+              "resets_at": "2026-10-13T17:00:00.308755+00:00",
               "source": "claude_slash_usage_local_snapshot",
               "used_percent": 36.0,
               "window": "seven_day",
@@ -35184,7 +35210,7 @@
           "source": "claude_slash_usage_local_snapshot"
         },
         "openai": {
-          "age_hours": 0.6,
+          "age_hours": 0.7,
           "capture_status": "source_partial_cached_last_good",
           "freshness_max_age_hours": 2.0,
           "observed_at": "2026-10-08T06:08:12+00:00",
@@ -35192,7 +35218,7 @@
           "quota_status": "retained_last_good",
           "quota_windows": [
             {
-              "age_hours": 0.6,
+              "age_hours": 0.7,
               "capture_status": "source_partial_cached_last_good",
               "display_label": "Primary window",
               "freshness_status": "retained_last_good",
@@ -35340,15 +35366,15 @@
             "claude-sonnet-5": {
               "best_effort_estimate": null,
               "classes": {
-                "cache_read_tokens": 190757847,
-                "cache_write_1h_tokens": 62925984,
+                "cache_read_tokens": 190794329,
+                "cache_write_1h_tokens": 63010744,
                 "cache_write_5m_tokens": 0,
-                "input_tokens": 2944,
-                "output_tokens": 4464613
+                "input_tokens": 2950,
+                "output_tokens": 4465960
               },
-              "tokens": 258151388,
+              "tokens": 258273983,
               "unpriced_tokens": 0,
-              "usd": 334.507523
+              "usd": 334.867342
             },
             "unknown": {
               "best_effort_estimate": null,
@@ -35613,15 +35639,15 @@
                 "claude-sonnet-5": {
                   "best_effort_estimate": null,
                   "classes": {
-                    "cache_read_tokens": 35219747,
-                    "cache_write_1h_tokens": 60462169,
+                    "cache_read_tokens": 35256229,
+                    "cache_write_1h_tokens": 60546929,
                     "cache_write_5m_tokens": 0,
-                    "input_tokens": 2030,
-                    "output_tokens": 4100575
+                    "input_tokens": 2036,
+                    "output_tokens": 4101922
                   },
-                  "tokens": 99784521,
+                  "tokens": 99907116,
                   "unpriced_tokens": 0,
-                  "usd": 289.902435
+                  "usd": 290.262254
                 },
                 "unknown": {
                   "best_effort_estimate": null,
@@ -35638,22 +35664,22 @@
                 }
               },
               "classes": {
-                "cache_read_tokens": 155085814,
-                "cache_write_1h_tokens": 69057209,
+                "cache_read_tokens": 155122296,
+                "cache_write_1h_tokens": 69141969,
                 "cache_write_5m_tokens": 106022,
-                "input_tokens": 8086,
-                "output_tokens": 4847451
+                "input_tokens": 8092,
+                "output_tokens": 4848798
               },
-              "tokens": 229104582,
+              "tokens": 229227177,
               "unpriced_tokens": 19454,
-              "usd": 455.441126
+              "usd": 455.800945
             }
           },
           "loop_share": 0.9933,
-          "sessions": 8634,
-          "tokens": 34143700850,
+          "sessions": 8637,
+          "tokens": 34143823445,
           "unpriced_tokens": 14965886415,
-          "usd": 16823.939155
+          "usd": 16824.298974
         },
         "openai": {
           "best_effort_estimate": {
@@ -68764,13 +68790,13 @@
           "checks_passed": 0,
           "closed_waiting_seconds": null,
           "delivered": false,
-          "disposition": "waiting",
-          "elapsed_seconds": 14.779,
+          "disposition": "stopped",
+          "elapsed_seconds": 331.122,
           "environment": "personal",
-          "events": 13,
+          "events": 15,
           "first_at": "2026-10-08T06:43:39+00:00",
-          "human_interventions": 1,
-          "last_at": "2026-10-08T06:43:54+00:00",
+          "human_interventions": 2,
+          "last_at": "2026-10-08T06:49:10+00:00",
           "linkage": "exact",
           "measurement_complete": true,
           "measurement_since": "2026-10-08T06:43:39.751Z",
@@ -222072,12 +222098,12 @@
       "current": {
         "date": "2026-10-08",
         "first_observed_at": "2026-10-08T05:42:07+00:00",
-        "last_observed_at": "2026-10-08T06:45:02+00:00",
+        "last_observed_at": "2026-10-08T06:50:02+00:00",
         "latest": {
           "accepted_features": 59,
-          "observed_at": "2026-10-08T06:45:02+00:00",
+          "observed_at": "2026-10-08T06:50:02+00:00",
           "publish": {
-            "last_success_at": "2026-10-08T06:42:05+00:00",
+            "last_success_at": "2026-10-08T06:47:10+00:00",
             "reason": "pushed",
             "status": "success"
           },
@@ -222086,7 +222112,7 @@
             "clock_status": "ok",
             "disk_headline": "windows_drive_shorter_runway_12_5_years_upper_bound",
             "doctor_status": "warn",
-            "last_start_at": "2026-10-08T06:45:00+00:00",
+            "last_start_at": "2026-10-08T06:50:00+00:00",
             "missed_intervals": 76
           },
           "rounds": 803
@@ -222100,12 +222126,12 @@
           "source_spec_corpus_historical",
           "source_suite_state_historical"
         ],
-        "observations": 14,
+        "observations": 15,
         "publish_status_counts": {
-          "success": 14
+          "success": 15
         },
         "reliability_status_counts": {
-          "warn": 14
+          "warn": 15
         },
         "schema_version": 2,
         "sources": {
@@ -222117,28 +222143,28 @@
             },
             "latest_status": "historical",
             "skip_counts": {
-              "cached_last_good": 14,
-              "models_policy_absent": 14,
-              "roster_policy_absent": 14,
-              "source_shrunk": 14
+              "cached_last_good": 15,
+              "models_policy_absent": 15,
+              "roster_policy_absent": 15,
+              "source_shrunk": 15
             },
             "status_counts": {
-              "historical": 14
+              "historical": 15
             }
           },
           "anthropic_usage": {
             "latest_available": true,
             "latest_coverage": {
               "from": "2026-07-22T07:23:27+00:00",
-              "to": "2026-10-08T06:43:49+00:00"
+              "to": "2026-10-08T06:47:42+00:00"
             },
             "latest_status": "partial",
             "skip_counts": {
-              "cached_source_missing": 87640,
-              "partial_trailing_line": 168
+              "cached_source_missing": 93900,
+              "partial_trailing_line": 180
             },
             "status_counts": {
-              "partial": 14
+              "partial": 15
             }
           },
           "openai_usage": {
@@ -222149,10 +222175,10 @@
             },
             "latest_status": "partial",
             "skip_counts": {
-              "cached_source_missing": 112
+              "cached_source_missing": 120
             },
             "status_counts": {
-              "partial": 14
+              "partial": 15
             }
           },
           "provider_usage": {
@@ -222163,10 +222189,10 @@
             },
             "latest_status": "disabled",
             "skip_counts": {
-              "source_disabled": 14
+              "source_disabled": 15
             },
             "status_counts": {
-              "disabled": 14
+              "disabled": 15
             }
           },
           "spec_corpus": {
@@ -222177,13 +222203,13 @@
             },
             "latest_status": "historical",
             "skip_counts": {
-              "active_specs_absent": 14,
-              "cached_last_good": 14,
-              "frontmatter_missing_feature_id": 42,
-              "source_shrunk": 14
+              "active_specs_absent": 15,
+              "cached_last_good": 15,
+              "frontmatter_missing_feature_id": 45,
+              "source_shrunk": 15
             },
             "status_counts": {
-              "historical": 14
+              "historical": 15
             }
           },
           "suite_state": {
@@ -222194,15 +222220,15 @@
             },
             "latest_status": "historical",
             "skip_counts": {
-              "cached_last_good": 14,
-              "debt_register_absent": 14,
-              "round_in_flight": 966,
-              "source_shrunk": 14,
-              "test_results_absent": 14,
-              "unknown_event_kind": 1596
+              "cached_last_good": 15,
+              "debt_register_absent": 15,
+              "round_in_flight": 1035,
+              "source_shrunk": 15,
+              "test_results_absent": 15,
+              "unknown_event_kind": 1710
             },
             "status_counts": {
-              "historical": 14
+              "historical": 15
             }
           }
         },
@@ -222210,39 +222236,39 @@
           "anthropic": {
             "capture_status_counts": {
               "automatic_cache_unavailable": 1,
-              "automatic_success": 13
+              "automatic_success": 14
             },
             "latest": {
               "capture_status": "automatic_success",
               "estimate_status": "available",
-              "quota_age_hours": 0.1,
-              "quota_observed_at": "2026-10-08T06:40:01.805000+00:00",
+              "quota_age_hours": 0.0,
+              "quota_observed_at": "2026-10-08T06:50:01.582000+00:00",
               "quota_source": "claude_slash_usage_local_snapshot",
               "quota_status": "available",
               "remaining_percent": 64.0,
               "remaining_status": "available",
-              "sessions": 8634,
-              "tokens": 34143700850,
+              "sessions": 8637,
+              "tokens": 34143823445,
               "unpriced_tokens": 14965886415,
-              "usd": 16823.939
+              "usd": 16824.299
             },
             "quota_status_counts": {
-              "available": 13,
+              "available": 14,
               "retained_last_good": 1
             },
             "remaining_status_counts": {
-              "available": 13,
+              "available": 14,
               "retained_last_good": 1
             }
           },
           "openai": {
             "capture_status_counts": {
-              "source_partial_cached_last_good": 14
+              "source_partial_cached_last_good": 15
             },
             "latest": {
               "capture_status": "source_partial_cached_last_good",
               "estimate_status": "available",
-              "quota_age_hours": 0.6,
+              "quota_age_hours": 0.7,
               "quota_observed_at": "2026-10-08T06:08:12+00:00",
               "quota_source": "rollout_token_count",
               "quota_status": "retained_last_good",
@@ -222254,10 +222280,10 @@
               "usd": 15814.932
             },
             "quota_status_counts": {
-              "retained_last_good": 14
+              "retained_last_good": 15
             },
             "remaining_status_counts": {
-              "retained_last_good": 14
+              "retained_last_good": 15
             }
           }
         }
@@ -231619,12 +231645,12 @@
         {
           "date": "2026-10-08",
           "first_observed_at": "2026-10-08T05:42:07+00:00",
-          "last_observed_at": "2026-10-08T06:45:02+00:00",
+          "last_observed_at": "2026-10-08T06:50:02+00:00",
           "latest": {
             "accepted_features": 59,
-            "observed_at": "2026-10-08T06:45:02+00:00",
+            "observed_at": "2026-10-08T06:50:02+00:00",
             "publish": {
-              "last_success_at": "2026-10-08T06:42:05+00:00",
+              "last_success_at": "2026-10-08T06:47:10+00:00",
               "reason": "pushed",
               "status": "success"
             },
@@ -231633,7 +231659,7 @@
               "clock_status": "ok",
               "disk_headline": "windows_drive_shorter_runway_12_5_years_upper_bound",
               "doctor_status": "warn",
-              "last_start_at": "2026-10-08T06:45:00+00:00",
+              "last_start_at": "2026-10-08T06:50:00+00:00",
               "missed_intervals": 76
             },
             "rounds": 803
@@ -231647,12 +231673,12 @@
             "source_spec_corpus_historical",
             "source_suite_state_historical"
           ],
-          "observations": 14,
+          "observations": 15,
           "publish_status_counts": {
-            "success": 14
+            "success": 15
           },
           "reliability_status_counts": {
-            "warn": 14
+            "warn": 15
           },
           "schema_version": 2,
           "sources": {
@@ -231664,28 +231690,28 @@
               },
               "latest_status": "historical",
               "skip_counts": {
-                "cached_last_good": 14,
-                "models_policy_absent": 14,
-                "roster_policy_absent": 14,
-                "source_shrunk": 14
+                "cached_last_good": 15,
+                "models_policy_absent": 15,
+                "roster_policy_absent": 15,
+                "source_shrunk": 15
               },
               "status_counts": {
-                "historical": 14
+                "historical": 15
               }
             },
             "anthropic_usage": {
               "latest_available": true,
               "latest_coverage": {
                 "from": "2026-07-22T07:23:27+00:00",
-                "to": "2026-10-08T06:43:49+00:00"
+                "to": "2026-10-08T06:47:42+00:00"
               },
               "latest_status": "partial",
               "skip_counts": {
-                "cached_source_missing": 87640,
-                "partial_trailing_line": 168
+                "cached_source_missing": 93900,
+                "partial_trailing_line": 180
               },
               "status_counts": {
-                "partial": 14
+                "partial": 15
               }
             },
             "openai_usage": {
@@ -231696,10 +231722,10 @@
               },
               "latest_status": "partial",
               "skip_counts": {
-                "cached_source_missing": 112
+                "cached_source_missing": 120
               },
               "status_counts": {
-                "partial": 14
+                "partial": 15
               }
             },
             "provider_usage": {
@@ -231710,10 +231736,10 @@
               },
               "latest_status": "disabled",
               "skip_counts": {
-                "source_disabled": 14
+                "source_disabled": 15
               },
               "status_counts": {
-                "disabled": 14
+                "disabled": 15
               }
             },
             "spec_corpus": {
@@ -231724,13 +231750,13 @@
               },
               "latest_status": "historical",
               "skip_counts": {
-                "active_specs_absent": 14,
-                "cached_last_good": 14,
-                "frontmatter_missing_feature_id": 42,
-                "source_shrunk": 14
+                "active_specs_absent": 15,
+                "cached_last_good": 15,
+                "frontmatter_missing_feature_id": 45,
+                "source_shrunk": 15
               },
               "status_counts": {
-                "historical": 14
+                "historical": 15
               }
             },
             "suite_state": {
@@ -231741,15 +231767,15 @@
               },
               "latest_status": "historical",
               "skip_counts": {
-                "cached_last_good": 14,
-                "debt_register_absent": 14,
-                "round_in_flight": 966,
-                "source_shrunk": 14,
-                "test_results_absent": 14,
-                "unknown_event_kind": 1596
+                "cached_last_good": 15,
+                "debt_register_absent": 15,
+                "round_in_flight": 1035,
+                "source_shrunk": 15,
+                "test_results_absent": 15,
+                "unknown_event_kind": 1710
               },
               "status_counts": {
-                "historical": 14
+                "historical": 15
               }
             }
           },
@@ -231757,39 +231783,39 @@
             "anthropic": {
               "capture_status_counts": {
                 "automatic_cache_unavailable": 1,
-                "automatic_success": 13
+                "automatic_success": 14
               },
               "latest": {
                 "capture_status": "automatic_success",
                 "estimate_status": "available",
-                "quota_age_hours": 0.1,
-                "quota_observed_at": "2026-10-08T06:40:01.805000+00:00",
+                "quota_age_hours": 0.0,
+                "quota_observed_at": "2026-10-08T06:50:01.582000+00:00",
                 "quota_source": "claude_slash_usage_local_snapshot",
                 "quota_status": "available",
                 "remaining_percent": 64.0,
                 "remaining_status": "available",
-                "sessions": 8634,
-                "tokens": 34143700850,
+                "sessions": 8637,
+                "tokens": 34143823445,
                 "unpriced_tokens": 14965886415,
-                "usd": 16823.939
+                "usd": 16824.299
               },
               "quota_status_counts": {
-                "available": 13,
+                "available": 14,
                 "retained_last_good": 1
               },
               "remaining_status_counts": {
-                "available": 13,
+                "available": 14,
                 "retained_last_good": 1
               }
             },
             "openai": {
               "capture_status_counts": {
-                "source_partial_cached_last_good": 14
+                "source_partial_cached_last_good": 15
               },
               "latest": {
                 "capture_status": "source_partial_cached_last_good",
                 "estimate_status": "available",
-                "quota_age_hours": 0.6,
+                "quota_age_hours": 0.7,
                 "quota_observed_at": "2026-10-08T06:08:12+00:00",
                 "quota_source": "rollout_token_count",
                 "quota_status": "retained_last_good",
@@ -231801,10 +231827,10 @@
                 "usd": 15814.932
               },
               "quota_status_counts": {
-                "retained_last_good": 14
+                "retained_last_good": 15
               },
               "remaining_status_counts": {
-                "retained_last_good": 14
+                "retained_last_good": 15
               }
             }
           }
@@ -232061,11 +232087,11 @@
     "now": {
       "current_row": null,
       "current_state": "idle",
-      "last_collect_at": "2026-10-08T06:45:02+00:00",
+      "last_collect_at": "2026-10-08T06:50:02+00:00",
       "last_driver_event_at": "2026-09-01T01:17:26+00:00",
-      "last_publish_at": "2026-10-08T06:42:05+00:00",
-      "last_publish_attempt_at": "2026-10-08T06:42:05+00:00",
-      "minutes_since_driver": 53607.6,
+      "last_publish_at": "2026-10-08T06:47:10+00:00",
+      "last_publish_attempt_at": "2026-10-08T06:47:10+00:00",
+      "minutes_since_driver": 53612.6,
       "publish_age_hours": 0.0,
       "publish_reason": "pushed",
       "publish_stale": false,
@@ -257042,7 +257068,7 @@
         },
         {
           "date": "2026-10-08",
-          "events": 1,
+          "events": 4,
           "host_os": "wsl",
           "hour_utc": 6,
           "vendor": "anthropic",
@@ -257066,16 +257092,16 @@
               "tokens": 8161334419
             },
             "wsl": {
-              "cost_usd": 763.644089,
-              "sessions": 1033,
-              "tokens": 698334095
+              "cost_usd": 764.003907,
+              "sessions": 1036,
+              "tokens": 698456690
             }
           },
           "by_vendor": {
             "anthropic": {
-              "cost_usd": 1528.263756,
-              "sessions": 870,
-              "tokens": 1526061855,
+              "cost_usd": 1528.623574,
+              "sessions": 873,
+              "tokens": 1526184450,
               "unpriced_tokens": 3356629
             },
             "cursor": {
@@ -257092,9 +257118,9 @@
             }
           },
           "category": "ad-hoc",
-          "cost_usd": 6223.67165,
+          "cost_usd": 6224.031468,
           "first_seen_at": "2026-03-09T18:51:13+00:00",
-          "last_seen_at": "2026-10-08T06:43:49+00:00",
+          "last_seen_at": "2026-10-08T06:47:42+00:00",
           "per_os": {
             "windows": {
               "first_seen_at": "2026-05-19T14:15:14+00:00",
@@ -257102,14 +257128,14 @@
             },
             "wsl": {
               "first_seen_at": "2026-03-09T18:51:13+00:00",
-              "last_seen_at": "2026-10-08T06:43:49+00:00"
+              "last_seen_at": "2026-10-08T06:47:42+00:00"
             }
           },
           "project_code": "ad-hoc",
           "project_id": "ad-hoc",
           "public_label": "ad-hoc",
-          "sessions": 1277,
-          "tokens": 8859668514,
+          "sessions": 1280,
+          "tokens": 8859791109,
           "unpriced_tokens": 1044562215
         },
         "remote": {
@@ -257174,9 +257200,9 @@
           "tokens": 134681312405
         },
         "wsl": {
-          "cost_usd": 18755.408074,
-          "sessions": 11982,
-          "tokens": 30567683693
+          "cost_usd": 18755.767892,
+          "sessions": 11985,
+          "tokens": 30567806288
         }
       },
       "by_model": {
@@ -257223,9 +257249,9 @@
           "unpriced_tokens": 14424288297
         },
         "claude-sonnet-5": {
-          "cost_usd": 336.020354,
-          "sessions": 769,
-          "tokens": 262065202,
+          "cost_usd": 336.380172,
+          "sessions": 772,
+          "tokens": 262187797,
           "unpriced_tokens": 0
         },
         "gpt-5.3-codex": {
@@ -257303,9 +257329,9 @@
       },
       "by_vendor": {
         "anthropic": {
-          "cost_usd": 26231.850701,
-          "sessions": 9861,
-          "tokens": 50475932431,
+          "cost_usd": 26232.210519,
+          "sessions": 9864,
+          "tokens": 50476055026,
           "unpriced_tokens": 21176226109
         },
         "cursor": {
@@ -257323,7 +257349,7 @@
       },
       "coverage": {
         "from": "2026-02-28T12:19:02+00:00",
-        "to": "2026-10-08T06:43:49+00:00"
+        "to": "2026-10-08T06:47:42+00:00"
       },
       "daily": [
         {
@@ -262347,12 +262373,12 @@
           "vendor": "anthropic"
         },
         {
-          "cost_usd": 0.07286,
+          "cost_usd": 0.432678,
           "date": "2026-10-08",
           "host_os": "wsl",
           "project_id": "ad-hoc",
-          "sessions": 1,
-          "tokens": 7281,
+          "sessions": 4,
+          "tokens": 129876,
           "unpriced_tokens": 0,
           "vendor": "anthropic"
         },
@@ -262394,8 +262420,8 @@
       },
       "observations": {
         "deduplicated": 61308,
-        "raw": 1120408,
-        "unique": 1059100
+        "raw": 1120411,
+        "unique": 1059103
       },
       "projects": [
         {
@@ -262568,16 +262594,16 @@
               "tokens": 8161334419
             },
             "wsl": {
-              "cost_usd": 763.644089,
-              "sessions": 1033,
-              "tokens": 698334095
+              "cost_usd": 764.003907,
+              "sessions": 1036,
+              "tokens": 698456690
             }
           },
           "by_vendor": {
             "anthropic": {
-              "cost_usd": 1528.263756,
-              "sessions": 870,
-              "tokens": 1526061855,
+              "cost_usd": 1528.623574,
+              "sessions": 873,
+              "tokens": 1526184450,
               "unpriced_tokens": 3356629
             },
             "cursor": {
@@ -262594,9 +262620,9 @@
             }
           },
           "category": "ad-hoc",
-          "cost_usd": 6223.67165,
+          "cost_usd": 6224.031468,
           "first_seen_at": "2026-03-09T18:51:13+00:00",
-          "last_seen_at": "2026-10-08T06:43:49+00:00",
+          "last_seen_at": "2026-10-08T06:47:42+00:00",
           "per_os": {
             "windows": {
               "first_seen_at": "2026-05-19T14:15:14+00:00",
@@ -262604,14 +262630,14 @@
             },
             "wsl": {
               "first_seen_at": "2026-03-09T18:51:13+00:00",
-              "last_seen_at": "2026-10-08T06:43:49+00:00"
+              "last_seen_at": "2026-10-08T06:47:42+00:00"
             }
           },
           "project_code": "ad-hoc",
           "project_id": "ad-hoc",
           "public_label": "ad-hoc",
-          "sessions": 1277,
-          "tokens": 8859668514,
+          "sessions": 1280,
+          "tokens": 8859791109,
           "unpriced_tokens": 1044562215
         },
         {
@@ -263050,9 +263076,9 @@
       "reconciliation": {
         "machine_totals": {
           "attention_seconds": 0,
-          "cost_usd": 91326.273186,
-          "sessions": 14053,
-          "tokens": 165248996098,
+          "cost_usd": 91326.633004,
+          "sessions": 14056,
+          "tokens": 165249118693,
           "unpriced_tokens": 40754429949
         },
         "status": "ok",
@@ -263072,15 +263098,15 @@
           "detail": "ok",
           "error_files": 0,
           "files": 1297,
-          "files_changed": 1,
-          "files_reused": 1296,
+          "files_changed": 0,
+          "files_reused": 1297,
           "host_os": "windows",
-          "last_scan_at": "2026-10-08T06:45:02+00:00",
-          "last_success_at": "2026-10-08T06:45:02+00:00",
+          "last_scan_at": "2026-10-08T06:50:02+00:00",
+          "last_success_at": "2026-10-08T06:50:02+00:00",
           "missing_cached": 396,
           "partial_files": 1,
           "root_id": "windows_claude",
-          "scan_seconds": 11.999145,
+          "scan_seconds": 11.833775,
           "status": "partial",
           "strategy": "full_tree",
           "vendor": "anthropic"
@@ -263092,12 +263118,12 @@
           "files_changed": 0,
           "files_reused": 1224,
           "host_os": "windows",
-          "last_scan_at": "2026-10-08T06:45:02+00:00",
-          "last_success_at": "2026-10-08T06:45:02+00:00",
+          "last_scan_at": "2026-10-08T06:50:02+00:00",
+          "last_success_at": "2026-10-08T06:50:02+00:00",
           "missing_cached": 0,
           "partial_files": 0,
           "root_id": "windows_codex",
-          "scan_seconds": 14.141539,
+          "scan_seconds": 15.171485,
           "status": "ok",
           "strategy": "known_plus_four_day_partitions",
           "vendor": "openai"
@@ -263105,16 +263131,16 @@
         {
           "detail": "ok",
           "error_files": 0,
-          "files": 2374,
-          "files_changed": 1,
-          "files_reused": 2373,
+          "files": 2377,
+          "files_changed": 3,
+          "files_reused": 2374,
           "host_os": "wsl",
-          "last_scan_at": "2026-10-08T06:45:02+00:00",
-          "last_success_at": "2026-10-08T06:45:02+00:00",
+          "last_scan_at": "2026-10-08T06:50:02+00:00",
+          "last_success_at": "2026-10-08T06:50:02+00:00",
           "missing_cached": 6260,
           "partial_files": 12,
           "root_id": "wsl_claude",
-          "scan_seconds": 0.169279,
+          "scan_seconds": 0.270268,
           "status": "partial",
           "strategy": "full_tree",
           "vendor": "anthropic"
@@ -263126,12 +263152,12 @@
           "files_changed": 0,
           "files_reused": 3648,
           "host_os": "wsl",
-          "last_scan_at": "2026-10-08T06:45:02+00:00",
-          "last_success_at": "2026-10-08T06:45:02+00:00",
+          "last_scan_at": "2026-10-08T06:50:02+00:00",
+          "last_success_at": "2026-10-08T06:50:02+00:00",
           "missing_cached": 0,
           "partial_files": 0,
           "root_id": "wsl_codex",
-          "scan_seconds": 0.294498,
+          "scan_seconds": 0.316072,
           "status": "ok",
           "strategy": "known_plus_four_day_partitions",
           "vendor": "openai"
@@ -263139,13 +263165,13 @@
       ],
       "store": {
         "integrity": "ok",
-        "semantic_digest": "1393e15311b573bef58c50496360af6822f1f8eb1a51602ecd7c6f608135c6ba"
+        "semantic_digest": "ce8cc773ab81a5c8c06d04da8b7c4aaab8436132247f487f9d02e823bf354d38"
       },
       "store_schema_version": 5,
       "totals": {
-        "cost_usd": 91326.273186,
-        "sessions": 14053,
-        "tokens": 165248996098,
+        "cost_usd": 91326.633004,
+        "sessions": 14056,
+        "tokens": 165249118693,
         "unpriced_tokens": 40754429949
       },
       "unregistered_candidates": {
@@ -263563,13 +263589,13 @@
             "to": "2026-10-08T05:42:03+00:00"
           }
         ],
-        "last_finish_at": "2026-10-08T06:42:05+00:00",
-        "last_start_at": "2026-10-08T06:45:00+00:00",
+        "last_finish_at": "2026-10-08T06:47:10+00:00",
+        "last_start_at": "2026-10-08T06:50:00+00:00",
         "longest_gap_minutes": 362.0,
         "malformed_log_records": 0,
         "missed_intervals": 76,
-        "observed_finishes": 676,
-        "observed_starts": 685,
+        "observed_finishes": 677,
+        "observed_starts": 686,
         "status": "gap"
       },
       "checks": [
@@ -263604,7 +263630,7 @@
           "status": "ok"
         },
         {
-          "detail": "status_automatic_success_attempt_age_minutes_0.0_success_age_minutes_5.0",
+          "detail": "status_automatic_success_attempt_age_minutes_0.0_success_age_minutes_0.0",
           "name": "claude_usage_capture",
           "status": "ok"
         },
@@ -263686,20 +263712,20 @@
       ],
       "clock": {
         "last_anomaly_at": null,
-        "last_success_at": "2026-10-08T06:40:02+00:00",
+        "last_success_at": "2026-10-08T06:45:02+00:00",
         "schema_version": 2,
         "skew_seconds": 0.0,
         "status": "ok"
       },
       "disk": {
-        "free_bytes": 812562669568,
+        "free_bytes": 812561141760,
         "free_percent": 0.7516,
         "headline": "windows_drive_shorter_runway_12_5_years_upper_bound",
         "measured_at": "2026-08-20T12:59:05+00:00",
         "projected_annual_growth_bytes": 79400738504,
         "runway_years": 12.489
       },
-      "observed_at": "2026-10-08T06:45:02+00:00",
+      "observed_at": "2026-10-08T06:50:02+00:00",
       "price_age_days": 49,
       "schema_version": 2,
       "status": "warn",
@@ -272893,7 +272919,7 @@
       },
       "high_water": {
         "accept_commit_count": 62,
-        "cached_last_good_age_hours": 691.2,
+        "cached_last_good_age_hours": 691.3,
         "cached_last_good_at": "2026-09-09T11:30:04+00:00",
         "head": "ab282bcecc766b827364a1e538750b9185b3d9ff",
         "last_accept_sha": "27c16a6dc3e141f70bda5243095009d3222c8689",
@@ -272927,17 +272953,17 @@
       "available": true,
       "coverage": {
         "from": "2026-07-22T07:23:27+00:00",
-        "to": "2026-10-08T06:43:49+00:00"
+        "to": "2026-10-08T06:47:42+00:00"
       },
       "high_water": {
-        "bytes": 2442511212,
-        "cache_hits": 2373,
-        "files": 8634
+        "bytes": 2442725203,
+        "cache_hits": 2374,
+        "files": 8637
       },
       "ingested": {
-        "cache_hits": 2373,
-        "files": 8634,
-        "rescanned": 1
+        "cache_hits": 2374,
+        "files": 8637,
+        "rescanned": 3
       },
       "skips": [
         {
@@ -272997,7 +273023,7 @@
         "to": "2026-08-31"
       },
       "high_water": {
-        "cached_last_good_age_hours": 692.0,
+        "cached_last_good_age_hours": 692.1,
         "cached_last_good_at": "2026-09-09T10:45:54+00:00",
         "files": 121,
         "live_status": "partial",
@@ -273035,7 +273061,7 @@
         "to": "2026-08-31T20:17:26-05:00"
       },
       "high_water": {
-        "cached_last_good_age_hours": 692.0,
+        "cached_last_good_age_hours": 692.1,
         "cached_last_good_at": "2026-09-09T10:45:54+00:00",
         "driver_last_ts": "2026-08-31T20:17:26-05:00",
         "driver_lines": 5093,
