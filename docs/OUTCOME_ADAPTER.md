@@ -205,3 +205,50 @@ inferred. The public `code_changes` dataset joins stable project codes, never
 private receipt project IDs. See [ATTENTION_ECONOMICS.md](ATTENTION_ECONOMICS.md)
 for configuration, private context/cash revisions, closed reporting periods,
 consumer fields, producer requirements and interpretation limits.
+
+## Lineage, trusted origin and feature history (2026-10-20)
+
+`outcome-receipts-v1` accepts additional optional restricted metadata on every
+non-forecast kind:
+
+- `feature_id`, `milestone_outcome_id`, `parent_intent_id`,
+  `supersedes_outcome_id`, `research_outcome_id`: stable producer identifiers
+  (`[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}`), used as joins, never titles or paths;
+- `scope_revision`: the producer's 64-hex scope digest;
+- `actor_origin`: `human-authenticated`, `coordinator`, `watcher`, `agent` or
+  `unknown`, declared by the producer that authenticated the action.
+
+A malformed optional value is dropped and treated as unknown; the receipt is
+still accepted, so no record an earlier adapter accepted becomes rejected. These
+fields stay in private `record_json` and never enter the public `outcomes`
+dataset. The first collection with this adapter re-reads each receipt root once
+from its start: event ids keep the replay idempotent, only missing lineage keys
+are added to already-stored records, stored values are never replaced, and
+rejections before the earlier cursor are not counted again. A per-root `meta`
+marker (`receipt_lineage_v1:<root>`) records completion.
+
+`telemetry-consumer-v1` adds, without changing earlier fields:
+
+- `quality.outcomes[]` and `quality.groups[]`: `interventions_by_origin`
+  (distinct commands by origin) and `authenticated_human_intents` (distinct
+  parent intents of `human-authenticated` commands, counted once across every
+  outcome in the group). Without any `actor_origin` evidence the intent count is
+  null. The existing `human_interventions` keeps its meaning: intervention
+  commands of any origin. `accounting.run_usage` repeats both new fields.
+- `feature_history` when scope contains
+  `{"feature_history": {"feature_ids": [...], "milestone_outcome_ids": [...]}}`
+  (at most 50 of each): contract `telemetry-feature-history-v1`. Each milestone
+  lists its features, their attempts (explicit `attempt_id`, settings,
+  dispositions, checks, repairs, supersession and research references,
+  interventions by origin, commands by action), changed settings between
+  attempts, the result's acceptance state, and once-only usage:
+  `feature_exclusive` plus `shared_across_features` form the milestone total;
+  `shared_outside_milestone` keeps tokens visible and dollars unsplit.
+- `freshness`: see [CAPACITY_REFRESH.md](CAPACITY_REFRESH.md).
+
+Producers should send `actor_origin` and `parent_intent_id` on
+`human.intervention`: retries and replays reuse the command ID, and automated
+child admission, Stop, Resume or fan-out reuse the parent intent with a
+non-human origin. Telemetry never infers a human from a command name, client or
+non-watcher origin. Delivered disposition, passing checks and machine review are
+not human acceptance.

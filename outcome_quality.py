@@ -38,6 +38,33 @@ def _waiting(rows):
     return (sum((b-a).total_seconds() for a,b in merged) if intervals else None),len(opened)
 
 
+def _intervention_origins(rows):
+    """Distinct intervention commands by trusted producer origin, and genuine human parent intents.
+
+    Only an explicit ``actor_origin`` of ``human-authenticated`` is human. A command without origin
+    evidence is ``unknown``; it is never promoted to human because it is not a watcher. Retries and
+    replays share a command ID, and a parent intent fanned out to automated child admission, Stop,
+    Resume or retries shares one ``parent_intent_id``, so each counts once.
+    """
+    by_command={}
+    observed=False
+    for r in rows:
+        if r.get('actor_origin') is not None:
+            observed=True
+        if r['kind']!='human.intervention':
+            continue
+        command=r.get('command_id') or r['event_id']
+        origin=r.get('actor_origin') or 'unknown'
+        prior=by_command.get(command)
+        # A command seen with conflicting origins stays unknown rather than choosing a winner.
+        by_command[command]=(origin if prior is None or prior[0]==origin else 'unknown', r.get('parent_intent_id') or prior and prior[1] or command)
+    by_origin={}
+    for origin,_intent in by_command.values():
+        by_origin[origin]=by_origin.get(origin,0)+1
+    intents=sorted({intent for origin,intent in by_command.values() if origin=='human-authenticated'})
+    return {'by_origin':by_origin,'intents':intents,'observed':observed}
+
+
 def _receipts(connection):
     by_outcome=defaultdict(list)
     native_owners=defaultdict(set)
@@ -88,6 +115,7 @@ def _outcome_items(connection, by_outcome, native_owners, *, project_id=None, da
                     sessions.append(s)
         complete=bool(pairs) and not shared and len(sessions)==len(pairs)
         waiting,open_waits=_waiting(rows)
+        origins=_intervention_origins(rows)
         measurement = next((r for r in rows if r.get('measurement_version') == 2 or r['kind'] in ('review.recorded','feedback.recorded','human.intervention','tool.observed')), None)
         item={'measurement_since':measurement['at'] if measurement else None, 'measurement_complete':bool(measurement and measurement['kind']=='outcome.started'), 'outcome_id':oid,'project_id':project,'outcome_kind':rows[0].get('outcome_kind'),
             'environment':comparable('environment'), 'workflow_identity':latest('workflow_identity'),'policy_revision':comparable('policy_revision'),
@@ -97,6 +125,9 @@ def _outcome_items(connection, by_outcome, native_owners, *, project_id=None, da
             'feedback_count':len({r.get('feedback_id') or r['event_id'] for r in rows if r['kind']=='feedback.recorded'}) if measurement else None,
             'repairs':len({r['repair_of'] for r in rows if r.get('repair_of')}) if measurement else None,
             'human_interventions':len({r.get('command_id') or r['event_id'] for r in rows if r['kind']=='human.intervention'}) if measurement else None,
+            'interventions_by_origin':origins['by_origin'] if measurement else None,
+            'authenticated_human_intents':len(origins['intents']) if measurement and origins['observed'] else None,
+            '_human_intents':origins['intents'],
             'tool_calls':len(tool) if tool else None,'tool_failures':sum(s=='failed' for s in tool.values()) if tool and all(s in ('failed','succeeded') for s in tool.values()) else None,
             'elapsed_seconds':_seconds(rows[0]['at'],rows[-1]['at']),'closed_waiting_seconds':waiting,'open_waits':open_waits,
             'usage_attribution':'shared-session' if shared else 'exact-exclusive-session' if complete else 'incomplete',
@@ -130,9 +161,21 @@ def _quality(items):
         if i['human_interventions'] is not None:
             g['human_interventions']=(g['human_interventions'] or 0)+i['human_interventions']
             g['measurement_outcomes_observed']+=1
+        if i.get('interventions_by_origin'):
+            for origin,count in i['interventions_by_origin'].items():
+                g.setdefault('interventions_by_origin',{})[origin]=g.setdefault('interventions_by_origin',{}).get(origin,0)+count
+        if i.get('authenticated_human_intents') is not None:
+            g.setdefault('_human_intents',set()).update(i['_human_intents'])
+            g['origin_outcomes_observed']=g.get('origin_outcomes_observed',0)+1
         g['usage_outcomes_observed']+=int(i['api_equivalent_cost_usd'] is not None)
         g['tool_outcomes_observed']+=int(i['tool_calls'] is not None)
-    return {'status':'current' if items else 'not-observed','groups':list(grouped.values()),'outcomes':items[-100:],'outcomes_total':len(items),
+    for g in grouped.values():
+        # One parent intent fanned out across several outcomes of a group is still one human intent.
+        intents=g.pop('_human_intents',None)
+        g['authenticated_human_intents']=len(intents) if intents is not None else None
+        g.setdefault('interventions_by_origin',None)
+        g.setdefault('origin_outcomes_observed',0)
+    return {'status':'current' if items else 'not-observed','groups':list(grouped.values()),'outcomes':[{k:v for k,v in i.items() if not k.startswith('_')} for i in items[-100:]],'outcomes_total':len(items),
         'basis':'Whole outcomes by last receipt; groups match work kind, workflow, actual model and policy revision. Cost includes only exclusive fully observed session joins; missing/shared attribution is unknown. Waiting counts closed recorded intervals only. Receipt span is elapsed time, not human attention.'}
 
 
@@ -568,7 +611,7 @@ def _run_usage(items, sessions, requested):
             continue
         bound = [sessions.get((s['vendor'], s['session_id'])) or {} for s in item['sessions']]
         observed = all(s.get('status') == 'observed' for s in bound)
-        entry = {k: item.get(k) for k in ('outcome_id', 'project_id', 'group', 'allocation', 'attempts', 'repair_of', 'delivered', 'verdict', 'acceptance_basis', 'feedback_count', 'repairs', 'human_interventions', 'last_at')}
+        entry = {k: item.get(k) for k in ('outcome_id', 'project_id', 'group', 'allocation', 'attempts', 'repair_of', 'delivered', 'verdict', 'acceptance_basis', 'feedback_count', 'repairs', 'human_interventions', 'interventions_by_origin', 'authenticated_human_intents', 'last_at')}
         entry.update(tokens=item['attributed_tokens'] if item['allocation'] in ('exact', 'partial') else None,
                      session_tokens=sum(s['tokens'] for s in bound) if observed else None, sessions=item['sessions'],
                      api_equivalent_cost_usd=None, unpriced_tokens=None, token_classes=None, pricing='unknown')
@@ -753,5 +796,152 @@ def accounting_view(connection, *, reporting=None, days=None, now=None, registry
             'previous_period': previous_bounds, 'run_usage': _run_usage(items, sessions, run_outcomes),
             'totals': totals, 'repositories': repositories,
             'sessions': [public_session(s) for s in related[offset:offset + limit]], 'sessions_total': len(related),
-            'outcomes': chosen[offset:offset + limit], 'outcomes_total': len(chosen),
+            'outcomes': [{k: v for k, v in i.items() if not k.startswith('_')} for i in chosen[offset:offset + limit]], 'outcomes_total': len(chosen),
             'detail': {'group': selected, 'offset': offset, 'limit': limit}, 'coverage_gaps': gaps}
+
+
+# --------------------------------------------------------------------------- DS15 feature history
+# Restricted, read-only retrieval of prior attempts by the producer's stable lineage joins
+# (feature_id / milestone_outcome_id / attempt_id), never by titles or private paths.
+
+FEATURE_HISTORY_CONTRACT = 'telemetry-feature-history-v1'
+FEATURE_HISTORY_LIMIT = 50
+COMPARABLE_SETTINGS = ('model', 'effort', 'workflow_identity', 'policy_revision', 'scope_revision')
+
+
+def _identifiers(value):
+    import re
+    values = value if isinstance(value, list) else []
+    return sorted({v for v in values if isinstance(v, str) and re.fullmatch(r'[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}', v)})[:FEATURE_HISTORY_LIMIT]
+
+
+def _settings(rows):
+    out = {}
+    for key in COMPARABLE_SETTINGS:
+        values = {r[key] for r in rows if r.get(key) is not None}
+        out[key] = next(iter(values)) if len(values) == 1 else 'mixed' if values else None
+    return out
+
+
+def _session_usage(connection, pairs):
+    tokens = cost = unpriced = 0
+    observed = 0
+    for vendor, sid in sorted(pairs):
+        s = connection.execute('SELECT vendor,tokens_json,cost_usd,unpriced_tokens FROM sessions WHERE vendor=? AND session_id=?', (vendor, sid)).fetchone()
+        if s is None:
+            continue
+        observed += 1
+        tokens += usage.token_total(s['vendor'], observatory.vendor_classes(s['vendor'], json.loads(s['tokens_json'])))
+        cost += float(s['cost_usd'])
+        unpriced += int(s['unpriced_tokens'])
+    return {'sessions_bound': len(pairs), 'sessions_observed': observed, 'tokens': tokens if observed else None,
+            'api_equivalent_cost_usd': round(cost, 6) if observed else None, 'unpriced_tokens': unpriced if observed else None}
+
+
+def _attempt(attempt_id, rows):
+    dispositions = [r.get('disposition') for r in rows if r['kind'] == 'outcome.disposition' and r.get('disposition')]
+    checks = [r.get('status') for r in rows if r['kind'] == 'check.result' and r.get('status')]
+    review = next((r for r in reversed(rows) if r['kind'] == 'review.recorded'), {})
+    origins = _intervention_origins(rows)
+    actions = defaultdict(int)
+    for r in rows:
+        if r['kind'] == 'human.intervention' and r.get('action'):
+            actions[usage.safe_identifier(r['action'])] += 1
+    return {'attempt_id': attempt_id, 'outcome_ids': sorted({r['outcome_id'] for r in rows}), 'first_at': rows[0]['at'], 'last_at': rows[-1]['at'],
+            'events': len(rows), 'settings': _settings(rows), 'dispositions': dispositions, 'final_disposition': dispositions[-1] if dispositions else None,
+            'delivered': 'satisfied' in dispositions, 'checks_passed': sum(c in ('passed', 'ok', 'green') for c in checks),
+            'checks_failed': sum(c in ('failed', 'red') for c in checks), 'checks_observed': len(checks),
+            'repairs_of': sorted({r['repair_of'] for r in rows if r.get('repair_of')}),
+            'supersedes': sorted({r['supersedes_outcome_id'] for r in rows if r.get('supersedes_outcome_id')}),
+            'research_outcomes': sorted({r['research_outcome_id'] for r in rows if r.get('research_outcome_id')}),
+            'review_verdict': review.get('verdict'), 'acceptance_basis': review.get('acceptance_basis'),
+            'interventions_by_origin': origins['by_origin'], 'authenticated_human_intents': len(origins['intents']) if origins['observed'] else None,
+            'commands_by_action': dict(sorted(actions.items())),
+            'native_sessions': len({(r['vendor'], r['native_session_id']) for r in rows if r.get('vendor') and r.get('native_session_id')})}
+
+
+def feature_history_view(connection, request):
+    """Prior attempts, interventions, failures and results for requested features or milestones.
+
+    Consumption is counted once: a session owned only by one feature's outcomes belongs to that
+    feature; one shared by several features (or the milestone's own orchestration) stays a
+    milestone-level shared portion; one shared with outcomes outside the milestone keeps its
+    tokens visible with dollars unsplit. Delivery or passing checks are never human acceptance.
+    """
+    request = request if isinstance(request, dict) else {}
+    features, milestones = _identifiers(request.get('feature_ids')), _identifiers(request.get('milestone_outcome_ids'))
+    base = {'contract': FEATURE_HISTORY_CONTRACT, 'requested': {'feature_ids': features, 'milestone_outcome_ids': milestones}, 'milestones': [],
+            'not_observed': {'feature_ids': [], 'milestone_outcome_ids': []},
+            'basis': 'Producer lineage joins only. Attempts group by explicit attempt_id; rows without one form an unidentified attempt. '
+                     'Settings differences are reported, not judged; like-for-like requires identical settings and scope revision. '
+                     'Delivered disposition, checks and machine review are not human acceptance or value.'}
+    if not features and not milestones:
+        return {**base, 'status': 'not-requested'}
+    by_outcome, native_owners = _receipts(connection)
+    lineage = {}
+    for oid, rows in by_outcome.items():
+        for r in rows:
+            if r.get('feature_id') and r.get('milestone_outcome_id'):
+                lineage.setdefault(oid, (r['milestone_outcome_id'], r['feature_id']))
+                break
+    wanted = set(milestones) | {m for m, f in lineage.values() if f in features}
+    found_features = {f for m, f in lineage.values() if f in features}
+    base['not_observed'] = {'feature_ids': sorted(set(features) - found_features),
+                            'milestone_outcome_ids': sorted(set(milestones) - {m for m, _f in lineage.values()} - set(by_outcome))}
+    for milestone in sorted(wanted):
+        members = {oid: f for oid, (m, f) in lineage.items() if m == milestone}
+        orchestration = [milestone] if milestone in by_outcome else []
+        owner_of = {**members, **{oid: None for oid in orchestration}}
+        pairs = defaultdict(set)
+        for oid in owner_of:
+            for r in by_outcome[oid]:
+                if r.get('vendor') and r.get('native_session_id'):
+                    pairs[(r['vendor'], r['native_session_id'])].add(oid)
+        exclusive, across, outside = defaultdict(set), set(), set()
+        for pair in pairs:
+            owners = native_owners[pair]
+            if owners - set(owner_of):
+                outside.add(pair)
+                continue
+            keys = {owner_of[o] for o in owners}
+            if len(keys) == 1 and None not in keys:
+                exclusive[next(iter(keys))].add(pair)
+            else:
+                across.add(pair)
+        feature_rows = []
+        for feature in sorted(set(members.values())):
+            rows = sorted((r for oid, f in members.items() if f == feature for r in by_outcome[oid]), key=lambda r: (r['at'], r.get('ledger_seq') or 0, r['event_id']))
+            attempts = defaultdict(list)
+            for r in rows:
+                attempts[r.get('attempt_id')].append(r)
+            ordered = sorted(attempts.items(), key=lambda item: (item[1][0]['at'], item[0] or ''))
+            history = [_attempt(attempt_id, attempt_rows) for attempt_id, attempt_rows in ordered]
+            changes = []
+            identified = [a for a in history if a['attempt_id'] is not None]
+            for before, after in zip(identified, identified[1:]):
+                changed = {k: [before['settings'][k], after['settings'][k]] for k in COMPARABLE_SETTINGS if before['settings'][k] != after['settings'][k]}
+                changes.append({'from': before['attempt_id'], 'to': after['attempt_id'], 'changed_settings': changed,
+                                'previous_final_disposition': before['final_disposition'], 'like_for_like': not changed})
+            review = next((r for r in reversed(rows) if r['kind'] == 'review.recorded'), {})
+            delivered = any(r['kind'] == 'outcome.disposition' and r.get('disposition') == 'satisfied' for r in rows)
+            accepted = delivered and review.get('verdict') == 'accepted' and review.get('acceptance_basis') == 'human'
+            feature_rows.append({'feature_id': feature, 'project_id': next((r.get('project_id') for r in rows if r.get('project_id')), None),
+                                 'attempts': history, 'attempt_changes': changes,
+                                 'result': {'delivered': delivered, 'review_verdict': review.get('verdict'), 'acceptance_basis': review.get('acceptance_basis'),
+                                            'acceptance': 'human-accepted' if accepted else 'needs-changes' if review.get('verdict') == 'needs-changes'
+                                            else 'review-without-human-basis' if review else 'not-reviewed'},
+                                 'usage': {'attribution': 'exclusive-feature-sessions', **_session_usage(connection, exclusive.get(feature, set()))}})
+        exclusive_total = _session_usage(connection, set().union(*exclusive.values()) if exclusive else set())
+        shared_across = _session_usage(connection, across)
+        shared_outside = _session_usage(connection, outside)
+        shared_outside['api_equivalent_cost_usd'] = None
+        shared_outside['basis'] = 'sessions also owned by outcomes outside this milestone; tokens shown whole, dollars never split'
+        known = [v for v in (exclusive_total['tokens'], shared_across['tokens']) if v is not None]
+        base['milestones'].append({
+            'milestone_outcome_id': milestone, 'features': feature_rows,
+            'orchestration_outcome_observed': bool(orchestration),
+            'usage': {'feature_exclusive': exclusive_total, 'shared_across_features': shared_across, 'shared_outside_milestone': shared_outside,
+                      'milestone_tokens': sum(known) if known else None,
+                      'basis': 'feature_exclusive plus shared_across_features is this milestone\'s whole-session union, each session once; '
+                               'shared_outside_milestone is reported separately and never added.'}})
+    return {**base, 'status': 'observed' if base['milestones'] else 'not-observed'}

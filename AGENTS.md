@@ -297,6 +297,12 @@ from an authoritative vendor rate card. Record vendor, per-million token-class
 rates, effective date, source URL, and any explicit long-context threshold and
 multipliers; update top-level `verified_at`. Never infer a family price. Exercise
 both vendor cost fixtures and confirm the unpriced bucket before collecting.
+Each row records `retrieved_at`; an unpublished effective date stays null. A
+changed official rate keeps the earlier row under `superseded` with its original
+verification date. An observed model without an exact official row is listed in
+`unpriced_models` with its reason. When the card lists distinct cache-write
+durations that records do not report, keep `cache_write` null so those tokens
+stay unpriced. Mode, tier and regional modifiers are never applied.
 
 **Accounts, environments and Work imports.** Identity is never inferred from a
 vendor, model, label, or host OS. A root, a receipt root, or `claude_usage_capture`
@@ -317,6 +323,8 @@ period data stay in the restricted store (`portfolio.py`) and never enter the
 public tier, the page, or closed history. `consumer.py` exposes them additively as
 `period`, `sources`, `conflicts`, `history`, and account-scoped `capacity`; `pricing`
 names each exact model id `prices.json` prices and its row's vendor, never a price.
+Restricted receipt lineage, trusted intervention origin, `feature_history` and
+`freshness` are described in [docs/OUTCOME_ADAPTER.md](docs/OUTCOME_ADAPTER.md).
 
 **Selected-phase forecasts.** `consumer.py` adds the restricted local
 `telemetry-forecasting-v1` capability described in [docs/FORECASTING.md](docs/FORECASTING.md).

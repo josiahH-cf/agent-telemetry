@@ -105,6 +105,7 @@ STATIC_TRACKED_PATHS = {
     "tests/test_git_guard.py",
     "tests/test_guidance_spike.py",
     "tests/test_imports.py",
+    "tests/test_measurement_producer.py",
     "tests/test_observatory.py",
     "tests/test_publish.py",
     "tests/test_retention.py",
@@ -427,6 +428,7 @@ def _windows_task_status() -> tuple[str, str]:
         "agent-telemetry-logon": "catchup windows-task-logon",
         "agent-telemetry-continuity": "refresh windows-task-continuity",
     }
+    wrapped = False
     for name, suffix in expected.items():
         root = task_xml[name]
         actions = root.findall(".//t:Actions/*", namespace)
@@ -440,7 +442,14 @@ def _windows_task_status() -> tuple[str, str]:
             rf"-d Ubuntu -- /[^\s]+/agent-telemetry/run-telemetry\.sh {re.escape(suffix)}",
             arguments,
         ):
-            return "warn", "task_contract_mismatch"
+            # A second program launching the exact wrapper still violates the sole-action contract;
+            # name it, and keep checking so an independent interval mismatch is not hidden behind it.
+            if not re.fullmatch(
+                rf"-d Ubuntu -- \S+( \S+)* /[^\s]+/agent-telemetry/run-telemetry\.sh {re.escape(suffix)}",
+                arguments,
+            ):
+                return "warn", "task_contract_mismatch"
+            wrapped = True
         if text_at(root, ".//t:Settings/t:MultipleInstancesPolicy") != "IgnoreNew":
             return "warn", "task_contract_mismatch"
         enabled_values = {
@@ -467,7 +476,13 @@ def _windows_task_status() -> tuple[str, str]:
     continuity = task_xml["agent-telemetry-continuity"]
     if logon.find(".//t:LogonTrigger", namespace) is None:
         return "warn", "task_trigger_mismatch"
-    if text_at(continuity, ".//t:TimeTrigger/t:Repetition/t:Interval") != f"PT{EXPECTED_INTERVAL_MINUTES}M":
+    interval = text_at(continuity, ".//t:TimeTrigger/t:Repetition/t:Interval")
+    if wrapped:
+        detail = "task_action_wrapped"
+        if interval != f"PT{EXPECTED_INTERVAL_MINUTES}M":
+            detail += "+continuity_interval_" + (interval if re.fullmatch(r"PT[0-9HMS]{1,12}", interval) else "unknown")
+        return "warn", detail
+    if interval != f"PT{EXPECTED_INTERVAL_MINUTES}M":
         return "warn", "task_trigger_mismatch"
     return "ok", "two_tasks_action_schedule_and_power_policy_ok"
 

@@ -37,6 +37,13 @@ KINDS = {
 RECEIPT_VENDORS = {"anthropic", "openai", "cursor"}
 ENVIRONMENTS = {"personal", "work"}
 MAX_LINE_BYTES = 65536
+# Optional restricted lineage/provenance metadata (DS15 producer contribution). A malformed optional
+# value is dropped (unknown) rather than rejecting a receipt that earlier adapters already accepted.
+LINEAGE_IDENTIFIERS = ("feature_id", "milestone_outcome_id", "parent_intent_id", "supersedes_outcome_id", "research_outcome_id")
+LINEAGE_FIELDS = LINEAGE_IDENTIFIERS + ("scope_revision", "actor_origin")
+ACTOR_ORIGINS = {"human-authenticated", "coordinator", "watcher", "agent", "unknown"}
+IDENTIFIER_RE = re.compile(r"[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}")
+LINEAGE_BACKFILL_KEY = "receipt_lineage_v1:"
 
 MIGRATION_2 = """
 PRAGMA foreign_keys=OFF;
@@ -191,8 +198,15 @@ def _validate(record: Any, root: dict[str, Any]) -> tuple[dict[str, Any] | None,
             return None, "forecast_metadata_invalid"
     # Only defined metadata crosses this boundary, including into private
     # record_json. Feedback words and arbitrary extra content stay with producer.
-    allowed = {'interface','producer','event_id','ledger_seq','kind','at','outcome_id','project_id','outcome_kind','evidence_digest','linkage','vendor','client','host_os','environment','native_session_id','native_turn_id','status','disposition','phase','source_version','route_id','question_id','question_kind','source','adopted','effect_id','effect_kind','detail_digest','destination_digest','reason_digest','commit','model','usage','workflow_identity','policy_revision','effort','measurement_version','verdict','acceptance_basis','feedback_id','repair_of','command_id','action','tool_call_digest','tool_status','usage_scope','attempt_id'}
+    allowed = {'interface','producer','event_id','ledger_seq','kind','at','outcome_id','project_id','outcome_kind','evidence_digest','linkage','vendor','client','host_os','environment','native_session_id','native_turn_id','status','disposition','phase','source_version','route_id','question_id','question_kind','source','adopted','effect_id','effect_kind','detail_digest','destination_digest','reason_digest','commit','model','usage','workflow_identity','policy_revision','effort','measurement_version','verdict','acceptance_basis','feedback_id','repair_of','command_id','action','tool_call_digest','tool_status','usage_scope','attempt_id'} | set(LINEAGE_FIELDS)
     clean = {k:v for k,v in record.items() if k in allowed}
+    for key in LINEAGE_IDENTIFIERS:
+        if key in clean and (not isinstance(clean[key], str) or not IDENTIFIER_RE.fullmatch(clean[key])):
+            del clean[key]
+    if 'scope_revision' in clean and (not isinstance(clean['scope_revision'], str) or not re.fullmatch(r'[0-9a-f]{64}', clean['scope_revision'])):
+        del clean['scope_revision']
+    if 'actor_origin' in clean and clean['actor_origin'] not in ACTOR_ORIGINS:
+        del clean['actor_origin']
     if 'usage' in clean and clean['usage'] is not None:
         if not isinstance(clean['usage'], dict):
             return None, 'usage_metadata_invalid'
@@ -216,6 +230,21 @@ def _validate(record: Any, root: dict[str, Any]) -> tuple[dict[str, Any] | None,
     if clean.get('attempt_id') is not None and not re.fullmatch(r'[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}', str(clean['attempt_id'])):
         return None, 'attempt_identity_invalid'
     return clean, None
+
+
+def _merge_lineage(connection: sqlite3.Connection, event_id: str, record: dict[str, Any]) -> None:
+    """Add allowlisted lineage keys an earlier adapter discarded; never replace a stored value."""
+
+    lineage = {key: record[key] for key in LINEAGE_FIELDS if record.get(key) is not None}
+    if not lineage:
+        return
+    stored_row = connection.execute("SELECT producer, kind, record_json FROM outcome_events WHERE event_id=?", (event_id,)).fetchone()
+    if stored_row is None or stored_row[0] != record.get("producer") or stored_row[1] != record.get("kind"):
+        return
+    stored = json.loads(stored_row[2])
+    missing = {key: value for key, value in lineage.items() if key not in stored}
+    if missing:
+        connection.execute("UPDATE outcome_events SET record_json=? WHERE event_id=?", (json.dumps({**stored, **missing}, sort_keys=True, separators=(",", ":")), event_id))
 
 
 def _usage_row(file_id: str, record: dict[str, Any]) -> tuple[Any, ...] | None:
@@ -248,11 +277,22 @@ def ingest_receipt_root(connection: sqlite3.Connection, root: dict[str, Any], no
         return {"root_id": root["root_id"], "status": "absent", "files": 0, "ingested": 0, "rejected": 0}
     ingested = rejected = files = 0
     rejections: dict[str, int] = {}
+    # Lineage metadata was discarded before LINEAGE_FIELDS were allowlisted. Re-read each already-consumed
+    # file once from its start: ids keep the replay idempotent, only absent lineage keys are added to the
+    # stored private record, and rejections already counted before the old cursor are not counted again.
+    backfill_key = LINEAGE_BACKFILL_KEY + root["root_id"]
+    backfill = connection.execute("SELECT 1 FROM sqlite_master WHERE type='table' AND name='meta'").fetchone() is not None and \
+        connection.execute("SELECT 1 FROM meta WHERE key=?", (backfill_key,)).fetchone() is None
     for path in sorted(p for p in base.glob("*.jsonl") if p.is_file() and not p.is_symlink()):
         files += 1
         relative = path.name
         cursor = connection.execute("SELECT offset, tail_sha256 FROM receipt_cursors WHERE root_id=? AND relative_path=?", (root["root_id"], relative)).fetchone()
         offset = int(cursor["offset"]) if cursor else 0
+        counted_from = 0
+        if backfill and cursor and offset > 0:
+            counted_from = offset
+            cursor = None
+            offset = 0
         size = path.stat().st_size
         with path.open("rb") as handle:
             if cursor and offset > 0:
@@ -272,21 +312,25 @@ def ingest_receipt_root(connection: sqlite3.Connection, root: dict[str, Any], no
                     break
                 if not line.endswith(b"\n"):
                     break  # torn tail: read next time
+                fresh = consumed >= counted_from
                 consumed += len(line)
                 if len(line) > MAX_LINE_BYTES:
-                    rejected += 1
-                    rejections["line_too_long"] = rejections.get("line_too_long", 0) + 1
+                    if fresh:
+                        rejected += 1
+                        rejections["line_too_long"] = rejections.get("line_too_long", 0) + 1
                     continue
                 try:
                     raw = json.loads(line.decode("utf-8"))
                 except (UnicodeDecodeError, ValueError):
-                    rejected += 1
-                    rejections["unparseable"] = rejections.get("unparseable", 0) + 1
+                    if fresh:
+                        rejected += 1
+                        rejections["unparseable"] = rejections.get("unparseable", 0) + 1
                     continue
                 record, problem = _validate(raw, root)
                 if record is None:
-                    rejected += 1
-                    rejections[problem or "invalid"] = rejections.get(problem or "invalid", 0) + 1
+                    if fresh:
+                        rejected += 1
+                        rejections[problem or "invalid"] = rejections.get(problem or "invalid", 0) + 1
                     continue
                 if record["kind"] in {"forecast.admitted", "forecast.observed"}:
                     forecast_rows.append(record)
@@ -331,12 +375,17 @@ def ingest_receipt_root(connection: sqlite3.Connection, root: dict[str, Any], no
                 connection.execute(
                     "INSERT OR IGNORE INTO outcome_events VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)", row
                 )
-                ingested += connection.total_changes - before
+                added = connection.total_changes - before
+                ingested += added
+                if not added:
+                    _merge_lineage(connection, row[0], json.loads(row[19]))
             connection.execute(
                 "INSERT INTO receipt_cursors(root_id,relative_path,offset,tail_sha256,updated_at) VALUES(?,?,?,?,?) ON CONFLICT(root_id,relative_path) DO UPDATE SET offset=excluded.offset, tail_sha256=excluded.tail_sha256, updated_at=excluded.updated_at",
                 (root["root_id"], relative, consumed, tail_digest, observed_at),
             )
     with connection:
+        if backfill:
+            connection.execute("INSERT OR REPLACE INTO meta VALUES(?,?)", (backfill_key, observed_at))
         connection.execute(
             "UPDATE receipt_roots SET status=?, last_scan_at=?, last_success_at=?, files_seen=?, events_ingested=events_ingested+?, events_rejected=events_rejected+?, detail_code=? WHERE root_id=?",
             ("partial" if rejected else "ok", observed_at, observed_at, files, ingested, rejected, ",".join(f"{k}:{v}" for k, v in sorted(rejections.items())) or None, root["root_id"]),

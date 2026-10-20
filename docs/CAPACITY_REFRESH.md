@@ -104,3 +104,20 @@ and a maximum of 221 seconds. Slow scans, locks, source failures, network or
 Pages deployment lag can delay availability. Git push completion is distinct
 from Pages deployment and from the provider observation time. The dashboard
 remains passive and sends no alerts or provider requests.
+
+## Freshness trace (2026-10-20)
+
+`telemetry-consumer-v1.freshness` (`telemetry-freshness-v1`) reports the
+five-minute targets and, separately, each stage's own timestamp, age and state:
+provider observation (each capacity window, including stale and retained
+values), the latest completed collection, the local `data/telemetry.js`
+generation, the last successful publication and its stage, and the latest
+served-page check with its reason and expected commit. Browser adoption is
+`not-observable`: open pages adopt newer payloads locally and send nothing back.
+No stage inherits another's success.
+
+Doctor's Windows task check now names a wrapped action and a continuity
+interval mismatch separately, for example
+`task_action_wrapped+continuity_interval_PT30M`, instead of stopping at the
+first mismatch. A second program in front of the wrapper still violates the
+documented sole-action contract; doctor reports it rather than accepting it.

@@ -1,5 +1,79 @@
 # Stability pass findings and retention report
 
+## ST-51 — Measurement producer: pricing, attribution, lineage, intent and freshness (2026-10-20)
+
+- **Pricing coverage:** a read-only pass over the private store at generation
+  6881 found 46.86B of 171.34B all-time tokens unpriced. Exact observed model strings without a row
+  were `claude-opus-5-5`, `claude-fable-5-1`, `claude-opus-4-6`, `gpt-6.1-sol`,
+  `gpt-6-astra`, `gpt-6-sol`, `gpt-6-luna`, `gpt-5.3-codex-spark` and
+  `codex-auto-review`, plus 12.7B OpenAI tokens whose records name no model.
+  Every rate was re-read from the official vendor rate cards on 2026-10-20.
+  Seven new exact rows were added; every existing row was re-verified. The
+  official `gpt-5.6-sol` standard rate is now lower than the August row, so the
+  August row is kept under `superseded` with its original verification date;
+  the official card publishes no effective date. The OpenAI card now lists
+  distinct 30-minute and 12-hour cache-write rates, and Codex records do not
+  report the duration, so those tokens stay unpriced (none were observed). Two
+  models have no exact official row and remain unpriced with a named reason.
+  Batch, flex, fast, regional and data-residency modifiers are not observed and
+  are never applied. A same-generation simulation moves the all-time unpriced
+  volume to 12.75B tokens and API-equivalent dollars from $91,448 to $96,017.
+  Closed daily files keep their bytes; the changed recomputation becomes the
+  existing current-day `coverage_correction`.
+- **Attribution trace:** daily rows, sessions and project totals reconcile
+  exactly for all 17 project/provider pairs (tokens, unpriced tokens and
+  dollars) at generation 6878; 14,735 sessions versus 14,997 session-days is
+  the documented measure difference. The suspected first-working-directory rule
+  was checked: 79 sessions span several working directories and none crosses a
+  project boundary under the current registry. One like-for-like example
+  (`obsidian-agent`, Anthropic, 7 days): the whole-session window reads
+  127,774,001 tokens and the daily UTC period 61,345,939; the 66,428,062
+  difference is exactly the pre-period usage of 20 boundary-spanning sessions.
+  Both are valid, differently based measures; no mapping defect was found and
+  none was changed.
+- **Calibration:** the live store holds no `forecast.admitted` or
+  `forecast.observed` receipt, and the producer does not yet emit those kinds.
+  No genuine frozen estimate exists, so no calibration is claimed or
+  fabricated. The existing comparison logic already separates scope changes,
+  late starts, partial capture, unpriced dollars and overlaps from error.
+- **Freshness:** the consumer adds `freshness` with independent ages for
+  provider observation, collection, local page payload, publication and the
+  served-page check; browser adoption is reported as not observable. Doctor's
+  Windows check stopped at the first mismatch. The installed tasks now launch
+  through an additional credential-profile program and the continuity task
+  still repeats every 30 minutes; doctor now reports
+  `task_action_wrapped+continuity_interval_PT30M` instead of one generic
+  mismatch. Neither installed task was changed.
+- **Lineage:** the producer already sent `feature_id` and `milestone_outcome_id`
+  on about 11,800 receipts, but the restricted allowlist discarded them. They
+  are now retained privately with optional scope revision, supersession,
+  research, `actor_origin` and `parent_intent_id` references. A malformed
+  optional value is dropped instead of rejecting a receipt. Each receipt root is
+  re-read once from its start to add only missing lineage keys; ids keep the
+  replay idempotent and rejections are not counted twice. Against a private
+  copy of the live store this restored lineage on 11,800 events with no new
+  rejection, and a real six-feature milestone read back its attempts, settings
+  changes, dispositions and once-only usage. The copy was deleted.
+- **Trusted intent:** every live intervention command, including automated
+  retirement and fan-out admissions, arrived without an origin and was counted
+  as a human intervention. The existing count keeps its meaning and catalog
+  caveat; additive `interventions_by_origin` and `authenticated_human_intents`
+  count only producer-declared human commands, one per parent intent. Without
+  origin evidence the intent count is unknown, not zero.
+- **Weekly account:** the economics consumer adds a private
+  `weekly_account` that separates operator-classified maintenance from goal
+  execution, shows delivery, rework, recorded or unknown effort and trusted
+  interventions, and names one deterministic next adjustment. The live
+  account for 2026-10-13..19 shows no classified project, 144 intervention
+  commands of unknown origin and no recorded timer effort; its first
+  adjustment is to classify projects.
+- **Verification:** focused fixtures cover official rows and long-context
+  columns, unknown neighbours, subset semantics, unreported write duration,
+  superseded rows, lineage privacy and backfill, trusted origin and fan-out,
+  feature history and once-only consumption, the weekly account, freshness
+  stages and doctor details. Release, live collection and served readback
+  belong to the publication owner.
+
 ## ST-50 — A damaged HEAD was reported as a non-generated commit (2026-10-20)
 
 - **As found:** the installed checkout's HEAD named a loose commit whose object

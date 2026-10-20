@@ -318,13 +318,72 @@ def _attention_intervals(project_root: Path, state_root: Path, now: dt.datetime)
             for i in parsed.intervals for s in attention_ledger.split_interval_utc(i)]
 
 
+def _age_seconds(value: Any, now: dt.datetime) -> int | None:
+    parsed = usage.parse_timestamp(value)
+    return None if parsed is None else int((now - parsed.astimezone(dt.timezone.utc)).total_seconds())
+
+
+def freshness_view(project_root: Path, state_root: Path, capacity: list[dict[str, Any]], collection: dict[str, Any], publication: dict[str, Any], now: dt.datetime) -> dict[str, Any]:
+    """Each stage from provider observation to the served page keeps its own time, age and state.
+
+    Success at one stage never implies a later one: a fresh collection is not a commit, a pushed
+    commit is not a served page, and a served page is not adoption by any open browser. Browser
+    adoption is not observable here; installed scheduler state is reported by ``collect.py --doctor``.
+    """
+    providers = [{"vendor": row.get("vendor"), "window": row.get("window"), "account_id": row.get("account_id"), "observed_at": row.get("observed_at"),
+                  "age_seconds": _age_seconds(row.get("observed_at"), now), "status": row.get("status")}
+                 for row in capacity if row.get("vendor") in ("anthropic", "openai")]
+    page: dict[str, Any] = {"generated_at": None, "age_seconds": None, "status": "unavailable"}
+    try:
+        text = (project_root / "data" / "telemetry.js").read_text(encoding="utf-8")
+        payload = json.loads(text[text.index("{"): text.rindex("}") + 1])
+        page = {"generated_at": _iso(usage.parse_timestamp(payload.get("generated_at"))), "age_seconds": _age_seconds(payload.get("generated_at"), now), "status": "present"}
+    except (OSError, ValueError):
+        pass
+    served: dict[str, Any] = {"checked_at": None, "age_seconds": None, "status": "unknown", "reason": None, "expected_commit": None}
+    try:
+        pages = json.loads((state_root / "pages-status.json").read_text(encoding="utf-8"))
+        if isinstance(pages, dict):
+            served = {"checked_at": _iso(usage.parse_timestamp(pages.get("checked_at"))), "age_seconds": _age_seconds(pages.get("checked_at"), now),
+                      "status": pages.get("status") if pages.get("status") in ("success", "failure", "pending") else "unknown",
+                      "reason": usage.safe_identifier(pages.get("reason"), "") or None,
+                      "expected_commit": pages.get("expected_commit") if isinstance(pages.get("expected_commit"), str) and len(pages["expected_commit"]) == 40 else None}
+    except (OSError, ValueError):
+        pass
+    import cadence
+
+    return {
+        "contract": "telemetry-freshness-v1",
+        "target_minutes": cadence.page_policy(),
+        "stages": {
+            "provider_observation": providers,
+            "collection": {"observed_at": collection.get("observed_at"), "age_seconds": _age_seconds(collection.get("observed_at"), now), "status": collection.get("status")},
+            "local_page_payload": page,
+            "publication": {"last_success_at": publication.get("last_success_at"), "age_seconds": _age_seconds(publication.get("last_success_at"), now),
+                            "status": publication.get("status"), "stage": publication.get("stage")},
+            "served_page": served,
+            "browser_adoption": {"status": "not-observable", "detail": "each open page adopts a strictly newer compatible payload locally; no browser signal reaches Telemetry"},
+        },
+        "basis": "Ages are seconds since each stage's own timestamp. A retained, stale or failed stage never inherits a later or earlier stage's success.",
+    }
+
+
 def pricing_view(project_root: Path) -> dict[str, Any]:
     """Each exact model id prices.json prices, with the vendor its row prices it for; never a price."""
     try:
         prices = usage.load_prices(project_root / "prices.json")
     except (OSError, ValueError):
         return {"status": "unavailable", "models": {}}
-    return {"status": "current", "verified_at": prices.get("verified_at"), "models": {model: row.get("vendor") for model, row in prices["models"].items() if isinstance(row, dict)}}
+    view = {"status": "current", "verified_at": prices.get("verified_at"), "models": {model: row.get("vendor") for model, row in prices["models"].items() if isinstance(row, dict)}}
+    # Additive assessment metadata: why an observed model stays unpriced and which earlier rate rows were
+    # superseded. Still no rates; closed history keeps whatever it originally recorded.
+    if isinstance(prices.get("basis"), str):
+        view["basis"] = prices["basis"]
+    if isinstance(prices.get("unpriced_models"), dict):
+        view["unpriced_models"] = {model: usage.safe_identifier(row.get("reason")) for model, row in prices["unpriced_models"].items() if isinstance(row, dict)}
+    if isinstance(prices.get("superseded"), list):
+        view["superseded"] = [{"model": row.get("model"), "superseded_on": row.get("superseded_on"), "reason": usage.safe_identifier(row.get("reason"))} for row in prices["superseded"] if isinstance(row, dict)]
+    return view
 
 
 def consumer_view(project_root: Path, state_root: Path, scope: dict[str, Any] | None = None, *, now: dt.datetime | None = None) -> dict[str, Any]:
@@ -368,6 +427,9 @@ def consumer_view(project_root: Path, state_root: Path, scope: dict[str, Any] | 
             observatory.read_registry(project_root, state_root), _attention_intervals(project_root, state_root, now))
         if "history" in scope:
             view["history"] = portfolio.history_view(connection, scope.get("history"), now)
+        if "feature_history" in scope:
+            view["feature_history"] = outcome_quality.feature_history_view(connection, scope.get("feature_history"))
+        view["freshness"] = freshness_view(project_root, state_root, view["capacity"], view["collection"], view["publication"], now)
     finally:
         connection.close()
     return view

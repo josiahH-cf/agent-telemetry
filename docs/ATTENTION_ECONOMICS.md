@@ -257,3 +257,27 @@ disclosure/focus, contrast, four-window and cardinality checks. Production
 activation, linear integration and served delivery are verified separately when
 the configured publication wrapper runs. The sanitized register in
 [STABILITY.md](STABILITY.md) records behavior and remaining evidence limits.
+
+## Weekly maintenance versus goal account (2026-10-20)
+
+Context entries accept an optional `investment_class`: `maintenance`
+(configuring, prompting, debugging and maintaining OA/Telemetry), `client`,
+`personal` or `other`. Record or correct it with the same append-only
+`tools/economics.py --record-file` revision mechanism; it is never inferred.
+
+Scope `{"days": 7, "weekly_account": true}` adds a private
+`economics.weekly_account` (`weekly-attention-account-v1`) for the latest closed
+UTC week. It groups measured projects by their latest effective class (otherwise
+`unclassified`; Shared/Unassigned separate) and reports tokens, API-equivalent
+dollars, unpriced tokens, recorded timer seconds and results per class; enabling
+maintenance versus goal-execution investment; goal versus maintenance delivery
+and human acceptance; recorded repairs and needs-changes verdicts with
+avoidability unknown; recorded or unknown effort; interventions by trusted origin
+with authenticated human intents; and operator context corrections. It names a
+`next_adjustment` and `other_adjustments` from fixed rules over that evidence
+(rebalance maintenance, classify projects, producer origin, record reviews,
+review rework, pricing coverage), and lists what is `unavailable`, always
+including return on investment and human value. No timer, form or review is
+required; missing effort stays unknown, never inferred from tokens, runtime,
+latency or churn. The account is evidence for the operator's own judgement, not
+human acceptance of usefulness.

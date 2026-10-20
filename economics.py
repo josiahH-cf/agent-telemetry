@@ -24,6 +24,11 @@ CONTRACT = 'attention-economics-v1'
 LEDGER = 'economics-ledger.jsonl'
 MODES = attention.MODES
 GOAL_METRICS = {'delivered', 'human_accepted', 'verified_delivered'}
+# Operator-recorded classification of a project's purpose. Maintenance is configuring, prompting,
+# debugging and maintaining OA/Telemetry; the other classes are goal execution. Never inferred.
+INVESTMENT_CLASSES = ('maintenance', 'client', 'personal', 'other')
+GOAL_CLASSES = ('client', 'personal', 'other')
+WEEKLY_CONTRACT = 'weekly-attention-account-v1'
 RESULT_FIELDS = ('outcomes', 'delivered', 'reviewed', 'human_accepted', 'needs_changes', 'delivered_unreviewed',
                  'verified_delivered', 'verification_observed', 'checks_passed', 'checks_failed',
                  'attempts', 'repairs', 'human_interventions', 'refinement_observed', 'refinement_complete',
@@ -409,7 +414,7 @@ def validate_record(raw):
     if not isinstance(raw, dict) or raw.get('kind') not in ('context', 'cash'):
         raise ValueError('economics_kind_invalid')
     common = {'kind', 'entry_id', 'revision', 'project_id', 'provenance', 'effective_at'}
-    fields = {'context': {'status', 'goal', 'context', 'goal_metric', 'goal_target'},
+    fields = {'context': {'status', 'goal', 'context', 'goal_metric', 'goal_target', 'investment_class'},
               'cash': {'date', 'amount_cents', 'category'}}
     allowed = common | fields[raw['kind']] | {'event_id', 'recorded_at'}
     if set(raw) - allowed or not isinstance(raw.get('entry_id'), str) or not re.fullmatch(r'[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}', raw['entry_id']):
@@ -432,6 +437,8 @@ def validate_record(raw):
                 raise ValueError('economics_goal_invalid')
         elif raw.get('goal_target') is not None:
             raise ValueError('economics_goal_metric_required')
+        if raw.get('investment_class') is not None and raw['investment_class'] not in INVESTMENT_CLASSES:
+            raise ValueError('economics_investment_class_invalid')
     else:
         _date(raw['date'])
         if type(raw.get('amount_cents')) is not int or raw['amount_cents'] < 0 or raw.get('category') not in ('subscription', 'api', 'other'):
@@ -554,6 +561,15 @@ def consumer_view(connection, project_root, state_root, scope, now, gen, account
     key = str(scope.get('days', 30))
     if key not in ('7', '30', '90', 'all'):
         return {'contract': CONTRACT, 'status': 'unsupported-window', 'report': None, 'context': None}
+    snapshot = _consumer_snapshot(connection, project_root, state_root, now)
+    return _consumer_economics(connection, project_root, state_root, scope, now, gen, registry, intervals, snapshot, key)
+
+
+def _consumer_snapshot(connection, project_root, state_root, now):
+    """The same sanitized facts collection uses, rebuilt read-only from the current generation."""
+    import observatory
+    import outcomes
+    import code_evidence
     snapshot = {'generated_at': iso(now), 'collection': {'date': now.astimezone(dt.timezone.utc).date().isoformat()},
                 'metrics': {'observatory': observatory.public_summary(connection), 'economics': {
                     'outcomes': outcomes.public_rows(connection)[0], 'code_changes': code_evidence.public_rows(connection),
@@ -564,7 +580,7 @@ def consumer_view(connection, project_root, state_root, scope, now, gen, account
     labels = {r['project_id']: r['public_label'] or r['project_code'] for r in connection.execute('SELECT project_id,public_label,project_code FROM projects')}
     snapshot['metrics']['observatory']['daily'] = [
         {'date': day, 'project_id': labels.get(pid, pid), 'cost_usd': portfolio._metrics(bucket)['api_equivalent_cost_usd'],
-         'unpriced_tokens': portfolio._metrics(bucket)['unpriced_tokens']}
+         'unpriced_tokens': portfolio._metrics(bucket)['unpriced_tokens'], 'tokens': portfolio._metrics(bucket)['tokens']}
         for (day, pid), bucket in buckets.items()]
     try:
         parsed = attention.parse_ledger(state_root, attention.load_public_project_map(project_root), now=now)
@@ -575,6 +591,10 @@ def consumer_view(connection, project_root, state_root, scope, now, gen, account
                                  'to': (now.astimezone(dt.timezone.utc).date() - dt.timedelta(days=1)).isoformat() if days else None}}
     except attention.AttentionError:
         snapshot['metrics']['attention'] = {'days': [], 'status': 'error', 'coverage': {'from': None, 'to': None}}
+    return snapshot
+
+
+def _consumer_economics(connection, project_root, state_root, scope, now, gen, registry, intervals, snapshot, key):
     bounds = _bounds(snapshot, key)
     snapshot['metrics']['economics']['subscriptions'] = {key: subscription_view(project_root, bounds)}
     view = report(snapshot, key)
@@ -596,13 +616,120 @@ def consumer_view(connection, project_root, state_root, scope, now, gen, account
     workspace = outcome_quality.accounting_view(connection, reporting=scope.get('reporting'), days=key if key == 'all' else int(key),
                 now=now-dt.timedelta(days=1), registry=registry, attention=intervals,
                 detail=scope.get('accounting_detail')) if scope.get('reporting') else None
+    weekly = weekly_account(connection, state_root, now, snapshot) if scope.get('weekly_account') is True else None
     return {'contract': CONTRACT, 'status': 'observed', 'generation': gen, 'report': view,
-            'projects': all_projects, 'context': local, 'workspace': workspace,
+            'projects': all_projects, 'context': local, 'workspace': workspace, 'weekly_account': weekly,
             'current_context': local_context(state_root, {'from': bounds['from'], 'to': snapshot['collection']['date']}, iso(now), all_projects)['contexts'],
             'units': {'recorded_attention_seconds': 'seconds of recorded human attention', 'api_equivalent_cost_usd': 'API-equivalent USD',
                       'actual_cash': 'recorded USD', 'subscription': 'estimated USD', 'code': 'revisions / files / text lines',
                       'elapsed_seconds': 'receipt span seconds, not human attention'},
             'uncertainty': 'Configured evidence is incomplete; private goals and explicit assumptions explain, never change, measured values.'}
+
+
+def _adjustment(kind, summary, **evidence):
+    return {'kind': kind, 'summary': summary, 'evidence': evidence}
+
+
+def weekly_account(connection, state_root, now, snapshot):
+    """Lightweight qualitative account of the latest closed UTC week, from recorded evidence only.
+
+    Maintenance versus goal execution follows the operator's ``investment_class`` context entries;
+    an unclassified project stays unclassified. Recorded attention comes only from the timer. No
+    productivity score, inferred minutes, acceptance rate without reviews, value or ROI is produced.
+    The suggested adjustment is a deterministic reading of this evidence for the operator to judge.
+    """
+    bounds = _bounds(snapshot, '7')
+    coverage = _coverage(snapshot, bounds)
+    rows, total = _aggregate(snapshot, bounds, coverage)
+    context = local_context(state_root, bounds, iso(now), rows)
+    selected = lambda day: day and bounds['from'] <= day <= bounds['to']
+    public_to_code = {r['project_id']: r.get('project_code', r['project_id']) for r in snapshot['metrics']['observatory'].get('projects', [])}
+    tokens = Counter()
+    for r in snapshot['metrics']['observatory'].get('daily', []):
+        if selected(r['date']) and r.get('tokens') is not None:
+            tokens[public_to_code.get(r['project_id'], r['project_id'])] += r['tokens']
+    classes = {name: {'projects': [], 'tokens': 0, 'api_equivalent_cost_usd': None, 'unpriced_tokens': None,
+                      'recorded_attention_seconds': None, 'results': dict.fromkeys(('outcomes', 'delivered', 'human_accepted', 'needs_changes', 'delivered_unreviewed', 'repairs'))}
+               for name in INVESTMENT_CLASSES + ('unclassified', 'Shared/Unassigned')}
+    for row in rows:
+        code = row['project_code']
+        klass = 'Shared/Unassigned' if code == 'Shared/Unassigned' else (context['contexts'].get(code) or {}).get('investment_class') or 'unclassified'
+        target = classes[klass]
+        target['projects'].append(code)
+        target['tokens'] += tokens.get(code, 0) if code != 'Shared/Unassigned' else sum(v for k, v in tokens.items() if k not in {r['project_code'] for r in rows if r['project_code'] != 'Shared/Unassigned'})
+        for key in ('api_equivalent_cost_usd', 'unpriced_tokens', 'recorded_attention_seconds'):
+            if row.get(key) is not None:
+                target[key] = round((target[key] or 0) + row[key], 6)
+        for key in target['results']:
+            if row['results'].get(key) is not None:
+                target['results'][key] = (target['results'][key] or 0) + row['results'][key]
+    total_tokens = sum(c['tokens'] for c in classes.values())
+    goal = {key: sum(classes[c]['results'][key] or 0 for c in GOAL_CLASSES) for key in ('delivered', 'human_accepted')}
+    goal_tokens = sum(classes[c]['tokens'] for c in GOAL_CLASSES)
+    # Interventions by trusted origin, with one genuine parent intent counted once across fan-out.
+    by_outcome, _owners = outcome_quality._receipts(connection)
+    by_origin, intents, origin_observed = Counter(), set(), False
+    for rows_ in by_outcome.values():
+        if not selected((rows_[-1].get('at') or '')[:10]):
+            continue
+        origins = outcome_quality._intervention_origins(rows_)
+        by_origin.update(origins['by_origin'])
+        intents.update(origins['intents'])
+        origin_observed = origin_observed or origins['observed']
+    records, _status = load_ledger(state_root)
+    corrections = [r for r in records if r['kind'] == 'context' and r['revision'] > 1 and bounds['from'] <= r['recorded_at'][:10] <= bounds['to']]
+    results_total = total['results']
+    attention_seconds = total['recorded_attention_seconds']
+    unavailable = ['return_on_investment', 'human_value']
+    if attention_seconds is None:
+        unavailable.append('human_attention_minutes')
+    if not results_total.get('reviewed'):
+        unavailable.append('acceptance_rate')
+    if not origin_observed:
+        unavailable.append('authenticated_human_intents')
+    adjustments = []
+    classified_maintenance = classes['maintenance']['tokens']
+    if classified_maintenance and goal_tokens + classified_maintenance and classified_maintenance > goal_tokens and not goal['human_accepted']:
+        adjustments.append(_adjustment('rebalance-maintenance',
+            'Maintenance used most classified measured tokens and no goal outcome was human-accepted; choose one goal outcome for next week or record why the maintenance is intended.',
+            maintenance_tokens=classified_maintenance, goal_tokens=goal_tokens, goal_human_accepted=goal['human_accepted']))
+    if classes['unclassified']['tokens']:
+        adjustments.append(_adjustment('classify-projects',
+            'Record an investment_class context revision for measured unclassified projects so maintenance and goal work separate.',
+            projects=sorted(classes['unclassified']['projects']), tokens=classes['unclassified']['tokens']))
+    if by_origin.get('unknown') and not origin_observed:
+        adjustments.append(_adjustment('producer-actor-origin',
+            'Intervention commands carry no trusted origin; the execution producer should send actor_origin and parent_intent_id so genuine human intent is countable.',
+            unknown_origin_commands=by_origin['unknown']))
+    if results_total.get('delivered_unreviewed'):
+        adjustments.append(_adjustment('record-reviews',
+            'Delivered outcomes have no review verdict, so acceptance is unknown; record the human verdict where one was actually given.',
+            delivered_unreviewed=results_total['delivered_unreviewed']))
+    if results_total.get('repairs'):
+        adjustments.append(_adjustment('review-rework',
+            'Repairs were recorded; whether each was necessary or avoidable is unknown until reviewed.', repairs=results_total['repairs']))
+    if total.get('unpriced_tokens'):
+        adjustments.append(_adjustment('pricing-coverage',
+            'Some measured tokens have no exact official rate; API-equivalent dollars exclude them.', unpriced_tokens=total['unpriced_tokens']))
+    return {
+        'contract': WEEKLY_CONTRACT, 'period': bounds, 'as_of': iso(now), 'classes': classes, 'total_tokens': total_tokens,
+        'investment': {'enabling_maintenance_tokens': classes['maintenance']['tokens'], 'goal_execution_tokens': goal_tokens,
+                       'unclassified_tokens': classes['unclassified']['tokens'], 'shared_unassigned_tokens': classes['Shared/Unassigned']['tokens']},
+        'delivery': {'goal_delivered': goal['delivered'], 'goal_human_accepted': goal['human_accepted'],
+                     'maintenance_delivered': classes['maintenance']['results']['delivered'],
+                     'maintenance_human_accepted': classes['maintenance']['results']['human_accepted']},
+        'rework': {'repairs': results_total.get('repairs'), 'needs_changes': results_total.get('needs_changes'), 'avoidable': None,
+                   'basis': 'Necessary versus avoidable rework needs a human review; recorded repairs and needs-changes verdicts are counts only.'},
+        'effort': {'recorded_attention_seconds': attention_seconds, 'status': 'recorded' if attention_seconds is not None else 'unknown',
+                   'basis': 'Explicit timer intervals only; never inferred from tokens, runtime, latency or code churn. No timer is required.'},
+        'interventions': {'by_origin': dict(sorted(by_origin.items())), 'authenticated_human_intents': len(intents) if origin_observed else None,
+                          'basis': 'Only producer-declared human-authenticated commands are human; each parent intent counts once across automated fan-out, retries and replays.'},
+        'corrections': {'context_revisions': len(corrections),
+                        'basis': 'Operator corrections are later context revisions; they explain or reclassify, never rewrite measurements.'},
+        'next_adjustment': adjustments[0] if adjustments else None, 'other_adjustments': adjustments[1:],
+        'unavailable': unavailable,
+        'qualification': 'A machine-generated account is not human usefulness or acceptance; the operator decides whether the suggested adjustment is right.',
+    }
 
 
 def archive_reports(project_root, state_root, snapshot):
