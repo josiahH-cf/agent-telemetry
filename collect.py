@@ -3024,7 +3024,19 @@ def merge_measurement_day(existing: dict[str, Any] | None, observation: dict[str
     return value
 
 
-def record_publish_state(cache_root: Path, status: str, reason: str, now: dt.datetime | None = None) -> dict[str, Any]:
+PUBLISH_STAGES = ("collect", "scrub", "commit", "publish")
+
+
+def record_publish_state(
+    cache_root: Path,
+    status: str,
+    reason: str,
+    now: dt.datetime | None = None,
+    *,
+    stage: str | None = None,
+    detail: str | None = None,
+) -> dict[str, Any]:
+    """Record one publication outcome; optional stage/detail name where and why it stopped."""
     now = now or utc_now()
     previous = read_publish_state(cache_root)
     raw_previous: dict[str, Any] = {}
@@ -3047,6 +3059,10 @@ def record_publish_state(cache_root: Path, status: str, reason: str, now: dt.dat
     }
     if status in {"pending", "success"} and reason == "scheduled_push":
         value["previous_success_at"] = previous.get("last_success_at")
+    if stage in PUBLISH_STAGES:
+        value["stage"] = stage
+    if detail:
+        value["detail"] = safe_identifier(detail)
     atomic_write(cache_root / "publish-status.json", json_text(value))
     return value
 
@@ -3321,20 +3337,29 @@ def failure_detail_code(phase: str, exc: BaseException) -> str:
     return f"{phase}_failed:{code}"
 
 
+class CommitBlocked(RuntimeError):
+    """The checkout cannot support a truthful generated-only commit; nothing was staged or repaired."""
+
+
 def commit_generated(project_root: Path, snapshot: dict[str, Any], written: list[Path]) -> None:
-    try:
-        subprocess.run(["git", "-C", str(project_root), "rev-parse", "--git-dir"], check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-    except (OSError, subprocess.CalledProcessError) as exc:
-        raise RuntimeError("git_repo_required_for_commit") from exc
+    integrity = telemetry_stability.repository_integrity(project_root)
+    if integrity["reason"] == "not_a_repository":
+        raise CommitBlocked("git_repo_required_for_commit")
+    if integrity["status"] != "ok":
+        raise CommitBlocked(f"repository_integrity:{integrity['reason']}")
     relative = sorted({str(path.relative_to(project_root)) for path in written})
     if relative:
         subprocess.run(["git", "-C", str(project_root), "add", "--", *relative], check=True)
-    staged_raw = subprocess.run(
+    staged_result = subprocess.run(
         ["git", "-C", str(project_root), "diff", "--cached", "--name-only", "-z"],
         check=True,
         stdout=subprocess.PIPE,
-    ).stdout
-    staged = [os.fsdecode(item) for item in staged_raw.split(b"\0") if item]
+        stderr=subprocess.PIPE,
+    )
+    if staged_result.stderr.strip():
+        # Git reports unreadable objects on stderr yet may still exit zero.
+        raise CommitBlocked("repository_integrity:staged_diff_unreliable")
+    staged = [os.fsdecode(item) for item in staged_result.stdout.split(b"\0") if item]
     unexpected = [path for path in staged if not telemetry_stability.GENERATED_TRACKED_RE.fullmatch(path)]
     if unexpected:
         raise RuntimeError("staged_non_generated_content")
@@ -3378,6 +3403,8 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--publish-due", action="store_true", help="exit 0 when a new five-minute UTC publication slot is due")
     parser.add_argument("--record-publish", choices=("pending", "success", "failure", "blocked"), help="record machine-local publish state and exit")
     parser.add_argument("--publish-reason", default="scheduled", help="allowlisted reason used with --record-publish")
+    parser.add_argument("--publish-stage", choices=PUBLISH_STAGES, help="publication stage that produced the recorded outcome")
+    parser.add_argument("--publish-detail", help="allowlisted cause code used with --record-publish")
     parser.add_argument("--record-claude-usage", action="store_true", help="record percentage-only values transcribed from Claude /usage")
     parser.add_argument("--capture-claude-usage", action="store_true", help="refresh normalized Claude /usage through the zero-turn CLI command")
     parser.add_argument("--claude-five-hour-used", type=float, help="Claude five-hour window used percentage")
@@ -3455,7 +3482,9 @@ def main(argv: list[str] | None = None) -> int:
             print(f"[publish] {'due' if due else 'not_due'}")
             return 0 if due else 1
         if args.record_publish:
-            value = record_publish_state(cache_root, args.record_publish, args.publish_reason)
+            value = record_publish_state(
+                cache_root, args.record_publish, args.publish_reason, stage=args.publish_stage, detail=args.publish_detail
+            )
             print(f"[publish] recorded {value['status']} ({value['reason']})")
             return 0
         if args.request_pages_check:
@@ -3469,7 +3498,16 @@ def main(argv: list[str] | None = None) -> int:
             print(f"[pages] {value['status']}: {value['reason']}")
             return 0 if value["status"] in {"success", "not_requested"} else 1
         if args.commit_existing:
-            commit_existing_generated(project_root)
+            try:
+                commit_existing_generated(project_root)
+            except Exception as exc:
+                # Exit 4 tells the wrapper this stage already recorded its named outcome.
+                status = "blocked" if isinstance(exc, CommitBlocked) else "failure"
+                message = str(exc)
+                detail = message if SAFE_IDENTIFIER_RE.fullmatch(message) else type(exc).__name__
+                record_publish_state(cache_root, status, "collect_commit_failed", stage="commit", detail=detail)
+                print(f"[git] commit {status}: {detail}", file=sys.stderr)
+                return 4
             return 0
         if args.check:
             return check_sources(config)

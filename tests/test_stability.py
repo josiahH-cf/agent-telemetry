@@ -297,7 +297,7 @@ class StabilityTests(unittest.TestCase):
                 {"suite_state": {"status": "ok", "available": True}},
             )
         names = {item["name"] for item in result["checks"]}
-        self.assertTrue({"sources", "scan_caches", "collection_cadence", "publish", "pages", "claude_usage_capture", "attention", "scheduler", "windows_tasks", "lock", "prices", "schemas", "observatory_store", "provider_roots", "machine_manifest", "reconciliation", "git_hooks", "tracked_manifest", "clock", "collection_age", "disk"} <= names)
+        self.assertTrue({"sources", "scan_caches", "collection_cadence", "publish", "pages", "claude_usage_capture", "attention", "scheduler", "windows_tasks", "lock", "prices", "schemas", "observatory_store", "provider_roots", "machine_manifest", "reconciliation", "git_hooks", "git_integrity", "tracked_manifest", "clock", "collection_age", "disk"} <= names)
         self.assertIn("[doctor] status=", stability.doctor_text(result))
 
     def test_claude_usage_capture_doctor_tracks_attempt_and_cache_age(self) -> None:
@@ -552,6 +552,125 @@ with open(os.environ['TRACE'], 'a', encoding='utf-8') as handle:
             self.assertIn("collect --scrub", due_trace)
             self.assertIn("collect --commit-existing", due_trace)
             self.assertIn("publish --repo", due_trace)
+
+    def _stage_wrapper(self, root: Path) -> Path:
+        """A wrapper copy whose collector/publisher stubs fail at the stage named by FAIL_STAGE."""
+        wrapper = root / "run-telemetry.sh"
+        wrapper.write_bytes((PROJECT_ROOT / "run-telemetry.sh").read_bytes())
+        (root / "cadence.py").write_bytes((PROJECT_ROOT / "cadence.py").read_bytes())
+        wrapper.chmod(0o755)
+        (root / "collect.py").write_text(
+            """import os,sys
+args = sys.argv[1:]
+with open(os.environ['TRACE'], 'a', encoding='utf-8') as handle:
+    handle.write('collect ' + ' '.join(args) + '\\n')
+fail = os.environ.get('FAIL_STAGE')
+if args == ['--publish-due']:
+    raise SystemExit(0)
+if args == [] and fail == 'collect':
+    raise SystemExit(2)
+if args == ['--scrub'] and fail == 'scrub':
+    raise SystemExit(3)
+if args == ['--commit-existing'] and fail == 'commit':
+    raise SystemExit(4)
+if args == ['--commit-existing'] and fail == 'commit_crash':
+    raise SystemExit(1)
+""",
+            encoding="utf-8",
+        )
+        (root / "stability.py").write_text("raise SystemExit(1)\n", encoding="utf-8")
+        (root / "publish.py").write_text(
+            """import os,sys
+with open(os.environ['TRACE'], 'a', encoding='utf-8') as handle:
+    handle.write('publish ' + ' '.join(sys.argv[1:3]) + '\\n')
+raise SystemExit(5 if os.environ.get('FAIL_STAGE') == 'publish' else 0)
+""",
+            encoding="utf-8",
+        )
+        return wrapper
+
+    def test_wrapper_reports_each_publication_stage_and_stops_at_the_failed_one(self) -> None:
+        cases = {
+            "collect": (2, "collect=failed scrub=not_run commit=not_run publish=not_run", "--record-publish failure --publish-reason collect_failed --publish-stage collect"),
+            "scrub": (3, "collect=ok scrub=blocked commit=not_run publish=not_run", "--record-publish blocked --publish-reason scrub_gate --publish-stage scrub"),
+            "commit": (4, "collect=ok scrub=ok commit=failed publish=not_run", None),
+            "commit_crash": (4, "collect=ok scrub=ok commit=failed publish=not_run", "--record-publish failure --publish-reason collect_commit_failed --publish-stage commit"),
+            "publish": (5, "collect=ok scrub=ok commit=ok publish=failed", None),
+            "none": (0, "collect=ok scrub=ok commit=ok publish=ok", None),
+        }
+        for stage, (expected_exit, stages, record) in cases.items():
+            with self.subTest(stage=stage), tempfile.TemporaryDirectory() as temporary:
+                root = Path(temporary)
+                state = root / "state"
+                trace = root / "trace"
+                wrapper = self._stage_wrapper(root)
+                result = subprocess.run(
+                    [str(wrapper), "publish", "manual"],
+                    check=False,
+                    env={**os.environ, "AGENT_TELEMETRY_LOCKED": "1", "AGENT_TELEMETRY_STATE_DIR": str(state), "PYTHONDONTWRITEBYTECODE": "1", "TRACE": str(trace), "FAIL_STAGE": stage},
+                    stdout=subprocess.PIPE,
+                    stderr=subprocess.PIPE,
+                    text=True,
+                )
+                lines = trace.read_text(encoding="utf-8").splitlines()
+                self.assertEqual(result.returncode, expected_exit)
+                self.assertIn(f"stages {stages}", result.stdout)
+                self.assertIn(f"finish exit={expected_exit}", result.stdout)
+                records = [line for line in lines if "--record-publish" in line]
+                self.assertEqual(records, [f"collect {record}"] if record else [])
+                ran_publisher = any(line.startswith("publish ") for line in lines)
+                self.assertEqual(ran_publisher, stage in {"publish", "none"})
+                if stage in {"collect", "scrub"}:
+                    self.assertNotIn("collect --commit-existing", lines)
+
+    def test_wrapper_refresh_without_due_publication_reports_not_due_stages(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            trace = root / "trace"
+            wrapper = self._stage_wrapper(root)
+            (root / "collect.py").write_text(
+                (root / "collect.py").read_text(encoding="utf-8").replace("raise SystemExit(0)\nif args == []", "raise SystemExit(1)\nif args == []"),
+                encoding="utf-8",
+            )
+            result = subprocess.run(
+                [str(wrapper), "refresh", "cron"],
+                check=False,
+                env={**os.environ, "AGENT_TELEMETRY_LOCKED": "1", "AGENT_TELEMETRY_STATE_DIR": str(root / "state"), "PYTHONDONTWRITEBYTECODE": "1", "TRACE": str(trace)},
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                text=True,
+            )
+        self.assertEqual(result.returncode, 0)
+        self.assertIn("stages collect=ok scrub=not_due commit=not_due publish=not_due", result.stdout)
+
+    def test_overlapping_triggers_share_the_real_lock_without_a_second_collection(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            state = root / "state"
+            state.mkdir()
+            trace = root / "trace"
+            wrapper = self._stage_wrapper(root)
+            (root / "stability.py").unlink()
+            # Python resolves the symlink, so the real supervisor imports from the repository.
+            (root / "stability.py").symlink_to(PROJECT_ROOT / "stability.py")
+            environment = {**os.environ, "AGENT_TELEMETRY_STATE_DIR": str(state), "PYTHONDONTWRITEBYTECODE": "1", "TRACE": str(trace)}
+            environment.pop("AGENT_TELEMETRY_LOCKED", None)
+            with (state / "collect.lock").open("a+b") as held:
+                fcntl.flock(held.fileno(), fcntl.LOCK_EX | fcntl.LOCK_NB)
+                windows = subprocess.run([str(wrapper), "publish", "windows-task-continuity"], check=False, env=environment, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+                cron = subprocess.run([str(wrapper), "publish", "cron"], check=False, env=environment, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+                busy_trace = trace.exists()
+                fcntl.flock(held.fileno(), fcntl.LOCK_UN)
+            after = subprocess.run([str(wrapper), "publish", "cron"], check=False, env=environment, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+            lines = trace.read_text(encoding="utf-8").splitlines()
+            log = (state / "collect.log").read_text(encoding="utf-8")
+        self.assertEqual(windows.returncode, 0)
+        self.assertEqual(cron.returncode, 75)
+        self.assertFalse(busy_trace)  # neither overlapping trigger collected, committed or published
+        self.assertIn("trigger=windows-task-continuity state=lock_busy_noop", log)
+        self.assertEqual(after.returncode, 0)
+        self.assertEqual(lines.count("collect --commit-existing"), 1)
+        self.assertEqual(sum(line.startswith("publish ") for line in lines), 1)
 
     def test_wrapper_normalizes_reboot_lock_contention(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:

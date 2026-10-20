@@ -239,7 +239,7 @@ class ConsumerBoundaryTests(unittest.TestCase):
         self.assertEqual(view["collection"], {"status": "failure", "last_error": "outputs_failed:schema_validation_outcomes_enum:environment", "observed_at": "2026-09-09T03:31:00Z"})
         publication = dict(view["publication"])
         detail = publication.pop("detail")
-        self.assertEqual(publication, {"status": "failure", "last_success_at": "2026-09-08T08:18:46Z", "last_attempt_at": "2026-09-09T04:08:56Z", "reason": "collect_failed"})
+        self.assertEqual(publication, {"status": "failure", "last_success_at": "2026-09-08T08:18:46Z", "last_attempt_at": "2026-09-09T04:08:56Z", "reason": "collect_failed", "stage": None, "detail_code": None})
         self.assertIn("collect_failed", detail)
         self.assertEqual(without_record["publication"]["status"], "unknown")
         self.assertIsNone(without_record["publication"]["reason"])
@@ -248,6 +248,25 @@ class ConsumerBoundaryTests(unittest.TestCase):
         self.assertEqual(no_store["status"], "not-configured")
         self.assertEqual(no_store["collection"], {"status": "unknown", "last_error": None, "observed_at": None})
         self.assertEqual(no_store["publication"]["status"], "unknown")
+
+    def test_consumer_publication_names_stopped_stage_separately_from_collection(self) -> None:
+        import consumer
+
+        with tempfile.TemporaryDirectory() as temporary:
+            state = Path(temporary)
+            (state / "publish-status.json").write_text(json.dumps({"schema_version": 2, "status": "blocked", "reason": "collect_commit_failed", "stage": "commit", "detail": "repository_integrity:head_object_unreadable", "last_attempt_at": "2026-10-20T17:07:35+00:00", "last_success_at": "2026-10-17T01:07:07+00:00"}))
+            publication = consumer.publication_view(state)
+            (state / "publish-status.json").write_text(json.dumps({"status": "failure", "reason": "x", "stage": "elsewhere", "detail": "/private/path"}))
+            unsafe = consumer.publication_view(state)
+        self.assertEqual(publication["status"], "blocked")
+        self.assertEqual(publication["stage"], "commit")
+        self.assertEqual(publication["detail_code"], "repository_integrity:head_object_unreadable")
+        self.assertEqual(publication["last_success_at"], "2026-10-17T01:07:07Z")
+        self.assertIn("at commit stage: repository_integrity:head_object_unreadable", publication["detail"])
+        self.assertLessEqual(len(publication["detail"]), 300)
+        self.assertIsNone(unsafe["stage"])
+        self.assertIsNone(unsafe["detail_code"])
+        self.assertNotIn("/private/path", json.dumps(unsafe))
 
     def test_consumer_view_reports_generation_capacity_coverage_and_sessions_from_one_store(self) -> None:
         import consumer

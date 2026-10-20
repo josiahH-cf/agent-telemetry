@@ -229,7 +229,8 @@ python3 -m unittest discover -s tests -v
   successful only after its public outputs were written), publication and Pages
   state (a failed or blocked publication warns at once), Claude usage-capture
   health, both schedulers, the lock, prices,
-  schemas, store integrity, machine reconciliation, hooks, the tracked manifest,
+  schemas, store integrity, machine reconciliation, hooks, Git HEAD commit/tree
+  integrity, the tracked manifest,
   clock watermark, collection age, and disk state.
 - A normal collection transactionally updates the canonical store, full
   envelope, bounded page envelope, public/local machine tiers, current-day
@@ -240,6 +241,13 @@ python3 -m unittest discover -s tests -v
   already-generated snapshot.
 - `./run-telemetry.sh publish manual` runs the production collect, scrub,
   generated-only commit, fetch/reconcile, push, and queued Pages-check path.
+  Each run logs one `stages collect=… scrub=… commit=… publish=…` line, and
+  `publish-status.json` records the stopped `stage` and a sanitized `detail`.
+  A successful collection or new generation is not a commit, and a commit is
+  not a published remote revision. An empty or unreadable HEAD commit/tree
+  blocks the commit and publish stages as `repository_integrity:<reason>`;
+  nothing is staged, repaired, reset, or pushed, and collection keeps running.
+  Recover such a checkout only through a preserved, separately owned recovery.
 - `python3 collect.py --rebuild` reconstructs a fresh store from read-only
   sources and swaps it in only after integrity succeeds. Use it only to repair
   cache/store state; it is slower than an incremental run.

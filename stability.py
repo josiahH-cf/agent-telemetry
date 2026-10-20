@@ -516,13 +516,18 @@ def _publish_status(state_root: Path, now: dt.datetime) -> tuple[str, str]:
     """A failed or blocked publication is a warning immediately, not only once its last success is old."""
     value = _read_json_object(state_root / "publish-status.json")
     success = parse_timestamp(value.get("last_success_at"))
-    if not success:
-        return "warn", "no_success_recorded"
-    age = max(0.0, (now - success).total_seconds() / 3600)
-    age_detail = f"last_success_age_hours_{rounded(age, 1)}"
     publish_state = str(value.get("status") or "")
+    if success:
+        age = max(0.0, (now - success).total_seconds() / 3600)
+        age_detail = f"last_success_age_hours_{rounded(age, 1)}"
+    elif publish_state not in {"failure", "blocked"}:
+        return "warn", "no_success_recorded"
+    else:
+        age, age_detail = 0.0, "no_success_recorded"
     if publish_state in {"failure", "blocked"}:
-        return "warn", f"status_{publish_state}_reason_{_safe_detail(value.get('reason'))}_{age_detail}"
+        stage = f"_stage_{_safe_detail(value.get('stage'))}" if value.get("stage") else ""
+        cause = f"_detail_{_safe_detail(value.get('detail'))}" if value.get("detail") else ""
+        return "warn", f"status_{publish_state}_reason_{_safe_detail(value.get('reason'))}{stage}{cause}_{age_detail}"
     status = "warn" if age * 60 > cadence.PUBLISH_STALE_MINUTES else "ok"
     return status, age_detail
 
@@ -776,6 +781,51 @@ def _git_hooks_status(project_root: Path) -> tuple[str, str]:
     return "ok", "path_and_two_executable_hooks_ok"
 
 
+REPOSITORY_INTEGRITY_PROBES = (
+    (("rev-parse", "--git-dir"), "not_a_repository", None),
+    (("rev-parse", "--verify", "--quiet", "HEAD"), "head_unresolvable", None),
+    (("cat-file", "-t", "HEAD"), "head_object_unreadable", "commit"),
+    (("cat-file", "-t", "HEAD^{tree}"), "head_tree_unreadable", "tree"),
+)
+OBJECT_ID_RE = re.compile(r"^[0-9a-f]{40}(?:[0-9a-f]{24})?$")
+
+
+def repository_integrity(project_root: Path) -> dict[str, Any]:
+    """Read-only HEAD commit/tree preflight for the generated commit and publish stages.
+
+    An empty or unreadable HEAD object otherwise makes Git compare the index with
+    nothing and report every tracked path as staged. Git's own stderr names object
+    paths, so only a fixed reason is returned. Nothing is repaired here: a damaged
+    checkout stays intact for its recovery owner.
+    """
+    head = None
+    for args, reason, expected in REPOSITORY_INTEGRITY_PROBES:
+        try:
+            result = subprocess.run(
+                ["git", "-C", str(project_root), *args],
+                check=False,
+                text=True,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                timeout=10,
+            )
+        except (OSError, subprocess.TimeoutExpired):
+            return {"status": "unavailable", "reason": "git_unavailable", "head": head}
+        output = result.stdout.strip()
+        if result.returncode or result.stderr.strip() or (expected is not None and output != expected):
+            return {"status": "invalid", "reason": reason, "head": head}
+        if reason == "head_unresolvable":
+            head = output if OBJECT_ID_RE.fullmatch(output) else None
+    return {"status": "ok", "reason": "head_commit_and_tree_readable", "head": head}
+
+
+def _repository_integrity_status(project_root: Path) -> tuple[str, str]:
+    value = repository_integrity(project_root)
+    if value["status"] == "ok":
+        return "ok", value["reason"]
+    return ("fail" if value["status"] == "invalid" else "warn"), value["reason"]
+
+
 def run_doctor(
     config: dict[str, Any],
     project_root: Path,
@@ -833,6 +883,7 @@ def run_doctor(
     add("reconciliation", reconcile_status, reconcile_detail)
     hooks_status, hooks_detail = _git_hooks_status(project_root)
     add("git_hooks", hooks_status, hooks_detail)
+    add("git_integrity", *_repository_integrity_status(project_root))
 
     try:
         manifest = tracked_manifest_violations(project_root)

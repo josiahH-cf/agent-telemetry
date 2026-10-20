@@ -167,6 +167,10 @@ def publish(
     branch: str = "main",
     retry_delays: tuple[float, ...] = (0.0, 2.0, 5.0),
 ) -> dict[str, Any]:
+    integrity = stability.repository_integrity(repo)
+    if integrity["status"] != "ok":
+        # Fetching, reconciling or pushing from a damaged HEAD could not be truthful.
+        raise PublishFailure(f"repository_integrity:{integrity['reason']}", blocked=True)
     current_branch = text(git(repo, ["branch", "--show-current"], timeout=10))
     if current_branch != branch:
         raise PublishFailure("unexpected_branch", blocked=True)
@@ -214,17 +218,17 @@ def main(argv: list[str] | None = None) -> int:
         return 5
     violations = collect.repository_scrub_violations(repo)
     if violations:
-        collect.record_publish_state(state_root, "blocked", "scrub_gate")
+        collect.record_publish_state(state_root, "blocked", "scrub_gate", stage="publish")
         print("[publish] blocked: scrub_gate", file=sys.stderr)
         return 4
-    collect.record_publish_state(state_root, "pending", "scheduled_push")
+    collect.record_publish_state(state_root, "pending", "scheduled_push", stage="publish")
     try:
         result = publish(repo, remote=args.remote, branch=args.branch, retry_delays=delays)
     except PublishFailure as exc:
-        collect.record_publish_state(state_root, "blocked" if exc.blocked else "failure", exc.code)
+        collect.record_publish_state(state_root, "blocked" if exc.blocked else "failure", exc.code, stage="publish")
         print(f"[publish] {'blocked' if exc.blocked else 'failure'}: {exc.code}", file=sys.stderr)
         return 4 if exc.blocked else 5
-    collect.record_publish_state(state_root, "success", result["reason"])
+    collect.record_publish_state(state_root, "success", result["reason"], stage="publish")
     collect.request_pages_check(state_root, result["commit"])
     print(
         f"[publish] success: {result['reason']} attempts={result['attempts']} "

@@ -47,6 +47,7 @@ STALE_AFTER_SECONDS = 2 * 3600
 MAX_SESSIONS = 200
 MAX_ATTENTION_INTERVALS = 50
 PUBLICATION_STATUSES = {"success", "failure", "blocked", "pending"}
+PUBLICATION_STAGES = {"collect", "scrub", "commit", "publish"}
 COLLECTION_STATUSES = {"success", "failure"}
 UNKNOWN_COLLECTION = {"status": "unknown", "last_error": None, "observed_at": None}
 
@@ -96,7 +97,7 @@ def collection_view(connection: sqlite3.Connection) -> dict[str, Any]:
 def publication_view(state_root: Path) -> dict[str, Any]:
     """Publication health from the state root's publish-status record; never raises."""
 
-    unknown = {"status": "unknown", "last_success_at": None, "last_attempt_at": None, "reason": None, "detail": "no publish-status record in the telemetry state root"}
+    unknown = {"status": "unknown", "last_success_at": None, "last_attempt_at": None, "reason": None, "stage": None, "detail_code": None, "detail": "no publish-status record in the telemetry state root"}
     try:
         value = json.loads((state_root / "publish-status.json").read_text(encoding="utf-8"))
     except (OSError, ValueError):
@@ -109,11 +110,15 @@ def publication_view(state_root: Path) -> dict[str, Any]:
     reason = usage.safe_identifier(value.get("reason"), "") or None
     last_success_at = _iso(usage.parse_timestamp(value.get("last_success_at")))
     last_attempt_at = _iso(usage.parse_timestamp(value.get("last_attempt_at")))
+    stage = value.get("stage") if value.get("stage") in PUBLICATION_STAGES else None
+    detail_code = usage.safe_identifier(value.get("detail"), "") or None
     detail = f"publication {status}" + (f" ({reason})" if reason else "")
+    if stage:
+        detail += f" at {stage} stage" + (f": {detail_code}" if detail_code else "")
     detail += f"; last success {last_success_at}" if last_success_at else "; no successful publication recorded"
     if last_attempt_at:
         detail += f"; last attempt {last_attempt_at}"
-    return {"status": status, "last_success_at": last_success_at, "last_attempt_at": last_attempt_at, "reason": reason, "detail": detail}
+    return {"status": status, "last_success_at": last_success_at, "last_attempt_at": last_attempt_at, "reason": reason, "stage": stage, "detail_code": detail_code, "detail": detail}
 
 
 def _age_status(finished_at: str | None, now: dt.datetime) -> str:

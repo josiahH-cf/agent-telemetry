@@ -85,25 +85,56 @@ if ! python3 "$PROJECT_ROOT/collect.py" --capture-claude-usage; then
     printf '%s claude_usage_capture=degraded\n' "$(date -u +%Y-%m-%dT%H:%M:%SZ)"
 fi
 
+# Each stage is reported separately: a successful collection is not a commit,
+# and a commit is not a published remote revision.
 RESULT=0
+COLLECT_STAGE=failed
+SCRUB_STAGE=not_run
+COMMIT_STAGE=not_run
+PUBLISH_STAGE=not_run
 if [ "$PUBLISH" -eq 1 ]; then
     if ! python3 "$PROJECT_ROOT/collect.py"; then
-        python3 "$PROJECT_ROOT/collect.py" --record-publish failure --publish-reason collect_failed
+        python3 "$PROJECT_ROOT/collect.py" --record-publish failure --publish-reason collect_failed --publish-stage collect
         RESULT=2
-    elif ! python3 "$PROJECT_ROOT/collect.py" --scrub; then
-        python3 "$PROJECT_ROOT/collect.py" --record-publish blocked --publish-reason scrub_gate
-        RESULT=3
-    elif ! python3 "$PROJECT_ROOT/collect.py" --commit-existing; then
-        python3 "$PROJECT_ROOT/collect.py" --record-publish failure --publish-reason collect_commit_failed
-        RESULT=4
-    elif ! python3 "$PROJECT_ROOT/publish.py" --repo "$PROJECT_ROOT" --state-root "$STATE_ROOT"; then
-        RESULT=5
+    else
+        COLLECT_STAGE=ok
+        SCRUB_STAGE=blocked
+        if ! python3 "$PROJECT_ROOT/collect.py" --scrub; then
+            python3 "$PROJECT_ROOT/collect.py" --record-publish blocked --publish-reason scrub_gate --publish-stage scrub
+            RESULT=3
+        else
+            SCRUB_STAGE=ok
+            python3 "$PROJECT_ROOT/collect.py" --commit-existing
+            COMMIT_RESULT=$?
+            if [ "$COMMIT_RESULT" -ne 0 ]; then
+                COMMIT_STAGE=failed
+                # Exit 4 means the commit stage already recorded its named cause.
+                if [ "$COMMIT_RESULT" -ne 4 ]; then
+                    python3 "$PROJECT_ROOT/collect.py" --record-publish failure --publish-reason collect_commit_failed --publish-stage commit
+                fi
+                RESULT=4
+            else
+                COMMIT_STAGE=ok
+                if ! python3 "$PROJECT_ROOT/publish.py" --repo "$PROJECT_ROOT" --state-root "$STATE_ROOT"; then
+                    PUBLISH_STAGE=failed
+                    RESULT=5
+                else
+                    PUBLISH_STAGE=ok
+                fi
+            fi
+        fi
     fi
 else
+    SCRUB_STAGE=not_due
+    COMMIT_STAGE=not_due
+    PUBLISH_STAGE=not_due
     if ! python3 "$PROJECT_ROOT/collect.py"; then
         RESULT=2
+    else
+        COLLECT_STAGE=ok
     fi
 fi
 
+printf '%s stages collect=%s scrub=%s commit=%s publish=%s\n' "$(date -u +%Y-%m-%dT%H:%M:%SZ)" "$COLLECT_STAGE" "$SCRUB_STAGE" "$COMMIT_STAGE" "$PUBLISH_STAGE"
 printf '%s mode=%s trigger=%s finish exit=%s\n' "$(date -u +%Y-%m-%dT%H:%M:%SZ)" "$MODE" "$TRIGGER" "$RESULT"
 exit "$RESULT"

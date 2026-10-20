@@ -1,11 +1,16 @@
 from __future__ import annotations
 
+import contextlib
+import io
+import json
 import subprocess
 import tempfile
 import unittest
 from pathlib import Path
 
+import collect
 import publish
+import stability
 
 
 def run(repo: Path, *args: str) -> str:
@@ -49,6 +54,92 @@ class PublishFixture:
         subprocess.run(["git", "clone", str(self.remote), str(self.peer)], check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
         identity(self.local)
         identity(self.peer)
+
+
+def empty_head_object(repo: Path) -> tuple[str, Path]:
+    """Reproduce the observed damage: HEAD names a loose commit whose object file is empty."""
+    head = run(repo, "rev-parse", "HEAD")
+    path = repo / ".git" / "objects" / head[:2] / head[2:]
+    path.chmod(0o644)
+    path.write_bytes(b"")
+    return head, path
+
+
+class RepositoryIntegrityTests(unittest.TestCase):
+    def test_preflight_names_healthy_unborn_plain_and_empty_head_without_repair(self) -> None:
+        with tempfile.TemporaryDirectory(dir="/tmp") as temporary:
+            root = Path(temporary)
+            fixture = PublishFixture(root)
+            healthy = stability.repository_integrity(fixture.local)
+            healthy_head = run(fixture.local, "rev-parse", "HEAD")
+            unborn = root / "unborn"
+            subprocess.run(["git", "init", "-b", "main", str(unborn)], check=True, stdout=subprocess.DEVNULL)
+            plain = root / "plain"
+            plain.mkdir()
+            commit_file(fixture.local, "data/telemetry.json", "{\"side\":\"local\"}\n", "collect: local")
+            head, path = empty_head_object(fixture.local)
+            damaged = stability.repository_integrity(fixture.local)
+            object_bytes = path.read_bytes()
+            unborn_result = stability.repository_integrity(unborn)
+            plain_result = stability.repository_integrity(plain)
+        self.assertEqual(healthy, {"status": "ok", "reason": "head_commit_and_tree_readable", "head": healthy_head})
+        self.assertEqual(damaged, {"status": "invalid", "reason": "head_object_unreadable", "head": head})
+        self.assertEqual(object_bytes, b"")  # preserved for the recovery owner, never rewritten
+        self.assertEqual(unborn_result["reason"], "head_unresolvable")
+        self.assertEqual(plain_result["reason"], "not_a_repository")
+        self.assertNotIn(temporary, json.dumps([healthy, damaged, unborn_result, plain_result]))
+
+    def test_empty_head_blocks_commit_and_publish_stages_without_staging_or_pushing(self) -> None:
+        with tempfile.TemporaryDirectory(dir="/tmp") as temporary:
+            root = Path(temporary)
+            fixture = PublishFixture(root)
+            commit_file(fixture.local, "data/telemetry.json", "{\"side\":\"local\"}\n", "collect: local")
+            remote_before = run(fixture.remote, "rev-parse", "refs/heads/main")
+            head, path = empty_head_object(fixture.local)
+            (fixture.local / "data" / "telemetry.json").write_text(json.dumps({"collection": {"date": "2026-10-20"}}), encoding="utf-8")
+            index_before = (fixture.local / ".git" / "index").read_bytes()
+            with self.assertRaises(collect.CommitBlocked) as commit_raised:
+                collect.commit_existing_generated(fixture.local)
+            with self.assertRaises(publish.PublishFailure) as publish_raised:
+                publish.publish(fixture.local, retry_delays=(0,))
+            state = root / "state"
+            config = root / "config.json"
+            config.write_text(json.dumps({"sources": {}, "cache_root": str(state)}), encoding="utf-8")
+            with contextlib.redirect_stderr(io.StringIO()) as stderr:
+                exit_code = collect.main(["--commit-existing", "--project-root", str(fixture.local), "--config", str(config)])
+            recorded = json.loads((state / "publish-status.json").read_text(encoding="utf-8"))
+            ref_after = (fixture.local / ".git" / "refs" / "heads" / "main").read_text(encoding="utf-8").strip()
+            index_after = (fixture.local / ".git" / "index").read_bytes()
+            remote_after = run(fixture.remote, "rev-parse", "refs/heads/main")
+            object_bytes = path.read_bytes()
+            doctor_detail = stability._publish_status(state, collect.parse_timestamp(recorded["last_attempt_at"]))
+        self.assertEqual(str(commit_raised.exception), "repository_integrity:head_object_unreadable")
+        self.assertEqual(publish_raised.exception.code, "repository_integrity:head_object_unreadable")
+        self.assertTrue(publish_raised.exception.blocked)
+        self.assertEqual(exit_code, 4)
+        self.assertIn("[git] commit blocked: repository_integrity:head_object_unreadable", stderr.getvalue())
+        self.assertEqual(
+            {key: recorded.get(key) for key in ("status", "reason", "stage", "detail")},
+            {"status": "blocked", "reason": "collect_commit_failed", "stage": "commit", "detail": "repository_integrity:head_object_unreadable"},
+        )
+        self.assertIsNone(recorded["last_success_at"])
+        self.assertIn("stage_commit_detail_repository_integrity:head_object_unreadable", doctor_detail[1])
+        self.assertEqual(ref_after, head)  # no forced ref movement
+        self.assertEqual(index_after, index_before)  # nothing staged
+        self.assertEqual(remote_after, remote_before)  # nothing pushed
+        self.assertEqual(object_bytes, b"")
+
+    def test_healthy_commit_stage_still_commits_generated_only(self) -> None:
+        with tempfile.TemporaryDirectory(dir="/tmp") as temporary:
+            fixture = PublishFixture(Path(temporary))
+            (fixture.local / "data" / "telemetry.json").write_text(
+                json.dumps({"collection": {"date": "2026-10-20"}, "metrics": {"observatory": {"totals": {"sessions": 3}}}}),
+                encoding="utf-8",
+            )
+            with contextlib.redirect_stdout(io.StringIO()):
+                collect.commit_existing_generated(fixture.local)
+            subject = run(fixture.local, "show", "-s", "--format=%s", "HEAD")
+        self.assertEqual(subject, "collect: 2026-10-20 3 sessions")
 
 
 class PublishTests(unittest.TestCase):

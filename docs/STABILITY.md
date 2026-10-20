@@ -1,5 +1,30 @@
 # Stability pass findings and retention report
 
+## ST-50 — A damaged HEAD was reported as a non-generated commit (2026-10-20)
+
+- **As found:** the installed checkout's HEAD named a loose commit whose object
+  file was empty. Collection kept succeeding every five minutes, but every due
+  publication since 2026-10-17 01:07 UTC stopped at the generated-only commit
+  with `collect_commit_failed`. Git compared the index with an unreadable tree,
+  reported every tracked path as staged, and still exited zero, so the guard
+  named the cause `staged_non_generated_content`. Doctor stayed silent on Git.
+- **Repair:** `stability.repository_integrity` is a read-only HEAD commit/tree
+  preflight returning only a fixed reason. The commit stage and `publish.py`
+  refuse a damaged checkout as blocked `repository_integrity:<reason>` before
+  staging, fetching or pushing; any Git stderr from the staged diff is treated
+  the same way. `--commit-existing` records its own named outcome and exits 4.
+  Publication records add `stage` and `detail`; the consumer adds `stage` and
+  `detail_code` and repeats both in its `detail` text. Doctor adds
+  `git_integrity` and names a failed or blocked publication even before any
+  success. The wrapper logs every stage result separately.
+- **Preservation:** the preflight never rewrites an object, ref or index. A
+  damaged checkout is repaired only by its separately owned, preserved recovery;
+  collection and last-good measurements continue meanwhile.
+- **Verification:** fixtures reproduce the empty HEAD object and prove the
+  object, ref, index and remote are unchanged; wrapper fixtures distinguish
+  collect, scrub, commit and publish failures; a real-lock fixture shows that
+  overlapping triggers neither collect nor commit twice.
+
 ## ST-49 — Native compaction accounting (expected behavior)
 
 - **Expected result:** count a Codex compaction only when a `compacted` marker
