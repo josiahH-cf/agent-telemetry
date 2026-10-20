@@ -607,7 +607,10 @@ def observation_rows(file_id: str, root: dict[str, Any], record: dict[str, Any])
             timestamp = raw[1] if isinstance(raw[1], str) else None
             total_snapshot = safe_int(raw[8])
             unique = f"{sid}\x00{timestamp}\x00{total_snapshot}" if timestamp else f"{file_id}\x00{index}\x00{total_snapshot}"
-            event_id = hashlib.sha256(f"openai\x00{unique}".encode()).hexdigest()
+            compaction_id = usage.codex_compaction_id(raw)
+            event_id = compaction_id or hashlib.sha256(f"openai\x00{unique}".encode()).hexdigest()
+            if compaction_id:
+                total_snapshot = None  # the response's raw total is retained in parser state, not a cumulative snapshot
             rows.append(
                 (
                     file_id, event_id, sid, vendor, host_os, raw[0] if isinstance(raw[0], str) else None,
@@ -779,7 +782,7 @@ def scan_one_root(
                 else:
                     reused += 1
                     connection.execute("UPDATE source_files SET last_scan_at=?,error_code=NULL WHERE file_id=?", (observed_at, file_id))
-                partial += int(bool(record.get("partial_line")))
+                partial += int(bool(record.get("partial_line") or record.get("unmatched_compactions")))
                 resets += int(bool(reset))
                 if fault_after_files is not None and index >= fault_after_files:
                     raise ObservatoryError("injected_interrupted_transaction")

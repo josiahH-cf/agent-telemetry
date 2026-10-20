@@ -212,6 +212,106 @@ class StoreTests(unittest.TestCase):
             connection.close()
         self.assertEqual(after, before)
 
+    def test_native_compaction_cross_root_dedup_and_passive_consumer_agree(self) -> None:
+        import consumer
+        from tests.test_usage import CodexAccountingRepairTests
+
+        fixture = CodexAccountingRepairTests()
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            config = fixture_config(root)
+            roots = {row["root_id"]: Path(str(row["path"])) for row in config["observatory"]["roots"]}
+            rows = fixture.header() + fixture.scenario()
+            copied = json.loads(json.dumps(rows))
+            # Response identity, rather than its copied observation time, owns compaction dedup.
+            for row in copied:
+                if row["type"] == "token_usage_record" and row["payload"]["response_id"] == "compact-one":
+                    row["timestamp"] = "2026-08-20T01:00:12Z"
+            write_lines(roots["wsl_codex"] / "native.jsonl", rows)
+            write_lines(roots["windows_codex"] / "native-copy.jsonl", copied)
+            now = dt.datetime(2026, 8, 20, 3, tzinfo=UTC)
+            summary, _ = observatory.collect_observatory(config, PROJECT_ROOT, loop_snapshot(), now)
+            state = Path(str(config["cache_root"]))
+            observatory.finish_run(state, None, "success", "ok")
+            store = state / observatory.STORE_NAME
+            before = (store.read_bytes(), store.stat().st_mtime_ns)
+            scope = {"days": 7, "sessions": [["openai", fixture.SESSION]]}
+            view = consumer.consumer_view(PROJECT_ROOT, state, scope, now=now)
+            repeated = consumer.consumer_view(PROJECT_ROOT, state, scope, now=now)
+            self.assertEqual((store.read_bytes(), store.stat().st_mtime_ns), before)
+            self.assertEqual(view["sessions"], repeated["sessions"])
+            self.assertEqual(view["sessions"][0]["tokens"], 295)
+            self.assertEqual(view["sessions"][0]["unpriced_tokens"], 295)
+            self.assertEqual(view["sessions"][0]["linkage"], "unattributed")
+            self.assertEqual(view["period"]["totals"]["tokens"], 295)
+            self.assertEqual(summary["observations"], {"raw": 6, "unique": 3, "deduplicated": 3})
+            self.assertEqual(summary["totals"]["sessions"], 1)
+            self.assertEqual(summary["by_vendor"]["openai"]["tokens"], 295)
+            self.assertEqual(summary["by_vendor"]["openai"]["unpriced_tokens"], 295)
+
+    def test_native_parser_upgrade_replaces_old_rows_without_store_rebuild(self) -> None:
+        from tests.test_usage import CodexAccountingRepairTests
+
+        fixture = CodexAccountingRepairTests()
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            config = fixture_config(root)
+            source = next(Path(str(row["path"])) for row in config["observatory"]["roots"] if row["root_id"] == "wsl_codex")
+            write_lines(source / "native.jsonl", fixture.header() + fixture.scenario())
+            now = dt.datetime(2026, 8, 20, 3, tzinfo=UTC)
+            observatory.collect_observatory(config, PROJECT_ROOT, loop_snapshot(), now)
+            state = Path(str(config["cache_root"]))
+            connection = observatory.connect_store(state / observatory.STORE_NAME)
+            root_spec = next(row for row in observatory.configured_roots(config) if row["root_id"] == "wsl_codex")
+            try:
+                old = json.loads(connection.execute("SELECT parser_state_json FROM source_files").fetchone()[0])
+                old.pop("codex_parser_version", None)
+                old["turns"] = [
+                    ["2026-08-20", "2026-08-20T01:00:03+00:00", fixture.MODEL, 100, 40, 0, 20, 8, 120],
+                    ["2026-08-20", "2026-08-20T01:00:06+00:00", fixture.MODEL, 100, 40, 0, 20, 8, 120],
+                ]
+                with connection:
+                    observatory.upsert_source_file(connection, root_spec, "native.jsonl", old, now.isoformat())
+                before = connection.execute("SELECT parser_state_json FROM source_files").fetchone()[0]
+                before_rows = [tuple(row) for row in connection.execute("SELECT * FROM usage_observations ORDER BY event_id")]
+                with self.assertRaises(observatory.ObservatoryError):
+                    observatory.scan_one_root(connection, root_spec, state, now, fault_after_files=1)
+                self.assertEqual(connection.execute("SELECT parser_state_json FROM source_files").fetchone()[0], before)
+                self.assertEqual([tuple(row) for row in connection.execute("SELECT * FROM usage_observations ORDER BY event_id")], before_rows)
+            finally:
+                connection.close()
+            corrected, scans = observatory.collect_observatory(config, PROJECT_ROOT, loop_snapshot(), now)
+            scan = next(row for row in scans if row["root_id"] == "wsl_codex")
+            self.assertEqual(scan["changed"], 1)
+            self.assertEqual(scan["cursor_resets"], 1)
+            self.assertEqual(corrected["by_vendor"]["openai"]["tokens"], 295)
+            unchanged, scans = observatory.collect_observatory(config, PROJECT_ROOT, loop_snapshot(), now)
+            self.assertEqual(unchanged["totals"], corrected["totals"])
+            self.assertTrue(all(row["changed"] == 0 for row in scans))
+
+    def test_missing_compaction_usage_is_partial_and_session_is_not_observed(self) -> None:
+        import consumer
+        from tests.test_usage import CodexAccountingRepairTests
+
+        fixture = CodexAccountingRepairTests()
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            config = fixture_config(root)
+            source = next(Path(str(row["path"])) for row in config["observatory"]["roots"] if row["root_id"] == "wsl_codex")
+            path = source / "native.jsonl"
+            rows = fixture.header() + [fixture.compact(2, "missing"), fixture.response(3, "missing", None)]
+            write_lines(path, rows)
+            now = dt.datetime(2026, 8, 20, 3, tzinfo=UTC)
+            _, scans = observatory.collect_observatory(config, PROJECT_ROOT, loop_snapshot(), now)
+            self.assertEqual(next(row for row in scans if row["root_id"] == "wsl_codex")["status"], "partial")
+            view = consumer.consumer_view(PROJECT_ROOT, Path(str(config["cache_root"])), {"sessions": [["openai", fixture.SESSION]]}, now=now)
+            self.assertEqual(view["sessions"][0]["status"], "not-observed")
+            self.assertNotIn("tokens", view["sessions"][0])
+            write_lines(path, rows + [fixture.response(4, "missing", fixture.counter(30, 4))])
+            summary, scans = observatory.collect_observatory(config, PROJECT_ROOT, loop_snapshot(), now)
+            self.assertEqual(next(row for row in scans if row["root_id"] == "wsl_codex")["status"], "ok")
+            self.assertEqual(summary["by_vendor"]["openai"]["tokens"], 34)
+
     def test_rebuild_equals_incremental_semantically(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary)

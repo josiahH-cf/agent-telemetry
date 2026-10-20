@@ -25,11 +25,12 @@ from typing import Any, Iterable
 
 SCHEMA_VERSION = 2
 CACHE_VERSION = 5
+CODEX_PARSER_VERSION = 1
 HISTORY_FROM = "2026-08-02"
 SAFE_IDENTIFIER_RE = re.compile(r"^[A-Za-z0-9][A-Za-z0-9_.:+-]{0,159}$")
 ROUND_RE = re.compile(r"^round(\d+)$")
 UUID_RE = re.compile(r"[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}", re.IGNORECASE)
-CODEX_MARKER_RE = re.compile(rb'"(?:session_meta|turn_context|token_count)"')
+CODEX_MARKER_RE = re.compile(rb'"(?:session_meta|turn_context|token_count|token_usage_record|compacted)"')
 CURSOR_FINGERPRINT_BYTES = 4096
 ANTHROPIC_KEYS = (
     "input_tokens",
@@ -677,15 +678,33 @@ def sanitize_rate_limits(value: Any, observed_at: str | None) -> dict[str, Any] 
     return output if found else None
 
 
+def codex_response_key(session: Any, response: Any) -> str | None:
+    if not isinstance(session, str) or not session or not isinstance(response, str):
+        return None
+    if not 0 < len(response) <= 256 or any(ord(char) < 32 for char in response):
+        return None
+    return hashlib.sha256(f"openai\x00{session}\x00response\x00{response}".encode()).hexdigest()
+
+
+def codex_compaction_id(turn: list[Any]) -> str | None:
+    metadata = turn[9] if len(turn) > 9 and isinstance(turn[9], dict) else {}
+    value = metadata.get("compaction_response_key")
+    return value if isinstance(value, str) and re.fullmatch(r"[0-9a-f]{64}", value) else None
+
+
 def scan_codex_file(path: Path, prior: dict[str, Any], requested: set[int], hinted_session: str | None) -> tuple[dict[str, Any], bool, str | None]:
     stat = path.stat()
+    parser_current = prior.get("codex_parser_version") == CODEX_PARSER_VERSION
+    reset_reason = cursor_resume_reason(path, prior, stat.st_size) if prior else None
+    if prior and not parser_current and reset_reason is None:
+        reset_reason = "codex_parser_upgrade"
     unchanged = prior.get("size") == stat.st_size and prior.get("mtime_ns") == stat.st_mtime_ns
     missing_old_prefix = any(str(offset) not in prior.get("prefixes", {}) and offset <= safe_int(prior.get("offset")) for offset in requested)
-    if unchanged and not missing_old_prefix:
+    if unchanged and not missing_old_prefix and reset_reason is None:
         return prior, False, None
-    reset_reason = cursor_resume_reason(path, prior, stat.st_size) if prior else None
     can_resume = (
         isinstance(prior.get("turns"), list)
+        and parser_current
         and stat.st_size >= safe_int(prior.get("offset"))
         and stat.st_size > safe_int(prior.get("offset"))
         and not missing_old_prefix
@@ -695,14 +714,19 @@ def scan_codex_file(path: Path, prior: dict[str, Any], requested: set[int], hint
         record = dict(prior)
         record["turns"] = list(prior.get("turns", []))
         record["prefixes"] = dict(prior.get("prefixes", {}))
+        record["responses"] = dict(prior.get("responses", {}))
         start = safe_int(prior.get("offset"))
     else:
         record = {
             "turns": [], "prefixes": {}, "session": hinted_session, "cwd": None, "first_ts": None,
             "last_ts": None, "model": "unknown", "total": zero_tokens("openai"), "rate_limits": None,
+            "codex_parser_version": CODEX_PARSER_VERSION, "responses": {}, "compactions": [],
+            "total_tokens": None, "last_total_tokens": None, "counter_timestamp": None,
         }
         start = 0
-    signatures = {f"{item[1]}:{item[-1]}" for item in record["turns"] if isinstance(item, list) and len(item) >= 9}
+    signatures = {(item[1], item[8]) for item in record["turns"] if isinstance(item, list) and len(item) >= 9 and not codex_compaction_id(item)}
+    compactions = set(record.get("compactions", []))
+    emitted = {codex_compaction_id(item) for item in record["turns"] if isinstance(item, list)}
     pending = {offset for offset in requested if str(offset) not in record["prefixes"]}
     offset = start
     partial_line = False
@@ -714,6 +738,14 @@ def scan_codex_file(path: Path, prior: dict[str, Any], requested: set[int], hint
             "aligned": aligned,
         }
         pending.discard(target)
+
+    def capture_compaction(key: str) -> None:
+        response = record["responses"].get(key)
+        if key in compactions and key not in emitted and isinstance(response, list):
+            # Keep the old nine-field turn layout. The additive private identity
+            # distinguishes a raw response total from an ordinary counter snapshot.
+            record["turns"].append([*response, {"compaction_response_key": key}])
+            emitted.add(key)
 
     with path.open("rb") as handle:
         if stat.st_size:
@@ -754,10 +786,28 @@ def scan_codex_file(path: Path, prior: dict[str, Any], requested: set[int], hint
                                 record["cwd"] = payload["cwd"]
                         elif obj.get("type") == "turn_context" and isinstance(payload.get("model"), str):
                             record["model"] = safe_identifier(payload["model"])
+                        elif obj.get("type") == "token_usage_record":
+                            key = codex_response_key(record.get("session"), payload.get("response_id"))
+                            raw = payload.get("usage")
+                            if key and payload.get("thread_id") == record.get("session") and isinstance(raw, dict):
+                                required = [raw.get(name) for name in ("input_tokens", "output_tokens", "total_tokens")]
+                                if all(type(value) is int and value >= 0 for value in required) and required[0] + required[1] == required[2]:
+                                    tokens = {name: safe_int(raw.get(name)) for name in OPENAI_KEYS}
+                                    tokens["cache_write_tokens"] = safe_int(raw.get("cache_write_input_tokens", raw.get("cache_write_tokens")))
+                                    if tokens["cached_input_tokens"] <= tokens["input_tokens"] and tokens["reasoning_output_tokens"] <= tokens["output_tokens"]:
+                                        record["responses"].setdefault(key, [event_day(timestamp) or "unknown", iso(parsed), safe_identifier(record.get("model")), *[tokens[name] for name in OPENAI_KEYS], required[2]])
+                                        capture_compaction(key)
+                        elif obj.get("type") == "compacted":
+                            key = codex_response_key(record.get("session"), payload.get("compaction_response_id"))
+                            if key:
+                                compactions.add(key)
+                                capture_compaction(key)
                         elif obj.get("type") == "event_msg" and payload.get("type") == "token_count":
                             info = payload.get("info") if isinstance(payload.get("info"), dict) else {}
                             total_raw = info.get("total_token_usage") if isinstance(info.get("total_token_usage"), dict) else None
                             last_raw = info.get("last_token_usage") if isinstance(info.get("last_token_usage"), dict) else None
+                            if last_raw is not None:
+                                record["last_total_tokens"] = safe_int(last_raw["total_tokens"]) if last_raw.get("total_tokens") is not None else None
                             if total_raw is not None:
                                 total = {
                                     "input_tokens": safe_int(total_raw.get("input_tokens")),
@@ -766,17 +816,24 @@ def scan_codex_file(path: Path, prior: dict[str, Any], requested: set[int], hint
                                     "output_tokens": safe_int(total_raw.get("output_tokens")),
                                     "reasoning_output_tokens": safe_int(total_raw.get("reasoning_output_tokens")),
                                 }
+                                previous = record.get("total", {})
+                                total_tokens = safe_int(total_raw.get("total_tokens"), total["input_tokens"] + total["output_tokens"])
+                                counter_reset = record.get("total_tokens") is not None and total_tokens < record["total_tokens"]
                                 if last_raw is None:
-                                    last = {key: max(0, total[key] - safe_int(record.get("total", {}).get(key))) for key in OPENAI_KEYS}
+                                    last = dict(total) if counter_reset else {key: max(0, total[key] - safe_int(previous.get(key))) for key in OPENAI_KEYS}
                                 else:
                                     last = {key: safe_int(last_raw.get(key)) for key in OPENAI_KEYS}
-                                total_tokens = safe_int(total_raw.get("total_tokens"), total["input_tokens"] + total["output_tokens"])
-                                signature = f"{timestamp}:{total_tokens}"
-                                if signature not in signatures:
-                                    day = event_day(timestamp) or "unknown"
-                                    record["turns"].append([day, iso(parsed), safe_identifier(record.get("model")), *[last[key] for key in OPENAI_KEYS], total_tokens])
-                                    signatures.add(signature)
-                                record["total"] = total
+                                signature = (iso(parsed), total_tokens)
+                                previous_time = parse_timestamp(record.get("counter_timestamp"))
+                                replay = signature in signatures or (parsed is not None and previous_time is not None and parsed < previous_time)
+                                if not replay:
+                                    if total != previous or total_tokens != record.get("total_tokens"):
+                                        day = event_day(timestamp) or "unknown"
+                                        record["turns"].append([day, iso(parsed), safe_identifier(record.get("model")), *[last[key] for key in OPENAI_KEYS], total_tokens])
+                                        signatures.add(signature)
+                                    record["total"] = total
+                                    record["total_tokens"] = total_tokens
+                                    record["counter_timestamp"] = parsed.isoformat() if parsed else None
                             limits = sanitize_rate_limits(payload.get("rate_limits"), timestamp)
                             if limits:
                                 record["rate_limits"] = limits
@@ -788,6 +845,8 @@ def scan_codex_file(path: Path, prior: dict[str, Any], requested: set[int], hint
     hashes = hash_prefixes(path, [value for value in requested if str(value) in record["prefixes"] and "sha256" not in record["prefixes"][str(value)]])
     for key, digest in hashes.items():
         record["prefixes"][key]["sha256"] = digest
+    record["compactions"] = sorted(compactions)
+    record["unmatched_compactions"] = len(compactions - set(record["responses"]))
     record.update(
         {
             "size": stat.st_size,
@@ -813,6 +872,7 @@ def scan_provider(
     reused = 0
     malformed = 0
     partial = 0
+    unmatched_compactions = 0
     cursor_resets: collections.Counter[str] = collections.Counter()
     enumeration_errors = 0
     try:
@@ -837,6 +897,7 @@ def scan_provider(
             scanned += int(changed)
             reused += int(not changed)
             partial += int(bool(record.get("partial_line")))
+            unmatched_compactions += safe_int(record.get("unmatched_compactions"))
             if reset_reason:
                 cursor_resets[safe_identifier(reset_reason)] += 1
         except (OSError, ValueError, TypeError, json.JSONDecodeError):
@@ -844,7 +905,7 @@ def scan_provider(
     missing_cached = sum(path not in seen_paths for path in records)
     cache["files"] = records
     atomic_json(cache_path, cache)
-    status = "absent" if not root_present and not records else "partial" if malformed or partial or missing_cached or enumeration_errors or cache_state in {"corrupt", "schema_mismatch"} or cursor_resets else "ok"
+    status = "absent" if not root_present and not records else "partial" if malformed or partial or unmatched_compactions or missing_cached or enumeration_errors or cache_state in {"corrupt", "schema_mismatch"} or cursor_resets else "ok"
     metadata = {
         "status": status,
         "available": bool(records) or (root_present and bool(files)),
@@ -859,6 +920,7 @@ def scan_provider(
             {"reason": reason, "count": count}
             for reason, count in (
                 ("partial_trailing_line", partial),
+                ("compaction_usage_unavailable", unmatched_compactions),
                 ("usage_file_malformed", malformed),
                 ("cached_source_missing", missing_cached),
                 ("root_missing", int(not root_present and not enumeration_errors)),

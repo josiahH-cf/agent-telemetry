@@ -119,6 +119,199 @@ class AnthropicUsageTests(unittest.TestCase):
         self.assertEqual(usage.model_totals_from_messages(record["messages"])["claude-future"]["output_tokens"], 4)
 
 
+class CodexAccountingRepairTests(unittest.TestCase):
+    """Synthetic metadata only: response compactions and stale native summaries."""
+
+    SESSION = "66666666-6666-4666-8666-666666666666"
+    MODEL = "fixture-unpriced-codex"
+
+    @classmethod
+    def header(cls) -> list[dict[str, object]]:
+        return [
+            {"timestamp": "2026-08-20T01:00:00Z", "type": "session_meta", "payload": {"id": cls.SESSION}},
+            {"timestamp": "2026-08-20T01:00:01Z", "type": "turn_context", "payload": {"model": cls.MODEL}},
+        ]
+
+    @staticmethod
+    def counter(input_tokens: int, output_tokens: int, cached: int = 0, reasoning: int = 0) -> dict[str, int]:
+        return {"input_tokens": input_tokens, "cached_input_tokens": cached,
+                "output_tokens": output_tokens, "reasoning_output_tokens": reasoning,
+                "total_tokens": input_tokens + output_tokens}
+
+    @classmethod
+    def summary(cls, second: int, total: dict[str, int], last: dict[str, int] | None) -> dict[str, object]:
+        info: dict[str, object] = {"total_token_usage": total}
+        if last is not None:
+            info["last_token_usage"] = last
+        return {"timestamp": f"2026-08-20T01:00:{second:02d}Z", "type": "event_msg",
+                "payload": {"type": "token_count", "info": info}}
+
+    @classmethod
+    def response(cls, second: int, response: str, counts: dict[str, int] | None) -> dict[str, object]:
+        return {"timestamp": f"2026-08-20T01:00:{second:02d}Z", "type": "token_usage_record",
+                "payload": {"thread_id": cls.SESSION, "turn_id": "fixture-turn",
+                            "response_id": response, "usage": counts}}
+
+    @staticmethod
+    def compact(second: int, response: str) -> dict[str, object]:
+        return {"timestamp": f"2026-08-20T01:00:{second:02d}Z", "type": "compacted",
+                "payload": {"turn_id": "fixture-turn", "compaction_response_id": response}}
+
+    def parse(self, rows: list[dict[str, object]]) -> dict[str, object]:
+        with tempfile.TemporaryDirectory() as temporary:
+            path = Path(temporary) / "synthetic.jsonl"
+            path.write_bytes(b"".join(line(row) for row in self.header() + rows))
+            record, _, _ = usage.scan_codex_file(path, {}, set(), self.SESSION)
+            return record
+
+    def tokens(self, record: dict[str, object]) -> dict[str, int]:
+        return usage.model_totals_from_turns(record["turns"]).get(self.MODEL, usage.zero_tokens("openai"))
+
+    def scenario(self) -> list[dict[str, object]]:
+        ordinary = self.counter(100, 20, 40, 8)
+        compaction = self.counter(50, 5, 30, 2)
+        return [self.response(2, "ordinary-one", ordinary), self.summary(3, ordinary, ordinary),
+                self.response(4, "compact-one", compaction), self.compact(5, "compact-one"),
+                self.summary(6, ordinary, ordinary),  # stale last usage at a newer time
+                self.response(7, "compact-one", compaction), self.compact(8, "compact-one"),
+                self.response(9, "ordinary-two", ordinary),
+                self.summary(10, self.counter(200, 40, 80, 16), ordinary)]
+
+    def test_response_identified_compaction_counts_once(self) -> None:
+        compaction = self.counter(50, 5, 30, 2)
+        record = self.parse([self.response(2, "compact-one", compaction),
+                             self.compact(3, "compact-one"), self.response(4, "compact-one", compaction),
+                             self.compact(5, "compact-one")])
+        self.assertEqual(self.tokens(record)["input_tokens"], 50)
+        self.assertEqual(self.tokens(record)["cached_input_tokens"], 30)
+        self.assertEqual(usage.token_total("openai", self.tokens(record)), 55)
+        self.assertEqual(len(record["turns"]), 1)
+
+    def test_stale_summary_does_not_mint_another_turn(self) -> None:
+        ordinary = self.counter(100, 20, 40, 8)
+        first = self.summary(3, ordinary, ordinary)
+        later = self.summary(8, ordinary, ordinary)
+        later["payload"]["rate_limits"] = {"primary": {"used_percent": 25, "window_minutes": 300}}
+        record = self.parse([first, first, later])
+        self.assertEqual(usage.token_total("openai", self.tokens(record)), 120)
+        self.assertEqual(len(record["turns"]), 1)
+        self.assertEqual(record["rate_limits"]["primary"]["remaining_percent"], 75)
+
+    def test_combined_native_accounting_preserves_subsets_and_unpriced_usage(self) -> None:
+        record = self.parse(self.scenario())
+        tokens = self.tokens(record)
+        self.assertEqual(tokens, {"input_tokens": 250, "cached_input_tokens": 110, "cache_write_tokens": 0,
+                                  "output_tokens": 45, "reasoning_output_tokens": 18})
+        self.assertEqual(usage.token_total("openai", tokens), 295)
+        self.assertEqual(usage.price_tokens("openai", self.MODEL, tokens, {"models": {}})["unpriced_tokens"], 295)
+
+    def test_zero_class_placeholder_retains_raw_last_total_without_spend(self) -> None:
+        ordinary = self.counter(100, 20)
+        placeholder = {**self.counter(0, 0), "total_tokens": 17}
+        record = self.parse([self.summary(2, ordinary, ordinary),
+                             self.response(3, "compact-one", self.counter(50, 5)),
+                             self.compact(4, "compact-one"), self.summary(5, ordinary, placeholder)])
+        self.assertEqual(usage.token_total("openai", self.tokens(record)), 175)
+        self.assertEqual(record["last_total_tokens"], 17)
+        self.assertEqual(usage.token_total("openai", record["total"]), 120)
+
+    def test_legacy_delta_and_reset_counters_do_not_dedupe_equal_sized_new_turns(self) -> None:
+        rows = [self.summary(2, self.counter(100, 20), None),
+                self.summary(3, self.counter(200, 40), None),
+                self.summary(4, self.counter(10, 2), None),  # counter reset, no last usage
+                self.summary(5, self.counter(20, 4), self.counter(10, 2)),
+                self.summary(6, self.counter(20, 4), self.counter(10, 2))]
+        record = self.parse(rows)
+        self.assertEqual(usage.token_total("openai", self.tokens(record)), 264)
+        self.assertEqual([turn[3] + turn[6] for turn in record["turns"]], [120, 120, 12, 12])
+
+    def test_every_append_boundary_and_torn_tail_agrees_with_fresh_parse(self) -> None:
+        rows = self.header() + self.scenario()
+        expected = self.parse(self.scenario())
+        with tempfile.TemporaryDirectory() as temporary:
+            path = Path(temporary) / "synthetic.jsonl"
+            for split in range(1, len(rows)):
+                with self.subTest(split=split):
+                    prefix = b"".join(line(row) for row in rows[:split])
+                    tail = b"".join(line(row) for row in rows[split:])
+                    path.write_bytes(prefix + tail[:13])
+                    prior, _, _ = usage.scan_codex_file(path, {}, {len(prefix)}, self.SESSION)
+                    self.assertTrue(prior["partial_line"])
+                    path.write_bytes(prefix + tail)
+                    resumed, _, reset = usage.scan_codex_file(path, prior, {len(prefix)}, self.SESSION)
+                    fresh, _, _ = usage.scan_codex_file(path, {}, {len(prefix)}, self.SESSION)
+                    self.assertIsNone(reset)
+                    self.assertEqual(resumed, fresh)
+                    self.assertEqual(self.tokens(resumed), self.tokens(expected))
+                    self.assertEqual(usage.token_total("openai", self.tokens(resumed)), 295)
+                    hit, changed, _ = usage.scan_codex_file(path, resumed, {len(prefix)}, self.SESSION)
+                    self.assertFalse(changed)
+                    self.assertEqual(hit, resumed)
+
+    def test_marker_before_usage_and_missing_usage_stay_pending_across_resume(self) -> None:
+        rows = [self.compact(2, "compact-later"), self.response(3, "compact-later", None)]
+        with tempfile.TemporaryDirectory() as temporary:
+            path = Path(temporary) / "synthetic.jsonl"
+            path.write_bytes(b"".join(line(row) for row in self.header() + rows))
+            prior, _, _ = usage.scan_codex_file(path, {}, set(), self.SESSION)
+            self.assertEqual(self.tokens(prior), usage.zero_tokens("openai"))
+            self.assertEqual(prior["unmatched_compactions"], 1)
+            with path.open("ab") as handle:
+                handle.write(line(self.response(4, "compact-later", self.counter(30, 4))))
+            resumed, _, _ = usage.scan_codex_file(path, prior, set(), self.SESSION)
+            fresh, _, _ = usage.scan_codex_file(path, {}, set(), self.SESSION)
+            self.assertEqual(resumed, fresh)
+            self.assertEqual(usage.token_total("openai", self.tokens(resumed)), 34)
+            self.assertEqual(resumed["unmatched_compactions"], 0)
+
+    def test_replayed_old_summary_cannot_move_the_counter_baseline_back(self) -> None:
+        first = self.summary(2, self.counter(100, 20), None)
+        rows = [first, self.summary(3, self.counter(200, 40), None), first,
+                self.summary(4, self.counter(210, 42), None)]
+        record = self.parse(rows)
+        self.assertEqual([turn[3] + turn[6] for turn in record["turns"]], [120, 120, 12])
+        self.assertEqual(usage.token_total("openai", self.tokens(record)), 252)
+
+    def test_response_cache_write_alias_and_session_identity_are_respected(self) -> None:
+        counts = {**self.counter(20, 3, 8, 2), "cache_write_input_tokens": 4}
+        foreign = self.response(2, "foreign", counts)
+        foreign["payload"]["thread_id"] = "different-fixture-session"
+        record = self.parse([foreign, self.compact(3, "foreign"),
+                             self.response(4, "compact-one", counts), self.compact(5, "compact-one")])
+        self.assertEqual(usage.token_total("openai", self.tokens(record)), 23)
+        self.assertEqual(self.tokens(record)["cache_write_tokens"], 4)
+        self.assertEqual(len(record["turns"]), 1)
+
+    def test_old_parser_state_reparses_unchanged_source_once(self) -> None:
+        ordinary = self.counter(100, 20)
+        with tempfile.TemporaryDirectory() as temporary:
+            path = Path(temporary) / "synthetic.jsonl"
+            path.write_bytes(b"".join(line(row) for row in self.header() + [self.summary(2, ordinary, ordinary)]))
+            old, _, _ = usage.scan_codex_file(path, {}, set(), self.SESSION)
+            old.pop("codex_parser_version", None)
+            old["turns"] = []  # prior parser's retained accounting is not authoritative
+            refreshed, changed, reset = usage.scan_codex_file(path, old, set(), self.SESSION)
+            self.assertTrue(changed)
+            self.assertEqual(reset, "codex_parser_upgrade")
+            self.assertEqual(usage.token_total("openai", self.tokens(refreshed)), 120)
+            _, changed, reset = usage.scan_codex_file(path, refreshed, set(), self.SESSION)
+            self.assertFalse(changed)
+            self.assertIsNone(reset)
+
+    def test_replaced_source_rebuilds_compaction_state_without_double_counting(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            path = Path(temporary) / "synthetic.jsonl"
+            original = self.header() + self.scenario()
+            path.write_bytes(b"".join(line(row) for row in original))
+            prior, _, _ = usage.scan_codex_file(path, {}, set(), self.SESSION)
+            path.write_bytes(b"".join(line(row) for row in self.header() + [
+                self.response(2, "replacement", self.counter(9, 1)), self.compact(3, "replacement")]))
+            record, changed, reset = usage.scan_codex_file(path, prior, set(), self.SESSION)
+            self.assertTrue(changed)
+            self.assertEqual(reset, "cursor_source_truncated")
+            self.assertEqual(usage.token_total("openai", self.tokens(record)), 10)
+
+
 class OpenAIUsageTests(unittest.TestCase):
     def test_full_scan_revisits_old_partition_when_session_resumes(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:

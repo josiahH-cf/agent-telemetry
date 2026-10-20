@@ -1,5 +1,58 @@
 # Stability pass findings and retention report
 
+## ST-49 — Native compaction accounting (expected behavior)
+
+- **Expected result:** count a Codex compaction only when a `compacted` marker
+  joins a `token_usage_record` by response identity within the same session.
+  Duplicate responses/markers must count once, including across configured
+  roots. Ordinary cumulative `token_count` summaries retain their existing event
+  identities; repeating an unchanged counter at a later timestamp adds no usage.
+  Equal-sized new turns with advancing counters still count. Legacy summaries,
+  cumulative-only records and counter resets remain supported.
+- **Preservation:** input plus output is measured usage; cached input and
+  reasoning output remain subsets. Raw reported totals (including nonzero
+  `last_token_usage.total_tokens` on zero-class placeholders) are metadata, not
+  extra measured tokens. Missing response usage is unavailable evidence, not an
+  observed zero. Unknown models remain unpriced and attribution stays qualified.
+- **Incrementality:** a fresh parse and append/resume must agree. Persist only
+  metadata needed to match responses/markers, including across incomplete tails.
+  Version the Codex parser state so an available old cached file is re-read once
+  through the existing transactional ingestion; retain last-good unavailable
+  sources. Preserve byte boundaries, fingerprints and prefix attribution.
+- **Boundary:** use the existing parser, observatory store and passive consumer.
+  No new collection trigger, scheduler, ledger, pricing policy or public schema.
+  Closed history remains byte-immutable; the existing output writer records
+  retroactive disagreements as current-day `coverage_correction` entries.
+  Qualification uses synthetic metadata only; source activation is separate.
+- **Qualification plan:** fail the two bug regressions before source repair;
+  check duplicate/reordered metadata, zero-class placeholders, legacy/reset
+  counters, torn tails, parser-state upgrade, cross-root deduplication and passive
+  consumer agreement. Then run unit discovery, scrub and one bounded seam review.
+- **Repair:** per-file Codex parser version 1 re-reads older available state once
+  without a store rebuild. Hashed session/response keys and allowlisted numeric
+  metadata join compactions across append boundaries; ordinary response records
+  are not a second charge beside their cumulative summaries. Unchanged counters
+  and replayed summaries cannot mint usage or move the delta baseline backward.
+  Missing compaction usage marks the source partial; an absent session remains
+  not observed. The ordinary event-id formula is unchanged. Compaction response
+  totals stay in private parser state; their SQL cumulative snapshot is null.
+- **Activation interface:** the source owner can install the qualified source
+  through the existing guarded delivery path, preserving the old checkout and
+  local state. The next ordinary locked collection re-reads available older
+  Codex parser states transactionally; a timeout rolls back that root and keeps
+  last-good evidence. Unavailable roots retain their prior accounting until
+  readable. Compare fresh-source totals, committed store observations and the
+  same-generation read-only consumer before declaring the installed measurement
+  repaired. Let the existing output writer report closed-date corrections; do
+  not delete cursors, rebuild live state or rewrite closed history to activate.
+- **Fail-first and review:** the 12 new parser/store regressions ran against the
+  unchanged parser and failed with 21 assertions (including append subtests).
+  The repaired parser then passed 48 focused tests. One bounded seam review
+  covered private response identity, ordinary event compatibility, numeric-only
+  retention, raw versus measured totals, cursor upgrades/rollback, prefix/tail
+  boundaries and passive consumer reads. It added explicit replay-baseline and
+  missing-evidence checks before the final required qualification.
+
 ## ST-48 — Dashboard clutter and exposed display identities (2026-10-02)
 
 - **Live review:** the default page foregrounded investment tables and an
