@@ -260,7 +260,11 @@ class DashboardEnvelopeTests(unittest.TestCase):
         real_shape = metric_catalog.surface_signature(real_page)
         large_shape = metric_catalog.surface_signature(large_page)
         for key in real_shape:
-            if key in ('attention_ledger_rows', 'economics_project_rows'):
+            if key == 'project_rank_rows':
+                # A sparse current window need not fill all six plus Other slots.
+                self.assertLessEqual(real_shape[key], metric_catalog.TOP_N + 1)
+                self.assertLessEqual(large_shape[key], metric_catalog.TOP_N + 1)
+            elif key in ('attention_ledger_rows', 'economics_project_rows'):
                 self.assertLessEqual(real_shape[key], 7)
                 self.assertLessEqual(large_shape[key], 7)
             elif key == 'economics_trend_buckets':
@@ -284,6 +288,32 @@ class DashboardEnvelopeTests(unittest.TestCase):
             self.assertEqual(provider["additional_windows"], 10)
             self.assertEqual(provider["windows"][0]["remaining_percent"], 0)
             self.assertEqual(provider["windows"][1]["remaining_percent"], 80)
+
+    def test_sparse_project_ranks_and_overflow_preserve_exact_membership_and_totals(self) -> None:
+        # One synthetic day gives project i exactly (i + 1) * 10 tokens.
+        cases = (
+            (0, [], [], 0),
+            (5, [4, 3, 2, 1, 0], [50, 40, 30, 20, 10], 150),
+            (9, [8, 7, 6, 5, 4, 3, "other"], [90, 80, 70, 60, 50, 40, 60], 450),
+        )
+        for project_count, members, expected_tokens, total in cases:
+            page = metric_catalog.build_page_envelope(synthetic_snapshot(projects=project_count, days=1, models=1, specs=0))
+            labels = [f"proj-{member:08d}" if isinstance(member, int) else member for member in members]
+            for key in ("7", "30", "90", "all"):
+                with self.subTest(projects=project_count, window=key):
+                    window = page["windows"][key]
+                    rows = window["top_projects"]
+                    self.assertLessEqual(len(rows), metric_catalog.TOP_N + 1)
+                    self.assertEqual(metric_catalog.surface_signature(page, key)["project_rank_rows"], len(members))
+                    self.assertEqual([row["label"] for row in rows], labels)
+                    self.assertEqual([row["tokens"] for row in rows], expected_tokens)
+                    self.assertEqual(window["project_count"], project_count)
+                    self.assertEqual(window["summary"]["tokens"], total)
+                    self.assertEqual(sum(row["tokens"] for row in rows), total)
+                    self.assertAlmostEqual(sum(row["cost_usd"] for row in rows), total / 1_000_000)
+                    if project_count == 9:
+                        self.assertEqual(rows[-1]["other_count"], 3)
+                        self.assertAlmostEqual(rows[-1]["cost_usd"], 0.00006)
 
     def test_catalog_pins_provider_cost_and_duration_traps(self) -> None:
         rows = {row["metric_id"]: row for row in metric_catalog.catalog_rows()}

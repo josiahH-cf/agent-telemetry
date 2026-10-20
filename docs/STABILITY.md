@@ -52,6 +52,17 @@
   retention, raw versus measured totals, cursor upgrades/rollback, prefix/tail
   boundaries and passive consumer reads. It added explicit replay-baseline and
   missing-evidence checks before the final required qualification.
+- **Qualification correction:** the unchanged upstream dashboard test required
+  seven project rows in a current window that contains five. Ranked projects
+  follow the existing six-plus-Other maximum, so the test must bound both real
+  and synthetic row counts without padding either input. Controlled empty,
+  five-project and overflow fixtures will check exact row counts, Other membership
+  and token/cost conservation. Fixed structural equalities and the existing
+  payload, refresh, provider and UTC checks remain. This correction changes only
+  the test and this note; parser/store source, production dashboard and generated
+  data stay byte-identical to the first private candidate. Freeze the complete
+  corrected tree before required unit discovery and scrub, and keep final test
+  evidence outside Git with the earlier failure and candidate intact.
 
 ## ST-48 — Dashboard clutter and exposed display identities (2026-10-02)
 
