@@ -63,6 +63,16 @@
   data stay byte-identical to the first private candidate. Freeze the complete
   corrected tree before required unit discovery and scrub, and keep final test
   evidence outside Git with the earlier failure and candidate intact.
+- **Delivery import boundary:** repository-owned `tools` helpers must resolve
+  locally in a fresh interpreter even when an unrelated regular `tools` package
+  is present later on `PYTHONPATH`. Make the local directory an explicit package
+  without eager imports or import-path rewrites. A synthetic competing-package
+  regression must fail before that repair and then verify local attention helper
+  identity throughout the collector, store and passive consumer import graph.
+  Classify the new package/test paths in the existing tracked allowlist. Freeze
+  the corrected tree before required unit discovery and scrub with the competing
+  runtime path present; preserve prior delivery failures and candidate commits.
+  Accounting, dashboard, pricing, generated data and live state stay unchanged.
 
 ## ST-48 — Dashboard clutter and exposed display identities (2026-10-02)
 
