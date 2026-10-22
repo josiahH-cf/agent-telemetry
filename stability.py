@@ -544,6 +544,9 @@ def _publish_status(state_root: Path, now: dt.datetime) -> tuple[str, str]:
         cause = f"_detail_{_safe_detail(value.get('detail'))}" if value.get("detail") else ""
         return "warn", f"status_{publish_state}_reason_{_safe_detail(value.get('reason'))}{stage}{cause}_{age_detail}"
     status = "warn" if age * 60 > cadence.PUBLISH_STALE_MINUTES else "ok"
+    if publish_state == "partial":
+        # A draining backlog is progress; its age still comes from the last full publication.
+        return status, f"status_partial_backlog_remaining_{_safe_detail(value.get('backlog_remaining'))}_{age_detail}"
     return status, age_detail
 
 

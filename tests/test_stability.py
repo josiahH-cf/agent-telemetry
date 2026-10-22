@@ -583,7 +583,7 @@ if args == ['--commit-existing'] and fail == 'commit_crash':
             """import os,sys
 with open(os.environ['TRACE'], 'a', encoding='utf-8') as handle:
     handle.write('publish ' + ' '.join(sys.argv[1:3]) + '\\n')
-raise SystemExit(5 if os.environ.get('FAIL_STAGE') == 'publish' else 0)
+raise SystemExit({'publish': 5, 'partial': 6}.get(os.environ.get('FAIL_STAGE'), 0))
 """,
             encoding="utf-8",
         )
@@ -596,6 +596,7 @@ raise SystemExit(5 if os.environ.get('FAIL_STAGE') == 'publish' else 0)
             "commit": (4, "collect=ok scrub=ok commit=failed publish=not_run", None),
             "commit_crash": (4, "collect=ok scrub=ok commit=failed publish=not_run", "--record-publish failure --publish-reason collect_commit_failed --publish-stage commit"),
             "publish": (5, "collect=ok scrub=ok commit=ok publish=failed", None),
+            "partial": (0, "collect=ok scrub=ok commit=ok publish=partial", None),
             "none": (0, "collect=ok scrub=ok commit=ok publish=ok", None),
         }
         for stage, (expected_exit, stages, record) in cases.items():
@@ -619,7 +620,7 @@ raise SystemExit(5 if os.environ.get('FAIL_STAGE') == 'publish' else 0)
                 records = [line for line in lines if "--record-publish" in line]
                 self.assertEqual(records, [f"collect {record}"] if record else [])
                 ran_publisher = any(line.startswith("publish ") for line in lines)
-                self.assertEqual(ran_publisher, stage in {"publish", "none"})
+                self.assertEqual(ran_publisher, stage in {"publish", "partial", "none"})
                 if stage in {"collect", "scrub"}:
                     self.assertNotIn("collect --commit-existing", lines)
 

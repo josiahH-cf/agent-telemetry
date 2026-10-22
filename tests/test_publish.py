@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import contextlib
+import datetime as dt
 import io
 import json
 import subprocess
@@ -11,6 +12,9 @@ from pathlib import Path
 import collect
 import publish
 import stability
+
+
+PROJECT_ROOT = Path(__file__).resolve().parents[1]
 
 
 def run(repo: Path, *args: str) -> str:
@@ -34,6 +38,20 @@ def commit_file(repo: Path, relative: str, content: str, message: str) -> None:
     path.write_text(content, encoding="utf-8")
     run(repo, "add", "--", relative)
     run(repo, "commit", "-m", message)
+
+
+def commit_series(repo: Path, count: int, label: str) -> list[str]:
+    commits = []
+    for index in range(count):
+        commit_file(repo, "data/telemetry.json", json.dumps({label: index}) + "\n", f"collect: {label} {index}")
+        commits.append(run(repo, "rev-parse", "HEAD"))
+    return commits
+
+
+def install_pre_push(repo: Path, body: str) -> None:
+    hook = repo / ".git" / "hooks" / "pre-push"
+    hook.write_text("#!/bin/sh\n" + body, encoding="utf-8")
+    hook.chmod(0o755)
 
 
 class PublishFixture:
@@ -203,6 +221,130 @@ class PublishTests(unittest.TestCase):
             result = publish.publish(fixture.local, retry_delays=(0,))
         self.assertEqual(result["status"], "success")
         self.assertEqual(result["reason"], "pushed")
+
+
+class BacklogDrainTests(unittest.TestCase):
+    def test_backlog_chunk_is_the_oldest_outbound_commits(self) -> None:
+        with tempfile.TemporaryDirectory(dir="/tmp") as temporary:
+            fixture = PublishFixture(Path(temporary))
+            base = run(fixture.local, "rev-parse", "HEAD")
+            commits = commit_series(fixture.local, 7, "chunk")
+            first = publish.backlog_chunk(fixture.local, base, commits[-1], 3)
+            second = publish.backlog_chunk(fixture.local, commits[2], commits[-1], 3)
+            at_limit = publish.backlog_chunk(fixture.local, base, commits[-1], 7)
+            one = publish.backlog_chunk(fixture.local, commits[-2], commits[-1], 1)
+            nothing = publish.backlog_chunk(fixture.local, commits[-1], commits[-1], 1)
+        self.assertEqual(first, (commits[2], 4))
+        self.assertEqual(second, (commits[5], 1))
+        self.assertIsNone(at_limit)  # a backlog that fits is pushed from main as before
+        self.assertIsNone(one)
+        self.assertIsNone(nothing)
+
+    def test_zero_or_one_outbound_commit_keeps_the_single_main_push(self) -> None:
+        with tempfile.TemporaryDirectory(dir="/tmp") as temporary:
+            root = Path(temporary)
+            fixture = PublishFixture(root)
+            log = root / "pre-push.log"
+            install_pre_push(fixture.local, f"cat >>'{log}'\n")
+            base = run(fixture.local, "rev-parse", "HEAD")
+            nothing = publish.publish(fixture.local, retry_delays=(0,), max_push_commits=1)
+            hook_ran_for_nothing = log.exists()
+            commit_file(fixture.local, "data/telemetry.json", "{\"one\":true}\n", "collect: one")
+            one = run(fixture.local, "rev-parse", "HEAD")
+            pushed = publish.publish(fixture.local, retry_delays=(0,), max_push_commits=1)
+            hook_lines = log.read_text(encoding="utf-8").splitlines()
+            remote_head = run(fixture.remote, "rev-parse", "refs/heads/main")
+        self.assertEqual(nothing, {"status": "success", "reason": "already_published", "attempts": 1, "reconciliation": "already_equal", "commit": base})
+        self.assertFalse(hook_ran_for_nothing)
+        self.assertEqual(pushed, {"status": "success", "reason": "pushed", "attempts": 1, "reconciliation": "local_fast_forward", "commit": one})
+        self.assertEqual(hook_lines, [f"refs/heads/main {one} refs/heads/main {base}"])
+        self.assertEqual(remote_head, one)
+
+    def test_partial_drain_records_backlog_and_repeats_until_caught_up(self) -> None:
+        import consumer
+
+        with tempfile.TemporaryDirectory(dir="/tmp") as temporary:
+            root = Path(temporary)
+            fixture = PublishFixture(root)
+            state = root / "state"
+            earlier = dt.datetime(2026, 10, 22, 8, 0, tzinfo=dt.timezone.utc)
+            seeded = collect.record_publish_state(state, "success", "pushed", now=earlier, stage="publish")
+            commits = commit_series(fixture.local, 7, "drain")
+            runs = []
+            for _ in range(3):
+                with contextlib.redirect_stdout(io.StringIO()) as stdout:
+                    exit_code = publish.main(
+                        ["--repo", str(fixture.local), "--state-root", str(state), "--retry-delays", "0", "--max-push-commits", "3"]
+                    )
+                recorded = json.loads((state / "publish-status.json").read_text(encoding="utf-8"))
+                pages = json.loads((state / "pages-check-request.json").read_text(encoding="utf-8"))
+                runs.append(
+                    {
+                        "exit": exit_code,
+                        "stdout": stdout.getvalue(),
+                        "recorded": recorded,
+                        "remote": run(fixture.remote, "rev-parse", "refs/heads/main"),
+                        "pages": pages["expected_commit"],
+                    }
+                )
+                if len(runs) == 1:
+                    now = earlier + dt.timedelta(hours=1)
+                    doctor = stability._publish_status(state, now)
+                    view = consumer.publication_view(state)
+                    due = collect.publish_due(state, now)
+        first, second, last = runs
+        self.assertEqual(first["exit"], publish.PARTIAL_EXIT)
+        self.assertEqual(
+            {key: first["recorded"].get(key) for key in ("status", "reason", "stage", "backlog_remaining", "last_success_at")},
+            {"status": "partial", "reason": "backlog_chunk_pushed", "stage": "publish", "backlog_remaining": 4, "last_success_at": seeded["last_success_at"]},
+        )
+        self.assertEqual(first["remote"], commits[2])  # only the oldest chunk left
+        self.assertEqual(first["pages"], commits[2])
+        self.assertIn("[publish] partial: backlog_chunk_pushed backlog_remaining=4", first["stdout"])
+        self.assertEqual(doctor, ("warn", "status_partial_backlog_remaining_4_last_success_age_hours_1.0"))
+        self.assertEqual(view["status"], "partial")
+        self.assertIn("4 commits still to publish", view["detail"])
+        self.assertTrue(due)  # the next slot keeps draining
+        self.assertEqual(second["exit"], publish.PARTIAL_EXIT)
+        self.assertEqual((second["recorded"]["backlog_remaining"], second["remote"]), (1, commits[5]))
+        self.assertEqual(second["recorded"]["last_success_at"], seeded["last_success_at"])
+        self.assertEqual(last["exit"], 0)
+        self.assertEqual((last["recorded"]["status"], last["recorded"]["reason"]), ("success", "pushed"))
+        self.assertNotIn("backlog_remaining", last["recorded"])
+        self.assertNotEqual(last["recorded"]["last_success_at"], seeded["last_success_at"])
+        self.assertEqual((last["remote"], last["pages"]), (commits[-1], commits[-1]))
+
+    def test_every_chunk_push_runs_the_real_pre_push_guard_over_its_commits(self) -> None:
+        with tempfile.TemporaryDirectory(dir="/tmp") as temporary:
+            root = Path(temporary)
+            fixture = PublishFixture(root)
+            run(fixture.local, "config", "user.email", "1+fixture" + "@" + "users.noreply.github.com")
+            (fixture.local / ".git" / "info" / "exclude").write_bytes((PROJECT_ROOT / ".gitignore").read_bytes())
+            log = root / "pre-push.log"
+            install_pre_push(fixture.local, f"tee -a '{log}' | python3 '{PROJECT_ROOT / 'git_guard.py'}' pre-push \"$@\"\n")
+            base = run(fixture.local, "rev-parse", "HEAD")
+            clean = commit_series(fixture.local, 3, "clean")
+            seeded = "private" + "@" + "example.invalid"
+            commit_file(fixture.local, "data/telemetry.json", json.dumps({"leak": seeded}) + "\n", "collect: leak")
+            leak = run(fixture.local, "rev-parse", "HEAD")
+            commit_file(fixture.local, "data/telemetry.json", "{\"leak\":null}\n", "collect: removed")
+            tip = run(fixture.local, "rev-parse", "HEAD")
+            chunk = publish.publish(fixture.local, retry_delays=(0,), max_push_commits=3)
+            after_chunk = run(fixture.remote, "rev-parse", "refs/heads/main")
+            with self.assertRaises(publish.PublishFailure) as raised:
+                publish.publish(fixture.local, retry_delays=(0,), max_push_commits=3)
+            after_block = run(fixture.remote, "rev-parse", "refs/heads/main")
+            hook_lines = log.read_text(encoding="utf-8").splitlines()
+            reachable = run(fixture.remote, "rev-list", "refs/heads/main").splitlines()
+        self.assertEqual((chunk["status"], chunk["commit"], chunk["backlog_remaining"]), ("partial", clean[-1], 2))
+        self.assertEqual(after_chunk, clean[-1])
+        self.assertEqual(
+            hook_lines,
+            [f"{clean[-1]} {clean[-1]} refs/heads/main {base}", f"refs/heads/main {tip} refs/heads/main {clean[-1]}"],
+        )
+        self.assertEqual(raised.exception.code, "push_retries_exhausted")  # the guard refused the later range
+        self.assertEqual(after_block, clean[-1])
+        self.assertNotIn(leak, reachable)
 
 
 if __name__ == "__main__":

@@ -1,5 +1,50 @@
 # Stability pass findings and retention report
 
+## ST-52 — A publication backlog could not drain on its own (2026-10-22)
+
+- **As found:** `publish.py` pushed all of local `main` in one `git push` with
+  a 60 s timeout. The pre-push guard scans every outbound commit. After an
+  outage of several hours, 190 commits took 396 s to push, so every five-minute
+  cycle failed with `git_timeout`, and each cycle added another commit. The
+  backlog was cleared by hand with one catch-up push held under `collect.lock`.
+- **Measurement:** the read-only guard was run at cron priority (`nice 10`, idle
+  I/O) against the installed checkout. It took 5.0 s for 1 commit, 13.9 s for
+  5, 27.6 s for 10 and 56.9 s for 20. That is about 2.5 s fixed plus 2.7 s per
+  commit, so twenty commits already reach the timeout.
+- **Design:** when local `main` is more than ten commits ahead and the remote is
+  an ancestor, one run pushes only the oldest ten commits, with
+  `git push origin <tenth commit>:refs/heads/main`. Each push stays at about
+  30 s. Every accepted chunk advances the remote, so a later failure loses at
+  most one chunk of work. Scaling the timeout instead was rejected for three
+  reasons. The lock would be held for as long as the backlog took (7 to 9
+  minutes for 190 commits, longer after a day). A late failure, repeated by
+  each retry, would discard the whole scan. And the timeout would depend on a
+  stored cost model that drifts with tree size and machine load. Zero, one, or
+  up to ten outbound commits push `refs/heads/main` exactly as before.
+- **Guard:** for a commit-id source, Git passes the id itself as the hook's
+  local ref, so the main-only rule refused every chunk. The guard now accepts
+  `main` or one of `main`'s own commits named by its full id. Fast-forward is
+  still required, every commit from the remote to the chunk is still scanned,
+  and a sibling commit, an abbreviated id, or a mismatched id is still refused.
+- **Status:** a chunk records `partial` with `backlog_remaining` and keeps the
+  last full success time, so publication stays due and freshness stays truthful.
+  The Pages check targets the pushed chunk. `publish.py` exits 6, and the
+  wrapper logs `publish=partial` with exit 0. Doctor names the remaining backlog
+  under the existing age rule, and the consumer reports `partial` with the count
+  in its detail. Draining runs at nine net commits per five-minute slot, so a
+  190-commit backlog clears in about 1 hour 45 minutes.
+- **Verification:** bare-repository fixtures cover chunk selection, a
+  three-run drain to completion with the recorded status, doctor, consumer and
+  due-slot reads, and unchanged single pushes for zero and one outbound commits.
+  A fixture runs the real guard as the hook: the first chunk passes, and the
+  next range, which holds a planted and later removed leak, is refused without
+  reaching the remote. Guard unit tests cover the accepted and refused sources,
+  and the wrapper fixture covers the `partial` stage. A mutation pass broke each
+  part in turn (guard acceptance, ancestry check, chunk selection and offset,
+  pushed source, recorded status, wrapper mapping, doctor detail) and also
+  replaced the planted leak with harmless text; a test failed for each of the
+  nine.
+
 ## ST-51 — Measurement producer: pricing, attribution, lineage, intent and freshness (2026-10-20)
 
 - **Pricing coverage:** a read-only pass over the private store at generation

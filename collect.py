@@ -3035,6 +3035,7 @@ def record_publish_state(
     *,
     stage: str | None = None,
     detail: str | None = None,
+    backlog_remaining: int | None = None,
 ) -> dict[str, Any]:
     """Record one publication outcome; optional stage/detail name where and why it stopped."""
     now = now or utc_now()
@@ -3063,6 +3064,8 @@ def record_publish_state(
         value["stage"] = stage
     if detail:
         value["detail"] = safe_identifier(detail)
+    if backlog_remaining is not None:
+        value["backlog_remaining"] = max(0, safe_int(backlog_remaining))
     atomic_write(cache_root / "publish-status.json", json_text(value))
     return value
 
