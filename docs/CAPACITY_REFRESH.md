@@ -50,7 +50,9 @@ intervals in minutes. All existing public paths, schemas and metric ids remain.
 Publication is due when the UTC five-minute bucket is newer than the last
 successful push's bucket. A two-minute run therefore does not postpone the next
 slot to ten minutes. Failure retains last success and retries through the same
-guarded route; a busy lock prevents overlapping collectors. The daily publication
+guarded route; a busy lock prevents overlapping collectors. A pushed backlog
+chunk is recorded as `partial` and also retains the last full success, so the
+next slot stays due until local `main` is published. The daily publication
 entry remains a recovery backstop.
 
 Wrapper starts record `cadence_minutes=5`. The cadence parser interprets earlier

@@ -115,11 +115,16 @@ if [ "$PUBLISH" -eq 1 ]; then
                 RESULT=4
             else
                 COMMIT_STAGE=ok
-                if ! python3 "$PROJECT_ROOT/publish.py" --repo "$PROJECT_ROOT" --state-root "$STATE_ROOT"; then
+                python3 "$PROJECT_ROOT/publish.py" --repo "$PROJECT_ROOT" --state-root "$STATE_ROOT"
+                PUBLISH_RESULT=$?
+                if [ "$PUBLISH_RESULT" -eq 0 ]; then
+                    PUBLISH_STAGE=ok
+                elif [ "$PUBLISH_RESULT" -eq 6 ]; then
+                    # Exit 6 pushed the oldest backlog chunk; the next slot continues.
+                    PUBLISH_STAGE=partial
+                else
                     PUBLISH_STAGE=failed
                     RESULT=5
-                else
-                    PUBLISH_STAGE=ok
                 fi
             fi
         fi

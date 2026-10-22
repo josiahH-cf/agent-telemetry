@@ -173,6 +173,29 @@ def _outbound_commits(root: Path, local_oid: str, remote_oid: str) -> list[str]:
     return [line for line in raw.decode("ascii", errors="replace").splitlines() if line]
 
 
+def _main_source(root: Path, local_ref: str, local_oid: str) -> bool:
+    """Accept main itself, or one of main's own commits named by its id.
+
+    The publisher drains a backlog by pushing main's oldest commits in bounded
+    chunks; such a source can only send history main would send anyway.
+    """
+    if local_ref == "refs/heads/main":
+        return True
+    if local_ref != local_oid or local_oid in ZERO_OIDS:
+        return False
+    try:
+        subprocess.run(
+            ["git", "-C", str(root), "merge-base", "--is-ancestor", local_oid, "refs/heads/main"],
+            check=True,
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+            timeout=10,
+        )
+    except (OSError, subprocess.CalledProcessError, subprocess.TimeoutExpired):
+        return False
+    return True
+
+
 def _commit_identities_ok(root: Path, commit: str) -> bool:
     raw = _git(root, "show", "-s", "--format=%ae%x00%ce", commit)
     identities = raw.decode("utf-8", errors="replace").strip().split("\0")
@@ -259,7 +282,7 @@ def pre_push(root: Path, stdin_text: str) -> None:
     updates = _parse_push_updates(stdin_text)
     outbound: list[str] = []
     for local_ref, local_oid, remote_ref, remote_oid in updates:
-        if local_ref != "refs/heads/main" or remote_ref != "refs/heads/main":
+        if remote_ref != "refs/heads/main" or not _main_source(root, local_ref, local_oid):
             raise GuardFailure("main_only_push_required")
         if local_oid in ZERO_OIDS:
             raise GuardFailure("branch_deletion_forbidden")

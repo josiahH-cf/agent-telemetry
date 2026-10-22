@@ -150,6 +150,49 @@ class GitGuardTests(unittest.TestCase):
             with self.assertRaisesRegex(git_guard.GuardFailure, "fast_forward_required"):
                 git_guard.pre_push(root, f"refs/heads/main {local} refs/heads/main {sibling}\n")
 
+    def test_pre_push_accepts_only_mains_own_commit_by_id_and_still_scans_its_range(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            init_repo(root)
+
+            def commit(content: str, message: str) -> str:
+                (root / "README.md").write_text(content, encoding="utf-8")
+                subprocess.run(["git", "-C", str(root), "add", "--", "README.md"], check=True)
+                subprocess.run(["git", "-C", str(root), "commit", "--no-verify", "-m", message], check=True, stdout=subprocess.DEVNULL)
+                return subprocess.run(
+                    ["git", "-C", str(root), "rev-parse", "HEAD"], check=True, text=True, stdout=subprocess.PIPE
+                ).stdout.strip()
+
+            base = subprocess.run(
+                ["git", "-C", str(root), "rev-parse", "HEAD"], check=True, text=True, stdout=subprocess.PIPE
+            ).stdout.strip()
+            clean = commit("clean chunk\n", "clean")
+            seeded = "private" + "@" + "example.invalid"
+            leak = commit(seeded, "plant")
+            tip = commit("safe again\n", "remove")
+            tree = subprocess.run(
+                ["git", "-C", str(root), "rev-parse", "HEAD^{tree}"], check=True, text=True, stdout=subprocess.PIPE
+            ).stdout.strip()
+            sibling = subprocess.run(
+                ["git", "-C", str(root), "commit-tree", tree, "-p", base],
+                check=True,
+                input="sibling\n",
+                text=True,
+                stdout=subprocess.PIPE,
+            ).stdout.strip()
+            git_guard.pre_push(root, f"{clean} {clean} refs/heads/main {base}\n")
+            with self.assertRaisesRegex(git_guard.GuardFailure, "outbound_commits") as raised:
+                git_guard.pre_push(root, f"{leak} {leak} refs/heads/main {clean}\n")
+            for update in (
+                f"{sibling} {sibling} refs/heads/main {base}\n",  # not in main's history
+                f"{clean[:12]} {clean} refs/heads/main {base}\n",  # not named by its full id
+                f"{clean} {tip} refs/heads/main {base}\n",  # id does not name the pushed object
+                f"{clean} {clean} refs/heads/topic {base}\n",  # main is still the only destination
+            ):
+                with self.subTest(update=update), self.assertRaisesRegex(git_guard.GuardFailure, "main_only_push_required"):
+                    git_guard.pre_push(root, update)
+        self.assertNotIn(seeded, str(raised.exception))
+
     def test_hook_files_are_thin_and_executable(self) -> None:
         for name in ("pre-commit", "pre-push"):
             path = PROJECT_ROOT / ".githooks" / name

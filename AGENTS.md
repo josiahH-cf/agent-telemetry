@@ -243,6 +243,11 @@ python3 -m unittest discover -s tests -v
   generated-only commit, fetch/reconcile, push, and queued Pages-check path.
   Each run logs one `stages collect=… scrub=… commit=… publish=…` line, and
   `publish-status.json` records the stopped `stage` and a sanitized `detail`.
+  When local `main` is more than ten commits ahead of the remote, one run
+  pushes only the oldest ten, which keeps each guarded push inside the 60 s
+  timeout. It records `partial` with `backlog_remaining`, keeps the last full
+  success time, exits 6 and logs `publish=partial`. Each later five-minute slot
+  pushes the next chunk until `main` is caught up.
   A successful collection or new generation is not a commit, and a commit is
   not a published remote revision. An empty or unreadable HEAD commit/tree
   blocks the commit and publish stages as `repository_integrity:<reason>`;
@@ -447,7 +452,9 @@ the path allowlist, blocks local/state paths and `*.local.*`, scrubs staged
 blobs and symlink targets, and requires noreply author/committer identity.
 Pre-push repeats a complete scrub and ignore probe, permits only fast-forward
 updates to `main`, and scans every outbound commit/tree/blob so a leak added and
-later deleted still blocks. Do not bypass a failure; fix the staged or outbound
+later deleted still blocks. The pushed source must be `main` itself or one of
+`main`'s own commits named by its full id. A backlog chunk is pushed this way,
+and it can only send history that `main` would send anyway. Do not bypass a failure; fix the staged or outbound
 object and retry.
 
 If a maintainer must temporarily diagnose Git without hooks, the one-line local
@@ -470,7 +477,8 @@ Commit and integration rules:
 - Use the repository-local noreply identity for author and committer. Do not
   alter the global identity for this project.
 - Push only `main` from this installation and only by fast-forward. Fetch first;
-  let `publish.py` reconcile generated-only divergence. Never force-push,
+  let `publish.py` reconcile generated-only divergence and drain a backlog in
+  chunks of `main`'s own commits. Never force-push,
   rewrite history, or reopen the completed historical identity gate.
 - Keep history linear. Do not merge an unreviewed divergent source tree merely
   to unblock the scheduler.

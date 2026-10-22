@@ -16,6 +16,13 @@ import collect
 import stability
 
 
+# Measured 2026-10-22 at cron priority: the pre-push guard costs ~2.5 s plus
+# ~2.7 s per outbound commit, so ten commits push in ~30 s, well inside the
+# 60 s push timeout, while twenty already reach it.
+MAX_PUSH_COMMITS = 10
+PARTIAL_EXIT = 6
+
+
 class PublishFailure(RuntimeError):
     def __init__(self, code: str, *, blocked: bool = False) -> None:
         super().__init__(code)
@@ -71,6 +78,14 @@ def commit_paths(repo: Path, commits: Iterable[str]) -> set[str]:
         )
         paths.update(os.fsdecode(item) for item in result.stdout.split(b"\0") if item)
     return paths
+
+
+def backlog_chunk(repo: Path, remote_head: str, local_head: str, max_commits: int) -> tuple[str, int] | None:
+    """Return the oldest outbound chunk's tip and the commits left after it, or None when one push fits."""
+    outbound = revision_list(repo, f"{remote_head}..{local_head}")
+    if len(outbound) <= max_commits:
+        return None
+    return outbound[max_commits - 1], len(outbound) - max_commits
 
 
 def non_generated(paths: Iterable[str]) -> list[str]:
@@ -166,6 +181,7 @@ def publish(
     remote: str = "origin",
     branch: str = "main",
     retry_delays: tuple[float, ...] = (0.0, 2.0, 5.0),
+    max_push_commits: int = MAX_PUSH_COMMITS,
 ) -> dict[str, Any]:
     integrity = stability.repository_integrity(repo)
     if integrity["status"] != "ok":
@@ -191,7 +207,13 @@ def publish(
         if local_head == remote_head:
             return {"status": "success", "reason": "already_published", "attempts": attempts, "reconciliation": reconciliation, "commit": local_head}
         ref = f"refs/heads/{branch}"
-        result = git(repo, ["push", remote, f"{ref}:{ref}"], check=False, timeout=60)
+        # A backlog leaves as main's own oldest commits, one guarded chunk per run,
+        # so every push fits the timeout and the remote advances each time.
+        chunk = backlog_chunk(repo, remote_head, local_head, max_push_commits)
+        source = chunk[0] if chunk else ref
+        result = git(repo, ["push", remote, f"{source}:{ref}"], check=False, timeout=60)
+        if result.returncode == 0 and chunk:
+            return {"status": "partial", "reason": "backlog_chunk_pushed", "attempts": attempts, "reconciliation": reconciliation, "commit": chunk[0], "backlog_remaining": chunk[1]}
         if result.returncode == 0:
             return {"status": "success", "reason": "pushed", "attempts": attempts, "reconciliation": reconciliation, "commit": local_head}
     raise PublishFailure("push_retries_exhausted")
@@ -204,6 +226,7 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--remote", default="origin")
     parser.add_argument("--branch", default="main")
     parser.add_argument("--retry-delays", default="0,2,5")
+    parser.add_argument("--max-push-commits", type=int, default=MAX_PUSH_COMMITS)
     return parser.parse_args(argv)
 
 
@@ -216,6 +239,9 @@ def main(argv: list[str] | None = None) -> int:
     except ValueError:
         print("[publish] failure: invalid_retry_delays", file=sys.stderr)
         return 5
+    if args.max_push_commits < 1:
+        print("[publish] failure: invalid_max_push_commits", file=sys.stderr)
+        return 5
     violations = collect.repository_scrub_violations(repo)
     if violations:
         collect.record_publish_state(state_root, "blocked", "scrub_gate", stage="publish")
@@ -223,11 +249,21 @@ def main(argv: list[str] | None = None) -> int:
         return 4
     collect.record_publish_state(state_root, "pending", "scheduled_push", stage="publish")
     try:
-        result = publish(repo, remote=args.remote, branch=args.branch, retry_delays=delays)
+        result = publish(repo, remote=args.remote, branch=args.branch, retry_delays=delays, max_push_commits=args.max_push_commits)
     except PublishFailure as exc:
         collect.record_publish_state(state_root, "blocked" if exc.blocked else "failure", exc.code, stage="publish")
         print(f"[publish] {'blocked' if exc.blocked else 'failure'}: {exc.code}", file=sys.stderr)
         return 4 if exc.blocked else 5
+    if result["status"] == "partial":
+        # The pushed chunk is a real published revision, but not local main: keep
+        # the last full success so publication stays due and freshness stays honest.
+        collect.record_publish_state(state_root, "partial", result["reason"], stage="publish", backlog_remaining=result["backlog_remaining"])
+        collect.request_pages_check(state_root, result["commit"])
+        print(
+            f"[publish] partial: {result['reason']} backlog_remaining={result['backlog_remaining']} "
+            f"attempts={result['attempts']} reconciliation={result['reconciliation']} commit={result['commit'][:12]}"
+        )
+        return PARTIAL_EXIT
     collect.record_publish_state(state_root, "success", result["reason"], stage="publish")
     collect.request_pages_check(state_root, result["commit"])
     print(

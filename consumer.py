@@ -46,7 +46,7 @@ PRODUCER = "agent-telemetry"
 STALE_AFTER_SECONDS = 2 * 3600
 MAX_SESSIONS = 200
 MAX_ATTENTION_INTERVALS = 50
-PUBLICATION_STATUSES = {"success", "failure", "blocked", "pending"}
+PUBLICATION_STATUSES = {"success", "partial", "failure", "blocked", "pending"}
 PUBLICATION_STAGES = {"collect", "scrub", "commit", "publish"}
 COLLECTION_STATUSES = {"success", "failure"}
 UNKNOWN_COLLECTION = {"status": "unknown", "last_error": None, "observed_at": None}
@@ -115,6 +115,8 @@ def publication_view(state_root: Path) -> dict[str, Any]:
     detail = f"publication {status}" + (f" ({reason})" if reason else "")
     if stage:
         detail += f" at {stage} stage" + (f": {detail_code}" if detail_code else "")
+    if status == "partial" and isinstance(value.get("backlog_remaining"), int):
+        detail += f"; {max(0, value['backlog_remaining'])} commits still to publish"
     detail += f"; last success {last_success_at}" if last_success_at else "; no successful publication recorded"
     if last_attempt_at:
         detail += f"; last attempt {last_attempt_at}"
