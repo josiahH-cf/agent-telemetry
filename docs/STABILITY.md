@@ -44,6 +44,19 @@
   output. The 7-, 30- and 90-day windows gain dated subscription estimates; the
   page payload already carried the undated current rate. The producer's new check
   failed against its previous writer, and its portable gate passed.
+- **Live delivery:** the producer release was installed first through its
+  verified code-only deployment; its earlier receipt files kept their bytes.
+  Source commit `a014eebc7` and the private configuration then reached
+  production in one hold of the collection lock, and the guarded manual
+  publication pushed snapshot `e47b90c93` (collect, scrub, commit and publish ok
+  in one attempt). Pages serves the page, both changed documents and the
+  projects, outcomes, metrics and page-payload files byte-identical to that
+  commit. The live store retains three links with 71 exact and 1 shared
+  association, the new anonymous project holds 10 sessions, cash reports match
+  the 26 in-period entries, and no cash value appears in a public file. The live
+  page at 390 and 1,440 px in all four windows shows the dated estimate for 7,
+  30 and 90 days, with no overflow or browser errors and focus restored after
+  keyboard disclosure.
 
 ## ST-53 — Attribution boundaries, rewritten Git evidence and results context (2026-11-01)
 
