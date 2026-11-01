@@ -57,6 +57,16 @@
   page at 390 and 1,440 px in all four windows shows the dated estimate for 7,
   30 and 90 days, with no overflow or browser errors and focus restored after
   keyboard disclosure.
+- **Operator dating:** the operator then supplied the missing rates and chose
+  the billing receipts where they disagreed with the remembered dates. One
+  plan change is dated by the credit arithmetic of two later receipts and the
+  other by the first notice that confirms it, so the weeks before that notice
+  may be understated. The operator's rate fills one undocumented interval, and
+  a documented lapse is a zero-rate row rather than a gap. Every vendor-day
+  since history began is now dated: the all-history window and the earlier
+  90-day comparison window gain complete estimates, and the 7-, 30- and 90-day
+  estimates are unchanged. Recurring payments without an emailed receipt are
+  still absent from the ledger.
 
 ## ST-53 — Attribution boundaries, rewritten Git evidence and results context (2026-11-01)
 
