@@ -11,7 +11,7 @@
       "unattributed": 0
     }
   },
-  "collected_at": "2026-11-01T23:10:05+00:00",
+  "collected_at": "2026-11-01T23:15:04+00:00",
   "date": "2026-11-01",
   "schema_version": 2,
   "vendors": {
@@ -19,13 +19,13 @@
       "best_effort_estimate": {
         "basis": "current_verified_rate_envelope",
         "caveat": "estimates_are_separate_from_exact_cost_and_omit_unknown_turn_level_long_context",
-        "estimated_tokens": 0,
-        "high_usd": null,
-        "low_usd": null,
-        "midpoint_usd": null,
-        "status": "not_needed",
+        "estimated_tokens": 123066,
+        "high_usd": 0.971276,
+        "low_usd": 0.097128,
+        "midpoint_usd": 0.534202,
+        "status": "available",
         "unestimated_tokens": 0,
-        "unpriced_tokens": 0
+        "unpriced_tokens": 123066
       },
       "by_model": {
         "claude-fable-5-1": {
@@ -44,15 +44,15 @@
         "claude-opus-5-5": {
           "best_effort_estimate": null,
           "classes": {
-            "cache_read_tokens": 295497961,
-            "cache_write_1h_tokens": 3329597,
+            "cache_read_tokens": 298903370,
+            "cache_write_1h_tokens": 3360295,
             "cache_write_5m_tokens": 428378,
-            "input_tokens": 2106,
-            "output_tokens": 1377069
+            "input_tokens": 2128,
+            "output_tokens": 1402553
           },
-          "tokens": 300635111,
+          "tokens": 304096724,
           "unpriced_tokens": 0,
-          "usd": 115.428062
+          "usd": 116.864496
         },
         "claude-sonnet-5": {
           "best_effort_estimate": null,
@@ -66,6 +66,39 @@
           "tokens": 64722,
           "unpriced_tokens": 0,
           "usd": 0.226252
+        },
+        "claude-sonnet-5-5": {
+          "best_effort_estimate": {
+            "basis": "current_verified_rate_envelope",
+            "candidate_models": [
+              "claude-fable-5",
+              "claude-fable-5-1",
+              "claude-haiku-4-5",
+              "claude-haiku-4-5-20251001",
+              "claude-opus-4-6",
+              "claude-opus-4-8",
+              "claude-opus-5",
+              "claude-opus-5-5",
+              "claude-sonnet-5"
+            ],
+            "caveat": "unknown_model_and_no_turn_level_long_context",
+            "estimated_tokens": 123066,
+            "high_usd": 0.971276,
+            "low_usd": 0.097128,
+            "midpoint_usd": 0.534202,
+            "status": "available",
+            "unpriced_tokens": 123066
+          },
+          "classes": {
+            "cache_read_tokens": 80566,
+            "cache_write_1h_tokens": 41135,
+            "cache_write_5m_tokens": 0,
+            "input_tokens": 6,
+            "output_tokens": 1359
+          },
+          "tokens": 123066,
+          "unpriced_tokens": 123066,
+          "usd": 0.0
         }
       },
       "by_scope": {
@@ -98,39 +131,39 @@
             "claude-opus-5-5": {
               "best_effort_estimate": null,
               "classes": {
-                "cache_read_tokens": 159488423,
-                "cache_write_1h_tokens": 2205959,
+                "cache_read_tokens": 162893832,
+                "cache_write_1h_tokens": 2236657,
                 "cache_write_5m_tokens": 0,
-                "input_tokens": 1216,
-                "output_tokens": 786064
+                "input_tokens": 1238,
+                "output_tokens": 811548
               },
-              "tokens": 162481662,
+              "tokens": 165943275,
               "unpriced_tokens": 0,
-              "usd": 65.271501
+              "usd": 66.707934
             }
           },
           "classes": {
-            "cache_read_tokens": 354017665,
-            "cache_write_1h_tokens": 6034931,
+            "cache_read_tokens": 357423074,
+            "cache_write_1h_tokens": 6065629,
             "cache_write_5m_tokens": 1134361,
-            "input_tokens": 17416,
-            "output_tokens": 2607256
+            "input_tokens": 17438,
+            "output_tokens": 2632740
           },
-          "tokens": 363811629,
+          "tokens": 367273242,
           "unpriced_tokens": 0,
-          "usd": 295.884364
+          "usd": 297.320797
         },
         "other": {
           "best_effort_estimate": {
             "basis": "current_verified_rate_envelope",
             "caveat": "estimates_are_separate_from_exact_cost_and_omit_unknown_turn_level_long_context",
-            "estimated_tokens": 0,
-            "high_usd": null,
-            "low_usd": null,
-            "midpoint_usd": null,
-            "status": "not_needed",
+            "estimated_tokens": 123066,
+            "high_usd": 0.971276,
+            "low_usd": 0.097128,
+            "midpoint_usd": 0.534202,
+            "status": "available",
             "unestimated_tokens": 0,
-            "unpriced_tokens": 0
+            "unpriced_tokens": 123066
           },
           "by_model": {
             "claude-opus-5-5": {
@@ -158,23 +191,56 @@
               "tokens": 64722,
               "unpriced_tokens": 0,
               "usd": 0.226252
+            },
+            "claude-sonnet-5-5": {
+              "best_effort_estimate": {
+                "basis": "current_verified_rate_envelope",
+                "candidate_models": [
+                  "claude-fable-5",
+                  "claude-fable-5-1",
+                  "claude-haiku-4-5",
+                  "claude-haiku-4-5-20251001",
+                  "claude-opus-4-6",
+                  "claude-opus-4-8",
+                  "claude-opus-5",
+                  "claude-opus-5-5",
+                  "claude-sonnet-5"
+                ],
+                "caveat": "unknown_model_and_no_turn_level_long_context",
+                "estimated_tokens": 123066,
+                "high_usd": 0.971276,
+                "low_usd": 0.097128,
+                "midpoint_usd": 0.534202,
+                "status": "available",
+                "unpriced_tokens": 123066
+              },
+              "classes": {
+                "cache_read_tokens": 80566,
+                "cache_write_1h_tokens": 41135,
+                "cache_write_5m_tokens": 0,
+                "input_tokens": 6,
+                "output_tokens": 1359
+              },
+              "tokens": 123066,
+              "unpriced_tokens": 123066,
+              "usd": 0.0
             }
           },
           "classes": {
-            "cache_read_tokens": 136023178,
-            "cache_write_1h_tokens": 1171510,
+            "cache_read_tokens": 136103744,
+            "cache_write_1h_tokens": 1212645,
             "cache_write_5m_tokens": 428378,
-            "input_tokens": 898,
-            "output_tokens": 594207
+            "input_tokens": 904,
+            "output_tokens": 595566
           },
-          "tokens": 138218171,
-          "unpriced_tokens": 0,
+          "tokens": 138341237,
+          "unpriced_tokens": 123066,
           "usd": 50.382814
         }
       },
-      "tokens": 502029800,
-      "unpriced_tokens": 0,
-      "usd": 346.267177
+      "tokens": 505614479,
+      "unpriced_tokens": 123066,
+      "usd": 347.703611
     },
     "openai": {
       "best_effort_estimate": {
