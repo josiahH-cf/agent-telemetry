@@ -3,26 +3,26 @@
     {
       "coverage": {
         "from": "2026-02-28T12:19:02+00:00",
-        "to": "2026-11-01T10:13:03+00:00"
+        "to": "2026-11-01T10:20:16+00:00"
       },
       "dataset": "projects",
       "path": "data/machine/projects.jsonl",
       "rows": 13,
       "schema": "data/schema/projects.schema.json",
       "semantics": "One public project identity or bulk bucket with lifetime totals and per-OS coverage.",
-      "sha256": "a95fe145005dbbf99e229cbc01c4b378cf6a6ce43dcbd9ef37eaa773a0819538"
+      "sha256": "6e9af9ece4652a8074b5ae11cc43c965aef55089d1088ba0db99c79cd6b2ba36"
     },
     {
       "coverage": {
         "from": "2026-02-28T12:19:02+00:00",
-        "to": "2026-11-01T10:13:03+00:00"
+        "to": "2026-11-01T10:20:16+00:00"
       },
       "dataset": "sessions",
       "path": "data/machine/sessions.jsonl",
       "rows": 14880,
       "schema": "data/schema/sessions.schema.json",
       "semantics": "One provider session after cross-source event deduplication; working directories are excluded.",
-      "sha256": "7de48a3a31fe27dc771cba8e492d2865612d6b5efee913dde0e254e322e37675"
+      "sha256": "b545f8723446e58c4fd908c5a021c848c2d17aec816b2d009db9e4160147a805"
     },
     {
       "coverage": {
@@ -34,7 +34,7 @@
       "rows": 621,
       "schema": "data/schema/days.schema.json",
       "semantics": "UTC daily usage by public project identity, vendor, and host operating system.",
-      "sha256": "efcfe8bd490c65924696b8f98a529f946a5c34b3717b0694d9dcab596970cedc"
+      "sha256": "58300b4a0aceb26edd87a5bfd0a0516cb06e2f9d594d629cf9607090da4b320e"
     },
     {
       "coverage": {
@@ -122,12 +122,12 @@
       "source_coverage": {
         "by_project": {
           "obsidian-agent": {
-            "from": null,
-            "status": "partial"
+            "from": "1970-01-01",
+            "status": "current"
           },
           "proj-02a9b771": {
-            "from": null,
-            "status": "partial"
+            "from": "1970-01-01",
+            "status": "current"
           },
           "proj-5a93629a": {
             "from": "1970-01-01",
@@ -148,15 +148,14 @@
         },
         "from": null,
         "reasons": [
-          "code_history_rewritten",
           "git_read_failed"
         ],
         "rewrites_resumed": 3,
         "sources": 7,
         "states": {
-          "current": 3,
+          "current": 6,
           "disabled": 0,
-          "partial": 3,
+          "partial": 0,
           "retained-last-good": 0,
           "unavailable": 1
         },
@@ -189,6 +188,6 @@
       "sha256": "9303666817e5e7bd53fa47c2394de3b3bedfbbfc575c9551b22b9091cf7ae732"
     }
   ],
-  "generated_at": "2026-11-01T10:12:58+00:00",
+  "generated_at": "2026-11-01T10:20:05+00:00",
   "schema_version": 1
 }
