@@ -284,3 +284,14 @@ never reads worktree metadata to find their repository. Such outcomes can still
 gain an exact association when a receipt carries the checkout's full commit
 revision and that repository is a configured Git source, or through an explicit
 `economics.project_links` entry.
+
+From its 2026-11-01 release the producer also sends `commit` on
+`result.produced` (the candidate revision) and `check.result` (the revision its
+checks name, integrated first), and only as a full 40- or 64-hex object id. The
+field is outside the receipt identity, so a redelivered event keeps one receipt;
+earlier receipts are unchanged. The adapter already retains `commit` on every
+kind, so no ingestion change was needed. `receipt_code_revisions` keeps its
+derivation, distinct commit references on an outcome's receipts, so a candidate
+and a differing integrated or published revision count separately. Only a
+revision present in configured first-parent Git evidence joins a project; a
+candidate that never reached such a history joins nothing.

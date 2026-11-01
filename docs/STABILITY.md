@@ -1,5 +1,50 @@
 # Stability pass findings and retention report
 
+## ST-54 — Project links, producer revisions and operator spending records (2026-11-01)
+
+- **As found:** 10 of 2,058 outcomes had a project association. The producer's
+  receipts already carried full revisions, but only on `publication.result`
+  (59 receipts, 25 outcomes); its ledger also held full candidate, base and
+  integrated revisions for 61 implementation outcomes that its result and check
+  receipts never sent. Seven canonical Project ids on 83 outcomes had no
+  explicit link. Three of them each declare exactly one current repository whose
+  checkouts resolve to a registered project or, for one, to a checkout that was
+  not registered (its sessions sat in `ad-hoc`). Most other outcomes are review
+  and capture work with no repository. The economics ledger held no cash entry and
+  the subscription rate had no dates, so actual spending was unknown and no
+  period estimate existed. The producer's review command was last used on
+  2026-09-20; 1,803 of 1,804 delivered outcomes have no review verdict.
+- **Repair:** anonymous candidate 10 (`proj-afe9ae6c`) registers that checkout
+  and one producer candidate location of the same repository. Private
+  `economics.project_links` link the three Projects; a declaration is a link only
+  where the Project's declared repository and the checkout's own remote agree,
+  never by name. The producer (a separate repository and release) now sends the
+  full revision on result and check receipts; the revision is outside the
+  receipt identity, so a redelivered event keeps one receipt, and earlier receipts
+  are unchanged. Payment evidence from provider billing receipts entered the
+  restricted ledger as Shared/Unassigned cash; dated subscription periods cover
+  only the intervals the same evidence dates. No public schema, field meaning or
+  page rendering changed.
+- **Evidence limits:** one outcome filed under a Project before that Project
+  dropped its second repository is now `shared`, because its own session ran in a
+  checkout of the other repository; the link does not hide the conflict. Four
+  Projects stay unlinked: their declared repositories have no local checkout, none
+  is declared, or no Project record exists. Producer revisions apply to receipts
+  written after its deployment. The ledger lacks every recurring payment that
+  arrived without an emailed receipt, and two plan changes have no dated
+  evidence, so the all-history and earlier comparison windows remain partial.
+  Telemetry records no review verdict on the operator's behalf; acceptance stays
+  unknown until the operator records one in the producer.
+- **Verification:** isolated collections against a copy of the private state:
+  exact associations rose from 10 to 71 and one became `shared`; the new
+  anonymous project holds 11 sessions that previously resolved to `ad-hoc`; all
+  328 closed-day history files and the five frozen loop datasets kept their
+  bytes, and only current-date files changed. Cash reports per window match the recorded entries,
+  a repeated record returns `already-recorded`, and cash stays out of every public
+  output. The 7-, 30- and 90-day windows gain dated subscription estimates; the
+  page payload already carried the undated current rate. The producer's new check
+  failed against its previous writer, and its portable gate passed.
+
 ## ST-53 — Attribution boundaries, rewritten Git evidence and results context (2026-11-01)
 
 - **As found:** the consumer reported the `remote` bulk bucket as `correlated`

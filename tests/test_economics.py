@@ -450,6 +450,33 @@ class NativeAccountingTests(unittest.TestCase):
         finally:
             con.close()
 
+    def test_project_link_and_result_check_revisions_join_and_a_conflicting_session_stays_shared(self):
+        checked, candidate = 'c'*40, 'd'*64
+        self.config['economics'] = {'project_links': {'linked-project': 'obsidian-agent', 'unknown-target': 'not-registered'}}
+        write_lines(self.receipts/'a.jsonl', [receipt(1, 'outcome.started', 'linked', 'linked-project', session=None),
+            receipt(2, 'outcome.started', 'linked-conflict', 'linked-project', session=S2),
+            receipt(3, 'check.result', 'checked', 'unlinked-project', session=None, status='succeeded', commit=checked),
+            receipt(4, 'check.result', 'abbreviated', 'unlinked-project', session=None, status='succeeded', commit=checked[:7]),
+            receipt(5, 'result.produced', 'candidate', 'unlinked-project', session=None, status='succeeded', commit=candidate),
+            receipt(6, 'outcome.started', 'unknown-target', 'unknown-target', session=None)])
+        observatory.collect_observatory(self.config, PROJECT_ROOT, {}, NOW)
+        con = observatory.connect_store(state_of(self.config)/observatory.STORE_NAME)
+        try:
+            con.execute('INSERT INTO code_observations VALUES(?,?,?,?,?,?,?)', ('chg-fixture', 'obsidian-system', checked, '2026-09-09T00:00:00Z', 1, 1, 0))
+            con.commit()
+            association = {k: (v['project_id'], v['project_attribution']) for k, v in economics.outcome_fields(con).items()}
+            self.assertEqual(association['linked'], ('obsidian-agent', 'exact'))  # an explicit private link
+            self.assertEqual(association['linked-conflict'], (None, 'shared'))  # its own session ran elsewhere; the link never hides that
+            self.assertEqual(association['checked'], ('obsidian-system', 'exact'))  # a check receipt's full revision in configured Git evidence
+            self.assertEqual(association['abbreviated'], (None, 'unattributed'))  # an abbreviated revision joins nothing
+            self.assertEqual(association['candidate'], (None, 'unattributed'))  # nor does one outside configured evidence
+            self.assertEqual(association['unknown-target'], (None, 'unattributed'))  # a link to an unregistered code is dropped
+            public = json.dumps(outcomes.public_rows(con)[0])
+            for private in ('linked-project', 'unlinked-project', checked, candidate):
+                self.assertNotIn(private, public)
+        finally:
+            con.close()
+
     def test_bulk_bucket_sessions_never_supply_project_association(self):
         from tests.test_workspace_accounting import S3
         # A remote-source transcript resolves to the explicit remote bucket, not a project.
