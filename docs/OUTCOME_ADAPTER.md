@@ -252,3 +252,35 @@ child admission, Stop, Resume or fan-out reuse the parent intent with a
 non-human origin. Telemetry never infers a human from a command name, client or
 non-watcher origin. Delivered disposition, passing checks and machine review are
 not human acceptance.
+
+## Identity spaces and result vocabulary (2026-11-01)
+
+Two identity spaces cross this boundary under similar names. Telemetry project
+identities are `projects.project_id`/`project_code`, the public
+`outcomes.project_id`, and the consumer's `projects[]`, `sessions[]` and
+`accounting.repositories[]` rows. The producer's canonical Project is the
+receipt `project_id`: it appears as local-tier `outcomes.project_id` (with the
+Telemetry code beside it as `public_project_code`), in consumer
+`quality.outcomes[]`, `accounting.outcomes[]`, `run_usage` and `portions`, and
+as scope `outcome_project_id`. A canonical Project becomes a Telemetry project
+only through an explicit `economics.project_links` entry or the consumer's own
+`workspace-reporting-v1` map; equal-looking names are not a join.
+`sessions[].attribution: "exact"` means the requested native session was
+observed; its project linkage is the separate `linkage` field.
+
+The `ad-hoc` and `remote` buckets resolve by explicit rules but name no project.
+Their consumer `projects[].attribution` is `unattributed`, like each of their
+sessions, and a bucket session never supplies an outcome's project association.
+
+A `check.result` passes with status `passed`, `ok`, `green` or `succeeded` and
+fails with `failed` or `red`; an `update.result` is applied with `applied`,
+`ok`, `done` or `succeeded`. `pending`, `not-required` and other words are
+neither. `updates_failed` keeps its original meaning, including `parked` and
+`unknown`.
+
+Producer sessions that run in workspace checkouts or job directories outside a
+registered repository path resolve to `ad-hoc`; Telemetry matches path text and
+never reads worktree metadata to find their repository. Such outcomes can still
+gain an exact association when a receipt carries the checkout's full commit
+revision and that repository is a configured Git source, or through an explicit
+`economics.project_links` entry.

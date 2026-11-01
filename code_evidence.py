@@ -48,6 +48,38 @@ def _git(path, *args, failure_reason='git_read_failed'):
         raise CodeError("git_metadata_invalid") from error
 
 
+def _contains(path, prior, head):
+    """True when ``head`` still contains ``prior``; an unknown or pruned revision is not contained."""
+    try:
+        _git(path, 'merge-base', '--is-ancestor', prior, head, failure_reason='code_history_rewritten')
+    except CodeError as error:
+        if str(error) != 'code_history_rewritten':
+            raise
+        return False
+    return True
+
+
+def _resume_after_rewrite(path, cursor, head, since):
+    """Follow the rewritten history from its common ancestor, or from ``since`` when none exists.
+
+    Recorded revisions are never erased, so a revision the rewrite replaced stays counted
+    beside its replacement; ``rewrites_resumed`` keeps that disclosure in source coverage.
+    """
+    base = None
+    if cursor.get('head'):
+        try:
+            base = _git(path, 'merge-base', cursor['head'], head, failure_reason='code_history_unrelated').strip() or None
+        except CodeError as error:
+            if str(error) != 'code_history_unrelated':
+                raise
+    if base is not None and not HEX.fullmatch(base):
+        raise CodeError('git_metadata_invalid')
+    resumed = {'since': cursor.get('since', since), 'rewrites_resumed': int(cursor.get('rewrites_resumed', 0)) + 1}
+    if base:
+        resumed['head'] = base
+    return resumed
+
+
 def _parse(payload):
     records = []
     for line in payload.splitlines():
@@ -91,7 +123,8 @@ def collect(connection, config, registry, salt, now):
         active_ids.add(rid)
         path = Path(str(entry.get('path') or '')).expanduser()
         old = connection.execute('SELECT * FROM code_roots WHERE root_id=?', (rid,)).fetchone()
-        cursor = json.loads(old['cursor_json']) if old else {}
+        stored = json.loads(old['cursor_json']) if old else {}
+        cursor = dict(stored)
         status, reason = 'current', None
         stamp = now.astimezone(dt.timezone.utc).isoformat().replace('+00:00', 'Z')
         try:
@@ -109,15 +142,15 @@ def collect(connection, config, registry, salt, now):
             head = _git(path, 'rev-parse', '--verify', 'HEAD').strip()
             if not HEX.fullmatch(head):
                 raise CodeError('git_metadata_invalid')
-            for prior in (cursor.get('head'), cursor.get('pending_head')):
-                if prior and _git(path, 'merge-base', prior, head, failure_reason='code_history_rewritten').strip() != prior:
-                    raise CodeError('code_history_rewritten')
             raw_limit = entry.get('max_commits', 200)
             limit = min(1000, max(1, raw_limit)) if type(raw_limit) is int else 200
             since = entry.get('since', '1970-01-01')
             dt.date.fromisoformat(since)
             if cursor.get('since') and cursor['since'] != since:
                 raise CodeError('code_coverage_configuration_changed')
+            rewritten = any(prior and not _contains(path, prior, head) for prior in (cursor.get('head'), cursor.get('pending_head')))
+            if rewritten:
+                cursor = _resume_after_rewrite(path, cursor, head, since)
             cursor.setdefault('since', since)
             if not cursor.get('pending_head') and head != cursor.get('head'):
                 cursor.update(pending_head=head, pending_ref=head)
@@ -140,15 +173,18 @@ def collect(connection, config, registry, salt, now):
                         cursor['head'] = cursor.pop('pending_head')
                         cursor.pop('pending_ref', None)
                         cursor['since'] = since
+            if rewritten:
+                # The run that resumes names the rewrite; the next caught-up run is current again.
+                status, reason = 'partial', 'code_history_rewritten'
             with connection:
                 connection.execute('INSERT INTO code_roots VALUES(?,?,?,?,?,?,?) ON CONFLICT(root_id) DO UPDATE SET status=excluded.status,detail_code=excluded.detail_code,last_scan_at=excluded.last_scan_at,cursor_json=excluded.cursor_json',
                                    (rid, pid, str(path), status, reason, stamp, json.dumps(cursor, sort_keys=True)))
         except (CodeError, ValueError, OverflowError) as error:
             reason = str(error) if isinstance(error, CodeError) else 'code_configuration_invalid'
-            status = 'retained-last-good' if old and (cursor.get('head') or old['status'] == 'partial') else 'unavailable'
+            status = 'retained-last-good' if old and (stored.get('head') or old['status'] == 'partial') else 'unavailable'
             with connection:
                 connection.execute('INSERT INTO code_roots VALUES(?,?,?,?,?,?,?) ON CONFLICT(root_id) DO UPDATE SET status=excluded.status,detail_code=excluded.detail_code,last_scan_at=excluded.last_scan_at',
-                                   (rid, pid or '', str(path), status, reason, stamp, json.dumps(cursor, sort_keys=True)))
+                                   (rid, pid or '', str(path), status, reason, stamp, json.dumps(stored, sort_keys=True)))
         results.append({'root_id': rid, 'status': status, 'detail_code': reason})
     with connection:
         for row in connection.execute('SELECT root_id FROM code_roots').fetchall():
@@ -190,7 +226,9 @@ def coverage(connection):
             'from': max((json.loads(r['cursor_json']).get('since', '9999-12-31') for r in rows), default=None) if rows and counts['current'] == len(rows) else None,
             'to': min((r['last_scan_at'][:10] for r in rows if r['last_scan_at']), default=None) if rows and counts['current'] == len(rows) else None,
             'by_project': by_project,
-            'reasons': sorted({r['detail_code'] for r in rows if r['detail_code']} | set(rejections))}
+            'reasons': sorted({r['detail_code'] for r in rows if r['detail_code']} | set(rejections)),
+            # Additive: resumed rewrites mean revisions recorded before them stay counted beside replacements.
+            'rewrites_resumed': sum(int(json.loads(r['cursor_json']).get('rewrites_resumed', 0)) for r in rows)}
 
 
 def preserve_rebuild_history(canonical, target):

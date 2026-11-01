@@ -156,6 +156,51 @@ const AgentTelemetryUI = (() => {
     };
   }
 
+  function resultsContext(reportValue) {
+    // Denominators, coverage and association for the closed-period results cards, as plain text.
+    const report = reportValue || {};
+    const totals = report.totals || {};
+    const results = totals.results || {};
+    const attribution = totals.attribution || {};
+    const code = (report.coverage || {}).code || {};
+    const count = value => Number.isFinite(numericValue(value)) ? numericValue(value) : null;
+    const integer = value => new Intl.NumberFormat("en-US", {maximumFractionDigits:0}).format(value);
+    const dollars = value => new Intl.NumberFormat("en-US", {style:"currency", currency:"USD", maximumFractionDigits:2}).format(value);
+    const tokens = value => new Intl.NumberFormat("en-US", {maximumFractionDigits:1, notation:"compact"}).format(value);
+    const outcomes = count(results.outcomes);
+    const reviewed = count(results.reviewed);
+    const unreviewed = count(results.delivered_unreviewed);
+    const observedChecks = count(results.verification_observed);
+    const passed = count(results.checks_passed);
+    const failed = count(results.checks_failed);
+    const shared = count((report.shared || {}).api_equivalent_cost_usd);
+    const unpriced = count(totals.unpriced_tokens);
+    const sources = count(code.sources);
+    const current = count((code.states || {}).current);
+    const resumed = count(code.rewrites_resumed);
+    const linked = outcomes === null ? null : ["exact", "correlated"].reduce((total, key) => total + (count(attribution[key]) || 0), 0);
+    const investment = [shared !== null ? `${dollars(shared)} Shared / unassigned` : "", unpriced > 0 ? `${tokens(unpriced)} tokens unpriced` : ""].filter(Boolean).join(" · ");
+    // Resumed rewrites stay disclosed after catching up: replaced revisions remain counted.
+    const codeDetail = [sources > 0 && current !== null && current < sources ? `${integer(current)} of ${integer(sources)} Git sources current` : "",
+      resumed > 0 ? `${integer(resumed)} history rewrite${resumed === 1 ? "" : "s"} resumed` : ""].filter(Boolean).join(" · ");
+    return {
+      outcomes, linked, reviewed, observedChecks,
+      investment,
+      delivered:outcomes === null ? "" : `of ${integer(outcomes)} recorded${reviewed !== null ? ` · ${integer(reviewed)} reviewed` : ""}`,
+      association:outcomes === null ? "" : `of ${integer(outcomes)} recorded · the rest Shared / unassigned`,
+      accepted:reviewed > 0 ? `of ${integer(reviewed)} reviewed${unreviewed !== null ? ` · ${integer(unreviewed)} delivered unreviewed` : ""}` : "",
+      verified:observedChecks > 0 ? `of ${integer(observedChecks)} with check evidence${passed !== null && failed !== null ? ` · ${integer(passed)} passed / ${integer(failed)} failed checks` : ""}` : "",
+      code:codeDetail,
+    };
+  }
+
+  function comparisonNote(windowValue, collectionDate) {
+    const value = windowValue || {};
+    if (!(value.comparison || {}).summary) return "";
+    const open = typeof collectionDate === "string" && value.to === collectionDate;
+    return `Changes vs preceding ${value.inclusive_days} days${open ? ` · ${value.to} (UTC) is still open, so deltas run low until it closes` : ""}`;
+  }
+
   function displayAliases(windowValues, family = "projects", previous = {}) {
     const aliases = Object.create(null);
     const identities = new Set();
@@ -278,7 +323,7 @@ const AgentTelemetryUI = (() => {
     return (slot + 1) * intervalMinutes * 60000 + offsetMinutes * 60000;
   }
 
-  return Object.freeze({capacityProviderState, capacityWindowState, capacityWindowLabel, captureStatusFailed, calculateScenario, relativeDuration, sectionVisibility, displayAliases, displayAlias, chartScale, trendSegments, snapshotDecision, telemetryRefreshUrl, snapshotRefreshSlot, nextSnapshotRefreshMillis});
+  return Object.freeze({capacityProviderState, capacityWindowState, capacityWindowLabel, captureStatusFailed, calculateScenario, relativeDuration, sectionVisibility, resultsContext, comparisonNote, displayAliases, displayAlias, chartScale, trendSegments, snapshotDecision, telemetryRefreshUrl, snapshotRefreshSlot, nextSnapshotRefreshMillis});
 })();
 
 if (typeof window !== "undefined") window.AgentTelemetryUI = AgentTelemetryUI;
@@ -301,7 +346,7 @@ if (typeof module === "object" && module.exports) module.exports = AgentTelemetr
   const money = new Intl.NumberFormat("en-US", {style:"currency", currency:"USD", maximumFractionDigits:2});
   const percentNumber = new Intl.NumberFormat("en-US", {maximumFractionDigits:1});
   const colors = ["#7bdcff", "#8ba9ff", "#75e6ad", "#ffd166", "#c4a7ff", "#ff8c9b", "#b8c5d3"];
-  const {capacityProviderState, capacityWindowState, capacityWindowLabel, relativeDuration, sectionVisibility, displayAliases, displayAlias, chartScale, trendSegments, snapshotDecision, telemetryRefreshUrl, snapshotRefreshSlot, nextSnapshotRefreshMillis} = AgentTelemetryUI;
+  const {capacityProviderState, capacityWindowState, capacityWindowLabel, relativeDuration, sectionVisibility, resultsContext, comparisonNote, displayAliases, displayAlias, chartScale, trendSegments, snapshotDecision, telemetryRefreshUrl, snapshotRefreshSlot, nextSnapshotRefreshMillis} = AgentTelemetryUI;
   const focusableSelector = "button,summary,a[href],input,select,textarea,[tabindex]:not([tabindex='-1'])";
   const snapshotRefreshIntervalMinutes = 1;
   const snapshotRefreshOffsetMinutes = 0;
@@ -672,13 +717,29 @@ if (typeof module === "object" && module.exports) module.exports = AgentTelemetr
     const totals = report.totals || {};
     const results = totals.results || {};
     const period = report.period || {};
-    $("economics-period").textContent = `${period.from} → ${period.to} · closed UTC dates`;
+    const change = (report.change || {}).values || {};
+    const subscription = report.subscription || {};
+    const context = resultsContext(report);
+    $("economics-period").innerHTML = `${esc(period.from)} → ${esc(period.to)} · closed UTC dates ${metricButton("economics_investment_results")} · period changes ${metricButton("economics_period_change")}`;
     $("economics-cards").innerHTML = [
-      card("economics_delivered", fmt(numeric(results.delivered))),
-      numeric(results.reviewed) > 0 ? card("economics_accepted", fmt(numeric(results.human_accepted))) : "",
-      numeric(results.checks_passed) + numeric(results.checks_failed) > 0 ? card("economics_verified", fmt(numeric(results.verified_delivered))) : "",
-      card("economics_code_changes", fmt(numeric((totals.code || {}).revisions))),
+      card("economics_api_equivalent_usd", fmt(numeric(totals.api_equivalent_cost_usd), "money"), esc(context.investment), changeText(change.api_equivalent_cost_usd, "money")),
+      card("economics_attention_hours", attentionHours(numeric(totals.recorded_attention_hours)), "", changeText(change.recorded_attention_hours, "hours")),
+      card("economics_delivered", fmt(numeric(results.delivered)), esc(context.delivered), changeText(change.delivered)),
+      context.outcomes > 0 ? card("economics_project_association", fmt(context.linked), esc(context.association)) : "",
+      context.reviewed > 0 ? card("economics_accepted", fmt(numeric(results.human_accepted)), esc(context.accepted), changeText(change.human_accepted)) : "",
+      context.observedChecks > 0 ? card("economics_verified", fmt(numeric(results.verified_delivered)), esc(context.verified), changeText(change.verified_delivered)) : "",
+      card("economics_code_changes", fmt(numeric((totals.code || {}).revisions)), esc(context.code), changeText(change.revisions)),
+      card("economics_subscription_estimate", fmt(numeric(subscription.estimate_usd), "money"), finite(subscription.covered_vendor_days) ? esc(`${full.format(subscription.covered_vendor_days)} covered · ${full.format(subscription.missing_vendor_days || 0)} missing vendor-days`) : ""),
     ].join("");
+  }
+
+  function changeText(difference, kind = "number") {
+    // A precomputed comparable-period difference; absent when capture or coverage cannot support it.
+    if (!finite(difference)) return "";
+    const arrow = difference > 0 ? "↑" : difference < 0 ? "↓" : "↔";
+    const magnitude = Math.abs(difference);
+    const value = kind === "money" ? money.format(magnitude) : kind === "hours" ? `${full.format(magnitude)}h` : full.format(magnitude);
+    return `${arrow} ${difference > 0 ? "+" : difference < 0 ? "−" : ""}${value}`;
   }
 
   function loopHistoryNote() {
@@ -951,7 +1012,7 @@ if (typeof module === "object" && module.exports) module.exports = AgentTelemetr
     active = windows[activeKey] || active;
     document.querySelectorAll("[data-window]").forEach(button => button.setAttribute("aria-pressed", button.dataset.window === activeKey ? "true" : "false"));
     $("window-summary").textContent = `${active.from} → ${active.to} UTC`;
-    $("comparison-note").textContent = active.comparison?.summary ? `Changes vs preceding ${active.inclusive_days} days` : "";
+    $("comparison-note").textContent = comparisonNote(active, data.collection_date);
     renderMasthead();
     renderOverview();
     renderActivity();

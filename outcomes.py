@@ -36,6 +36,12 @@ KINDS = {
 }
 RECEIPT_VENDORS = {"anthropic", "openai", "cursor"}
 ENVIRONMENTS = {"personal", "work"}
+# Result status words. The current producer reports a passing check or an applied update as
+# ``succeeded``; ``pending`` and ``not-required`` are neither a pass nor a failure.
+CHECKS_PASSED = {"passed", "ok", "green", "succeeded"}
+CHECKS_FAILED = {"failed", "red"}
+UPDATES_APPLIED = {"applied", "ok", "done", "succeeded"}
+UPDATES_FAILED = {"failed", "parked", "unknown"}
 MAX_LINE_BYTES = 65536
 # Optional restricted lineage/provenance metadata (DS15 producer contribution). A malformed optional
 # value is dropped (unknown) rather than rejecting a receipt that earlier adapters already accepted.
@@ -435,11 +441,11 @@ def public_rows(connection: sqlite3.Connection) -> tuple[list[dict[str, Any]], l
             "events": len(rows),
             "questions": kinds.get("question.opened", 0),
             "answers": kinds.get("question.answered", 0),
-            "checks_passed": sum(1 for s in checks if s in {"passed", "ok", "green"}),
-            "checks_failed": sum(1 for s in checks if s in {"failed", "red"}),
+            "checks_passed": sum(1 for s in checks if s in CHECKS_PASSED),
+            "checks_failed": sum(1 for s in checks if s in CHECKS_FAILED),
             "publication_status": publications[-1] if publications else None,
-            "updates_applied": sum(1 for s in updates if s in {"applied", "ok", "done"}),
-            "updates_failed": sum(1 for s in updates if s in {"failed", "parked", "unknown"}),
+            "updates_applied": sum(1 for s in updates if s in UPDATES_APPLIED),
+            "updates_failed": sum(1 for s in updates if s in UPDATES_FAILED),
             "disposition": disposition,
             "linkage": linkage,
             "vendors": sorted({str(r["vendor"]) for r in rows if r["vendor"]}),

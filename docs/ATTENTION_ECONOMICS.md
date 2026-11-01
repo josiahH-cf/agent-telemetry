@@ -110,6 +110,14 @@ unavailable roots, identity changes, rewritten ancestry and disabled roots have
 named coverage states. Retained metadata survives outages and rebuilds; no source
 history is erased. A duplicate source cannot duplicate public change rows.
 
+When a checkout's history no longer contains a source's cursor (an amended or
+rebased tip, a branch switch or a detached checkout), that collection reports
+`partial` with `code_history_rewritten` and resumes from the common ancestor, or
+restarts the bounded backfill when none exists. Revisions already recorded stay
+counted, so a replaced revision appears beside its replacement; additive
+`source_coverage.rewrites_resumed` counts these resumptions. `collect.py --doctor`
+names sources that remain `retained-last-good` or `unavailable` as `code_sources`.
+
 An outcome's optional public association is `exact` for an explicit registry
 code/approved label, an explicitly configured private receipt project link, or a
 full receipt revision matching configured Git evidence. One observed native

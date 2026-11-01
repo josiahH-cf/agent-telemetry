@@ -229,8 +229,8 @@ python3 -m unittest discover -s tests -v
   successful only after its public outputs were written), publication and Pages
   state (a failed or blocked publication warns at once), Claude usage-capture
   health, both schedulers, the lock, prices,
-  schemas, store integrity, machine reconciliation, hooks, Git HEAD commit/tree
-  integrity, the tracked manifest,
+  schemas, store integrity, configured Git metadata sources, machine
+  reconciliation, hooks, Git HEAD commit/tree integrity, the tracked manifest,
   clock watermark, collection age, and disk state.
 - A normal collection transactionally updates the canonical store, full
   envelope, bounded page envelope, public/local machine tiers, current-day

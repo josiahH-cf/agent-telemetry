@@ -307,10 +307,60 @@ class GitEvidenceTests(unittest.TestCase):
         for _ in range(3):
             code_evidence.collect(self.con, self.config, self.registry, '', NOW)
         self.assertEqual(len(code_evidence.public_rows(self.con)), 5)
+        before = code_evidence.public_rows(self.con)
         self.git('checkout', '--orphan', 'replacement')
         self.git('commit', '-qm', 'PRIVATE_MESSAGE_SENTINEL')
-        self.assertEqual(code_evidence.collect(self.con, self.config, self.registry, '', NOW)[0]['detail_code'], 'code_history_rewritten')
-        self.assertEqual(len(code_evidence.public_rows(self.con)), 5)
+        # Unrelated history has no common ancestor: the source restarts its bounded backfill and keeps every row.
+        results = code_evidence.collect(self.con, self.config, self.registry, '', NOW)
+        self.assertEqual((results[0]['status'], results[0]['detail_code']), ('partial', 'code_history_rewritten'))
+        self.assertEqual(results[1]['status'], 'current')
+        rows = code_evidence.public_rows(self.con)
+        self.assertEqual(len(rows), 6)
+        self.assertTrue(all(row in rows for row in before))
+        self.assertEqual(code_evidence.collect(self.con, self.config, self.registry, '', NOW)[0]['status'], 'current')
+        self.assertEqual(len(code_evidence.public_rows(self.con)), 6)
+
+    def test_amended_tip_resumes_from_common_ancestor_without_erasing_or_repeating(self):
+        for _ in range(3):
+            code_evidence.collect(self.con, self.config, self.registry, '', NOW)
+        before = code_evidence.public_rows(self.con)
+        self.assertEqual(len(before), 5)
+        (self.repo/'PRIVATE_FILENAME_SENTINEL').write_text('PRIVATE_CODE_SENTINEL\n'*9)
+        self.git('commit', '-qa', '--amend', '-m', 'PRIVATE_MESSAGE_SENTINEL')
+        result = code_evidence.collect(self.con, self.config, self.registry, '', NOW)[0]
+        self.assertEqual((result['status'], result['detail_code']), ('partial', 'code_history_rewritten'))
+        rows = code_evidence.public_rows(self.con)
+        # The replaced revision stays recorded beside its replacement; nothing else is read twice.
+        self.assertEqual(len(rows), 6)
+        self.assertTrue(all(row in rows for row in before))
+        coverage = code_evidence.coverage(self.con)
+        self.assertEqual(coverage['rewrites_resumed'], 1)
+        self.assertEqual(coverage['reasons'], ['code_history_rewritten'])
+        self.assertEqual(code_evidence.collect(self.con, self.config, self.registry, '', NOW)[0]['status'], 'current')
+        coverage = code_evidence.coverage(self.con)
+        self.assertEqual((coverage['status'], coverage['states']['current'], coverage['rewrites_resumed']), ('current', 1, 1))
+        payload = json.dumps(coverage)
+        for sentinel in ('PRIVATE_MESSAGE_SENTINEL', str(self.repo), self.git('rev-parse', 'HEAD')):
+            self.assertNotIn(sentinel, payload)
+        (self.repo/'PRIVATE_FILENAME_SENTINEL').write_text('PRIVATE_CODE_SENTINEL\n'*10)
+        self.git('commit', '-qam', 'PRIVATE_MESSAGE_SENTINEL')
+        self.assertEqual(code_evidence.collect(self.con, self.config, self.registry, '', NOW)[0]['status'], 'current')
+        self.assertEqual(len(code_evidence.public_rows(self.con)), 7)
+
+    def test_rewrite_during_pending_backfill_restarts_without_duplicate_rows(self):
+        self.assertEqual(code_evidence.collect(self.con, self.config, self.registry, '', NOW)[0]['status'], 'partial')
+        self.assertEqual(len(code_evidence.public_rows(self.con)), 2)
+        (self.repo/'PRIVATE_FILENAME_SENTINEL').write_text('PRIVATE_CODE_SENTINEL\n'*9)
+        self.git('commit', '-qa', '--amend', '-m', 'PRIVATE_MESSAGE_SENTINEL')
+        result = code_evidence.collect(self.con, self.config, self.registry, '', NOW)[0]
+        self.assertEqual(result['detail_code'], 'code_history_rewritten')
+        for _ in range(4):
+            code_evidence.collect(self.con, self.config, self.registry, '', NOW)
+        rows = code_evidence.public_rows(self.con)
+        # Four surviving revisions, the replacement and the one replaced revision; no revision twice.
+        self.assertEqual(len(rows), 6)
+        self.assertEqual(len({row['change_id'] for row in rows}), 6)
+        self.assertEqual(code_evidence.coverage(self.con)['status'], 'current')
 
     def test_old_store_and_unavailable_root_do_not_claim_observed_zero(self):
         self.con.execute('DROP TABLE code_observations')
@@ -399,6 +449,35 @@ class NativeAccountingTests(unittest.TestCase):
             self.assertNotIn(revision, json.dumps(outcomes.public_rows(con)[0]))
         finally:
             con.close()
+
+    def test_bulk_bucket_sessions_never_supply_project_association(self):
+        from tests.test_workspace_accounting import S3
+        # A remote-source transcript resolves to the explicit remote bucket, not a project.
+        write_lines(root_path(self.config, 'wsl_claude')/f'ssh-fixture-host/{S3}.jsonl', claude_session(S3, '/remote/checkout', [('2026-09-15T11:00:00Z', 70)]))
+        write_lines(self.receipts/'a.jsonl', [receipt(1, 'outcome.started', 'remote-only', None, session=S3),
+            receipt(2, 'outcome.started', 'registered-and-remote', None, session=S1), receipt(3, 'session.bound', 'registered-and-remote', None, session=S3),
+            receipt(4, 'outcome.started', 'registered-only', None, session=S2)])
+        observatory.collect_observatory(self.config, PROJECT_ROOT, {}, NOW)
+        con = observatory.connect_store(state_of(self.config)/observatory.STORE_NAME)
+        try:
+            self.assertEqual(con.execute("SELECT project_id, registered FROM projects WHERE project_id='remote'").fetchone()[:], ('remote', 1))
+            fields = economics.outcome_fields(con)
+            self.assertEqual((fields['remote-only']['project_id'], fields['remote-only']['project_attribution']), (None, 'unattributed'))
+            # Unknown bucket ownership is not a second project, so the association is unattributed, not shared.
+            self.assertEqual((fields['registered-and-remote']['project_id'], fields['registered-and-remote']['project_attribution']), (None, 'unattributed'))
+            self.assertEqual((fields['registered-only']['project_id'], fields['registered-only']['project_attribution']), ('obsidian-system', 'correlated'))
+            public = {row['project_attribution'] for row in outcomes.public_rows(con)[0]}
+            self.assertNotIn('remote', {row['project_id'] for row in outcomes.public_rows(con)[0]})
+            self.assertEqual(public, {'unattributed', 'correlated'})
+            session = consumer.sessions_view(con, [('anthropic', S3)])[0]
+            # The session contract is unchanged: an observed requested session is an exact native match.
+            self.assertEqual((session['attribution'], session['linkage'], session['project_id']), ('exact', 'unattributed', 'remote'))
+        finally:
+            con.close()
+        view = consumer.consumer_view(PROJECT_ROOT, state_of(self.config), {'days': 7}, now=NOW)
+        attribution = {row['project_id']: row['attribution'] for row in view['projects']}
+        self.assertEqual(attribution['remote'], 'unattributed')
+        self.assertEqual(attribution['obsidian-agent'], 'correlated')
 
     def test_read_only_consumer_accepts_previous_store_schema(self):
         observatory.collect_observatory(self.config, PROJECT_ROOT, {}, NOW)

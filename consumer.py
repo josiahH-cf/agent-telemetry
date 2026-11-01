@@ -158,7 +158,8 @@ def projects_view(connection: sqlite3.Connection, *, days: Any, project_id: str 
             "unpriced_tokens": int(row["unpriced_tokens"]),
             "first_seen_at": row["first_seen_at"],
             "last_seen_at": row["last_seen_at"],
-            "attribution": "correlated" if row["registered"] else "unattributed",
+            # A bulk bucket resolves by an explicit rule but names no project, like each of its sessions.
+            "attribution": "correlated" if row["registered"] and row["project_id"] not in observatory.BUCKET_IDS else "unattributed",
             "basis": "lifetime deduplicated provider usage; API-equivalent dollars price known token classes only",
         }
         if periods:

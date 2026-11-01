@@ -17,6 +17,7 @@ import uuid
 from collections import Counter, defaultdict
 from pathlib import Path
 
+import observatory
 import outcome_quality
 from tools import attention
 
@@ -65,6 +66,9 @@ def outcome_fields(connection):
     registered = _meta(connection, 'economics_projects', {})
     registered.update({r['project_code']: r['public_label'] or r['project_code']
                        for r in connection.execute('SELECT project_code,public_label FROM projects WHERE registered=1')})
+    # Bulk buckets resolve by explicit rules but name no project: a bucket session is unknown association.
+    for bucket in observatory.BUCKET_IDS:
+        registered.pop(bucket, None)
     links = _meta(connection, 'economics_project_links', {})
     labels = {label: code for code, label in registered.items()}
     has_code = connection.execute("SELECT 1 FROM sqlite_master WHERE type='table' AND name='code_observations'").fetchone()
@@ -196,6 +200,7 @@ def _coverage(snapshot, bounds):
                      'note': 'Whole outcomes by last receipt; reviews/refinement are incomplete unless explicitly captured from start.'},
         'code': {'from': code.get('from'), 'to': code.get('to'), 'status': code.get('status', 'not-configured'),
                  'sources': code.get('sources', 0), 'states': code.get('states', {}), 'reasons': code.get('reasons', []),
+                 'rewrites_resumed': code.get('rewrites_resumed', 0),
                  'note': 'Configured first-parent Git history; text shortstat, no quality or productivity inference.'},
     }
 

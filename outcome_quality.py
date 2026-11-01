@@ -11,6 +11,7 @@ from collections import defaultdict
 
 import usage
 import observatory
+import outcomes
 
 
 def _seconds(start, end):
@@ -849,8 +850,8 @@ def _attempt(attempt_id, rows):
             actions[usage.safe_identifier(r['action'])] += 1
     return {'attempt_id': attempt_id, 'outcome_ids': sorted({r['outcome_id'] for r in rows}), 'first_at': rows[0]['at'], 'last_at': rows[-1]['at'],
             'events': len(rows), 'settings': _settings(rows), 'dispositions': dispositions, 'final_disposition': dispositions[-1] if dispositions else None,
-            'delivered': 'satisfied' in dispositions, 'checks_passed': sum(c in ('passed', 'ok', 'green') for c in checks),
-            'checks_failed': sum(c in ('failed', 'red') for c in checks), 'checks_observed': len(checks),
+            'delivered': 'satisfied' in dispositions, 'checks_passed': sum(c in outcomes.CHECKS_PASSED for c in checks),
+            'checks_failed': sum(c in outcomes.CHECKS_FAILED for c in checks), 'checks_observed': len(checks),
             'repairs_of': sorted({r['repair_of'] for r in rows if r.get('repair_of')}),
             'supersedes': sorted({r['supersedes_outcome_id'] for r in rows if r.get('supersedes_outcome_id')}),
             'research_outcomes': sorted({r['research_outcome_id'] for r in rows if r.get('research_outcome_id')}),

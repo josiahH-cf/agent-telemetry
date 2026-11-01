@@ -297,8 +297,33 @@ class StabilityTests(unittest.TestCase):
                 {"suite_state": {"status": "ok", "available": True}},
             )
         names = {item["name"] for item in result["checks"]}
-        self.assertTrue({"sources", "scan_caches", "collection_cadence", "publish", "pages", "claude_usage_capture", "attention", "scheduler", "windows_tasks", "lock", "prices", "schemas", "observatory_store", "provider_roots", "machine_manifest", "reconciliation", "git_hooks", "git_integrity", "tracked_manifest", "clock", "collection_age", "disk"} <= names)
+        self.assertTrue({"sources", "scan_caches", "collection_cadence", "publish", "pages", "claude_usage_capture", "attention", "scheduler", "windows_tasks", "lock", "prices", "schemas", "observatory_store", "provider_roots", "code_sources", "machine_manifest", "reconciliation", "git_hooks", "git_integrity", "tracked_manifest", "clock", "collection_age", "disk"} <= names)
+        # The page payload carries at most 24 doctor checks; every check must still fit.
+        self.assertLessEqual(len(result["checks"]), 24)
         self.assertIn("[doctor] status=", stability.doctor_text(result))
+
+    def test_code_sources_doctor_names_stalled_and_unreadable_git_sources(self) -> None:
+        import observatory
+
+        with tempfile.TemporaryDirectory() as temporary:
+            state = Path(temporary)
+            config = {"observatory": {"code_roots": [{"root_id": f"code_{index}"} for index in range(3)]}}
+            self.assertEqual(stability._code_sources_status({}, state), ("ok", "not_configured"))
+            connection = observatory.connect_store(state / stability.OBSERVATORY_STORE)
+            rows = [("code_0", "current", None), ("code_1", "retained-last-good", "code_history_rewritten"), ("code_2", "unavailable", "git_read_failed"),
+                    ("code_old", "disabled", "source_disabled")]
+            with connection:
+                for root_id, status, detail in rows:
+                    connection.execute("INSERT INTO code_roots VALUES(?,?,?,?,?,?,?)", (root_id, "fixture", "/PRIVATE_PATH_SENTINEL", status, detail, None, "{}"))
+            self.assertEqual(stability._code_sources_status(config, state),
+                             ("warn", "current_1_partial_0_retained_1_unavailable_1_of_3_code_history_rewritten+git_read_failed"))
+            with connection:
+                connection.execute("UPDATE code_roots SET status='current',detail_code=NULL WHERE root_id<>'code_old'")
+                connection.execute("UPDATE code_roots SET status='partial',detail_code='code_history_rewritten' WHERE root_id='code_1'")
+            connection.close()
+            status, detail = stability._code_sources_status(config, state)
+            self.assertEqual((status, detail), ("ok", "current_2_partial_1_retained_0_unavailable_0_of_3"))
+            self.assertNotIn("PRIVATE_PATH_SENTINEL", detail)
 
     def test_claude_usage_capture_doctor_tracks_attempt_and_cache_age(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:

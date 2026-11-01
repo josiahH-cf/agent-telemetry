@@ -1,5 +1,61 @@
 # Stability pass findings and retention report
 
+## ST-53 — Attribution boundaries, rewritten Git evidence and results context (2026-11-01)
+
+- **As found:** the consumer reported the `remote` bulk bucket as `correlated`
+  although each of its sessions is `unattributed`, and outcome association
+  treated every resolved row as a project, so a remote-only session would have
+  published `project_id: "remote"` (no public row was affected). Receipts report a
+  passing check or an applied update as `succeeded`, which the adapter did not
+  recognise: 76 passing checks and 480 applied updates counted as zero, so
+  delivered-with-passing-checks could never exceed zero. A configured Git source
+  stopped permanently at its first history rewrite; three of seven sources,
+  including both obsidian-agent checkouts (a one-commit rewrite of `main` and a
+  detached checkout), had been `retained-last-good` since 2026-10-12 with no
+  doctor signal, which also blocked full-revision outcome joins. Recorded
+  results showed bare counts without the catalog's required denominators,
+  same-period investment or association coverage, and six `page` metrics had no
+  rendering. Activity deltas compared the open collection date with a complete
+  preceding day without saying so.
+- **Repair:** bulk buckets no longer supply consumer project attribution or
+  outcome association. `succeeded` joins the pass/applied vocabularies; other
+  words keep their meaning, including `unknown` updates counted as failed. A
+  rewritten source resumes from the common ancestor, or restarts its bounded
+  backfill, reports `partial` `code_history_rewritten` for that collection, keeps
+  every recorded revision and adds `source_coverage.rewrites_resumed`; doctor adds
+  `code_sources`. The results row adds catalog-defined same-period investment,
+  project association (new `economics_project_association`), review and check
+  denominators, Git-source coverage, timed attention and dated subscription
+  estimates when observed, and healthy period changes with their
+  `economics_period_change` disclosure. `economics_effort_results`, omitted from
+  the page since ST-48, is now classified machine-only. The catalog and the
+  comparison note disclose the open date. OUTCOME_ADAPTER.md names the Telemetry
+  and producer identity spaces.
+- **Evidence limits:** 137 observed outcome-bound native sessions all resolve to
+  `ad-hoc` because the producer runs them in workspace checkouts and job
+  directories outside registered paths; seven canonical Project ids on 83
+  outcomes have no explicit link. Most outcomes therefore stay Shared/Unassigned
+  until the producer sends full checkout revisions or the operator records
+  explicit `economics.project_links`. No reviews were recorded in the latest
+  30-day period, cash entries are absent and the subscription rate is undated.
+  Seventeen other page-surface catalog metrics (loop-window, scenario,
+  attention-share, bucket and probe metrics) have had no page rendering since
+  ST-48; restoring or reclassifying them is a separate decision.
+- **Verification:** the full suite passes; the ten new or changed regressions
+  failed against the previous source. Three isolated collections ran against a
+  copy of the private state: the stalled sources resumed with 239 new revisions
+  (212 obsidian-agent), no duplicate and every earlier row retained, then stayed
+  current without repeating a resumption. Passing checks rose from 0 to 76,
+  delivered-with-passing-checks from 0 to 36 and exact project associations from
+  2 to 10. All 328 closed-day history files and the five frozen loop datasets kept
+  their bytes; only current-date files changed. Doctor reconciliation, the
+  twelve-dataset manifest, consumer, page and machine rows agree for the same
+  generation ($9,304.45, 1,719 outcomes, 31 verified, 9 associated), and the
+  consumer left the store unchanged. Real and 1,000-project pages (about 221 KB and
+  224 KB) at 390 and 1,440 px have no page or card overflow, keyboard disclosure
+  restores focus, detail contrast is at least 9.38:1 and no browser errors occur.
+  The installed scheduler, live store and published site were not changed.
+
 ## ST-52 — A publication backlog could not drain on its own (2026-10-22)
 
 - **As found:** `publish.py` pushed all of local `main` in one `git push` with

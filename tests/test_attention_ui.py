@@ -110,6 +110,50 @@ class PresentationHelperTests(unittest.TestCase):
         self.assertEqual(result['code'], dict(attention=False, results=True, loop=False))
         self.assertEqual(result['loop'], dict(attention=False, results=False, loop=True))
 
+    def test_results_context_states_denominators_association_and_source_coverage(self) -> None:
+        report = {"totals": {"unpriced_tokens": 1500, "attribution": {"exact": 1, "correlated": 2, "shared": 1, "unattributed": 6},
+                             "results": {"outcomes": 10, "delivered": 8, "reviewed": 2, "delivered_unreviewed": 6, "verification_observed": 4, "checks_passed": 3, "checks_failed": 1}},
+                  "shared": {"api_equivalent_cost_usd": 1234.5},
+                  "coverage": {"code": {"sources": 7, "states": {"current": 3}, "rewrites_resumed": 2}}}
+        result = node_result(f"ui.resultsContext({json.dumps(report)})")
+        self.assertEqual((result["outcomes"], result["linked"], result["reviewed"], result["observedChecks"]), (10, 3, 2, 4))
+        self.assertEqual(result["investment"], "$1,234.50 Shared / unassigned · 1.5K tokens unpriced")
+        self.assertEqual(result["delivered"], "of 10 recorded · 2 reviewed")
+        self.assertEqual(result["association"], "of 10 recorded · the rest Shared / unassigned")
+        self.assertEqual(result["accepted"], "of 2 reviewed · 6 delivered unreviewed")
+        self.assertEqual(result["verified"], "of 4 with check evidence · 3 passed / 1 failed checks")
+        self.assertEqual(result["code"], "3 of 7 Git sources current · 2 history rewrites resumed")
+        # Unobserved evidence produces no denominator text and no invented zero.
+        empty = node_result("ui.resultsContext({})")
+        self.assertEqual((empty["outcomes"], empty["linked"]), (None, None))
+        self.assertEqual({key: empty[key] for key in ("investment", "delivered", "association", "accepted", "verified", "code")}, dict.fromkeys(("investment", "delivered", "association", "accepted", "verified", "code"), ""))
+        complete = node_result("ui.resultsContext({coverage:{code:{sources:2,states:{current:2}}},totals:{results:{outcomes:1,reviewed:0}}})")
+        self.assertEqual((complete["code"], complete["accepted"], complete["linked"]), ("", "", 0))
+        caught_up = node_result("ui.resultsContext({coverage:{code:{sources:2,states:{current:2},rewrites_resumed:1}}})")
+        self.assertEqual(caught_up["code"], "1 history rewrite resumed")
+
+    def test_comparison_note_discloses_an_open_collection_date(self) -> None:
+        result = node_result("({open:ui.comparisonNote({to:'2026-11-01',inclusive_days:7,comparison:{summary:{}}},'2026-11-01'),closed:ui.comparisonNote({to:'2026-10-31',inclusive_days:7,comparison:{summary:{}}},'2026-11-01'),none:ui.comparisonNote({to:'2026-11-01',inclusive_days:30,comparison:null},'2026-11-01')})")
+        self.assertEqual(result["open"], "Changes vs preceding 7 days · 2026-11-01 (UTC) is still open, so deltas run low until it closes")
+        self.assertEqual(result["closed"], "Changes vs preceding 7 days")
+        self.assertEqual(result["none"], "")
+
+    def test_recorded_results_render_catalog_investment_association_and_denominators(self) -> None:
+        for metric in ("economics_api_equivalent_usd", "economics_attention_hours", "economics_delivered", "economics_project_association",
+                       "economics_accepted", "economics_verified", "economics_code_changes", "economics_subscription_estimate"):
+            self.assertIn(f'card("{metric}"', DASHBOARD)
+        self.assertIn('metricButton("economics_investment_results")', DASHBOARD)
+        self.assertIn('metricButton("economics_period_change")', DASHBOARD)
+        # Every page-surface results metric has a page disclosure; the omitted effort detail is machine-only.
+        import metric_catalog
+        for metric in metric_catalog.PAGE_METRIC_IDS:
+            if metric.startswith("economics_"):
+                self.assertIn(f'"{metric}"', DASHBOARD)
+        self.assertNotIn("economics_effort_results", metric_catalog.PAGE_METRIC_IDS)
+        self.assertIn("esc(context.delivered)", DASHBOARD)
+        self.assertIn("context.observedChecks > 0 ? card(\"economics_verified\"", DASHBOARD)
+        self.assertNotIn("economics-projects", INDEX)
+
     def test_aliases_mask_all_labels_and_keep_other_and_bulk_bucket_semantics(self) -> None:
         result = node_result("(()=>{const w={'7':{top_projects:[{label:'PRIVATE_LABEL'},{label:'proj-private-code'},{label:'ad-hoc'},{label:'remote'},{label:'other',other_count:8}],top_specs:[{label:'PRIVATE_FEATURE'}]}};const a=ui.displayAliases(w);const f=ui.displayAliases(w,'features');return {projects:w['7'].top_projects.map(r=>ui.displayAlias(r,a)),feature:ui.displayAlias(w['7'].top_specs[0],f,'features')}})()")
         self.assertEqual(result['projects'], ['Project 01', 'Project 02', 'Ad hoc', 'Remote', 'Other'])

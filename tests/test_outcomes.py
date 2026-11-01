@@ -169,6 +169,27 @@ class OutcomeReceiptTests(unittest.TestCase):
         schema = json.loads((Path(__file__).resolve().parents[1] / "data/schema/outcomes.schema.json").read_text())
         self.assertEqual(observatory.validate_record(row, schema), [])
 
+    def test_producer_succeeded_status_counts_as_passed_check_and_applied_update(self) -> None:
+        import economics
+        import outcome_quality
+
+        rows = [receipt(1, "outcome.started", "verified"), receipt(2, "check.result", "verified", status="succeeded"),
+                receipt(3, "check.result", "verified", status="pending"), receipt(4, "check.result", "verified", status="not-required"),
+                receipt(5, "update.result", "verified", status="succeeded"), receipt(6, "outcome.disposition", "verified", disposition="satisfied"),
+                receipt(7, "outcome.started", "repaired"), receipt(8, "check.result", "repaired", status="failed"),
+                receipt(9, "check.result", "repaired", status="succeeded"), receipt(10, "outcome.disposition", "repaired", disposition="satisfied")]
+        write(self.receipts / "a.jsonl", rows)
+        outcomes.ingest_receipt_roots(self.store, self.config, NOW)
+        public = {row["checks_passed"] + 10 * row["checks_failed"]: row for row in outcomes.public_rows(self.store)[0]}
+        verified, repaired = public[1], public[11]
+        self.assertEqual((verified["checks_passed"], verified["checks_failed"], verified["updates_applied"], verified["updates_failed"]), (1, 0, 1, 0))
+        self.assertEqual((repaired["checks_passed"], repaired["checks_failed"]), (1, 1))
+        totals = economics.results(list(public.values()), True)
+        # Pending and not-required checks are neither passes nor failures; a recorded failure keeps the conservative cohort.
+        self.assertEqual((totals["verified_delivered"], totals["verification_observed"], totals["checks_passed"], totals["checks_failed"]), (1, 2, 2, 1))
+        attempt = outcome_quality._attempt("attempt", [dict(json.loads(r["record_json"])) for r in self.store.execute("SELECT record_json FROM outcome_events WHERE outcome_id='verified' ORDER BY at")])
+        self.assertEqual((attempt["checks_passed"], attempt["checks_failed"], attempt["checks_observed"]), (1, 0, 3))
+
     def test_a_cursor_transcript_root_is_refused_as_a_receipt_root_matter(self) -> None:
         with self.assertRaises(observatory.ObservatoryError) as caught:
             observatory.configured_roots({"observatory": {"roots": [{"root_id": "cursor_x", "vendor": "cursor", "host_os": "windows", "path": "/tmp"}]}})

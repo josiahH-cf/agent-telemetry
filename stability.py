@@ -737,6 +737,31 @@ def _observatory_status(config: dict[str, Any], state_root: Path) -> tuple[tuple
     return ("ok" if store_ok else "fail", store_detail), ("ok" if roots_ok else "warn", roots_detail)
 
 
+def _code_sources_status(config: dict[str, Any], state_root: Path) -> tuple[str, str]:
+    """Configured Git metadata sources by recorded state; a stalled or unreadable source is named."""
+    observatory_config = config.get("observatory") if isinstance(config.get("observatory"), dict) else {}
+    configured = observatory_config.get("code_roots") if isinstance(observatory_config.get("code_roots"), list) else []
+    if not configured:
+        return "ok", "not_configured"
+    store = state_root / OBSERVATORY_STORE
+    try:
+        connection = sqlite3.connect(f"file:{store}?mode=ro", uri=True, timeout=3)
+        try:
+            exists = connection.execute("SELECT 1 FROM sqlite_master WHERE type='table' AND name='code_roots'").fetchone()
+            rows = connection.execute("SELECT status,detail_code FROM code_roots WHERE status<>'disabled'").fetchall() if exists else []
+        finally:
+            connection.close()
+    except (OSError, sqlite3.Error):
+        return "warn", "store_unreadable"
+    counts = {state: sum(str(row[0]) == state for row in rows) for state in ("current", "partial", "retained-last-good", "unavailable")}
+    reasons = sorted({_safe_detail(row[1]) for row in rows if row[0] in ("retained-last-good", "unavailable") and row[1]})
+    stalled = counts["retained-last-good"] + counts["unavailable"]
+    detail = f"current_{counts['current']}_partial_{counts['partial']}_retained_{counts['retained-last-good']}_unavailable_{counts['unavailable']}_of_{len(configured)}"
+    if stalled:
+        detail += "_" + "+".join(reasons or ["unknown"])
+    return ("warn" if stalled or len(rows) < len(configured) else "ok"), detail
+
+
 def _machine_manifest_status(project_root: Path) -> tuple[str, str]:
     manifest = _read_json_object(project_root / "data" / "machine" / "MANIFEST.json")
     datasets = manifest.get("datasets") if isinstance(manifest.get("datasets"), list) else []
@@ -895,6 +920,7 @@ def run_doctor(
     store_check, roots_check = _observatory_status(config, state_root)
     add("observatory_store", *store_check)
     add("provider_roots", *roots_check)
+    add("code_sources", *_code_sources_status(config, state_root))
     machine_status, machine_detail = _machine_manifest_status(project_root)
     add("machine_manifest", machine_status, machine_detail)
     reconcile_status, reconcile_detail = _reconciliation_status(project_root)
