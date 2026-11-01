@@ -54,7 +54,17 @@
   consumer left the store unchanged. Real and 1,000-project pages (about 221 KB and
   224 KB) at 390 and 1,440 px have no page or card overflow, keyboard disclosure
   restores focus, detail contrast is at least 9.38:1 and no browser errors occur.
-  The installed scheduler, live store and published site were not changed.
+  These checks ran before activation.
+- **Live delivery:** source commit `4d6849dc3` reached `main` by fast-forward
+  under the collection lock, and the guarded manual publication pushed it with
+  production snapshot `9d8b6c647` (collect, scrub, commit and publish ok in one
+  push attempt). Pages serves `index.html`, `dashboard.js` and `metrics.jsonl`
+  byte-identical to that commit. The first production collection with the new
+  code changed only current-date history files; the three stalled Git sources
+  resumed (`rewrites_resumed` 3) and the live consumer reports `remote` as
+  `unattributed`. The live page at 390 and 1,440 px in all four windows has no
+  overflow, restores focus after keyboard disclosure and shows no browser
+  errors.
 
 ## ST-52 — A publication backlog could not drain on its own (2026-10-22)
 
