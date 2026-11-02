@@ -26,6 +26,7 @@ from pathlib import Path, PurePosixPath
 from typing import Any, Iterable, Iterator
 
 import usage
+import cadence
 from tools import attention as attention_ledger
 
 
@@ -699,6 +700,21 @@ def import_legacy_cache(connection: sqlite3.Connection, root: dict[str, Any], st
 
 def enumerate_files(connection: sqlite3.Connection, root: dict[str, Any], now: dt.datetime, rebuild: bool) -> tuple[list[Path], str]:
     base: Path = root["path"]
+    if root["root_id"] == "windows_claude" and not rebuild:
+        # Claude uses project directories, not Codex's dated partitions. Refresh
+        # known transcripts each tick and discover new files every half hour.
+        marker = connection.execute("SELECT value FROM meta WHERE key=?",
+                                    ("claude_discovery:" + root["root_id"],)).fetchone()
+        try:
+            previous = dt.datetime.fromisoformat(marker[0]) if marker else None
+            recent = previous is not None and 0 <= (now - previous).total_seconds() < cadence.WINDOWS_CLAUDE_DISCOVERY_MINUTES * 60
+        except (ValueError, TypeError):
+            recent = False
+        known_paths = [base / str(row[0]) for row in connection.execute(
+            "SELECT relative_path FROM source_files WHERE root_id=?", (root["root_id"],))]
+        if recent and known_paths:
+            return sorted(path for path in known_paths if path.is_file()), "known_claude_paths"
+        return sorted(base.rglob("*.jsonl")), "periodic_claude_discovery"
     if root["vendor"] != "openai" or rebuild:
         return sorted(base.rglob("*.jsonl")), "full_tree"
     known = safe_int(connection.execute("SELECT count(*) FROM source_files WHERE root_id=?", (root["root_id"],)).fetchone()[0])
@@ -787,7 +803,12 @@ def scan_one_root(
                 if fault_after_files is not None and index >= fault_after_files:
                     raise ObservatoryError("injected_interrupted_transaction")
             known_rows = connection.execute("SELECT relative_path FROM source_files WHERE root_id=?", (root["root_id"],)).fetchall()
-            missing = sum(str(row[0]) not in seen for row in known_rows) if strategy == "full_tree" else 0
+            missing = sum(str(row[0]) not in seen for row in known_rows) if strategy in ("full_tree", "periodic_claude_discovery") else 0
+            if root["root_id"] == "windows_claude" and strategy in ("full_tree", "periodic_claude_discovery") and not errors:
+                # Same transaction as the parsed files: an interrupted scan must
+                # not defer the next complete discovery.
+                connection.execute("INSERT OR REPLACE INTO meta(key,value) VALUES(?,?)",
+                                   ("claude_discovery:" + root["root_id"], observed_at))
             status = "partial" if errors or partial or missing or resets else "ok"
             seconds = time.monotonic() - started
             connection.execute(

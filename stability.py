@@ -374,14 +374,13 @@ def _cron_status() -> tuple[str, str]:
     except (OSError, subprocess.TimeoutExpired):
         return "warn", "crontab_unreadable"
     text = result.stdout
-    tags = ("agent-telemetry-refresh", "agent-telemetry-publish", "agent-telemetry-reboot")
+    tags = ("agent-telemetry-refresh", "agent-telemetry-publish")
     present = sum(tag in text for tag in tags)
     priority_lines = [line.strip() for line in text.splitlines() if "# agent-telemetry-" in line and not line.lstrip().startswith("#")]
     prioritized = bool(priority_lines) and all("nice" in line and "ionice" in line for line in priority_lines)
     expected = {
         "agent-telemetry-refresh": f"*/{EXPECTED_INTERVAL_MINUTES} * * * *",
         "agent-telemetry-publish": "17 3 * * *",
-        "agent-telemetry-reboot": "@reboot",
     }
     schedule_ok = len(priority_lines) == len(tags) and all(
         len(rows := [line for line in priority_lines if line.endswith(f"# {tag}")]) == 1
@@ -389,7 +388,7 @@ def _cron_status() -> tuple[str, str]:
         for tag, schedule in expected.items()
     )
     if present == len(tags) and prioritized and schedule_ok:
-        return "ok", "three_entries_present_and_reduced_priority"
+        return "ok", "two_entries_present_and_reduced_priority"
     if present == len(tags) and prioritized:
         return "warn", "schedule_or_tag_count_mismatch"
     return "warn", f"entries_{present}_of_{len(tags)}_priority_{'ok' if prioritized else 'missing'}"
@@ -476,13 +475,15 @@ def _windows_task_status() -> tuple[str, str]:
     continuity = task_xml["agent-telemetry-continuity"]
     if logon.find(".//t:LogonTrigger", namespace) is None:
         return "warn", "task_trigger_mismatch"
+    if text_at(logon, ".//t:LogonTrigger/t:Delay") != f"PT{cadence.WINDOWS_LOGON_DELAY_MINUTES}M":
+        return "warn", "logon_delay_mismatch"
     interval = text_at(continuity, ".//t:TimeTrigger/t:Repetition/t:Interval")
     if wrapped:
         detail = "task_action_wrapped"
-        if interval != f"PT{EXPECTED_INTERVAL_MINUTES}M":
+        if interval != f"PT{cadence.WINDOWS_CONTINUITY_INTERVAL_MINUTES}M":
             detail += "+continuity_interval_" + (interval if re.fullmatch(r"PT[0-9HMS]{1,12}", interval) else "unknown")
         return "warn", detail
-    if interval != f"PT{EXPECTED_INTERVAL_MINUTES}M":
+    if interval != f"PT{cadence.WINDOWS_CONTINUITY_INTERVAL_MINUTES}M":
         return "warn", "task_trigger_mismatch"
     return "ok", "two_tasks_action_schedule_and_power_policy_ok"
 

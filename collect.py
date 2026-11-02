@@ -3405,7 +3405,7 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--project-root", type=Path, help="output project root (primarily for fixture verification)")
     parser.add_argument("--scrub", action="store_true", help="scan the publishable repository tree and exit")
     parser.add_argument("--audit-history", action="store_true", help="scan every reachable Git blob and commit identity")
-    parser.add_argument("--publish-due", action="store_true", help="exit 0 when a new five-minute UTC publication slot is due")
+    parser.add_argument("--publish-due", action="store_true", help="exit 0 when a new fifteen-minute UTC publication slot is due")
     parser.add_argument("--record-publish", choices=("pending", "success", "failure", "blocked"), help="record machine-local publish state and exit")
     parser.add_argument("--publish-reason", default="scheduled", help="allowlisted reason used with --record-publish")
     parser.add_argument("--publish-stage", choices=PUBLISH_STAGES, help="publication stage that produced the recorded outcome")

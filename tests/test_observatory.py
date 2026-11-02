@@ -137,6 +137,53 @@ class StoreTests(unittest.TestCase):
         write_lines(values["wsl_codex"] / "2026" / "08" / "20" / "one.jsonl", codex_rows("codex-wsl", cwd))
         write_lines(values["windows_codex"] / "2026" / "08" / "20" / "two.jsonl", codex_rows("codex-windows", windows_cwd))
 
+    def test_windows_claude_known_paths_refresh_between_half_hour_discovery(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            config = fixture_config(root)
+            self.populate(root, config)
+            now = dt.datetime.now(UTC).replace(microsecond=0)
+            first, first_roots = observatory.collect_observatory(config, PROJECT_ROOT, loop_snapshot(), now)
+            windows = root / "windows_claude"
+            existing = windows / "Project" / "two.jsonl"
+            write_lines(existing, claude_rows("claude-windows", "message-windows", "/fixture")
+                        + claude_rows("claude-windows", "message-added", "/fixture"))
+            write_lines(windows / "New" / "new.jsonl", claude_rows("new-session", "new-message", "/fixture"))
+            second, roots = observatory.collect_observatory(config, PROJECT_ROOT, loop_snapshot(), now + dt.timedelta(minutes=15))
+            win = next(row for row in roots if row["root_id"] == "windows_claude")
+            self.assertEqual(win["strategy"], "known_claude_paths")
+            self.assertEqual((win["files"], win["changed"]), (1, 1))
+            self.assertEqual(second["totals"]["sessions"], first["totals"]["sessions"])
+            third, roots = observatory.collect_observatory(config, PROJECT_ROOT, loop_snapshot(), now + dt.timedelta(minutes=30))
+            win = next(row for row in roots if row["root_id"] == "windows_claude")
+            self.assertEqual(win["strategy"], "periodic_claude_discovery")
+            self.assertEqual(win["files"], 2)
+            self.assertEqual(third["totals"]["sessions"], first["totals"]["sessions"] + 1)
+            # A deliberate rebuild still enumerates every transcript.
+            _, roots = observatory.collect_observatory(config, PROJECT_ROOT, loop_snapshot(), now + dt.timedelta(minutes=31), rebuild=True)
+            self.assertEqual(next(row for row in roots if row["root_id"] == "windows_claude")["strategy"], "full_tree")
+
+    def test_failed_windows_claude_discovery_does_not_advance_the_marker(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            base = Path(temporary)
+            config = fixture_config(base)
+            self.populate(base, config)
+            now = dt.datetime.now(UTC).replace(microsecond=0)
+            observatory.collect_observatory(config, PROJECT_ROOT, loop_snapshot(), now)
+            selected = next(row for row in config["observatory"]["roots"] if row["root_id"] == "windows_claude")
+            selected = {**selected, "path": Path(str(selected["path"]))}
+            write_lines(selected["path"] / "New" / "new.jsonl", claude_rows("new", "new", "/fixture"))
+            connection = observatory.connect_store(Path(str(config["cache_root"])) / observatory.STORE_NAME)
+            try:
+                prior = connection.execute("SELECT value FROM meta WHERE key='claude_discovery:windows_claude'").fetchone()[0]
+                with self.assertRaises(observatory.ObservatoryError):
+                    observatory.scan_one_root(connection, selected, Path(str(config["cache_root"])), now + dt.timedelta(minutes=30), fault_after_files=1)
+                self.assertEqual(connection.execute("SELECT value FROM meta WHERE key='claude_discovery:windows_claude'").fetchone()[0], prior)
+                resumed = observatory.scan_one_root(connection, selected, Path(str(config["cache_root"])), now + dt.timedelta(minutes=45))
+                self.assertEqual((resumed["strategy"], resumed["files"]), ("periodic_claude_discovery", 2))
+            finally:
+                connection.close()
+
     def test_four_roots_transactional_incremental_and_metadata_only(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary)

@@ -122,18 +122,19 @@ class StabilityTests(unittest.TestCase):
                 encoding="utf-8",
             )
             value = stability.parse_collection_log(root, dt.datetime(2026, 10, 1, 11, 45, tzinfo=UTC))
-        self.assertEqual(value["expected_interval_minutes"], 5)
+        self.assertEqual(value["expected_interval_minutes"], 15)
         self.assertEqual(value["missed_intervals"], 2)
         self.assertEqual([row["expected_interval_minutes"] for row in value["gaps"]], [30, 5])
         self.assertEqual(value["malformed_log_records"], 0)
 
-    def test_cron_contract_requires_five_minute_refresh_and_exact_tag_inventory(self) -> None:
+    def test_cron_contract_requires_fifteen_minutes_and_no_reboot_entry(self) -> None:
         lines = (
-            "*/5 * * * * nice ionice wrapper refresh cron # agent-telemetry-refresh\n"
+            "*/15 * * * * nice ionice wrapper refresh cron # agent-telemetry-refresh\n"
             "17 3 * * * nice ionice wrapper publish cron # agent-telemetry-publish\n"
-            "@reboot nice ionice wrapper catchup reboot # agent-telemetry-reboot\n"
         )
-        for text, expected in ((lines, "ok"), (lines.replace("*/5", "*/30"), "warn"), (lines + lines.splitlines()[0] + "\n", "warn")):
+        reboot = "@reboot nice ionice wrapper catchup reboot # agent-telemetry-reboot\n"
+        for text, expected in ((lines, "ok"), (lines.replace("*/15", "*/5"), "warn"),
+                               (lines + reboot, "warn"), (lines + lines.splitlines()[0] + "\n", "warn")):
             with self.subTest(expected=expected), mock.patch("stability.subprocess.run", return_value=subprocess.CompletedProcess([], 0, stdout=text)):
                 self.assertEqual(stability._cron_status()[0], expected)
 
@@ -175,10 +176,10 @@ class StabilityTests(unittest.TestCase):
             def query(args: list[str], **_kwargs: object) -> subprocess.CompletedProcess[str]:
                 name = args[3]
                 if name == "agent-telemetry-logon":
-                    body = xml.format(trigger="<LogonTrigger />", battery="false", action="catchup windows-task-logon")
+                    body = xml.format(trigger="<LogonTrigger><Delay>PT5M</Delay></LogonTrigger>", battery="false", action="catchup windows-task-logon")
                 else:
                     body = xml.format(
-                        trigger="<TimeTrigger><Repetition><Interval>PT5M</Interval></Repetition></TimeTrigger>",
+                        trigger="<TimeTrigger><Repetition><Interval>PT30M</Interval></Repetition></TimeTrigger>",
                         battery="false",
                         action="refresh windows-task-continuity",
                     )
@@ -202,7 +203,7 @@ class StabilityTests(unittest.TestCase):
             def query(args: list[str], **_kwargs: object) -> subprocess.CompletedProcess[str]:
                 logon = args[3] == "agent-telemetry-logon"
                 body = xml.format(
-                    trigger="<LogonTrigger />" if logon else "<TimeTrigger><Repetition><Interval>PT5M</Interval></Repetition></TimeTrigger>",
+                    trigger="<LogonTrigger><Delay>PT5M</Delay></LogonTrigger>" if logon else "<TimeTrigger><Repetition><Interval>PT30M</Interval></Repetition></TimeTrigger>",
                     logon="InteractiveToken" if logon else "S4U",
                     action="catchup windows-task-logon" if logon else "refresh windows-task-continuity",
                 )
@@ -223,7 +224,7 @@ class StabilityTests(unittest.TestCase):
             def query(args: list[str], **_kwargs: object) -> subprocess.CompletedProcess[str]:
                 logon = args[3] == "agent-telemetry-logon"
                 body = xml.format(
-                    trigger="<LogonTrigger />" if logon else "<TimeTrigger><Repetition><Interval>PT5M</Interval></Repetition></TimeTrigger>",
+                    trigger="<LogonTrigger><Delay>PT5M</Delay></LogonTrigger>" if logon else "<TimeTrigger><Repetition><Interval>PT30M</Interval></Repetition></TimeTrigger>",
                     battery="false" if logon else "true",
                     action="catchup windows-task-logon" if logon else "refresh windows-task-continuity",
                 )
@@ -247,9 +248,9 @@ class StabilityTests(unittest.TestCase):
                     enabled = "" if trigger_enabled else "<Enabled>false</Enabled>"
                     body = xml.format(
                         trigger=(
-                            f"<LogonTrigger>{enabled}</LogonTrigger>"
+                            f"<LogonTrigger><Delay>PT5M</Delay>{enabled}</LogonTrigger>"
                             if logon
-                            else f"<TimeTrigger>{enabled}<Repetition><Interval>PT5M</Interval></Repetition></TimeTrigger>"
+                            else f"<TimeTrigger>{enabled}<Repetition><Interval>PT30M</Interval></Repetition></TimeTrigger>"
                         ),
                         policy=policy,
                         action="catchup windows-task-logon" if logon else "refresh windows-task-continuity",

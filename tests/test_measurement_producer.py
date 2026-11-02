@@ -365,7 +365,7 @@ class FreshnessTests(unittest.TestCase):
         self.assertEqual(stages["publication"]["status"], "success")
         self.assertEqual((stages["served_page"]["status"], stages["served_page"]["reason"]), ("failure", "http_404"))
         self.assertEqual(stages["browser_adoption"]["status"], "not-observable")
-        self.assertEqual(view["target_minutes"]["collection_interval_minutes"], 5)
+        self.assertEqual(view["target_minutes"]["collection_interval_minutes"], 15)
 
     def test_missing_records_are_unknown_not_fresh(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
@@ -381,26 +381,31 @@ class WindowsTaskDetailTests(unittest.TestCase):
 <Triggers>{trigger}</Triggers><Principals><Principal><LogonType>S4U</LogonType><RunLevel>LeastPrivilege</RunLevel></Principal></Principals><Settings><StartWhenAvailable>true</StartWhenAvailable><DisallowStartIfOnBatteries>false</DisallowStartIfOnBatteries><StopIfGoingOnBatteries>false</StopIfGoingOnBatteries><MultipleInstancesPolicy>IgnoreNew</MultipleInstancesPolicy></Settings>
 <Actions><Exec><Command>wsl.exe</Command><Arguments>-d Ubuntu -- {prefix}/local/agent-telemetry/run-telemetry.sh {action}</Arguments></Exec></Actions></Task>"""
 
-    def status(self, prefix: str, interval: str) -> tuple[str, str]:
+    def status(self, prefix: str, interval: str, *, delay: str = "PT5M") -> tuple[str, str]:
         with tempfile.TemporaryDirectory() as temporary:
             executable = Path(temporary) / "schtasks.exe"
             executable.write_bytes(b"fixture")
 
             def query(args: list[str], **_kwargs: object) -> subprocess.CompletedProcess[str]:
                 logon = args[3] == "agent-telemetry-logon"
-                body = self.XML.format(trigger="<LogonTrigger />" if logon else f"<TimeTrigger><Repetition><Interval>{interval}</Interval></Repetition></TimeTrigger>",
+                body = self.XML.format(trigger=f"<LogonTrigger><Delay>{delay}</Delay></LogonTrigger>" if logon else f"<TimeTrigger><Repetition><Interval>{interval}</Interval></Repetition></TimeTrigger>",
                                        prefix=prefix, action="catchup windows-task-logon" if logon else "refresh windows-task-continuity")
                 return subprocess.CompletedProcess(args, 0, stdout=body)
 
             with mock.patch.object(stability, "WINDOWS_SCHTASKS", executable), mock.patch("stability.subprocess.run", side_effect=query):
                 return stability._windows_task_status()
 
+    def test_logon_wait_is_required_without_changing_continuity(self) -> None:
+        self.assertEqual(self.status("", "PT30M", delay=""), ("warn", "logon_delay_mismatch"))
+        self.assertEqual(self.status("", "PT30M", delay="PT1M"), ("warn", "logon_delay_mismatch"))
+        self.assertEqual(self.status("", "PT30M"), ("ok", "two_tasks_action_schedule_and_power_policy_ok"))
+
     def test_wrapped_action_and_interval_are_named_separately(self) -> None:
         wrapper = "/local/bin/profile-runner profile-name -- "
-        self.assertEqual(self.status(wrapper, "PT30M"), ("warn", "task_action_wrapped+continuity_interval_PT30M"))
-        self.assertEqual(self.status(wrapper, "PT5M"), ("warn", "task_action_wrapped"))
-        self.assertEqual(self.status("", "PT30M"), ("warn", "task_trigger_mismatch"))
-        self.assertEqual(self.status("", "PT5M"), ("ok", "two_tasks_action_schedule_and_power_policy_ok"))
+        self.assertEqual(self.status(wrapper, "PT15M"), ("warn", "task_action_wrapped+continuity_interval_PT15M"))
+        self.assertEqual(self.status(wrapper, "PT30M"), ("warn", "task_action_wrapped"))
+        self.assertEqual(self.status("", "PT5M"), ("warn", "task_trigger_mismatch"))
+        self.assertEqual(self.status("", "PT30M"), ("ok", "two_tasks_action_schedule_and_power_policy_ok"))
         self.assertTrue(stability.SAFE_DETAIL_RE.fullmatch("task_action_wrapped+continuity_interval_PT30M"))
 
 

@@ -165,6 +165,16 @@ PY
 
 ## Maintainers and agents
 
+Current collection and boot policy (2026-11-02): collection and publication use
+15-minute UTC slots; browser checks remain once per minute. Windows Claude's
+project-directory tree is discovered every 30 minutes; between discoveries the
+collector refreshes every known transcript. New-file discovery may therefore lag
+by up to 30 minutes. Rebuild still walks the complete tree. Two reduced-priority
+cron entries remain; the tagged reboot entry is retired. Windows continuity
+stays at 30 minutes, and the existing logon task waits five minutes. This
+supersedes the earlier five-minute/three-trigger schedule only; public datasets,
+closed history, source coverage, locks, publication and Pages owners stay intact.
+
 ### Non-negotiable invariants
 
 1. Provider transcripts and rollouts, both governed repositories, loop state,
@@ -246,7 +256,7 @@ python3 -m unittest discover -s tests -v
   When local `main` is more than ten commits ahead of the remote, one run
   pushes only the oldest ten, which keeps each guarded push inside the 60 s
   timeout. It records `partial` with `backlog_remaining`, keeps the last full
-  success time, exits 6 and logs `publish=partial`. Each later five-minute slot
+  success time, exits 6 and logs `publish=partial`. Each later fifteen-minute slot
   pushes the next chunk until `main` is caught up.
   A successful collection or new generation is not a commit, and a commit is
   not a published remote revision. An empty or unreadable HEAD commit/tree
@@ -262,7 +272,7 @@ python3 -m unittest discover -s tests -v
 The local log is
 `${XDG_STATE_HOME:-$HOME/.local/state}/agent-telemetry/collect.log`. The wrapper
 holds one non-inheritable lock, rotates that log at 1 MiB, treats overlapping
-Windows starts as safe no-ops, and publishes in each new five-minute UTC slot,
+Windows starts as safe no-ops, and publishes in each new fifteen-minute UTC slot,
 with the daily publication entry retained as a recovery backstop. Publication
 slots are independent of collection duration. Earlier unmarked collection-log
 entries retain their original 30-minute cadence interpretation.
@@ -495,21 +505,20 @@ bypass a local guard failure.
 
 ### Automation inventory and exact removal
 
-The installed WSL crontab has exactly three tagged, reduced-priority entries;
+The installed WSL crontab has exactly two tagged, reduced-priority entries;
 the installed file contains an expanded path, shown portably here as `$HOME`:
 
 ```cron
-*/5 * * * * /usr/bin/nice -n 10 /usr/bin/ionice -c 3 $HOME/agent-telemetry/run-telemetry.sh refresh cron # agent-telemetry-refresh
+*/15 * * * * /usr/bin/nice -n 10 /usr/bin/ionice -c 3 $HOME/agent-telemetry/run-telemetry.sh refresh cron # agent-telemetry-refresh
 17 3 * * * /usr/bin/nice -n 10 /usr/bin/ionice -c 3 $HOME/agent-telemetry/run-telemetry.sh publish cron # agent-telemetry-publish
-@reboot /usr/bin/nice -n 10 /usr/bin/ionice -c 3 $HOME/agent-telemetry/run-telemetry.sh catchup reboot # agent-telemetry-reboot
 ```
 
 The two current-user Windows tasks are:
 
 | Task | Trigger | Sole action |
 |---|---|---|
-| `agent-telemetry-logon` | User logon (S4U, headless) | `wsl.exe -d Ubuntu -- $HOME/agent-telemetry/run-telemetry.sh catchup windows-task-logon` |
-| `agent-telemetry-continuity` | Every 30 minutes (S4U, headless); five-minute target awaits an elevated task update | `wsl.exe -d Ubuntu -- $HOME/agent-telemetry/run-telemetry.sh refresh windows-task-continuity` |
+| `agent-telemetry-logon` | User logon, five-minute delay (S4U, headless) | `wsl.exe -d Ubuntu -- $HOME/agent-telemetry/run-telemetry.sh catchup windows-task-logon` |
+| `agent-telemetry-continuity` | Every 30 minutes (S4U, headless) | `wsl.exe -d Ubuntu -- $HOME/agent-telemetry/run-telemetry.sh refresh windows-task-continuity` |
 
 Both tasks are least-privilege/current-user, ignore overlapping instances, run
 on battery, and invoke no second program. Both use an `S4U` logon (run whether
@@ -517,11 +526,10 @@ logged on or not) so they run headless in session 0 with no console window; the
 logon task catches up when Windows starts the WSL distribution. No collection
 can occur while the host is powered off.
 
-WSL's five-minute refresh runs while the distribution is active. The existing
-Windows continuity registration currently denies changes to this unelevated
-process; it retains its 30-minute fallback. Doctor reports the mismatch against
-the five-minute target. Updating that task requires an elevated operator action,
-without changing its principal, sole action, power policy or overlap policy.
+WSL's fifteen-minute refresh runs while the distribution is active. The existing
+Windows continuity task retains its 30-minute wake-up fallback. The logon delay
+avoids a competing immediate boot collection; the retired cron reboot line must
+not be restored. Doctor checks these exact schedules and names any mismatch.
 
 Remove only the tagged WSL entries with:
 

@@ -279,8 +279,8 @@ class DashboardEnvelopeTests(unittest.TestCase):
         self.assertEqual(len(large_page["point_in_time"]["top_models"]), metric_catalog.TOP_N + 1)
         self.assertEqual(len(large_page["windows"]["30"]["recent_specs"]), metric_catalog.TOP_N)
         self.assertEqual(large_page["contract"]["refresh_policy"], {
-            "collection_interval_minutes": 5,
-            "publication_interval_minutes": 5,
+            "collection_interval_minutes": 15,
+            "publication_interval_minutes": 15,
             "browser_check_interval_minutes": 1,
         })
         for provider in large_page["capacity_now"]["providers"]:

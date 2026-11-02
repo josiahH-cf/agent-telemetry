@@ -44,23 +44,26 @@ collection's accounting timestamp came earlier. Truly future observations stay
 stale. The accounting date and generation timestamp retain their original
 collection-start meaning, separate from provider observation time.
 
-`cadence.py` owns the refresh policy. The compact envelope adds only
-`contract.refresh_policy`, with collection, publication and browser-check
-intervals in minutes. All existing public paths, schemas and metric ids remain.
-Publication is due when the UTC five-minute bucket is newer than the last
-successful push's bucket. A two-minute run therefore does not postpone the next
-slot to ten minutes. Failure retains last success and retries through the same
-guarded route; a busy lock prevents overlapping collectors. A pushed backlog
-chunk is recorded as `partial` and also retains the last full success, so the
-next slot stays due until local `main` is published. The daily publication
-entry remains a recovery backstop.
+`cadence.py` owns the refresh policy. Since 2026-11-02, collection and publication
+use 15-minute UTC slots while browser checks remain once per minute. The compact
+envelope's existing `contract.refresh_policy` carries those actual intervals.
+Publication duration does not shift the next slot. Failures and backlog chunks
+retain last success and retry through the same guarded route; locks prevent
+overlap, and the daily publication entry remains a recovery backstop.
 
-Wrapper starts record `cadence_minutes=5`. The cadence parser interprets earlier
-unmarked starts under their original 30-minute schedule and subsequent marked
-starts under five minutes. It does not rewrite history or retroactively multiply
-old missed intervals. Doctor checks the installed five-minute schedulers and
-warns about publication age after 15 minutes. Windows continuity skips a
-collection younger than three minutes when publication is already current.
+Wrapper starts record `cadence_minutes=15`. Earlier marked five-minute records
+and unmarked 30-minute records retain their historical cadence; gap counts are
+not rewritten. The gap threshold is 1.5 collection intervals; publication-age
+warning is 45 minutes. Windows continuity skips a collection younger than three
+minutes when publication is current.
+
+Windows Claude has project directories rather than Codex's dated partitions.
+The collector discovers its full transcript tree every 30 minutes and refreshes
+known files on intervening ticks. New-file discovery may lag by 30 minutes;
+existing transcript usage remains incremental. A complete discovery marker is
+committed with its parsed files, so interruption does not advance it. Explicit
+rebuild retains full enumeration. Other provider roots keep their existing scan
+rules, and source errors retain last-good evidence and named statuses.
 
 Visible pages check the same-origin compact payload once per minute, bounded to
 one in-flight request and a 15-second timeout. They adopt only a strictly newer
@@ -70,29 +73,13 @@ Offline, failed, older or invalid responses retain last-good data.
 
 ## Installed schedule and operational limits
 
-The tagged WSL refresh entry runs at `*/5`; the publication and reboot entries
-retain their existing schedules. The Windows continuity target is five minutes,
-offset two minutes from cron. Its installed task remains at 30 minutes: changing
-the existing registration returned Access is denied to the unelevated process.
-Doctor exposes that mismatch. WSL still supplies five-minute collection and
-publication while active; Windows retains its existing wake-up fallback.
-`agent-telemetry-logon` retains its logon trigger. Both Windows tasks retain S4U
-headless operation, their one WSL action, least privilege, battery policy and
-overlap policy. No new job is created or security policy weakened.
-
-An operator can complete the pending interval change from an elevated PowerShell
-session after reviewing this exact task-only command:
-
-```powershell
-$continuityTask = Get-ScheduledTask -TaskName 'agent-telemetry-continuity'
-$continuityTriggers = $continuityTask.Triggers
-$continuityTriggers[0].Repetition.Interval = 'PT5M'
-Set-ScheduledTask -TaskName 'agent-telemetry-continuity' -Trigger $continuityTriggers
-```
-
-The existing start time is already offset two minutes from five-minute cron
-slots, so its boundary does not need modification. Verify doctor after updating;
-do not create a replacement task or change its principal to bypass access.
+The tagged WSL refresh entry runs at `*/15`; the daily publication backstop
+remains at 03:17. The tagged cron `@reboot` entry is removed. No repository cron
+installer exists; installation replaces only those exact tagged lines and
+preserves every unrelated entry. Windows continuity retains its existing
+30-minute trigger and offset. The existing `agent-telemetry-logon` trigger waits
+five minutes. Both tasks retain their sole WSL action, principal, headless mode,
+battery and overlap policies. No replacement task or service is introduced.
 
 Only the already configured, authenticated Claude built-in `/usage` capture is
 refreshed. Its zero-turn/token/cost guard and metadata allowlist remain intact.
@@ -100,7 +87,7 @@ Codex windows come from the existing rollout metadata. Faster collection cannot
 produce a fresh Codex observation when that source has not reported one or a
 scan retains last-good data. Observation age and source state expose that limit.
 
-Five minutes is a target while the host and WSL are available, not real-time
+Fifteen minutes is a target while the host and WSL are available, not real-time
 streaming. The inspected ten recent completed runs had a median of 115 seconds
 and a maximum of 221 seconds. Slow scans, locks, source failures, network or
 Pages deployment lag can delay availability. Git push completion is distinct
