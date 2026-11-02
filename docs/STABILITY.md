@@ -1,5 +1,39 @@
 # Stability pass findings and retention report
 
+## ST-55 — Usage-left windows read as stale or failed while fresh (2026-11-02)
+
+- **As found:** Claude's allowance capture had failed 656 runs in a row since
+  2026-10-31, when the account's plan stopped having a five-hour limit.
+  Claude's refreshed cache reports that window as null, and the reader required
+  both allowlisted windows, so every fresh seven-day value was rejected as
+  `automatic_cache_unavailable`. The page meanwhile kept a 2.3-day-old
+  last-good value: 59% left against a current 20%. Codex had shown no fresh
+  limit since 2026-08-26, and since 2026-10-02 every run read "Last reported ·
+  capture failed", even with a limit observed minutes earlier. The scan keeps
+  the cached records of 1,466 session files that are no longer in the
+  configured stores (nearly all deleted, a few archived; their newest event is
+  older than the files still read), and `cached_source_missing` counted that
+  history as a failed capture of the current limit. The two earlier Claude gaps
+  in the retained capacity history coincide with collections that did not run.
+- **Repair:** a window Claude reports as null is omitted rather than rejected.
+  A cache with no valid window, a malformed window or a missing window key
+  still fails, and a successful capture replaces the last-good snapshot. A
+  session file gone from its store no longer marks the Codex limit as retained,
+  because it cannot hold a newer observation than the files still read.
+  Timeouts, unreadable sources and a configured store that has vanished still
+  do, and each observation's age still decides staleness.
+- **Evidence limits:** the capture still reads only the two allowlisted
+  windows. A cache whose window fields are renamed or removed fails closed
+  under a named status rather than being guessed.
+- **Verification:** new fixtures reproduced both live statuses against the
+  previous code and pass after the repair. A review pass added a missing window
+  key and a vanished Codex store; both failed against the first repair and
+  pass now, and the full suite of 356 tests passes. With the repaired code, the
+  installed CLI's real zero-turn `/usage` and cache gave `automatic_success`
+  with only the seven-day window, written mode 0600 to an isolated state folder
+  while the production capture files kept their bytes. The latest published
+  Codex source metadata yields a fresh limit with capture status `observed`.
+
 ## ST-54 — Project links, producer revisions and operator spending records (2026-11-01)
 
 - **As found:** 10 of 2,058 outcomes had a project association. The producer's

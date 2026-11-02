@@ -350,7 +350,9 @@ monthly provider amounts; it must remain ignored and is never an API-price
 input. When `claude_usage_capture.enabled` is true, the locked scheduler runs
 Claude's built-in `/usage` in zero-turn print mode before collection. It rejects
 any result with an inference turn, tokens, cost, permission denial, stale cache,
-or malformed fields. Raw output is bounded in memory and discarded; only the
+or malformed fields. A window Claude reports as null, a limit the account's
+plan does not have, is omitted rather than rejected; a cache with no valid
+window still fails. Raw output is bounded in memory and discarded; only the
 allowlisted five-hour and seven-day percentages, optional reset timestamps, and
 Claude cache timestamp enter the local snapshot. A failure retains last-good
 data and records a named doctor/measurement status. Manual entry remains the

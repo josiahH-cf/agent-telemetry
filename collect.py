@@ -1652,7 +1652,7 @@ def capture_local_claude_usage(
         }
         five = windows.get("five_hour", {})
         seven = windows.get("seven_day", {})
-        if not observed or not five or not seven:
+        if not observed or not (five or seven):
             result = {"status": "automatic_cache_unavailable", "attempted_at": iso(now)}
         else:
             record_local_claude_usage(
@@ -1900,7 +1900,9 @@ def build_usage_left(
     elif openai_source_status == "timeout":
         openai_capture_status = "source_timeout"
     elif openai_source_status == "partial" and openai_skip_reasons.intersection(
-        {"source_timeout", "source_unreadable", "cached_source_missing"}
+        # A deleted session file cannot hold a newer limit than the files still
+        # read, so only unread sources make the latest observation last-good.
+        {"source_timeout", "source_unreadable", "root_missing"}
     ):
         openai_capture_status = "source_partial_cached_last_good"
     elif openai_source_status == "error":

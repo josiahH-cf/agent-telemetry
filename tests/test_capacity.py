@@ -152,6 +152,35 @@ class CapacityNormalizationTests(unittest.TestCase):
         self.assertEqual(provider["capture_status"], "source_timeout_cached_last_good")
         self.assertEqual(provider["quota_windows"][0]["freshness_status"], "retained_last_good")
 
+    def test_deleted_codex_history_files_do_not_mark_current_limits_as_failed(self) -> None:
+        usage = {
+            "sources": {
+                "openai_usage": {
+                    "status": "partial",
+                    "skips": [
+                        {"reason": "compaction_usage_unavailable", "count": 26},
+                        {"reason": "cached_source_missing", "count": 1466},
+                    ],
+                }
+            },
+            "rate_limits": {
+                "observed_at": "2026-08-21T11:55:00+00:00",
+                "primary": {"used_percent": 10, "remaining_percent": 90, "window_minutes": 10080},
+            },
+        }
+        current = collect.build_usage_left({}, usage, now=self.now)["openai"]
+        skips = usage["sources"]["openai_usage"]["skips"]
+        # A configured store that vanished is unread, so its newest limits may be missing.
+        skips.append({"reason": "root_missing", "count": 1})
+        vanished = collect.build_usage_left({}, usage, now=self.now)["openai"]
+        skips[-1] = {"reason": "source_unreadable", "count": 1}
+        unreadable = collect.build_usage_left({}, usage, now=self.now)["openai"]
+        self.assertEqual(current["capture_status"], "observed")
+        self.assertEqual(current["quota_windows"][0]["freshness_status"], "available")
+        for provider in (vanished, unreadable):
+            self.assertEqual(provider["capture_status"], "source_partial_cached_last_good")
+            self.assertEqual(provider["quota_windows"][0]["freshness_status"], "retained_last_good")
+
     def test_claude_age_boundary_and_invalid_config_use_the_capture_contract(self) -> None:
         usage = {
             "claude_usage_snapshot": {

@@ -156,7 +156,12 @@ def read_cached_usage(
         return None
     windows: list[dict[str, Any]] = []
     for name in WINDOW_NAMES:
-        raw = utilization.get(name)
+        if name not in utilization:
+            return None
+        raw = utilization[name]
+        if raw is None:
+            # Claude reports a limit the account's plan does not have as null.
+            continue
         if not isinstance(raw, dict):
             return None
         used = _bounded_number(raw.get("utilization"))
@@ -173,6 +178,8 @@ def read_cached_usage(
                 "resets_at": _iso(reset) if reset else None,
             }
         )
+    if not windows:
+        return None
     return {"observed_at": _iso(observed), "quota_windows": windows}
 
 

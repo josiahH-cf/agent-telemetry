@@ -44,7 +44,8 @@ def zero_turn_result(**overrides: object) -> bytes:
     return json.dumps(value).encode()
 
 
-def write_cache(path: Path, observed: dt.datetime, five: float = 0, seven: float = 30) -> None:
+def write_cache(path: Path, observed: dt.datetime, five: float | None = 0, seven: float | None = 30) -> None:
+    """A null window is how Claude reports a limit the account's plan does not have."""
     path.write_text(
         json.dumps(
             {
@@ -52,8 +53,8 @@ def write_cache(path: Path, observed: dt.datetime, five: float = 0, seven: float
                     "accountUuid": "RAW_PRIVATE_ACCOUNT_SENTINEL",
                     "fetchedAtMs": observed.timestamp() * 1000,
                     "utilization": {
-                        "five_hour": {"utilization": five, "resets_at": None},
-                        "seven_day": {"utilization": seven, "resets_at": "2026-08-25T16:59:59.869475+00:00"},
+                        "five_hour": None if five is None else {"utilization": five, "resets_at": None},
+                        "seven_day": None if seven is None else {"utilization": seven, "resets_at": "2026-08-25T16:59:59.869475+00:00"},
                         "seven_day_sonnet": None,
                     },
                 }
@@ -121,6 +122,81 @@ class ClaudeUsageCaptureTests(unittest.TestCase):
             invalid = claude_usage_capture.read_cached_usage(path, now=observed, max_age_seconds=3600)
         self.assertIsNone(stale)
         self.assertIsNone(invalid)
+
+    def test_cache_reader_omits_a_window_reported_as_null_and_still_rejects_malformed_ones(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            path = Path(temporary) / ".claude.json"
+            observed = dt.datetime(2026, 11, 2, 11, 45, tzinfo=UTC)
+            write_cache(path, observed, five=None, seven=80)
+            seven_only = claude_usage_capture.read_cached_usage(path, now=observed, max_age_seconds=3600)
+            write_cache(path, observed, five=None, seven=None)
+            neither = claude_usage_capture.read_cached_usage(path, now=observed, max_age_seconds=3600)
+            root = json.loads(path.read_text(encoding="utf-8"))
+            root["cachedUsageUtilization"]["utilization"]["five_hour"] = "unlimited"
+            root["cachedUsageUtilization"]["utilization"]["seven_day"] = {"utilization": 80, "resets_at": None}
+            path.write_text(json.dumps(root), encoding="utf-8")
+            malformed = claude_usage_capture.read_cached_usage(path, now=observed, max_age_seconds=3600)
+            # An absent window is a changed cache shape, not a reported plan without that limit.
+            del root["cachedUsageUtilization"]["utilization"]["five_hour"]
+            path.write_text(json.dumps(root), encoding="utf-8")
+            absent = claude_usage_capture.read_cached_usage(path, now=observed, max_age_seconds=3600)
+        self.assertEqual(
+            seven_only,
+            {
+                "observed_at": "2026-11-02T11:45:00+00:00",
+                "quota_windows": [
+                    {"window": "seven_day", "used_percent": 80.0, "resets_at": "2026-08-25T16:59:59.869475+00:00"}
+                ],
+            },
+        )
+        self.assertIsNone(neither)
+        self.assertIsNone(malformed)
+        self.assertIsNone(absent)
+
+    def test_plan_without_a_five_hour_limit_captures_seven_day_and_replaces_last_good(self) -> None:
+        with tempfile.TemporaryDirectory(dir="/tmp") as temporary:
+            root = Path(temporary)
+            executable = root / "claude"
+            executable.write_text("fixture", encoding="utf-8")
+            executable.chmod(0o755)
+            cache = root / ".claude.json"
+            before = dt.datetime(2026, 10, 31, 5, 20, tzinfo=UTC)
+            observed = dt.datetime(2026, 11, 2, 11, 45, tzinfo=UTC)
+            collect.record_local_claude_usage(
+                root,
+                five_hour_used=0,
+                five_hour_resets_at="2026-10-31T09:10:00+00:00",
+                seven_day_used=41,
+                seven_day_resets_at="2026-11-03T17:00:00+00:00",
+                now=before,
+                source="claude_slash_usage_automated_capture",
+            )
+            write_cache(cache, observed, five=None, seven=80)
+            with mock.patch.object(
+                claude_usage_capture,
+                "_run_bounded",
+                return_value=("automatic_success", zero_turn_result()),
+            ):
+                result = collect.capture_local_claude_usage(
+                    {"claude_usage_capture": {"enabled": True, "command": str(executable), "cache_path": str(cache)}},
+                    root,
+                    root,
+                    now=observed + dt.timedelta(seconds=2),
+                )
+            state = json.loads((root / collect.CLAUDE_USAGE_CAPTURE_FILE).read_text(encoding="utf-8"))
+            public = collect.read_local_claude_usage(root, observed + dt.timedelta(minutes=5))
+            usage_left = collect.build_usage_left(
+                {}, {"claude_usage_snapshot": public}, now=observed + dt.timedelta(minutes=5)
+            )["anthropic"]
+        self.assertEqual(result["status"], "automatic_success")
+        self.assertEqual((state["status"], state["consecutive_failures"]), ("automatic_success", 0))
+        self.assertEqual([row["window"] for row in public["quota_windows"]], ["seven_day"])
+        self.assertEqual(public["remaining_percent"], 20.0)
+        self.assertEqual(usage_left["quota_status"], "available")
+        self.assertEqual(
+            [(row["display_label"], row["freshness_status"]) for row in usage_left["quota_windows"]],
+            [("Seven-day window", "available")],
+        )
 
     def test_capture_invokes_exact_locked_down_command_and_never_returns_raw_output(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
