@@ -33,6 +33,14 @@
   with only the seven-day window, written mode 0600 to an isolated state folder
   while the production capture files kept their bytes. The latest published
   Codex source metadata yields a fresh limit with capture status `observed`.
+- **Live delivery:** source commit `1c95f50af` reached production in one hold
+  of the collection lock, and the guarded manual publication pushed snapshot
+  `bd290250a` (collect, scrub, commit and publish ok in one attempt). Its
+  capture recorded `automatic_success` and reset the failure count, and the
+  next scheduled run's capture also succeeded. Pages serves the page, payload
+  and dashboard byte-identical to that snapshot. The live page at 390 and
+  1,440 px reads "Capacity fresh", with Claude's seven-day window and the
+  Codex window both fresh, no overflow and no browser errors.
 
 ## ST-54 — Project links, producer revisions and operator spending records (2026-11-01)
 
