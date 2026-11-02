@@ -163,6 +163,118 @@ class StoreTests(unittest.TestCase):
             _, roots = observatory.collect_observatory(config, PROJECT_ROOT, loop_snapshot(), now + dt.timedelta(minutes=31), rebuild=True)
             self.assertEqual(next(row for row in roots if row["root_id"] == "windows_claude")["strategy"], "full_tree")
 
+    def test_known_claude_reuses_one_fresh_metadata_read_without_reparsing(self) -> None:
+        from unittest import mock
+        with tempfile.TemporaryDirectory() as temporary:
+            base = Path(temporary)
+            config = fixture_config(base)
+            self.populate(base, config)
+            now = dt.datetime.now(UTC).replace(microsecond=0)
+            observatory.collect_observatory(config, PROJECT_ROOT, loop_snapshot(), now)
+            selected = next(row for row in config["observatory"]["roots"] if row["root_id"] == "windows_claude")
+            selected = {**selected, "path": Path(str(selected["path"]))}
+            transcript = selected["path"] / "Project" / "two.jsonl"
+            original_stat, stats = Path.stat, []
+            def observed_stat(path, *args, **kwargs):
+                if path == transcript:
+                    stats.append(path)
+                return original_stat(path, *args, **kwargs)
+            connection = observatory.connect_store(Path(str(config["cache_root"])) / observatory.STORE_NAME)
+            try:
+                before = connection.execute("SELECT parser_state_json FROM source_files WHERE root_id='windows_claude'").fetchone()[0]
+                with mock.patch.object(Path, "stat", observed_stat), mock.patch.object(
+                        observatory.usage, "scan_claude_file", side_effect=AssertionError("unchanged file was reparsed")):
+                    result = observatory.scan_one_root(connection, selected, Path(str(config["cache_root"])), now + dt.timedelta(minutes=15))
+                self.assertEqual((result["strategy"], result["files"], result["changed"], result["reused"]), ("known_claude_paths", 1, 0, 1))
+                self.assertEqual(len(stats), 1)
+                self.assertEqual(connection.execute("SELECT parser_state_json FROM source_files WHERE root_id='windows_claude'").fetchone()[0], before)
+            finally:
+                connection.close()
+
+    def test_known_claude_changed_and_missing_files_keep_original_parser_and_history(self) -> None:
+        from unittest import mock
+        with tempfile.TemporaryDirectory() as temporary:
+            base = Path(temporary)
+            config = fixture_config(base)
+            self.populate(base, config)
+            now = dt.datetime.now(UTC).replace(microsecond=0)
+            observatory.collect_observatory(config, PROJECT_ROOT, loop_snapshot(), now)
+            selected = next(row for row in config["observatory"]["roots"] if row["root_id"] == "windows_claude")
+            selected = {**selected, "path": Path(str(selected["path"]))}
+            transcript = selected["path"] / "Project" / "two.jsonl"
+            write_lines(transcript, claude_rows("claude-windows", "message-windows", "/fixture")
+                        + claude_rows("claude-windows", "later-message", "/fixture"))
+            connection = observatory.connect_store(Path(str(config["cache_root"])) / observatory.STORE_NAME)
+            try:
+                with mock.patch.object(observatory.usage, "scan_claude_file", wraps=observatory.usage.scan_claude_file) as parser:
+                    result = observatory.scan_one_root(connection, selected, Path(str(config["cache_root"])), now + dt.timedelta(minutes=15))
+                self.assertEqual((result["files"], result["changed"], result["reused"]), (1, 1, 0))
+                self.assertEqual(parser.call_count, 1)
+                before = connection.execute("SELECT parser_state_json FROM source_files WHERE root_id='windows_claude'").fetchone()[0]
+                transcript.unlink()
+                result = observatory.scan_one_root(connection, selected, Path(str(config["cache_root"])), now + dt.timedelta(minutes=20))
+                self.assertEqual((result["files"], result["changed"], result["reused"]), (0, 0, 0))
+                self.assertEqual(connection.execute("SELECT parser_state_json FROM source_files WHERE root_id='windows_claude'").fetchone()[0], before)
+            finally:
+                connection.close()
+
+    def test_known_claude_metadata_timeout_keeps_marker_and_parser_state(self) -> None:
+        from unittest import mock
+        with tempfile.TemporaryDirectory() as temporary:
+            base = Path(temporary)
+            config = fixture_config(base)
+            self.populate(base, config)
+            now = dt.datetime.now(UTC).replace(microsecond=0)
+            observatory.collect_observatory(config, PROJECT_ROOT, loop_snapshot(), now)
+            selected = next(row for row in config["observatory"]["roots"] if row["root_id"] == "windows_claude")
+            selected = {**selected, "path": Path(str(selected["path"]))}
+            transcript = selected["path"] / "Project" / "two.jsonl"
+            original_stat = Path.stat
+            def interrupted_stat(path, *args, **kwargs):
+                if path == transcript:
+                    raise observatory.usage.ScanTimeout("injected metadata deadline")
+                return original_stat(path, *args, **kwargs)
+            connection = observatory.connect_store(Path(str(config["cache_root"])) / observatory.STORE_NAME)
+            try:
+                marker = connection.execute("SELECT value FROM meta WHERE key='claude_discovery:windows_claude'").fetchone()[0]
+                before = connection.execute("SELECT parser_state_json FROM source_files WHERE root_id='windows_claude'").fetchone()[0]
+                with mock.patch.object(Path, "stat", interrupted_stat):
+                    result = observatory.scan_one_root(connection, selected, Path(str(config["cache_root"])), now + dt.timedelta(minutes=15))
+                self.assertEqual(result["status"], "timeout")
+                self.assertEqual(connection.execute("SELECT value FROM meta WHERE key='claude_discovery:windows_claude'").fetchone()[0], marker)
+                self.assertEqual(connection.execute("SELECT parser_state_json FROM source_files WHERE root_id='windows_claude'").fetchone()[0], before)
+            finally:
+                connection.close()
+
+    def test_append_after_metadata_observation_is_detected_on_next_tick(self) -> None:
+        from unittest import mock
+        with tempfile.TemporaryDirectory() as temporary:
+            base = Path(temporary)
+            config = fixture_config(base)
+            self.populate(base, config)
+            now = dt.datetime.now(UTC).replace(microsecond=0)
+            observatory.collect_observatory(config, PROJECT_ROOT, loop_snapshot(), now)
+            selected = next(row for row in config["observatory"]["roots"] if row["root_id"] == "windows_claude")
+            selected = {**selected, "path": Path(str(selected["path"]))}
+            transcript = selected["path"] / "Project" / "two.jsonl"
+            observe = observatory._known_claude_metadata
+            def append_after(paths, metadata):
+                result = observe(paths, metadata)
+                write_lines(transcript, claude_rows("claude-windows", "message-windows", "/fixture")
+                            + claude_rows("claude-windows", "later-message", "/fixture"))
+                return result
+            connection = observatory.connect_store(Path(str(config["cache_root"])) / observatory.STORE_NAME)
+            try:
+                with mock.patch.object(observatory, "_known_claude_metadata", append_after):
+                    first = observatory.scan_one_root(connection, selected, Path(str(config["cache_root"])), now + dt.timedelta(minutes=15))
+                self.assertEqual((first["changed"], first["reused"]), (0, 1))
+                later = observatory.scan_one_root(connection, selected, Path(str(config["cache_root"])), now + dt.timedelta(minutes=16))
+                self.assertEqual((later["changed"], later["reused"]), (1, 0))
+                stable = observatory.scan_one_root(connection, selected, Path(str(config["cache_root"])), now + dt.timedelta(minutes=17))
+                self.assertEqual((stable["changed"], stable["reused"]), (0, 1))
+            finally:
+                connection.close()
+
     def test_failed_windows_claude_discovery_does_not_advance_the_marker(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
             base = Path(temporary)

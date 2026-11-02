@@ -12,6 +12,8 @@ from __future__ import annotations
 import argparse
 import collections
 import contextlib
+import errno
+from concurrent.futures import ThreadPoolExecutor
 import datetime as dt
 import hashlib
 import json
@@ -20,6 +22,7 @@ import os
 import re
 import secrets
 import sqlite3
+import stat
 import tempfile
 import time
 from pathlib import Path, PurePosixPath
@@ -698,7 +701,38 @@ def import_legacy_cache(connection: sqlite3.Connection, root: dict[str, Any], st
     return imported
 
 
-def enumerate_files(connection: sqlite3.Connection, root: dict[str, Any], now: dt.datetime, rebuild: bool) -> tuple[list[Path], str]:
+def _known_claude_metadata(paths: list[Path], metadata: dict[Path, os.stat_result] | None) -> list[Path]:
+    # 9P metadata round trips dominate a serial pass. Keep at most eight reads
+    # active and 64 queued, all metadata-only, within this finite collection.
+    def observe(path):
+        try:
+            value = path.stat()
+        except OSError as error:
+            if error.errno in (errno.ENOENT, errno.ENOTDIR, errno.EBADF, errno.ELOOP):
+                return path, None
+            raise
+        return path, value if stat.S_ISREG(value.st_mode) else None
+
+    selected = []
+    workers = ThreadPoolExecutor(max_workers=8, thread_name_prefix="claude-metadata")
+    complete = False
+    try:
+        for start in range(0, len(paths), 64):
+            for path, value in workers.map(observe, paths[start:start + 64]):
+                if value is not None:
+                    selected.append(path)
+                    if metadata is not None:
+                        metadata[path] = value
+        complete = True
+        return selected
+    finally:
+        # A root deadline cancels queued reads; in-flight reads cannot publish
+        # anything, open a transcript, or advance the discovery marker.
+        workers.shutdown(wait=complete, cancel_futures=True)
+
+
+def enumerate_files(connection: sqlite3.Connection, root: dict[str, Any], now: dt.datetime, rebuild: bool,
+                    *, metadata: dict[Path, os.stat_result] | None = None) -> tuple[list[Path], str]:
     base: Path = root["path"]
     if root["root_id"] == "windows_claude" and not rebuild:
         # Claude uses project directories, not Codex's dated partitions. Refresh
@@ -713,7 +747,7 @@ def enumerate_files(connection: sqlite3.Connection, root: dict[str, Any], now: d
         known_paths = [base / str(row[0]) for row in connection.execute(
             "SELECT relative_path FROM source_files WHERE root_id=?", (root["root_id"],))]
         if recent and known_paths:
-            return sorted(path for path in known_paths if path.is_file()), "known_claude_paths"
+            return _known_claude_metadata(sorted(known_paths), metadata), "known_claude_paths"
         return sorted(base.rglob("*.jsonl")), "periodic_claude_discovery"
     if root["vendor"] != "openai" or rebuild:
         return sorted(base.rglob("*.jsonl")), "full_tree"
@@ -766,7 +800,8 @@ def scan_one_root(
         with usage.scan_time_budget(timeout), connection:
             if allow_legacy_import and not rebuild:
                 imported = import_legacy_cache(connection, root, state_root, observed_at)
-            files, strategy = enumerate_files(connection, root, now, rebuild)
+            metadata: dict[Path, os.stat_result] = {}
+            files, strategy = enumerate_files(connection, root, now, rebuild, metadata=metadata)
             for index, path in enumerate(files, 1):
                 try:
                     relative = str(path.relative_to(base)).replace(os.sep, "/")
@@ -785,7 +820,15 @@ def scan_one_root(
                         resets += 1
                 try:
                     if root["vendor"] == "anthropic":
-                        record, did_change, reset = usage.scan_claude_file(path, prior, set())
+                        observed = metadata.get(path)
+                        if (observed is not None and prior.get("size") == observed.st_size
+                                and prior.get("mtime_ns") == observed.st_mtime_ns):
+                            # The original parser has this same unchanged-file
+                            # return. Reuse this tick's fresh metadata instead of
+                            # a second serial 9P stat; never cache across ticks.
+                            record, did_change, reset = prior, False, None
+                        else:
+                            record, did_change, reset = usage.scan_claude_file(path, prior, set())
                     else:
                         hinted, requested = usage.requested_for_codex_path(path, {})
                         record, did_change, reset = usage.scan_codex_file(path, prior, requested, hinted)

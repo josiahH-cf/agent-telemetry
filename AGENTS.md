@@ -168,7 +168,11 @@ PY
 Current collection and boot policy (2026-11-02): collection and publication use
 15-minute UTC slots; browser checks remain once per minute. Windows Claude's
 project-directory tree is discovered every 30 minutes; between discoveries the
-collector refreshes every known transcript. New-file discovery may therefore lag
+collector refreshes every known transcript. Known-file metadata uses at most eight
+simultaneous reads and 64 queued reads; unchanged files need one fresh metadata
+observation per tick and keep the same parser state; changed files retain the original parser and cursor
+validation. No metadata is reused between ticks, and interrupted reads advance
+no discovery marker. New-file discovery may therefore lag
 by up to 30 minutes. Rebuild still walks the complete tree. Two reduced-priority
 cron entries remain; the tagged reboot entry is retired. Windows continuity
 stays at 30 minutes, and the existing logon task waits five minutes. This
