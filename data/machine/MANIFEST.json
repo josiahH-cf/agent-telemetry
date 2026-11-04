@@ -3,26 +3,26 @@
     {
       "coverage": {
         "from": "2026-02-28T12:19:02+00:00",
-        "to": "2026-11-04T17:14:16+00:00"
+        "to": "2026-11-04T17:27:49+00:00"
       },
       "dataset": "projects",
       "path": "data/machine/projects.jsonl",
       "rows": 14,
       "schema": "data/schema/projects.schema.json",
       "semantics": "One public project identity or bulk bucket with lifetime totals and per-OS coverage.",
-      "sha256": "caaeb40b4cf3af4dc29598bceb79f5dcb65b9cc08a2f863ad5dde47a30544b38"
+      "sha256": "d2dc419e61d9b370831c62c2981836bb77db3281446f0998fa987760d461dca7"
     },
     {
       "coverage": {
         "from": "2026-02-28T12:19:02+00:00",
-        "to": "2026-11-04T17:14:16+00:00"
+        "to": "2026-11-04T17:27:49+00:00"
       },
       "dataset": "sessions",
       "path": "data/machine/sessions.jsonl",
       "rows": 14953,
       "schema": "data/schema/sessions.schema.json",
       "semantics": "One provider session after cross-source event deduplication; working directories are excluded.",
-      "sha256": "d62109ac40d8d1511075a06920f8bbe962207d6e59e3cc5f5569b2a78d7caba5"
+      "sha256": "2a7b80c99a4d5d7ab612fbe8daafdf7244b88c838e16ff376aab4c98d8d864fe"
     },
     {
       "coverage": {
@@ -34,7 +34,7 @@
       "rows": 642,
       "schema": "data/schema/days.schema.json",
       "semantics": "UTC daily usage by public project identity, vendor, and host operating system.",
-      "sha256": "7c36f59b6034e4d11f5ce08fec1c3b51864a881bc8d29dbd03d892db96b29574"
+      "sha256": "df35878bb6a9ab2e06540c1e8c7c595ae6683f8a0489e579f0d6c999b961639d"
     },
     {
       "coverage": {
@@ -99,14 +99,14 @@
     {
       "coverage": {
         "from": "2026-09-09T03:18:25+00:00",
-        "to": "2026-11-04T17:11:52+00:00"
+        "to": "2026-11-04T17:21:04+00:00"
       },
       "dataset": "outcomes",
       "path": "data/machine/outcomes.jsonl",
-      "rows": 2268,
+      "rows": 2269,
       "schema": "data/schema/outcomes.schema.json",
       "semantics": "Successor outcome receipts (Obsidian Agent console rebuild): per-outcome counts, dispositions, check/publication/update statuses and native linkage strength; no titles, prompts or paths.",
-      "sha256": "8c67c32b8cc38adbc0b4935d054765564ee9b2723f12f5c269028e758148032c"
+      "sha256": "67d5ae003f43170bc363eb92d27d1d953ff59eb8c1ed21d3fa2f5d007e2ded89"
     },
     {
       "coverage": {
@@ -115,10 +115,10 @@
       },
       "dataset": "code_changes",
       "path": "data/machine/code_changes.jsonl",
-      "rows": 2628,
+      "rows": 2629,
       "schema": "data/schema/code_changes.schema.json",
       "semantics": "Deduplicated explicitly configured read-only Git first-parent revisions and numeric shortstat, joined by projects.project_code. No filenames, code, author, message or native revision; never a quality or productivity score.",
-      "sha256": "d8a9a00443b16dec95029a0b953e9bf7931ebd159484c09d7c4c37cff514e381",
+      "sha256": "01ebad0d6ec50ca1fedadfe0a32e42e57c23ef029e4e994acd410fd07082812c",
       "source_coverage": {
         "by_project": {
           "obsidian-agent": {
@@ -126,8 +126,8 @@
             "status": "current"
           },
           "proj-02a9b771": {
-            "from": null,
-            "status": "partial"
+            "from": "1970-01-01",
+            "status": "current"
           },
           "proj-5a93629a": {
             "from": "1970-01-01",
@@ -148,15 +148,14 @@
         },
         "from": null,
         "reasons": [
-          "code_history_rewritten",
           "git_read_failed"
         ],
         "rewrites_resumed": 7,
         "sources": 7,
         "states": {
-          "current": 5,
+          "current": 6,
           "disabled": 0,
-          "partial": 1,
+          "partial": 0,
           "retained-last-good": 0,
           "unavailable": 1
         },
@@ -189,6 +188,6 @@
       "sha256": "9303666817e5e7bd53fa47c2394de3b3bedfbbfc575c9551b22b9091cf7ae732"
     }
   ],
-  "generated_at": "2026-11-04T17:15:05+00:00",
+  "generated_at": "2026-11-04T17:30:06+00:00",
   "schema_version": 1
 }
