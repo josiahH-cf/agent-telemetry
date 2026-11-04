@@ -3,26 +3,26 @@
     {
       "coverage": {
         "from": "2026-02-28T12:19:02+00:00",
-        "to": "2026-11-04T16:15:10+00:00"
+        "to": "2026-11-04T16:30:30+00:00"
       },
       "dataset": "projects",
       "path": "data/machine/projects.jsonl",
       "rows": 14,
       "schema": "data/schema/projects.schema.json",
       "semantics": "One public project identity or bulk bucket with lifetime totals and per-OS coverage.",
-      "sha256": "d7426834c924a474daf18daa2525042f7ac9dadc888902fe47502bf59cc8eb78"
+      "sha256": "d10e60c32da7c69a458b9e81cacf79989855ae06efd7279e5e65bc8044568c92"
     },
     {
       "coverage": {
         "from": "2026-02-28T12:19:02+00:00",
-        "to": "2026-11-04T16:15:10+00:00"
+        "to": "2026-11-04T16:30:30+00:00"
       },
       "dataset": "sessions",
       "path": "data/machine/sessions.jsonl",
       "rows": 14947,
       "schema": "data/schema/sessions.schema.json",
       "semantics": "One provider session after cross-source event deduplication; working directories are excluded.",
-      "sha256": "912030557a5c8a83c7d074fd15c307fb2b34c61feac9c5d597244eb595d961f1"
+      "sha256": "8434e84ef13b9eaaf71d56299e67a9bb4c90bf813a4c96f49237128186e88510"
     },
     {
       "coverage": {
@@ -34,7 +34,7 @@
       "rows": 641,
       "schema": "data/schema/days.schema.json",
       "semantics": "UTC daily usage by public project identity, vendor, and host operating system.",
-      "sha256": "8129addac095d142f779762f4ea7a8f1e3dd0bb401115c221cc2c1b644bfeda2"
+      "sha256": "a9ad1995ebf3c3c2f3aa798d995818ab8e219767132eccb65a7a50261fa2b28b"
     },
     {
       "coverage": {
@@ -115,10 +115,10 @@
       },
       "dataset": "code_changes",
       "path": "data/machine/code_changes.jsonl",
-      "rows": 2620,
+      "rows": 2621,
       "schema": "data/schema/code_changes.schema.json",
       "semantics": "Deduplicated explicitly configured read-only Git first-parent revisions and numeric shortstat, joined by projects.project_code. No filenames, code, author, message or native revision; never a quality or productivity score.",
-      "sha256": "0dc5ddadb714bb78dc9df1898fd0e2285b6868d5454f07315aee8d7ae1b91e6a",
+      "sha256": "db81b6171a2e5ba9c28dc4edb0379f18cbccef56321e693c6a6f3b7f7baf28a0",
       "source_coverage": {
         "by_project": {
           "obsidian-agent": {
@@ -188,6 +188,6 @@
       "sha256": "9303666817e5e7bd53fa47c2394de3b3bedfbbfc575c9551b22b9091cf7ae732"
     }
   ],
-  "generated_at": "2026-11-04T16:15:05+00:00",
+  "generated_at": "2026-11-04T16:30:06+00:00",
   "schema_version": 1
 }
