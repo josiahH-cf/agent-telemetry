@@ -3,26 +3,26 @@
     {
       "coverage": {
         "from": "2026-02-28T12:19:02+00:00",
-        "to": "2026-11-04T21:30:25+00:00"
+        "to": "2026-11-04T21:45:11+00:00"
       },
       "dataset": "projects",
       "path": "data/machine/projects.jsonl",
       "rows": 14,
       "schema": "data/schema/projects.schema.json",
       "semantics": "One public project identity or bulk bucket with lifetime totals and per-OS coverage.",
-      "sha256": "dd3cf411a640b729ac1bb0dc134cc0073467848f7b1a76432c74f68a4c42e701"
+      "sha256": "e490624c0228f1ece1db2e2908e4241c5c4a86222301ef290f6a51d5fe7b8450"
     },
     {
       "coverage": {
         "from": "2026-02-28T12:19:02+00:00",
-        "to": "2026-11-04T21:30:25+00:00"
+        "to": "2026-11-04T21:45:11+00:00"
       },
       "dataset": "sessions",
       "path": "data/machine/sessions.jsonl",
       "rows": 14953,
       "schema": "data/schema/sessions.schema.json",
       "semantics": "One provider session after cross-source event deduplication; working directories are excluded.",
-      "sha256": "abade50fdc4257c7716964919197a43eaf612100bcebcf92becb4318a5c73c21"
+      "sha256": "4975a219e3c5cc9fed07513df6c7ab1adbd4b6304059596a0fb9b42260a4a31b"
     },
     {
       "coverage": {
@@ -31,10 +31,10 @@
       },
       "dataset": "days",
       "path": "data/machine/days.jsonl",
-      "rows": 643,
+      "rows": 642,
       "schema": "data/schema/days.schema.json",
       "semantics": "UTC daily usage by public project identity, vendor, and host operating system.",
-      "sha256": "75218e6f49feb903542f777489a0a53dd9edcd08d0e764eee198ef006857504b"
+      "sha256": "84f84297416aa1ab33d5dea905b604a12e6c1ef9d4fd2ced1d7dbba43e7525f8"
     },
     {
       "coverage": {
@@ -115,10 +115,10 @@
       },
       "dataset": "code_changes",
       "path": "data/machine/code_changes.jsonl",
-      "rows": 2631,
+      "rows": 2632,
       "schema": "data/schema/code_changes.schema.json",
       "semantics": "Deduplicated explicitly configured read-only Git first-parent revisions and numeric shortstat, joined by projects.project_code. No filenames, code, author, message or native revision; never a quality or productivity score.",
-      "sha256": "b40ab8026acc4017e3711ee099e2c2e92bd13690a8468ef84fb28668b93dfa40",
+      "sha256": "dd1ace299b26ab199bf5dece752e68e8345be13294e2094f9fb62ade77e8eaf1",
       "source_coverage": {
         "by_project": {
           "obsidian-agent": {
@@ -188,6 +188,6 @@
       "sha256": "9303666817e5e7bd53fa47c2394de3b3bedfbbfc575c9551b22b9091cf7ae732"
     }
   ],
-  "generated_at": "2026-11-04T21:30:06+00:00",
+  "generated_at": "2026-11-04T21:45:06+00:00",
   "schema_version": 1
 }
