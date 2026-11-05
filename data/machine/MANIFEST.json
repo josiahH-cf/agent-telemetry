@@ -3,26 +3,26 @@
     {
       "coverage": {
         "from": "2026-02-28T12:19:02+00:00",
-        "to": "2026-11-05T14:00:25+00:00"
+        "to": "2026-11-05T14:07:44+00:00"
       },
       "dataset": "projects",
       "path": "data/machine/projects.jsonl",
       "rows": 16,
       "schema": "data/schema/projects.schema.json",
       "semantics": "One public project identity or bulk bucket with lifetime totals and per-OS coverage.",
-      "sha256": "9e4108d758a28e8448acdc3d955f36e63758d11201610cdea1ce9d5db73debee"
+      "sha256": "d0f974674482f62d1d613905b9cbab02eeb8dc0b46cb6564fbf0e4d5e58bfdec"
     },
     {
       "coverage": {
         "from": "2026-02-28T12:19:02+00:00",
-        "to": "2026-11-05T14:00:25+00:00"
+        "to": "2026-11-05T14:07:44+00:00"
       },
       "dataset": "sessions",
       "path": "data/machine/sessions.jsonl",
-      "rows": 14970,
+      "rows": 14973,
       "schema": "data/schema/sessions.schema.json",
       "semantics": "One provider session after cross-source event deduplication; working directories are excluded.",
-      "sha256": "e7af459af9fa1d7037fbeaf1b852deab08255dfcaa5681426f55b9a59aa00b14"
+      "sha256": "4481cc5c58acc2c278c99f3b27722ed3055350ed4d976c9cf6f86fc188d1d73b"
     },
     {
       "coverage": {
@@ -34,7 +34,7 @@
       "rows": 648,
       "schema": "data/schema/days.schema.json",
       "semantics": "UTC daily usage by public project identity, vendor, and host operating system.",
-      "sha256": "e6023a914bc936921f5fd22ed12959dd04a001cc80884c1b44b9f4476fae2f73"
+      "sha256": "664d057ff35ea9494bf8d0b0de48e75ea3421014c13918423611df87037765cc"
     },
     {
       "coverage": {
@@ -126,8 +126,8 @@
             "status": "current"
           },
           "proj-02a9b771": {
-            "from": null,
-            "status": "partial"
+            "from": "1970-01-01",
+            "status": "current"
           },
           "proj-3e9f3dff": {
             "from": "1970-01-01",
@@ -156,15 +156,14 @@
         },
         "from": null,
         "reasons": [
-          "code_history_rewritten",
           "code_root_unavailable"
         ],
         "rewrites_resumed": 12,
         "sources": 9,
         "states": {
-          "current": 7,
+          "current": 8,
           "disabled": 0,
-          "partial": 1,
+          "partial": 0,
           "retained-last-good": 0,
           "unavailable": 1
         },
@@ -197,6 +196,6 @@
       "sha256": "9303666817e5e7bd53fa47c2394de3b3bedfbbfc575c9551b22b9091cf7ae732"
     }
   ],
-  "generated_at": "2026-11-05T14:00:05+00:00",
+  "generated_at": "2026-11-05T14:07:06+00:00",
   "schema_version": 1
 }
