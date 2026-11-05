@@ -3,26 +3,26 @@
     {
       "coverage": {
         "from": "2026-02-28T12:19:02+00:00",
-        "to": "2026-11-05T12:07:43+00:00"
+        "to": "2026-11-05T12:15:29+00:00"
       },
       "dataset": "projects",
       "path": "data/machine/projects.jsonl",
       "rows": 16,
       "schema": "data/schema/projects.schema.json",
       "semantics": "One public project identity or bulk bucket with lifetime totals and per-OS coverage.",
-      "sha256": "2d4dc78aa7f3112f2f917f39ee559b5c6877f39e00ce75488157370db4d365bd"
+      "sha256": "e49929c94779e5ab675621f76d9cba19cbfff4b26dc383f5f546806eadedc593"
     },
     {
       "coverage": {
         "from": "2026-02-28T12:19:02+00:00",
-        "to": "2026-11-05T12:07:43+00:00"
+        "to": "2026-11-05T12:15:29+00:00"
       },
       "dataset": "sessions",
       "path": "data/machine/sessions.jsonl",
       "rows": 14968,
       "schema": "data/schema/sessions.schema.json",
       "semantics": "One provider session after cross-source event deduplication; working directories are excluded.",
-      "sha256": "8006b1d9f005d5e850fa7a1c81a9394dd4d7764a17fa867aa81bc9320181caad"
+      "sha256": "da7f85961bcf1edbae5ffd169a496be2cf11ec46500a405c1c6c83782518ad82"
     },
     {
       "coverage": {
@@ -34,7 +34,7 @@
       "rows": 648,
       "schema": "data/schema/days.schema.json",
       "semantics": "UTC daily usage by public project identity, vendor, and host operating system.",
-      "sha256": "2e70258d22f778662e8f4f027b4c43aa1061baba66e48429bf7768cb50c1cd90"
+      "sha256": "69143027084d2da0bcac6f4ceccaf9840f894dd9213b52157cb8b356bb8ec4b2"
     },
     {
       "coverage": {
@@ -156,7 +156,7 @@
         },
         "from": null,
         "reasons": [
-          "git_read_failed"
+          "code_root_unavailable"
         ],
         "rewrites_resumed": 11,
         "sources": 9,
@@ -196,6 +196,6 @@
       "sha256": "9303666817e5e7bd53fa47c2394de3b3bedfbbfc575c9551b22b9091cf7ae732"
     }
   ],
-  "generated_at": "2026-11-05T12:07:06+00:00",
+  "generated_at": "2026-11-05T12:15:08+00:00",
   "schema_version": 1
 }
