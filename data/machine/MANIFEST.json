@@ -3,26 +3,26 @@
     {
       "coverage": {
         "from": "2026-02-28T12:19:02+00:00",
-        "to": "2026-11-06T18:30:30+00:00"
+        "to": "2026-11-06T18:45:25+00:00"
       },
       "dataset": "projects",
       "path": "data/machine/projects.jsonl",
       "rows": 16,
       "schema": "data/schema/projects.schema.json",
       "semantics": "One public project identity or bulk bucket with lifetime totals and per-OS coverage.",
-      "sha256": "fe5191b017f3b20dcca637aeabe603f3dc779b0fd7c4a98dd48743c9d6a8d086"
+      "sha256": "658c67131092206cb864e026220e812904ca0998b9836ddd007fdc265f0b32e5"
     },
     {
       "coverage": {
         "from": "2026-02-28T12:19:02+00:00",
-        "to": "2026-11-06T18:30:30+00:00"
+        "to": "2026-11-06T18:45:25+00:00"
       },
       "dataset": "sessions",
       "path": "data/machine/sessions.jsonl",
       "rows": 15030,
       "schema": "data/schema/sessions.schema.json",
       "semantics": "One provider session after cross-source event deduplication; working directories are excluded.",
-      "sha256": "f08c7df9afee2ea67154968969a6c42eae45ba4382ef3136cb184c00df09bed2"
+      "sha256": "a0208ed7fed6536fa3dad4cd68f5d1a2c3d0da083ede3f382b5b5bc29acb701a"
     },
     {
       "coverage": {
@@ -34,7 +34,7 @@
       "rows": 655,
       "schema": "data/schema/days.schema.json",
       "semantics": "UTC daily usage by public project identity, vendor, and host operating system.",
-      "sha256": "7d0b7a0bb070293d53dc05e5cb666b49814c5609d663f887cff7756943221630"
+      "sha256": "2fd9e563f7944c5e7e46a88a7fda23ebfe4df6f5a1786c4fc93a0e32add8d7e0"
     },
     {
       "coverage": {
@@ -99,14 +99,14 @@
     {
       "coverage": {
         "from": "2026-09-09T03:18:25+00:00",
-        "to": "2026-11-06T18:30:29+00:00"
+        "to": "2026-11-06T18:45:17+00:00"
       },
       "dataset": "outcomes",
       "path": "data/machine/outcomes.jsonl",
       "rows": 2502,
       "schema": "data/schema/outcomes.schema.json",
       "semantics": "Successor outcome receipts (Obsidian Agent console rebuild): per-outcome counts, dispositions, check/publication/update statuses and native linkage strength; no titles, prompts or paths.",
-      "sha256": "d8eaed6048819f1312e5cfdd2c490b8b4b3e593109cbcaad59654a692f2965c4"
+      "sha256": "7cabc2bddb08616d17c17b6c2289a31f7156882317507be2ebdbaa4849b4a212"
     },
     {
       "coverage": {
@@ -115,10 +115,10 @@
       },
       "dataset": "code_changes",
       "path": "data/machine/code_changes.jsonl",
-      "rows": 2762,
+      "rows": 2763,
       "schema": "data/schema/code_changes.schema.json",
       "semantics": "Deduplicated explicitly configured read-only Git first-parent revisions and numeric shortstat, joined by projects.project_code. No filenames, code, author, message or native revision; never a quality or productivity score.",
-      "sha256": "92f8b10eb0004925fda50e9488c277a86a4c7b4a3174290ce6a14544926e45a1",
+      "sha256": "f6ab3cd3756993300ef4b2e37e9d2c19b398ee05bd11b32f65490ce9077b2b47",
       "source_coverage": {
         "by_project": {
           "obsidian-agent": {
@@ -126,8 +126,8 @@
             "status": "current"
           },
           "proj-02a9b771": {
-            "from": "1970-01-01",
-            "status": "current"
+            "from": null,
+            "status": "partial"
           },
           "proj-3e9f3dff": {
             "from": "1970-01-01",
@@ -156,14 +156,15 @@
         },
         "from": null,
         "reasons": [
+          "code_history_rewritten",
           "code_root_unavailable"
         ],
-        "rewrites_resumed": 12,
+        "rewrites_resumed": 13,
         "sources": 9,
         "states": {
-          "current": 8,
+          "current": 7,
           "disabled": 0,
-          "partial": 0,
+          "partial": 1,
           "retained-last-good": 0,
           "unavailable": 1
         },
@@ -196,6 +197,6 @@
       "sha256": "9303666817e5e7bd53fa47c2394de3b3bedfbbfc575c9551b22b9091cf7ae732"
     }
   ],
-  "generated_at": "2026-11-06T18:30:04+00:00",
+  "generated_at": "2026-11-06T18:45:04+00:00",
   "schema_version": 1
 }
