@@ -3,26 +3,26 @@
     {
       "coverage": {
         "from": "2026-02-28T12:19:02+00:00",
-        "to": "2026-11-06T02:45:23+00:00"
+        "to": "2026-11-06T03:00:33+00:00"
       },
       "dataset": "projects",
       "path": "data/machine/projects.jsonl",
       "rows": 16,
       "schema": "data/schema/projects.schema.json",
       "semantics": "One public project identity or bulk bucket with lifetime totals and per-OS coverage.",
-      "sha256": "dae188766c0c453ce6c0a1b5baa4552eed3c17a35b3a95168f53f032eb573d2a"
+      "sha256": "19d60c117f5303b17cbf378a06b69d48f0d113bf12fb8d75c1a20c5405853b74"
     },
     {
       "coverage": {
         "from": "2026-02-28T12:19:02+00:00",
-        "to": "2026-11-06T02:45:23+00:00"
+        "to": "2026-11-06T03:00:33+00:00"
       },
       "dataset": "sessions",
       "path": "data/machine/sessions.jsonl",
       "rows": 15019,
       "schema": "data/schema/sessions.schema.json",
       "semantics": "One provider session after cross-source event deduplication; working directories are excluded.",
-      "sha256": "a6b41d1058afab69f163a6714ca02fe82b4582f5f52e317c4691e3e619234f82"
+      "sha256": "2d91b36b1e64aa6b41fae20e4233ecf36ac58d2c1fee9948f0ba65c96f14de11"
     },
     {
       "coverage": {
@@ -34,7 +34,7 @@
       "rows": 653,
       "schema": "data/schema/days.schema.json",
       "semantics": "UTC daily usage by public project identity, vendor, and host operating system.",
-      "sha256": "c452c3f9bb7502ada30a26e6802df62178e09ff55c4a959383778f13334f84b3"
+      "sha256": "cb6ae04308b541cef93a318e30123715432f659e8b05a796bb17645bbcfeace5"
     },
     {
       "coverage": {
@@ -99,14 +99,14 @@
     {
       "coverage": {
         "from": "2026-09-09T03:18:25+00:00",
-        "to": "2026-11-06T02:43:05+00:00"
+        "to": "2026-11-06T03:00:41+00:00"
       },
       "dataset": "outcomes",
       "path": "data/machine/outcomes.jsonl",
-      "rows": 2436,
+      "rows": 2439,
       "schema": "data/schema/outcomes.schema.json",
       "semantics": "Successor outcome receipts (Obsidian Agent console rebuild): per-outcome counts, dispositions, check/publication/update statuses and native linkage strength; no titles, prompts or paths.",
-      "sha256": "a2453e48b1bbf5a85856b02e1aacde2a8e0bd542831a3f7d964a63c7a9ff1e95"
+      "sha256": "22071c360ab378b7cf2362df895404868abd92d70a93c7f1dba6428b80d7c047"
     },
     {
       "coverage": {
@@ -115,10 +115,10 @@
       },
       "dataset": "code_changes",
       "path": "data/machine/code_changes.jsonl",
-      "rows": 2741,
+      "rows": 2745,
       "schema": "data/schema/code_changes.schema.json",
       "semantics": "Deduplicated explicitly configured read-only Git first-parent revisions and numeric shortstat, joined by projects.project_code. No filenames, code, author, message or native revision; never a quality or productivity score.",
-      "sha256": "6bf3df3a1ddb85e4feb5c438fb1db63f68f9aaa33c0fa1ee3f9b6ed6a7141a5e",
+      "sha256": "676b740344df53700ef9b9c82281a352953dca8653ade6f3d44b2157408d5cef",
       "source_coverage": {
         "by_project": {
           "obsidian-agent": {
@@ -196,6 +196,6 @@
       "sha256": "9303666817e5e7bd53fa47c2394de3b3bedfbbfc575c9551b22b9091cf7ae732"
     }
   ],
-  "generated_at": "2026-11-06T02:45:14+00:00",
+  "generated_at": "2026-11-06T03:00:09+00:00",
   "schema_version": 1
 }
