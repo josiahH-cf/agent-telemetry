@@ -1,12 +1,12 @@
 {
   "date": "2026-11-06",
   "first_observed_at": "2026-11-06T00:00:06+00:00",
-  "last_observed_at": "2026-11-06T23:30:04+00:00",
+  "last_observed_at": "2026-11-06T23:45:04+00:00",
   "latest": {
     "accepted_features": 59,
-    "observed_at": "2026-11-06T23:30:04+00:00",
+    "observed_at": "2026-11-06T23:45:04+00:00",
     "publish": {
-      "last_success_at": "2026-11-06T23:17:17+00:00",
+      "last_success_at": "2026-11-06T23:32:22+00:00",
       "reason": "pushed",
       "status": "success"
     },
@@ -15,7 +15,7 @@
       "clock_status": "ok",
       "disk_headline": "windows_drive_shorter_runway_12_5_years_upper_bound",
       "doctor_status": "warn",
-      "last_start_at": "2026-11-06T23:30:03+00:00",
+      "last_start_at": "2026-11-06T23:45:02+00:00",
       "missed_intervals": 11
     },
     "rounds": 803
@@ -29,12 +29,12 @@
     "source_spec_corpus_partial",
     "source_suite_state_historical"
   ],
-  "observations": 137,
+  "observations": 139,
   "publish_status_counts": {
-    "success": 137
+    "success": 139
   },
   "reliability_status_counts": {
-    "warn": 137
+    "warn": 139
   },
   "schema_version": 2,
   "sources": {
@@ -46,13 +46,13 @@
       },
       "latest_status": "historical",
       "skip_counts": {
-        "cached_last_good": 137,
-        "models_policy_absent": 137,
-        "roster_policy_absent": 137,
-        "source_shrunk": 137
+        "cached_last_good": 139,
+        "models_policy_absent": 139,
+        "roster_policy_absent": 139,
+        "source_shrunk": 139
       },
       "status_counts": {
-        "historical": 137
+        "historical": 139
       }
     },
     "anthropic_usage": {
@@ -63,26 +63,26 @@
       },
       "latest_status": "partial",
       "skip_counts": {
-        "cached_source_missing": 924613,
-        "partial_trailing_line": 1644
+        "cached_source_missing": 938111,
+        "partial_trailing_line": 1668
       },
       "status_counts": {
-        "partial": 137
+        "partial": 139
       }
     },
     "openai_usage": {
       "latest_available": true,
       "latest_coverage": {
         "from": "2026-02-28T12:19:02+00:00",
-        "to": "2026-11-06T23:30:08+00:00"
+        "to": "2026-11-06T23:45:07+00:00"
       },
       "latest_status": "partial",
       "skip_counts": {
-        "cached_source_missing": 203498,
-        "compaction_usage_unavailable": 8777
+        "cached_source_missing": 206518,
+        "compaction_usage_unavailable": 8869
       },
       "status_counts": {
-        "partial": 137
+        "partial": 139
       }
     },
     "provider_usage": {
@@ -93,10 +93,10 @@
       },
       "latest_status": "disabled",
       "skip_counts": {
-        "source_disabled": 137
+        "source_disabled": 139
       },
       "status_counts": {
-        "disabled": 137
+        "disabled": 139
       }
     },
     "spec_corpus": {
@@ -107,11 +107,11 @@
       },
       "latest_status": "partial",
       "skip_counts": {
-        "active_specs_absent": 137,
-        "frontmatter_missing_feature_id": 411
+        "active_specs_absent": 139,
+        "frontmatter_missing_feature_id": 417
       },
       "status_counts": {
-        "partial": 137
+        "partial": 139
       }
     },
     "suite_state": {
@@ -122,29 +122,29 @@
       },
       "latest_status": "historical",
       "skip_counts": {
-        "cached_last_good": 137,
-        "debt_register_absent": 137,
-        "round_in_flight": 9453,
-        "source_shrunk": 137,
-        "test_results_absent": 137,
-        "unknown_event_kind": 15618
+        "cached_last_good": 139,
+        "debt_register_absent": 139,
+        "round_in_flight": 9591,
+        "source_shrunk": 139,
+        "test_results_absent": 139,
+        "unknown_event_kind": 15846
       },
       "status_counts": {
-        "historical": 137
+        "historical": 139
       }
     }
   },
   "vendors": {
     "anthropic": {
       "capture_status_counts": {
-        "automatic_cache_unavailable": 57,
+        "automatic_cache_unavailable": 59,
         "automatic_cached_fallback": 6,
         "automatic_success": 74
       },
       "latest": {
         "capture_status": "automatic_cache_unavailable",
         "estimate_status": "available",
-        "quota_age_hours": 10.8,
+        "quota_age_hours": 11.0,
         "quota_observed_at": "2026-11-06T12:45:04.894000+00:00",
         "quota_source": "claude_slash_usage_local_snapshot",
         "quota_status": "retained_last_good",
@@ -157,37 +157,37 @@
       },
       "quota_status_counts": {
         "available": 74,
-        "retained_last_good": 63
+        "retained_last_good": 65
       },
       "remaining_status_counts": {
         "available": 74,
-        "retained_last_good": 63
+        "retained_last_good": 65
       }
     },
     "openai": {
       "capture_status_counts": {
-        "observed": 137
+        "observed": 139
       },
       "latest": {
         "capture_status": "observed",
         "estimate_status": "available",
         "quota_age_hours": 0.0,
-        "quota_observed_at": "2026-11-06T23:30:08+00:00",
+        "quota_observed_at": "2026-11-06T23:45:07+00:00",
         "quota_source": "rollout_token_count",
         "quota_status": "available",
         "remaining_percent": 87.0,
         "remaining_status": "available",
         "sessions": 4459,
-        "tokens": 49726397268,
+        "tokens": 49761205881,
         "unpriced_tokens": 10273275746,
-        "usd": 21713.635
+        "usd": 21724.072
       },
       "quota_status_counts": {
-        "available": 118,
+        "available": 120,
         "stale": 19
       },
       "remaining_status_counts": {
-        "available": 118,
+        "available": 120,
         "stale": 19
       }
     }
