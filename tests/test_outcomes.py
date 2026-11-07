@@ -306,7 +306,8 @@ class ConsumerBoundaryTests(unittest.TestCase):
                 store.close()
             (state / "claude-usage.json").write_text(json.dumps({"observed_at": "2026-09-09T00:00:00+00:00", "quota_windows": [{"window": "five_hour", "used_percent": 31.0, "remaining_percent": 69.0, "resets_at": "2026-09-09T02:00:00+00:00"}]}))
             (root / "projects.json").write_text(json.dumps({"schema_version": 1, "projects": [{"project_id": "obsidian-agent", "public_label": "obsidian-agent"}]}))
-            view = consumer.consumer_view(root, state, {"days": 7, "sessions": [["openai", "s1"], ["openai", "missing"]]}, now=dt.datetime(2026, 9, 9, 0, 30, tzinfo=UTC))
+            sessions = [["openai", "s1"]] * consumer.MAX_SESSIONS + [["openai", "missing"]]
+            view = consumer.consumer_view(root, state, {"days": 7, "sessions": sessions}, now=dt.datetime(2026, 9, 9, 0, 30, tzinfo=UTC))
         self.assertEqual(view["contract"], "telemetry-consumer-v1")
         self.assertEqual(view["status"], "current")
         self.assertEqual(view["generation"]["digest"], "abc123")

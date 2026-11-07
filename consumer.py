@@ -177,7 +177,7 @@ def projects_view(connection: sqlite3.Connection, *, days: Any, project_id: str 
 
 def sessions_view(connection: sqlite3.Connection, pairs: list[tuple[str, str]]) -> list[dict[str, Any]]:
     out = []
-    for vendor, session_id in pairs[:MAX_SESSIONS]:
+    for vendor, session_id in list(dict.fromkeys(pairs))[:MAX_SESSIONS]:
         row = connection.execute("SELECT * FROM sessions WHERE vendor=? AND session_id=?", (vendor, session_id)).fetchone()
         if row is None:
             out.append({"vendor": vendor, "session_id": session_id, "status": "not-observed", "attribution": "unattributed"})
