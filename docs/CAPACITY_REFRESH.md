@@ -78,8 +78,11 @@ remains at 03:17. The tagged cron `@reboot` entry is removed. No repository cron
 installer exists; installation replaces only those exact tagged lines and
 preserves every unrelated entry. Windows continuity retains its existing
 30-minute trigger and offset. The existing `agent-telemetry-logon` trigger waits
-five minutes. Both tasks retain their sole WSL action, principal, headless mode,
-battery and overlap policies. No replacement task or service is introduced.
+five minutes and retries a failed invocation once after two minutes. Both tasks
+keep their sole WSL action, principal, headless mode, battery and overlap
+policies. Under the existing collection lock, a Windows fallback skips a
+duplicate scan when a collection finished within 15 minutes and publication is
+current. Due publication and stale collection still take their usual route.
 
 Only the already configured, authenticated Claude built-in `/usage` capture is
 refreshed. Its zero-turn/token/cost guard and metadata allowlist remain intact.

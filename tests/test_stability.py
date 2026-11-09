@@ -564,6 +564,20 @@ with open(os.environ['TRACE'], 'a', encoding='utf-8') as handle:
             self.assertNotIn("publish --repo", not_due_trace)
 
             trace.unlink()
+            fallback = subprocess.run(
+                [str(wrapper), "refresh", "windows-task-continuity"],
+                check=False,
+                env={**environment, "PUBLISH_DUE": "0"},
+                capture_output=True,
+                text=True,
+            )
+            self.assertEqual(fallback.returncode, 0)
+            self.assertIn("state=fresh_noop", fallback.stdout)
+            fallback_trace = trace.read_text(encoding="utf-8")
+            self.assertIn("--fresh-within-minutes 15", fallback_trace)
+            self.assertNotIn("--capture-claude-usage", fallback_trace)
+
+            trace.unlink()
             due = subprocess.run(
                 [str(wrapper), "catchup", "windows-task-logon"],
                 check=False,
