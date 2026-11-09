@@ -78,7 +78,9 @@ remains at 03:17. The tagged cron `@reboot` entry is removed. No repository cron
 installer exists; installation replaces only those exact tagged lines and
 preserves every unrelated entry. Windows continuity retains its existing
 30-minute trigger and offset. The existing `agent-telemetry-logon` trigger waits
-five minutes and retries a failed invocation once after two minutes. Both tasks
+five minutes. The native task owner can set one retry after two minutes for a
+failed logon invocation. Verify the actual registered settings after updating.
+Both tasks
 keep their sole WSL action, principal, headless mode, battery and overlap
 policies. Under the existing collection lock, a Windows fallback skips a
 duplicate scan when a collection finished within 15 minutes and publication is

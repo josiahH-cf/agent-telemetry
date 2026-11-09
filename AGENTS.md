@@ -177,8 +177,8 @@ by up to 30 minutes. Rebuild still walks the complete tree. Two reduced-priority
 cron entries remain; the tagged reboot entry is retired. Windows continuity
 stays at 30 minutes, and the existing logon task waits five minutes. Windows
 fallbacks skip a second collection when the last completed collection is less
-than one cadence old and publication is current. The logon task retries one
-failed invocation after two minutes. This
+than one cadence old and publication is current. The logon task's target
+recovery setting is one retry after two minutes. This
 supersedes the earlier five-minute/three-trigger schedule only; public datasets,
 closed history, source coverage, locks, publication and Pages owners stay intact.
 
