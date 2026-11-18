@@ -591,7 +591,7 @@
     "sources_available": 3,
     "sources_enabled": 5
   },
-  "generated_at": "2026-11-18T15:15:06+00:00",
+  "generated_at": "2026-11-18T15:30:07+00:00",
   "history": [
     {
       "accept_commits": 7,
@@ -36969,7 +36969,7 @@
       "accept_commits": 0,
       "accepted_steps": 0,
       "builder_models": {},
-      "collected_at": "2026-11-18T15:15:06+00:00",
+      "collected_at": "2026-11-18T15:30:07+00:00",
       "coverage_corrections": [
         {
           "date": "2026-08-02",
@@ -67905,7 +67905,7 @@
               "unattributed": 0
             }
           },
-          "collected_at": "2026-11-18T15:15:06+00:00",
+          "collected_at": "2026-11-18T15:30:07+00:00",
           "date": "2026-11-18",
           "schema_version": 2,
           "vendors": {
@@ -68008,13 +68008,13 @@
               "best_effort_estimate": {
                 "basis": "current_verified_rate_envelope",
                 "caveat": "estimates_are_separate_from_exact_cost_and_omit_unknown_turn_level_long_context",
-                "estimated_tokens": 11472,
-                "high_usd": 0.03956,
-                "low_usd": 0.000396,
-                "midpoint_usd": 0.019978,
+                "estimated_tokens": 274927,
+                "high_usd": 0.835558,
+                "low_usd": 0.008356,
+                "midpoint_usd": 0.421957,
                 "status": "available",
                 "unestimated_tokens": 0,
-                "unpriced_tokens": 11472
+                "unpriced_tokens": 274927
               },
               "by_model": {
                 "gpt-6.1-sol": {
@@ -68064,6 +68064,41 @@
                   "tokens": 11472,
                   "unpriced_tokens": 11472,
                   "usd": 0.0
+                },
+                "gpt-6.2-astra": {
+                  "best_effort_estimate": {
+                    "basis": "current_verified_rate_envelope",
+                    "candidate_models": [
+                      "gpt-5.3-codex",
+                      "gpt-5.4",
+                      "gpt-5.4-mini",
+                      "gpt-5.5",
+                      "gpt-5.6-luna",
+                      "gpt-5.6-sol",
+                      "gpt-5.6-terra",
+                      "gpt-6-astra",
+                      "gpt-6-luna",
+                      "gpt-6-sol",
+                      "gpt-6.1-sol"
+                    ],
+                    "caveat": "unknown_model_and_no_turn_level_long_context",
+                    "estimated_tokens": 263455,
+                    "high_usd": 0.795998,
+                    "low_usd": 0.00796,
+                    "midpoint_usd": 0.401979,
+                    "status": "available",
+                    "unpriced_tokens": 263455
+                  },
+                  "classes": {
+                    "cache_write_tokens": 0,
+                    "cached_input_tokens": 221568,
+                    "input_tokens": 259566,
+                    "output_tokens": 3889,
+                    "reasoning_output_tokens": 299
+                  },
+                  "tokens": 263455,
+                  "unpriced_tokens": 263455,
+                  "usd": 0.0
                 }
               },
               "by_scope": {
@@ -68095,13 +68130,13 @@
                   "best_effort_estimate": {
                     "basis": "current_verified_rate_envelope",
                     "caveat": "estimates_are_separate_from_exact_cost_and_omit_unknown_turn_level_long_context",
-                    "estimated_tokens": 11472,
-                    "high_usd": 0.03956,
-                    "low_usd": 0.000396,
-                    "midpoint_usd": 0.019978,
+                    "estimated_tokens": 274927,
+                    "high_usd": 0.835558,
+                    "low_usd": 0.008356,
+                    "midpoint_usd": 0.421957,
                     "status": "available",
                     "unestimated_tokens": 0,
-                    "unpriced_tokens": 11472
+                    "unpriced_tokens": 274927
                   },
                   "by_model": {
                     "gpt-6.1-sol": {
@@ -68151,22 +68186,57 @@
                       "tokens": 11472,
                       "unpriced_tokens": 11472,
                       "usd": 0.0
+                    },
+                    "gpt-6.2-astra": {
+                      "best_effort_estimate": {
+                        "basis": "current_verified_rate_envelope",
+                        "candidate_models": [
+                          "gpt-5.3-codex",
+                          "gpt-5.4",
+                          "gpt-5.4-mini",
+                          "gpt-5.5",
+                          "gpt-5.6-luna",
+                          "gpt-5.6-sol",
+                          "gpt-5.6-terra",
+                          "gpt-6-astra",
+                          "gpt-6-luna",
+                          "gpt-6-sol",
+                          "gpt-6.1-sol"
+                        ],
+                        "caveat": "unknown_model_and_no_turn_level_long_context",
+                        "estimated_tokens": 263455,
+                        "high_usd": 0.795998,
+                        "low_usd": 0.00796,
+                        "midpoint_usd": 0.401979,
+                        "status": "available",
+                        "unpriced_tokens": 263455
+                      },
+                      "classes": {
+                        "cache_write_tokens": 0,
+                        "cached_input_tokens": 221568,
+                        "input_tokens": 259566,
+                        "output_tokens": 3889,
+                        "reasoning_output_tokens": 299
+                      },
+                      "tokens": 263455,
+                      "unpriced_tokens": 263455,
+                      "usd": 0.0
                     }
                   },
                   "classes": {
                     "cache_write_tokens": 0,
-                    "cached_input_tokens": 8877696,
-                    "input_tokens": 9743569,
-                    "output_tokens": 66952,
-                    "reasoning_output_tokens": 28306
+                    "cached_input_tokens": 9099264,
+                    "input_tokens": 10003135,
+                    "output_tokens": 70841,
+                    "reasoning_output_tokens": 28605
                   },
-                  "tokens": 9810521,
-                  "unpriced_tokens": 11472,
+                  "tokens": 10073976,
+                  "unpriced_tokens": 274927,
                   "usd": 5.176263
                 }
               },
-              "tokens": 9810521,
-              "unpriced_tokens": 11472,
+              "tokens": 10073976,
+              "unpriced_tokens": 274927,
               "usd": 5.176263
             }
           }
@@ -68203,7 +68273,7 @@
             "unattributed": 0
           },
           "judge_tokens": 4104753807,
-          "sessions_found": 4514,
+          "sessions_found": 4515,
           "unpriced_tokens": 0,
           "usd_computed": 3863.456722
         },
@@ -68244,7 +68314,7 @@
           "age_hours": 0.0,
           "capture_status": "automatic_success",
           "freshness_max_age_hours": 1.0,
-          "observed_at": "2026-11-18T15:15:06.437000+00:00",
+          "observed_at": "2026-11-18T15:30:06.898000+00:00",
           "provider": "anthropic",
           "quota_status": "available",
           "quota_windows": [
@@ -68253,10 +68323,10 @@
               "capture_status": "automatic_success",
               "display_label": "Seven-day window",
               "freshness_status": "available",
-              "observed_at": "2026-11-18T15:15:06.437000+00:00",
+              "observed_at": "2026-11-18T15:30:06.898000+00:00",
               "provider": "anthropic",
               "remaining_percent": 100.0,
-              "resets_at": "2026-11-24T16:59:59.659510+00:00",
+              "resets_at": "2026-11-24T16:59:59.933254+00:00",
               "source": "claude_slash_usage_local_snapshot",
               "used_percent": 0.0,
               "window": "seven_day",
@@ -68268,29 +68338,29 @@
           "source": "claude_slash_usage_local_snapshot"
         },
         "openai": {
-          "age_hours": 0.7,
+          "age_hours": 0.0,
           "capture_status": "observed",
           "freshness_max_age_hours": 2.0,
-          "observed_at": "2026-11-18T14:31:29+00:00",
+          "observed_at": "2026-11-18T15:30:02+00:00",
           "provider": "openai",
           "quota_status": "available",
           "quota_windows": [
             {
-              "age_hours": 0.7,
+              "age_hours": 0.0,
               "capture_status": "observed",
               "display_label": "Primary window",
               "freshness_status": "available",
-              "observed_at": "2026-11-18T14:31:29+00:00",
+              "observed_at": "2026-11-18T15:30:02+00:00",
               "provider": "openai",
-              "remaining_percent": 43.0,
+              "remaining_percent": 42.0,
               "resets_at": "2026-11-20T17:57:40+00:00",
               "source": "rollout_token_count",
-              "used_percent": 57.0,
+              "used_percent": 58.0,
               "window": "primary",
               "window_minutes": 10080
             }
           ],
-          "remaining_percent": 43.0,
+          "remaining_percent": 42.0,
           "remaining_status": "available",
           "source": "rollout_token_count"
         }
@@ -68902,13 +68972,13 @@
           "best_effort_estimate": {
             "basis": "current_verified_rate_envelope",
             "caveat": "estimates_are_separate_from_exact_cost_and_omit_unknown_turn_level_long_context",
-            "estimated_tokens": 10273287218,
-            "high_usd": 13204.611004,
-            "low_usd": 132.04611,
-            "midpoint_usd": 6668.328557,
+            "estimated_tokens": 10273550673,
+            "high_usd": 13205.407002,
+            "low_usd": 132.05407,
+            "midpoint_usd": 6668.730536,
             "status": "available",
             "unestimated_tokens": 0,
-            "unpriced_tokens": 10273287218
+            "unpriced_tokens": 10273550673
           },
           "by_model": {
             "codex-auto-review": {
@@ -69159,6 +69229,41 @@
               "unpriced_tokens": 11472,
               "usd": 0.0
             },
+            "gpt-6.2-astra": {
+              "best_effort_estimate": {
+                "basis": "current_verified_rate_envelope",
+                "candidate_models": [
+                  "gpt-5.3-codex",
+                  "gpt-5.4",
+                  "gpt-5.4-mini",
+                  "gpt-5.5",
+                  "gpt-5.6-luna",
+                  "gpt-5.6-sol",
+                  "gpt-5.6-terra",
+                  "gpt-6-astra",
+                  "gpt-6-luna",
+                  "gpt-6-sol",
+                  "gpt-6.1-sol"
+                ],
+                "caveat": "unknown_model_and_no_turn_level_long_context",
+                "estimated_tokens": 263455,
+                "high_usd": 0.795998,
+                "low_usd": 0.00796,
+                "midpoint_usd": 0.401979,
+                "status": "available",
+                "unpriced_tokens": 263455
+              },
+              "classes": {
+                "cache_write_tokens": 0,
+                "cached_input_tokens": 221568,
+                "input_tokens": 259566,
+                "output_tokens": 3889,
+                "reasoning_output_tokens": 299
+              },
+              "tokens": 263455,
+              "unpriced_tokens": 263455,
+              "usd": 0.0
+            },
             "unknown": {
               "best_effort_estimate": {
                 "basis": "current_verified_rate_envelope",
@@ -69312,13 +69417,13 @@
               "best_effort_estimate": {
                 "basis": "current_verified_rate_envelope",
                 "caveat": "estimates_are_separate_from_exact_cost_and_omit_unknown_turn_level_long_context",
-                "estimated_tokens": 10272717199,
-                "high_usd": 13202.777574,
-                "low_usd": 132.027776,
-                "midpoint_usd": 6667.402675,
+                "estimated_tokens": 10272980654,
+                "high_usd": 13203.573572,
+                "low_usd": 132.035736,
+                "midpoint_usd": 6667.804654,
                 "status": "available",
                 "unestimated_tokens": 0,
-                "unpriced_tokens": 10272717199
+                "unpriced_tokens": 10272980654
               },
               "by_model": {
                 "codex-auto-review": {
@@ -69569,6 +69674,41 @@
                   "unpriced_tokens": 11472,
                   "usd": 0.0
                 },
+                "gpt-6.2-astra": {
+                  "best_effort_estimate": {
+                    "basis": "current_verified_rate_envelope",
+                    "candidate_models": [
+                      "gpt-5.3-codex",
+                      "gpt-5.4",
+                      "gpt-5.4-mini",
+                      "gpt-5.5",
+                      "gpt-5.6-luna",
+                      "gpt-5.6-sol",
+                      "gpt-5.6-terra",
+                      "gpt-6-astra",
+                      "gpt-6-luna",
+                      "gpt-6-sol",
+                      "gpt-6.1-sol"
+                    ],
+                    "caveat": "unknown_model_and_no_turn_level_long_context",
+                    "estimated_tokens": 263455,
+                    "high_usd": 0.795998,
+                    "low_usd": 0.00796,
+                    "midpoint_usd": 0.401979,
+                    "status": "available",
+                    "unpriced_tokens": 263455
+                  },
+                  "classes": {
+                    "cache_write_tokens": 0,
+                    "cached_input_tokens": 221568,
+                    "input_tokens": 259566,
+                    "output_tokens": 3889,
+                    "reasoning_output_tokens": 299
+                  },
+                  "tokens": 263455,
+                  "unpriced_tokens": 263455,
+                  "usd": 0.0
+                },
                 "unknown": {
                   "best_effort_estimate": {
                     "basis": "current_verified_rate_envelope",
@@ -69607,20 +69747,20 @@
               },
               "classes": {
                 "cache_write_tokens": 0,
-                "cached_input_tokens": 45564315520,
-                "input_tokens": 46444554440,
-                "output_tokens": 158806960,
-                "reasoning_output_tokens": 70269965
+                "cached_input_tokens": 45564537088,
+                "input_tokens": 46444814006,
+                "output_tokens": 158810849,
+                "reasoning_output_tokens": 70270264
               },
-              "tokens": 46603361400,
-              "unpriced_tokens": 10272717199,
+              "tokens": 46603624855,
+              "unpriced_tokens": 10272980654,
               "usd": 16784.216127
             }
           },
           "loop_share": 0.1454,
-          "sessions": 4514,
-          "tokens": 54531003674,
-          "unpriced_tokens": 10273287218,
+          "sessions": 4515,
+          "tokens": 54531267129,
+          "unpriced_tokens": 10273550673,
           "usd": 22769.768844
         }
       }
@@ -134922,6 +135062,44 @@
           "closed_waiting_seconds": null,
           "delivered": true,
           "disposition": "satisfied",
+          "elapsed_seconds": 1.141,
+          "environment": "personal",
+          "events": 6,
+          "first_at": "2026-11-18T15:29:06+00:00",
+          "human_interventions": 0,
+          "last_at": "2026-11-18T15:29:07+00:00",
+          "linkage": "unattributed",
+          "measurement_complete": true,
+          "measurement_since": "2026-11-18T15:29:06.607Z",
+          "open_waits": 0,
+          "outcome_id": "outc-da44449026f97314",
+          "outcome_kind": "review",
+          "producer": "obsidian-agent",
+          "project_attribution": "unattributed",
+          "project_id": null,
+          "publication_status": null,
+          "questions": 0,
+          "receipt_code_revisions": null,
+          "repairs": 0,
+          "review_verdict": null,
+          "unpriced_tokens": null,
+          "updates_applied": 0,
+          "updates_failed": 0,
+          "usage_attribution": "incomplete",
+          "vendors": [],
+          "verification_observed": false
+        },
+        {
+          "acceptance_basis": null,
+          "answers": 0,
+          "api_equivalent_cost_usd": null,
+          "attempt_basis": "complete_refinement_capture",
+          "attempts": 0,
+          "checks_failed": 0,
+          "checks_passed": 0,
+          "closed_waiting_seconds": null,
+          "delivered": true,
+          "disposition": "satisfied",
           "elapsed_seconds": 3.947,
           "environment": "personal",
           "events": 6,
@@ -135465,6 +135643,44 @@
           "measurement_since": "2026-11-09T19:04:35.683Z",
           "open_waits": 0,
           "outcome_id": "outc-b2e076d1bd0c4e29",
+          "outcome_kind": "review",
+          "producer": "obsidian-agent",
+          "project_attribution": "unattributed",
+          "project_id": null,
+          "publication_status": null,
+          "questions": 0,
+          "receipt_code_revisions": null,
+          "repairs": 0,
+          "review_verdict": null,
+          "unpriced_tokens": null,
+          "updates_applied": 0,
+          "updates_failed": 0,
+          "usage_attribution": "incomplete",
+          "vendors": [],
+          "verification_observed": false
+        },
+        {
+          "acceptance_basis": null,
+          "answers": 0,
+          "api_equivalent_cost_usd": null,
+          "attempt_basis": "complete_refinement_capture",
+          "attempts": 0,
+          "checks_failed": 0,
+          "checks_passed": 0,
+          "closed_waiting_seconds": null,
+          "delivered": true,
+          "disposition": "satisfied",
+          "elapsed_seconds": 1.105,
+          "environment": "personal",
+          "events": 6,
+          "first_at": "2026-11-18T15:17:19+00:00",
+          "human_interventions": 0,
+          "last_at": "2026-11-18T15:17:20+00:00",
+          "linkage": "unattributed",
+          "measurement_complete": true,
+          "measurement_since": "2026-11-18T15:17:19.703Z",
+          "open_waits": 0,
+          "outcome_id": "outc-32c82fd9e98b7b9a",
           "outcome_kind": "review",
           "producer": "obsidian-agent",
           "project_attribution": "unattributed",
@@ -154454,6 +154670,44 @@
           "closed_waiting_seconds": null,
           "delivered": true,
           "disposition": "satisfied",
+          "elapsed_seconds": 2.198,
+          "environment": "personal",
+          "events": 6,
+          "first_at": "2026-11-18T15:20:30+00:00",
+          "human_interventions": 0,
+          "last_at": "2026-11-18T15:20:33+00:00",
+          "linkage": "unattributed",
+          "measurement_complete": true,
+          "measurement_since": "2026-11-18T15:20:30.920Z",
+          "open_waits": 0,
+          "outcome_id": "outc-002deae8e86820e2",
+          "outcome_kind": "review",
+          "producer": "obsidian-agent",
+          "project_attribution": "unattributed",
+          "project_id": null,
+          "publication_status": null,
+          "questions": 0,
+          "receipt_code_revisions": null,
+          "repairs": 0,
+          "review_verdict": null,
+          "unpriced_tokens": null,
+          "updates_applied": 0,
+          "updates_failed": 0,
+          "usage_attribution": "incomplete",
+          "vendors": [],
+          "verification_observed": false
+        },
+        {
+          "acceptance_basis": null,
+          "answers": 0,
+          "api_equivalent_cost_usd": null,
+          "attempt_basis": "complete_refinement_capture",
+          "attempts": 0,
+          "checks_failed": 0,
+          "checks_passed": 0,
+          "closed_waiting_seconds": null,
+          "delivered": true,
+          "disposition": "satisfied",
           "elapsed_seconds": 3.113,
           "environment": "personal",
           "events": 6,
@@ -155605,6 +155859,44 @@
           "measurement_since": "2026-11-18T14:31:14.272Z",
           "open_waits": 0,
           "outcome_id": "outc-eae01389501e640b",
+          "outcome_kind": "review",
+          "producer": "obsidian-agent",
+          "project_attribution": "unattributed",
+          "project_id": null,
+          "publication_status": null,
+          "questions": 0,
+          "receipt_code_revisions": null,
+          "repairs": 0,
+          "review_verdict": null,
+          "unpriced_tokens": null,
+          "updates_applied": 0,
+          "updates_failed": 0,
+          "usage_attribution": "incomplete",
+          "vendors": [],
+          "verification_observed": false
+        },
+        {
+          "acceptance_basis": null,
+          "answers": 0,
+          "api_equivalent_cost_usd": null,
+          "attempt_basis": "complete_refinement_capture",
+          "attempts": 0,
+          "checks_failed": 0,
+          "checks_passed": 0,
+          "closed_waiting_seconds": null,
+          "delivered": true,
+          "disposition": "satisfied",
+          "elapsed_seconds": 1.642,
+          "environment": "personal",
+          "events": 6,
+          "first_at": "2026-11-18T15:21:34+00:00",
+          "human_interventions": 0,
+          "last_at": "2026-11-18T15:21:36+00:00",
+          "linkage": "unattributed",
+          "measurement_complete": true,
+          "measurement_since": "2026-11-18T15:21:34.716Z",
+          "open_waits": 0,
+          "outcome_id": "outc-bc75deed5a92a9f3",
           "outcome_kind": "review",
           "producer": "obsidian-agent",
           "project_attribution": "unattributed",
@@ -160420,6 +160712,44 @@
           "closed_waiting_seconds": null,
           "delivered": true,
           "disposition": "satisfied",
+          "elapsed_seconds": 2.862,
+          "environment": "personal",
+          "events": 6,
+          "first_at": "2026-11-18T15:16:13+00:00",
+          "human_interventions": 0,
+          "last_at": "2026-11-18T15:16:15+00:00",
+          "linkage": "unattributed",
+          "measurement_complete": true,
+          "measurement_since": "2026-11-18T15:16:13.044Z",
+          "open_waits": 0,
+          "outcome_id": "outc-f9e3c12948a3a933",
+          "outcome_kind": "review",
+          "producer": "obsidian-agent",
+          "project_attribution": "unattributed",
+          "project_id": null,
+          "publication_status": null,
+          "questions": 0,
+          "receipt_code_revisions": null,
+          "repairs": 0,
+          "review_verdict": null,
+          "unpriced_tokens": null,
+          "updates_applied": 0,
+          "updates_failed": 0,
+          "usage_attribution": "incomplete",
+          "vendors": [],
+          "verification_observed": false
+        },
+        {
+          "acceptance_basis": null,
+          "answers": 0,
+          "api_equivalent_cost_usd": null,
+          "attempt_basis": "complete_refinement_capture",
+          "attempts": 0,
+          "checks_failed": 0,
+          "checks_passed": 0,
+          "closed_waiting_seconds": null,
+          "delivered": true,
+          "disposition": "satisfied",
           "elapsed_seconds": 13458.386,
           "environment": "personal",
           "events": 6,
@@ -164421,6 +164751,44 @@
           "measurement_since": "2026-11-13T08:15:40.791Z",
           "open_waits": 0,
           "outcome_id": "outc-de9c670f6b26c5c4",
+          "outcome_kind": "review",
+          "producer": "obsidian-agent",
+          "project_attribution": "unattributed",
+          "project_id": null,
+          "publication_status": null,
+          "questions": 0,
+          "receipt_code_revisions": null,
+          "repairs": 0,
+          "review_verdict": null,
+          "unpriced_tokens": null,
+          "updates_applied": 0,
+          "updates_failed": 0,
+          "usage_attribution": "incomplete",
+          "vendors": [],
+          "verification_observed": false
+        },
+        {
+          "acceptance_basis": null,
+          "answers": 0,
+          "api_equivalent_cost_usd": null,
+          "attempt_basis": "complete_refinement_capture",
+          "attempts": 0,
+          "checks_failed": 0,
+          "checks_passed": 0,
+          "closed_waiting_seconds": null,
+          "delivered": true,
+          "disposition": "satisfied",
+          "elapsed_seconds": 1.164,
+          "environment": "personal",
+          "events": 6,
+          "first_at": "2026-11-18T15:24:46+00:00",
+          "human_interventions": 0,
+          "last_at": "2026-11-18T15:24:48+00:00",
+          "linkage": "unattributed",
+          "measurement_complete": true,
+          "measurement_since": "2026-11-18T15:24:46.880Z",
+          "open_waits": 0,
+          "outcome_id": "outc-0b7eacc6463a9046",
           "outcome_kind": "review",
           "producer": "obsidian-agent",
           "project_attribution": "unattributed",
@@ -176190,6 +176558,44 @@
           "closed_waiting_seconds": null,
           "delivered": true,
           "disposition": "satisfied",
+          "elapsed_seconds": 20.246,
+          "environment": "personal",
+          "events": 6,
+          "first_at": "2026-11-18T15:30:11+00:00",
+          "human_interventions": 0,
+          "last_at": "2026-11-18T15:30:31+00:00",
+          "linkage": "unattributed",
+          "measurement_complete": true,
+          "measurement_since": "2026-11-18T15:30:11.065Z",
+          "open_waits": 0,
+          "outcome_id": "outc-35ac988b311687cc",
+          "outcome_kind": "review",
+          "producer": "obsidian-agent",
+          "project_attribution": "unattributed",
+          "project_id": null,
+          "publication_status": null,
+          "questions": 0,
+          "receipt_code_revisions": null,
+          "repairs": 0,
+          "review_verdict": null,
+          "unpriced_tokens": null,
+          "updates_applied": 0,
+          "updates_failed": 0,
+          "usage_attribution": "incomplete",
+          "vendors": [],
+          "verification_observed": false
+        },
+        {
+          "acceptance_basis": null,
+          "answers": 0,
+          "api_equivalent_cost_usd": null,
+          "attempt_basis": "complete_refinement_capture",
+          "attempts": 0,
+          "checks_failed": 0,
+          "checks_passed": 0,
+          "closed_waiting_seconds": null,
+          "delivered": true,
+          "disposition": "satisfied",
           "elapsed_seconds": 2700.108,
           "environment": "personal",
           "events": 6,
@@ -177189,6 +177595,44 @@
           "measurement_since": "2026-10-31T03:59:38.960Z",
           "open_waits": 0,
           "outcome_id": "outc-afc198c8c1eed858",
+          "outcome_kind": "review",
+          "producer": "obsidian-agent",
+          "project_attribution": "unattributed",
+          "project_id": null,
+          "publication_status": null,
+          "questions": 0,
+          "receipt_code_revisions": null,
+          "repairs": 0,
+          "review_verdict": null,
+          "unpriced_tokens": null,
+          "updates_applied": 0,
+          "updates_failed": 0,
+          "usage_attribution": "incomplete",
+          "vendors": [],
+          "verification_observed": false
+        },
+        {
+          "acceptance_basis": null,
+          "answers": 0,
+          "api_equivalent_cost_usd": null,
+          "attempt_basis": "complete_refinement_capture",
+          "attempts": 0,
+          "checks_failed": 0,
+          "checks_passed": 0,
+          "closed_waiting_seconds": null,
+          "delivered": true,
+          "disposition": "satisfied",
+          "elapsed_seconds": 1.181,
+          "environment": "personal",
+          "events": 6,
+          "first_at": "2026-11-18T15:23:43+00:00",
+          "human_interventions": 0,
+          "last_at": "2026-11-18T15:23:44+00:00",
+          "linkage": "unattributed",
+          "measurement_complete": true,
+          "measurement_since": "2026-11-18T15:23:43.071Z",
+          "open_waits": 0,
+          "outcome_id": "outc-c7568806b88b7264",
           "outcome_kind": "review",
           "producer": "obsidian-agent",
           "project_attribution": "unattributed",
@@ -179241,6 +179685,44 @@
           "measurement_since": "2026-10-31T00:28:20.699Z",
           "open_waits": 0,
           "outcome_id": "outc-d4dcb374836c849d",
+          "outcome_kind": "review",
+          "producer": "obsidian-agent",
+          "project_attribution": "unattributed",
+          "project_id": null,
+          "publication_status": null,
+          "questions": 0,
+          "receipt_code_revisions": null,
+          "repairs": 0,
+          "review_verdict": null,
+          "unpriced_tokens": null,
+          "updates_applied": 0,
+          "updates_failed": 0,
+          "usage_attribution": "incomplete",
+          "vendors": [],
+          "verification_observed": false
+        },
+        {
+          "acceptance_basis": null,
+          "answers": 0,
+          "api_equivalent_cost_usd": null,
+          "attempt_basis": "complete_refinement_capture",
+          "attempts": 0,
+          "checks_failed": 0,
+          "checks_passed": 0,
+          "closed_waiting_seconds": null,
+          "delivered": true,
+          "disposition": "satisfied",
+          "elapsed_seconds": 4.158,
+          "environment": "personal",
+          "events": 6,
+          "first_at": "2026-11-18T15:26:54+00:00",
+          "human_interventions": 0,
+          "last_at": "2026-11-18T15:26:58+00:00",
+          "linkage": "unattributed",
+          "measurement_complete": true,
+          "measurement_since": "2026-11-18T15:26:54.674Z",
+          "open_waits": 0,
+          "outcome_id": "outc-b0ce3c018a042e26",
           "outcome_kind": "review",
           "producer": "obsidian-agent",
           "project_attribution": "unattributed",
@@ -190858,6 +191340,44 @@
           "closed_waiting_seconds": null,
           "delivered": true,
           "disposition": "satisfied",
+          "elapsed_seconds": 1.217,
+          "environment": "personal",
+          "events": 6,
+          "first_at": "2026-11-18T15:19:28+00:00",
+          "human_interventions": 0,
+          "last_at": "2026-11-18T15:19:29+00:00",
+          "linkage": "unattributed",
+          "measurement_complete": true,
+          "measurement_since": "2026-11-18T15:19:28.249Z",
+          "open_waits": 0,
+          "outcome_id": "outc-015fe7364bff0806",
+          "outcome_kind": "review",
+          "producer": "obsidian-agent",
+          "project_attribution": "unattributed",
+          "project_id": null,
+          "publication_status": null,
+          "questions": 0,
+          "receipt_code_revisions": null,
+          "repairs": 0,
+          "review_verdict": null,
+          "unpriced_tokens": null,
+          "updates_applied": 0,
+          "updates_failed": 0,
+          "usage_attribution": "incomplete",
+          "vendors": [],
+          "verification_observed": false
+        },
+        {
+          "acceptance_basis": null,
+          "answers": 0,
+          "api_equivalent_cost_usd": null,
+          "attempt_basis": "complete_refinement_capture",
+          "attempts": 0,
+          "checks_failed": 0,
+          "checks_passed": 0,
+          "closed_waiting_seconds": null,
+          "delivered": true,
+          "disposition": "satisfied",
           "elapsed_seconds": 576.168,
           "environment": "personal",
           "events": 6,
@@ -191807,6 +192327,44 @@
           "checks_passed": 0,
           "closed_waiting_seconds": null,
           "delivered": true,
+          "disposition": "satisfied",
+          "elapsed_seconds": 1.209,
+          "environment": "personal",
+          "events": 6,
+          "first_at": "2026-11-18T15:22:39+00:00",
+          "human_interventions": 0,
+          "last_at": "2026-11-18T15:22:40+00:00",
+          "linkage": "unattributed",
+          "measurement_complete": true,
+          "measurement_since": "2026-11-18T15:22:39.128Z",
+          "open_waits": 0,
+          "outcome_id": "outc-6bfcccee3afea0b3",
+          "outcome_kind": "review",
+          "producer": "obsidian-agent",
+          "project_attribution": "unattributed",
+          "project_id": null,
+          "publication_status": null,
+          "questions": 0,
+          "receipt_code_revisions": null,
+          "repairs": 0,
+          "review_verdict": null,
+          "unpriced_tokens": null,
+          "updates_applied": 0,
+          "updates_failed": 0,
+          "usage_attribution": "incomplete",
+          "vendors": [],
+          "verification_observed": false
+        },
+        {
+          "acceptance_basis": null,
+          "answers": 0,
+          "api_equivalent_cost_usd": null,
+          "attempt_basis": "complete_refinement_capture",
+          "attempts": 0,
+          "checks_failed": 0,
+          "checks_passed": 0,
+          "closed_waiting_seconds": null,
+          "delivered": true,
           "disposition": "active",
           "elapsed_seconds": 0.432,
           "environment": "personal",
@@ -191819,6 +192377,44 @@
           "measurement_since": "2026-11-08T12:41:36.035Z",
           "open_waits": 0,
           "outcome_id": "outc-34f441c8f3120941",
+          "outcome_kind": "review",
+          "producer": "obsidian-agent",
+          "project_attribution": "unattributed",
+          "project_id": null,
+          "publication_status": null,
+          "questions": 0,
+          "receipt_code_revisions": null,
+          "repairs": 0,
+          "review_verdict": null,
+          "unpriced_tokens": null,
+          "updates_applied": 0,
+          "updates_failed": 0,
+          "usage_attribution": "incomplete",
+          "vendors": [],
+          "verification_observed": false
+        },
+        {
+          "acceptance_basis": null,
+          "answers": 0,
+          "api_equivalent_cost_usd": null,
+          "attempt_basis": "complete_refinement_capture",
+          "attempts": 0,
+          "checks_failed": 0,
+          "checks_passed": 0,
+          "closed_waiting_seconds": null,
+          "delivered": true,
+          "disposition": "satisfied",
+          "elapsed_seconds": 1.099,
+          "environment": "personal",
+          "events": 6,
+          "first_at": "2026-11-18T15:18:24+00:00",
+          "human_interventions": 0,
+          "last_at": "2026-11-18T15:18:25+00:00",
+          "linkage": "unattributed",
+          "measurement_complete": true,
+          "measurement_since": "2026-11-18T15:18:24.287Z",
+          "open_waits": 0,
+          "outcome_id": "outc-2096893918204b3a",
           "outcome_kind": "review",
           "producer": "obsidian-agent",
           "project_attribution": "unattributed",
@@ -194023,6 +194619,44 @@
           "measurement_since": "2026-11-17T21:36:01.332Z",
           "open_waits": 0,
           "outcome_id": "outc-a0daafa58a2a468e",
+          "outcome_kind": "review",
+          "producer": "obsidian-agent",
+          "project_attribution": "unattributed",
+          "project_id": null,
+          "publication_status": null,
+          "questions": 0,
+          "receipt_code_revisions": null,
+          "repairs": 0,
+          "review_verdict": null,
+          "unpriced_tokens": null,
+          "updates_applied": 0,
+          "updates_failed": 0,
+          "usage_attribution": "incomplete",
+          "vendors": [],
+          "verification_observed": false
+        },
+        {
+          "acceptance_basis": null,
+          "answers": 0,
+          "api_equivalent_cost_usd": null,
+          "attempt_basis": "complete_refinement_capture",
+          "attempts": 0,
+          "checks_failed": 0,
+          "checks_passed": 0,
+          "closed_waiting_seconds": null,
+          "delivered": true,
+          "disposition": "satisfied",
+          "elapsed_seconds": 0.999,
+          "environment": "personal",
+          "events": 6,
+          "first_at": "2026-11-18T15:28:02+00:00",
+          "human_interventions": 0,
+          "last_at": "2026-11-18T15:28:03+00:00",
+          "linkage": "unattributed",
+          "measurement_complete": true,
+          "measurement_since": "2026-11-18T15:28:02.659Z",
+          "open_waits": 0,
+          "outcome_id": "outc-eef2a5b2ccc8c3f3",
           "outcome_kind": "review",
           "producer": "obsidian-agent",
           "project_attribution": "unattributed",
@@ -219331,6 +219965,44 @@
           "measurement_since": "2026-10-29T18:19:15.952Z",
           "open_waits": 0,
           "outcome_id": "outc-2d3fb2b45d9c7920",
+          "outcome_kind": "review",
+          "producer": "obsidian-agent",
+          "project_attribution": "unattributed",
+          "project_id": null,
+          "publication_status": null,
+          "questions": 0,
+          "receipt_code_revisions": null,
+          "repairs": 0,
+          "review_verdict": null,
+          "unpriced_tokens": null,
+          "updates_applied": 0,
+          "updates_failed": 0,
+          "usage_attribution": "incomplete",
+          "vendors": [],
+          "verification_observed": false
+        },
+        {
+          "acceptance_basis": null,
+          "answers": 0,
+          "api_equivalent_cost_usd": null,
+          "attempt_basis": "complete_refinement_capture",
+          "attempts": 0,
+          "checks_failed": 0,
+          "checks_passed": 0,
+          "closed_waiting_seconds": null,
+          "delivered": true,
+          "disposition": "satisfied",
+          "elapsed_seconds": 1.089,
+          "environment": "personal",
+          "events": 6,
+          "first_at": "2026-11-18T15:25:50+00:00",
+          "human_interventions": 0,
+          "last_at": "2026-11-18T15:25:51+00:00",
+          "linkage": "unattributed",
+          "measurement_complete": true,
+          "measurement_since": "2026-11-18T15:25:50.746Z",
+          "open_waits": 0,
+          "outcome_id": "outc-2b8131f651cdad77",
           "outcome_kind": "review",
           "producer": "obsidian-agent",
           "project_attribution": "unattributed",
@@ -370436,7 +371108,7 @@
           "status": "historical"
         },
         "spec_corpus": {
-          "last_collected_at": "2026-11-18T15:15:06+00:00",
+          "last_collected_at": "2026-11-18T15:30:07+00:00",
           "status": "partial"
         },
         "suite_state": {
@@ -370454,12 +371126,12 @@
       "current": {
         "date": "2026-11-18",
         "first_observed_at": "2026-11-18T00:00:05+00:00",
-        "last_observed_at": "2026-11-18T15:15:06+00:00",
+        "last_observed_at": "2026-11-18T15:30:07+00:00",
         "latest": {
           "accepted_features": 59,
-          "observed_at": "2026-11-18T15:15:06+00:00",
+          "observed_at": "2026-11-18T15:30:07+00:00",
           "publish": {
-            "last_success_at": "2026-11-18T15:02:37+00:00",
+            "last_success_at": "2026-11-18T15:17:16+00:00",
             "reason": "pushed",
             "status": "success"
           },
@@ -370468,7 +371140,7 @@
             "clock_status": "ok",
             "disk_headline": "windows_drive_shorter_runway_12_5_years_upper_bound",
             "doctor_status": "warn",
-            "last_start_at": "2026-11-18T15:15:05+00:00",
+            "last_start_at": "2026-11-18T15:30:05+00:00",
             "missed_intervals": 3
           },
           "rounds": 803
@@ -370481,12 +371153,12 @@
           "source_spec_corpus_partial",
           "source_suite_state_historical"
         ],
-        "observations": 60,
+        "observations": 61,
         "publish_status_counts": {
-          "success": 60
+          "success": 61
         },
         "reliability_status_counts": {
-          "warn": 60
+          "warn": 61
         },
         "schema_version": 2,
         "sources": {
@@ -370498,13 +371170,13 @@
             },
             "latest_status": "historical",
             "skip_counts": {
-              "cached_last_good": 60,
-              "models_policy_absent": 60,
-              "roster_policy_absent": 60,
-              "source_shrunk": 60
+              "cached_last_good": 61,
+              "models_policy_absent": 61,
+              "roster_policy_absent": 61,
+              "source_shrunk": 61
             },
             "status_counts": {
-              "historical": 60
+              "historical": 61
             }
           },
           "anthropic_usage": {
@@ -370515,26 +371187,26 @@
             },
             "latest_status": "partial",
             "skip_counts": {
-              "cached_source_missing": 429240,
-              "partial_trailing_line": 720
+              "cached_source_missing": 436394,
+              "partial_trailing_line": 732
             },
             "status_counts": {
-              "partial": 60
+              "partial": 61
             }
           },
           "openai_usage": {
             "latest_available": true,
             "latest_coverage": {
               "from": "2026-02-28T12:19:02+00:00",
-              "to": "2026-11-18T14:31:29+00:00"
+              "to": "2026-11-18T15:30:02+00:00"
             },
             "latest_status": "partial",
             "skip_counts": {
-              "cached_source_missing": 94594,
-              "compaction_usage_unavailable": 2921
+              "cached_source_missing": 96231,
+              "compaction_usage_unavailable": 2946
             },
             "status_counts": {
-              "partial": 60
+              "partial": 61
             }
           },
           "provider_usage": {
@@ -370545,10 +371217,10 @@
             },
             "latest_status": "disabled",
             "skip_counts": {
-              "source_disabled": 60
+              "source_disabled": 61
             },
             "status_counts": {
-              "disabled": 60
+              "disabled": 61
             }
           },
           "spec_corpus": {
@@ -370559,11 +371231,11 @@
             },
             "latest_status": "partial",
             "skip_counts": {
-              "active_specs_absent": 60,
-              "frontmatter_missing_feature_id": 180
+              "active_specs_absent": 61,
+              "frontmatter_missing_feature_id": 183
             },
             "status_counts": {
-              "partial": 60
+              "partial": 61
             }
           },
           "suite_state": {
@@ -370574,28 +371246,28 @@
             },
             "latest_status": "historical",
             "skip_counts": {
-              "cached_last_good": 60,
-              "debt_register_absent": 60,
-              "round_in_flight": 4140,
-              "source_shrunk": 60,
-              "test_results_absent": 60,
-              "unknown_event_kind": 6840
+              "cached_last_good": 61,
+              "debt_register_absent": 61,
+              "round_in_flight": 4209,
+              "source_shrunk": 61,
+              "test_results_absent": 61,
+              "unknown_event_kind": 6954
             },
             "status_counts": {
-              "historical": 60
+              "historical": 61
             }
           }
         },
         "vendors": {
           "anthropic": {
             "capture_status_counts": {
-              "automatic_success": 60
+              "automatic_success": 61
             },
             "latest": {
               "capture_status": "automatic_success",
               "estimate_status": "available",
               "quota_age_hours": 0.0,
-              "quota_observed_at": "2026-11-18T15:15:06.437000+00:00",
+              "quota_observed_at": "2026-11-18T15:30:06.898000+00:00",
               "quota_source": "claude_slash_usage_local_snapshot",
               "quota_status": "available",
               "remaining_percent": 100.0,
@@ -370606,36 +371278,36 @@
               "usd": 25377.768
             },
             "quota_status_counts": {
-              "available": 60
+              "available": 61
             },
             "remaining_status_counts": {
-              "available": 60
+              "available": 61
             }
           },
           "openai": {
             "capture_status_counts": {
-              "observed": 60
+              "observed": 61
             },
             "latest": {
               "capture_status": "observed",
               "estimate_status": "available",
-              "quota_age_hours": 0.7,
-              "quota_observed_at": "2026-11-18T14:31:29+00:00",
+              "quota_age_hours": 0.0,
+              "quota_observed_at": "2026-11-18T15:30:02+00:00",
               "quota_source": "rollout_token_count",
               "quota_status": "available",
-              "remaining_percent": 43.0,
+              "remaining_percent": 42.0,
               "remaining_status": "available",
-              "sessions": 4514,
-              "tokens": 54531003674,
-              "unpriced_tokens": 10273287218,
+              "sessions": 4515,
+              "tokens": 54531267129,
+              "unpriced_tokens": 10273550673,
               "usd": 22769.769
             },
             "quota_status_counts": {
-              "available": 17,
+              "available": 18,
               "stale": 43
             },
             "remaining_status_counts": {
-              "available": 17,
+              "available": 18,
               "stale": 43
             }
           }
@@ -387848,12 +388520,12 @@
         {
           "date": "2026-11-18",
           "first_observed_at": "2026-11-18T00:00:05+00:00",
-          "last_observed_at": "2026-11-18T15:15:06+00:00",
+          "last_observed_at": "2026-11-18T15:30:07+00:00",
           "latest": {
             "accepted_features": 59,
-            "observed_at": "2026-11-18T15:15:06+00:00",
+            "observed_at": "2026-11-18T15:30:07+00:00",
             "publish": {
-              "last_success_at": "2026-11-18T15:02:37+00:00",
+              "last_success_at": "2026-11-18T15:17:16+00:00",
               "reason": "pushed",
               "status": "success"
             },
@@ -387862,7 +388534,7 @@
               "clock_status": "ok",
               "disk_headline": "windows_drive_shorter_runway_12_5_years_upper_bound",
               "doctor_status": "warn",
-              "last_start_at": "2026-11-18T15:15:05+00:00",
+              "last_start_at": "2026-11-18T15:30:05+00:00",
               "missed_intervals": 3
             },
             "rounds": 803
@@ -387875,12 +388547,12 @@
             "source_spec_corpus_partial",
             "source_suite_state_historical"
           ],
-          "observations": 60,
+          "observations": 61,
           "publish_status_counts": {
-            "success": 60
+            "success": 61
           },
           "reliability_status_counts": {
-            "warn": 60
+            "warn": 61
           },
           "schema_version": 2,
           "sources": {
@@ -387892,13 +388564,13 @@
               },
               "latest_status": "historical",
               "skip_counts": {
-                "cached_last_good": 60,
-                "models_policy_absent": 60,
-                "roster_policy_absent": 60,
-                "source_shrunk": 60
+                "cached_last_good": 61,
+                "models_policy_absent": 61,
+                "roster_policy_absent": 61,
+                "source_shrunk": 61
               },
               "status_counts": {
-                "historical": 60
+                "historical": 61
               }
             },
             "anthropic_usage": {
@@ -387909,26 +388581,26 @@
               },
               "latest_status": "partial",
               "skip_counts": {
-                "cached_source_missing": 429240,
-                "partial_trailing_line": 720
+                "cached_source_missing": 436394,
+                "partial_trailing_line": 732
               },
               "status_counts": {
-                "partial": 60
+                "partial": 61
               }
             },
             "openai_usage": {
               "latest_available": true,
               "latest_coverage": {
                 "from": "2026-02-28T12:19:02+00:00",
-                "to": "2026-11-18T14:31:29+00:00"
+                "to": "2026-11-18T15:30:02+00:00"
               },
               "latest_status": "partial",
               "skip_counts": {
-                "cached_source_missing": 94594,
-                "compaction_usage_unavailable": 2921
+                "cached_source_missing": 96231,
+                "compaction_usage_unavailable": 2946
               },
               "status_counts": {
-                "partial": 60
+                "partial": 61
               }
             },
             "provider_usage": {
@@ -387939,10 +388611,10 @@
               },
               "latest_status": "disabled",
               "skip_counts": {
-                "source_disabled": 60
+                "source_disabled": 61
               },
               "status_counts": {
-                "disabled": 60
+                "disabled": 61
               }
             },
             "spec_corpus": {
@@ -387953,11 +388625,11 @@
               },
               "latest_status": "partial",
               "skip_counts": {
-                "active_specs_absent": 60,
-                "frontmatter_missing_feature_id": 180
+                "active_specs_absent": 61,
+                "frontmatter_missing_feature_id": 183
               },
               "status_counts": {
-                "partial": 60
+                "partial": 61
               }
             },
             "suite_state": {
@@ -387968,28 +388640,28 @@
               },
               "latest_status": "historical",
               "skip_counts": {
-                "cached_last_good": 60,
-                "debt_register_absent": 60,
-                "round_in_flight": 4140,
-                "source_shrunk": 60,
-                "test_results_absent": 60,
-                "unknown_event_kind": 6840
+                "cached_last_good": 61,
+                "debt_register_absent": 61,
+                "round_in_flight": 4209,
+                "source_shrunk": 61,
+                "test_results_absent": 61,
+                "unknown_event_kind": 6954
               },
               "status_counts": {
-                "historical": 60
+                "historical": 61
               }
             }
           },
           "vendors": {
             "anthropic": {
               "capture_status_counts": {
-                "automatic_success": 60
+                "automatic_success": 61
               },
               "latest": {
                 "capture_status": "automatic_success",
                 "estimate_status": "available",
                 "quota_age_hours": 0.0,
-                "quota_observed_at": "2026-11-18T15:15:06.437000+00:00",
+                "quota_observed_at": "2026-11-18T15:30:06.898000+00:00",
                 "quota_source": "claude_slash_usage_local_snapshot",
                 "quota_status": "available",
                 "remaining_percent": 100.0,
@@ -388000,36 +388672,36 @@
                 "usd": 25377.768
               },
               "quota_status_counts": {
-                "available": 60
+                "available": 61
               },
               "remaining_status_counts": {
-                "available": 60
+                "available": 61
               }
             },
             "openai": {
               "capture_status_counts": {
-                "observed": 60
+                "observed": 61
               },
               "latest": {
                 "capture_status": "observed",
                 "estimate_status": "available",
-                "quota_age_hours": 0.7,
-                "quota_observed_at": "2026-11-18T14:31:29+00:00",
+                "quota_age_hours": 0.0,
+                "quota_observed_at": "2026-11-18T15:30:02+00:00",
                 "quota_source": "rollout_token_count",
                 "quota_status": "available",
-                "remaining_percent": 43.0,
+                "remaining_percent": 42.0,
                 "remaining_status": "available",
-                "sessions": 4514,
-                "tokens": 54531003674,
-                "unpriced_tokens": 10273287218,
+                "sessions": 4515,
+                "tokens": 54531267129,
+                "unpriced_tokens": 10273550673,
                 "usd": 22769.769
               },
               "quota_status_counts": {
-                "available": 17,
+                "available": 18,
                 "stale": 43
               },
               "remaining_status_counts": {
-                "available": 17,
+                "available": 18,
                 "stale": 43
               }
             }
@@ -388287,11 +388959,11 @@
     "now": {
       "current_row": null,
       "current_state": "idle",
-      "last_collect_at": "2026-11-18T15:15:06+00:00",
+      "last_collect_at": "2026-11-18T15:30:07+00:00",
       "last_driver_event_at": "2026-09-01T01:17:26+00:00",
-      "last_publish_at": "2026-11-18T15:02:37+00:00",
-      "last_publish_attempt_at": "2026-11-18T15:02:37+00:00",
-      "minutes_since_driver": 113157.7,
+      "last_publish_at": "2026-11-18T15:17:16+00:00",
+      "last_publish_attempt_at": "2026-11-18T15:17:16+00:00",
+      "minutes_since_driver": 113172.7,
       "publish_age_hours": 0.2,
       "publish_reason": "pushed",
       "publish_stale": false,
@@ -422364,6 +423036,14 @@
         },
         {
           "date": "2026-11-18",
+          "events": 6,
+          "host_os": "windows",
+          "hour_utc": 15,
+          "vendor": "openai",
+          "weekday_utc": 3
+        },
+        {
+          "date": "2026-11-18",
           "events": 32,
           "host_os": "wsl",
           "hour_utc": 0,
@@ -422500,8 +423180,8 @@
       "by_host_os": {
         "windows": {
           "cost_usd": 83161.682384,
-          "sessions": 2791,
-          "tokens": 174931307675
+          "sessions": 2792,
+          "tokens": 174931571130
         },
         "wsl": {
           "cost_usd": 23480.408494,
@@ -422648,6 +423328,12 @@
           "tokens": 11472,
           "unpriced_tokens": 11472
         },
+        "gpt-6.2-astra": {
+          "cost_usd": 0.0,
+          "sessions": 1,
+          "tokens": 263455,
+          "unpriced_tokens": 263455
+        },
         "mixed": {
           "cost_usd": 30522.239448,
           "sessions": 150,
@@ -422676,14 +423362,14 @@
         },
         "openai": {
           "cost_usd": 64451.086252,
-          "sessions": 4489,
-          "tokens": 140322760948,
-          "unpriced_tokens": 12748735862
+          "sessions": 4490,
+          "tokens": 140323024403,
+          "unpriced_tokens": 12748999317
         }
       },
       "coverage": {
         "from": "2026-02-28T12:19:02+00:00",
-        "to": "2026-11-18T15:11:31+00:00"
+        "to": "2026-11-18T15:30:33+00:00"
       },
       "daily": [
         {
@@ -429797,6 +430483,16 @@
           "vendor": "openai"
         },
         {
+          "cost_usd": 0.0,
+          "date": "2026-11-18",
+          "host_os": "windows",
+          "project_id": "obsidian-agent",
+          "sessions": 1,
+          "tokens": 263455,
+          "unpriced_tokens": 263455,
+          "vendor": "openai"
+        },
+        {
           "cost_usd": 0.313237,
           "date": "2026-11-18",
           "host_os": "wsl",
@@ -429824,8 +430520,8 @@
       },
       "observations": {
         "deduplicated": 107227,
-        "raw": 1331848,
-        "unique": 1224621
+        "raw": 1331854,
+        "unique": 1224627
       },
       "projects": [
         {
@@ -429886,8 +430582,8 @@
           "by_host_os": {
             "windows": {
               "cost_usd": 15259.248683,
-              "sessions": 230,
-              "tokens": 32001427482
+              "sessions": 231,
+              "tokens": 32001690937
             },
             "wsl": {
               "cost_usd": 16224.309159,
@@ -429910,19 +430606,19 @@
             },
             "openai": {
               "cost_usd": 15293.601624,
-              "sessions": 838,
-              "tokens": 32022338063,
-              "unpriced_tokens": 250418093
+              "sessions": 839,
+              "tokens": 32022601518,
+              "unpriced_tokens": 250681548
             }
           },
           "category": "governed",
           "cost_usd": 31483.557842,
           "first_seen_at": "2026-07-22T23:01:00+00:00",
-          "last_seen_at": "2026-11-18T14:31:29+00:00",
+          "last_seen_at": "2026-11-18T15:30:33+00:00",
           "per_os": {
             "windows": {
               "first_seen_at": "2026-07-27T20:08:39+00:00",
-              "last_seen_at": "2026-11-13T16:36:12+00:00"
+              "last_seen_at": "2026-11-18T15:30:33+00:00"
             },
             "wsl": {
               "first_seen_at": "2026-07-22T23:01:00+00:00",
@@ -429932,9 +430628,9 @@
           "project_code": "obsidian-agent",
           "project_id": "obsidian-agent",
           "public_label": "obsidian-agent",
-          "sessions": 6478,
-          "tokens": 54753260188,
-          "unpriced_tokens": 251276950
+          "sessions": 6479,
+          "tokens": 54753523643,
+          "unpriced_tokens": 251540405
         },
         {
           "by_host_os": {
@@ -430643,9 +431339,9 @@
         "machine_totals": {
           "attention_seconds": 0,
           "cost_usd": 106642.090878,
-          "sessions": 15275,
-          "tokens": 207650297847,
-          "unpriced_tokens": 13286389643
+          "sessions": 15276,
+          "tokens": 207650561302,
+          "unpriced_tokens": 13286653098
         },
         "status": "ok",
         "store_envelope_machine": {
@@ -430667,29 +431363,29 @@
           "files_changed": 0,
           "files_reused": 2028,
           "host_os": "windows",
-          "last_scan_at": "2026-11-18T15:15:06+00:00",
-          "last_success_at": "2026-11-18T15:15:06+00:00",
-          "missing_cached": 0,
+          "last_scan_at": "2026-11-18T15:30:07+00:00",
+          "last_success_at": "2026-11-18T15:30:07+00:00",
+          "missing_cached": 448,
           "partial_files": 1,
           "root_id": "windows_claude",
-          "scan_seconds": 1.070491,
+          "scan_seconds": 14.566677,
           "status": "partial",
-          "strategy": "known_claude_paths",
+          "strategy": "periodic_claude_discovery",
           "vendor": "anthropic"
         },
         {
           "detail": "ok",
           "error_files": 0,
-          "files": 32,
-          "files_changed": 0,
+          "files": 33,
+          "files_changed": 1,
           "files_reused": 32,
           "host_os": "windows",
-          "last_scan_at": "2026-11-18T15:15:06+00:00",
-          "last_success_at": "2026-11-18T15:15:06+00:00",
+          "last_scan_at": "2026-11-18T15:30:07+00:00",
+          "last_success_at": "2026-11-18T15:30:07+00:00",
           "missing_cached": 0,
           "partial_files": 12,
           "root_id": "windows_codex",
-          "scan_seconds": 6.777549,
+          "scan_seconds": 6.909294,
           "status": "partial",
           "strategy": "known_plus_four_day_partitions",
           "vendor": "openai"
@@ -430698,15 +431394,15 @@
           "detail": "ok",
           "error_files": 0,
           "files": 2222,
-          "files_changed": 1,
-          "files_reused": 2221,
+          "files_changed": 0,
+          "files_reused": 2222,
           "host_os": "wsl",
-          "last_scan_at": "2026-11-18T15:15:06+00:00",
-          "last_success_at": "2026-11-18T15:15:06+00:00",
+          "last_scan_at": "2026-11-18T15:30:07+00:00",
+          "last_success_at": "2026-11-18T15:30:07+00:00",
           "missing_cached": 7154,
           "partial_files": 12,
           "root_id": "wsl_claude",
-          "scan_seconds": 0.189344,
+          "scan_seconds": 0.228291,
           "status": "partial",
           "strategy": "full_tree",
           "vendor": "anthropic"
@@ -430718,12 +431414,12 @@
           "files_changed": 0,
           "files_reused": 3703,
           "host_os": "wsl",
-          "last_scan_at": "2026-11-18T15:15:06+00:00",
-          "last_success_at": "2026-11-18T15:15:06+00:00",
+          "last_scan_at": "2026-11-18T15:30:07+00:00",
+          "last_success_at": "2026-11-18T15:30:07+00:00",
           "missing_cached": 0,
           "partial_files": 0,
           "root_id": "wsl_codex",
-          "scan_seconds": 0.343568,
+          "scan_seconds": 0.384847,
           "status": "ok",
           "strategy": "known_plus_four_day_partitions",
           "vendor": "openai"
@@ -430731,14 +431427,14 @@
       ],
       "store": {
         "integrity": "ok",
-        "semantic_digest": "0906476f85d5efcf1fc8f5cbd3f805800223a3e2942eedcb084f1eca8ed19c13"
+        "semantic_digest": "afdbfce8e02419473958938b68d64bbf5c1ebc9f1a5901a968ec4fa68f964c21"
       },
       "store_schema_version": 5,
       "totals": {
         "cost_usd": 106642.090878,
-        "sessions": 15275,
-        "tokens": 207650297847,
-        "unpriced_tokens": 13286389643
+        "sessions": 15276,
+        "tokens": 207650561302,
+        "unpriced_tokens": 13286653098
       },
       "unregistered_candidates": {
         "codes": [
@@ -431376,13 +432072,13 @@
             "to": "2026-11-18T12:42:53+00:00"
           }
         ],
-        "last_finish_at": "2026-11-18T15:07:02+00:00",
-        "last_start_at": "2026-11-18T15:15:05+00:00",
+        "last_finish_at": "2026-11-18T15:17:16+00:00",
+        "last_start_at": "2026-11-18T15:30:05+00:00",
         "longest_gap_minutes": 53.0,
         "malformed_log_records": 0,
         "missed_intervals": 3,
-        "observed_finishes": 929,
-        "observed_starts": 937,
+        "observed_finishes": 930,
+        "observed_starts": 938,
         "status": "gap"
       },
       "checks": [
@@ -431509,20 +432205,20 @@
       ],
       "clock": {
         "last_anomaly_at": null,
-        "last_success_at": "2026-11-18T15:00:06+00:00",
+        "last_success_at": "2026-11-18T15:15:06+00:00",
         "schema_version": 2,
         "skew_seconds": 0.0,
         "status": "ok"
       },
       "disk": {
-        "free_bytes": 81074462720,
-        "free_percent": 0.075,
+        "free_bytes": 80882548736,
+        "free_percent": 0.0748,
         "headline": "windows_drive_shorter_runway_12_5_years_upper_bound",
         "measured_at": "2026-08-20T12:59:05+00:00",
         "projected_annual_growth_bytes": 79400738504,
         "runway_years": 12.489
       },
-      "observed_at": "2026-11-18T15:15:06+00:00",
+      "observed_at": "2026-11-18T15:30:07+00:00",
       "price_age_days": 29,
       "schema_version": 2,
       "status": "warn",
@@ -440763,7 +441459,7 @@
       },
       "high_water": {
         "accept_commit_count": 62,
-        "cached_last_good_age_hours": 1683.8,
+        "cached_last_good_age_hours": 1684.0,
         "cached_last_good_at": "2026-09-09T11:30:04+00:00",
         "head": "ab282bcecc766b827364a1e538750b9185b3d9ff",
         "last_accept_sha": "27c16a6dc3e141f70bda5243095009d3222c8689",
@@ -440801,13 +441497,13 @@
       },
       "high_water": {
         "bytes": 3110622445,
-        "cache_hits": 2221,
+        "cache_hits": 2222,
         "files": 9376
       },
       "ingested": {
-        "cache_hits": 2221,
+        "cache_hits": 2222,
         "files": 9376,
-        "rescanned": 1
+        "rescanned": 0
       },
       "skips": [
         {
@@ -440826,17 +441522,17 @@
       "available": true,
       "coverage": {
         "from": "2026-02-28T12:19:02+00:00",
-        "to": "2026-11-18T14:31:29+00:00"
+        "to": "2026-11-18T15:30:02+00:00"
       },
       "high_water": {
-        "bytes": 16136396628,
+        "bytes": 16137098296,
         "cache_hits": 3735,
-        "files": 5372
+        "files": 5373
       },
       "ingested": {
         "cache_hits": 3735,
-        "files": 5372,
-        "rescanned": 0
+        "files": 5373,
+        "rescanned": 1
       },
       "skips": [
         {
@@ -440898,7 +441594,7 @@
         "to": "2026-08-31T20:17:26-05:00"
       },
       "high_water": {
-        "cached_last_good_age_hours": 1684.5,
+        "cached_last_good_age_hours": 1684.7,
         "cached_last_good_at": "2026-09-09T10:45:54+00:00",
         "driver_last_ts": "2026-08-31T20:17:26-05:00",
         "driver_lines": 5093,
