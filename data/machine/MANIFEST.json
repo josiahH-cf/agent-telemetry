@@ -3,26 +3,26 @@
     {
       "coverage": {
         "from": "2026-02-28T12:19:02+00:00",
-        "to": "2026-11-18T13:49:00+00:00"
+        "to": "2026-11-18T14:24:08+00:00"
       },
       "dataset": "projects",
       "path": "data/machine/projects.jsonl",
       "rows": 16,
       "schema": "data/schema/projects.schema.json",
       "semantics": "One public project identity or bulk bucket with lifetime totals and per-OS coverage.",
-      "sha256": "1f5f48721d0b9a5e2e108ba61ed3bb6dd3cdddbc17463527cd1532e8436523f5"
+      "sha256": "218195adf783635a82a68e348b2826644013a42de8c402de9431347153b622fd"
     },
     {
       "coverage": {
         "from": "2026-02-28T12:19:02+00:00",
-        "to": "2026-11-18T13:49:00+00:00"
+        "to": "2026-11-18T14:24:08+00:00"
       },
       "dataset": "sessions",
       "path": "data/machine/sessions.jsonl",
-      "rows": 15271,
+      "rows": 15272,
       "schema": "data/schema/sessions.schema.json",
       "semantics": "One provider session after cross-source event deduplication; working directories are excluded.",
-      "sha256": "92b834b982558a7a9eec2a985111607d88bfc84d470b8a6c0dcdd036537eead2"
+      "sha256": "5dab241878a3fcc626b36411d51aea7bd38eee4547a6c96c1181fcfa33924835"
     },
     {
       "coverage": {
@@ -31,10 +31,10 @@
       },
       "dataset": "days",
       "path": "data/machine/days.jsonl",
-      "rows": 711,
+      "rows": 712,
       "schema": "data/schema/days.schema.json",
       "semantics": "UTC daily usage by public project identity, vendor, and host operating system.",
-      "sha256": "ddfac078094537bee8d197f13cce886b4b55d85b994c0d233f0efc1ed0560963"
+      "sha256": "4996e310d78b53e3687569b57458cb6327a962fd333b4e52e10e9e857e3065d5"
     },
     {
       "coverage": {
@@ -99,14 +99,14 @@
     {
       "coverage": {
         "from": "2026-09-09T03:18:25+00:00",
-        "to": "2026-11-18T14:04:08+00:00"
+        "to": "2026-11-18T14:30:11+00:00"
       },
       "dataset": "outcomes",
       "path": "data/machine/outcomes.jsonl",
-      "rows": 3278,
+      "rows": 3292,
       "schema": "data/schema/outcomes.schema.json",
       "semantics": "Successor outcome receipts (Obsidian Agent console rebuild): per-outcome counts, dispositions, check/publication/update statuses and native linkage strength; no titles, prompts or paths.",
-      "sha256": "d04afb644e3392257cf1220923be4ac4a9be03dac90495cddb205daf1348b310"
+      "sha256": "ac625e0258e11d901a9961a53c9780681c5ab7d498aca5b412a0d3ac6dea74a6"
     },
     {
       "coverage": {
@@ -115,10 +115,10 @@
       },
       "dataset": "code_changes",
       "path": "data/machine/code_changes.jsonl",
-      "rows": 2864,
+      "rows": 2867,
       "schema": "data/schema/code_changes.schema.json",
       "semantics": "Deduplicated explicitly configured read-only Git first-parent revisions and numeric shortstat, joined by projects.project_code. No filenames, code, author, message or native revision; never a quality or productivity score.",
-      "sha256": "976fd134db1ef1a98b97fb5239b8c6e2a8f38f01333c7e5148bae5637d0d82dd",
+      "sha256": "1ae110dbd48edf03987ddfe8750ff11996514c6d68c26688777dc0950bed1846",
       "source_coverage": {
         "by_project": {
           "obsidian-agent": {
@@ -126,8 +126,8 @@
             "status": "current"
           },
           "proj-02a9b771": {
-            "from": "1970-01-01",
-            "status": "current"
+            "from": null,
+            "status": "partial"
           },
           "proj-3e9f3dff": {
             "from": "1970-01-01",
@@ -156,14 +156,15 @@
         },
         "from": null,
         "reasons": [
+          "code_history_rewritten",
           "code_root_unavailable"
         ],
-        "rewrites_resumed": 15,
+        "rewrites_resumed": 16,
         "sources": 9,
         "states": {
-          "current": 8,
+          "current": 7,
           "disabled": 0,
-          "partial": 0,
+          "partial": 1,
           "retained-last-good": 0,
           "unavailable": 1
         },
@@ -196,6 +197,6 @@
       "sha256": "9303666817e5e7bd53fa47c2394de3b3bedfbbfc575c9551b22b9091cf7ae732"
     }
   ],
-  "generated_at": "2026-11-18T14:15:07+00:00",
+  "generated_at": "2026-11-18T14:30:08+00:00",
   "schema_version": 1
 }
