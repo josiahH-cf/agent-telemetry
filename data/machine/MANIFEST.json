@@ -3,26 +3,26 @@
     {
       "coverage": {
         "from": "2026-02-28T12:19:02+00:00",
-        "to": "2026-11-22T11:30:11+00:00"
+        "to": "2026-11-22T11:45:20+00:00"
       },
       "dataset": "projects",
       "path": "data/machine/projects.jsonl",
       "rows": 16,
       "schema": "data/schema/projects.schema.json",
       "semantics": "One public project identity or bulk bucket with lifetime totals and per-OS coverage.",
-      "sha256": "fd3db345168da2a459b92b1096dc6b9ae28503336748b2a829bc00ba41eda5a7"
+      "sha256": "9e6348d2ab398c0d099f78a6a6457b2339162c21af6b52660cd4b476bd9155f7"
     },
     {
       "coverage": {
         "from": "2026-02-28T12:19:02+00:00",
-        "to": "2026-11-22T11:30:11+00:00"
+        "to": "2026-11-22T11:45:20+00:00"
       },
       "dataset": "sessions",
       "path": "data/machine/sessions.jsonl",
-      "rows": 15391,
+      "rows": 15407,
       "schema": "data/schema/sessions.schema.json",
       "semantics": "One provider session after cross-source event deduplication; working directories are excluded.",
-      "sha256": "6bca957b886d370b580e348d69d07724911941bfe419bb820881c3831739f807"
+      "sha256": "061d0d7d6aedaea393b16683aedeecd51174529c802d222a2ce6d79a20f2b089"
     },
     {
       "coverage": {
@@ -34,7 +34,7 @@
       "rows": 731,
       "schema": "data/schema/days.schema.json",
       "semantics": "UTC daily usage by public project identity, vendor, and host operating system.",
-      "sha256": "82cdcc7459039c6350cf21326a0bc31cebec5a5f89803a8689e5eabed8377ea4"
+      "sha256": "3a5ff20a8da7bf3ccf165d81815f5ce3e9637eb321b351aa890f8c658cc52ff4"
     },
     {
       "coverage": {
@@ -99,14 +99,14 @@
     {
       "coverage": {
         "from": "2026-09-09T03:18:25+00:00",
-        "to": "2026-11-22T11:08:28+00:00"
+        "to": "2026-11-22T11:40:47+00:00"
       },
       "dataset": "outcomes",
       "path": "data/machine/outcomes.jsonl",
-      "rows": 3759,
+      "rows": 3761,
       "schema": "data/schema/outcomes.schema.json",
       "semantics": "Successor outcome receipts (Obsidian Agent console rebuild): per-outcome counts, dispositions, check/publication/update statuses and native linkage strength; no titles, prompts or paths.",
-      "sha256": "286657477721ba4477bdfddf0242be12e8f09de7ec56f4067e9d180895e993f1"
+      "sha256": "0daef537d6f2314bc057280d02a259541528745ae11d68f83ab57a242825ba6f"
     },
     {
       "coverage": {
@@ -115,10 +115,10 @@
       },
       "dataset": "code_changes",
       "path": "data/machine/code_changes.jsonl",
-      "rows": 2966,
+      "rows": 2968,
       "schema": "data/schema/code_changes.schema.json",
       "semantics": "Deduplicated explicitly configured read-only Git first-parent revisions and numeric shortstat, joined by projects.project_code. No filenames, code, author, message or native revision; never a quality or productivity score.",
-      "sha256": "e82763d1cf3f065134fc5fb828bd08b92c68ad1b43c202b71b92e028f23bca49",
+      "sha256": "c926bf55e7854c13c8e1f78725d7f903fbe4679c0caa4bcde2e31d96e0e70425",
       "source_coverage": {
         "by_project": {
           "obsidian-agent": {
@@ -126,8 +126,8 @@
             "status": "current"
           },
           "proj-02a9b771": {
-            "from": "1970-01-01",
-            "status": "current"
+            "from": null,
+            "status": "partial"
           },
           "proj-3e9f3dff": {
             "from": "1970-01-01",
@@ -156,14 +156,15 @@
         },
         "from": null,
         "reasons": [
+          "code_history_rewritten",
           "code_root_unavailable"
         ],
-        "rewrites_resumed": 16,
+        "rewrites_resumed": 17,
         "sources": 9,
         "states": {
-          "current": 8,
+          "current": 7,
           "disabled": 0,
-          "partial": 0,
+          "partial": 1,
           "retained-last-good": 0,
           "unavailable": 1
         },
@@ -196,6 +197,6 @@
       "sha256": "9303666817e5e7bd53fa47c2394de3b3bedfbbfc575c9551b22b9091cf7ae732"
     }
   ],
-  "generated_at": "2026-11-22T11:30:05+00:00",
+  "generated_at": "2026-11-22T11:45:03+00:00",
   "schema_version": 1
 }
